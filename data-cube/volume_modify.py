@@ -17,6 +17,7 @@ Controls:
 * 4  - toggle between colormaps, depends on which rendering method is available
 * 0  - reset cameras
 * [] - decrease/increase isosurface threshold
+* =- - increase/decrease the scale of the third axis
 
 With fly camera:
 
@@ -135,7 +136,7 @@ def on_key_press(event):
         volume1.threshold += s
         th = volume1.threshold if volume1.visible else volume2.threshold
         print("Isosurface threshold: %0.3f" % th)
-#Add zoom out functionality for the third dimension
+# Add zoom out functionality for the third dimension
     elif event.text != '' and event.text in '=-':
         z = -1 if event.text == '-' else +1
         result += z
