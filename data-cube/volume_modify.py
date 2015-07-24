@@ -35,8 +35,13 @@ from vispy.color import get_colormaps, BaseColormap
 import pyfits
 # Read volume
 
-# fitsdata = pyfits.open('/Users/penny/PycharmProjects/untitled/l1448_13co.fits')
-fitsdata = pyfits.open('/Users/penny/Documents/CO/CGPS_MA1_CO_line_image.fits')
+fitsdata = pyfits.open('/Users/penny/PycharmProjects/untitled/l1448_13co.fits')
+# fitsdata = pyfits.open('/Users/penny/Documents/CO/G25.4CO.fits')
+#filename = input('Please input fits file name: ')
+#if filename is not None:
+#    fitsdata = pyfits.open(filename)
+#else:
+#    quit
 naxis = fitsdata[0].header['NAXIS']
 image = fitsdata[0].data
 print naxis
@@ -45,7 +50,7 @@ if naxis < 3:
     quit
 elif naxis > 3:
     image = fitsdata[0].data[0,:,:,:]
-
+print image.shape
 # Set all nan to zero for display
 vol1 = np.nan_to_num(np.array(image))
 
@@ -72,6 +77,7 @@ cam2 = scene.cameras.TurntableCamera(parent=view.scene, fov=fov,
 cam3 = scene.cameras.ArcballCamera(parent=view.scene, fov=fov, name='Arcball')
 view.camera = cam2  # Select turntable at first
 
+fitsdata.close()
 
 # create colormaps that work well for translucent and additive volume rendering
 class TransFire(BaseColormap):
@@ -94,12 +100,13 @@ opaque_cmaps = cycle(get_colormaps())
 translucent_cmaps = cycle([TransFire(), TransGrays()])
 opaque_cmap = next(opaque_cmaps)
 translucent_cmap = next(translucent_cmaps)
-
+result = 1
 
 # Implement key presses
 @canvas.events.key_press.connect
 def on_key_press(event):
-    global opaque_cmap, translucent_cmap
+    # result =1 # invoke every press...
+    global opaque_cmap, translucent_cmap, result
     if event.text == '1':
         cam_toggle = {cam1: cam2, cam2: cam3, cam3: cam1}
         view.camera = cam_toggle.get(view.camera, cam2)
@@ -128,7 +135,15 @@ def on_key_press(event):
         volume1.threshold += s
         th = volume1.threshold if volume1.visible else volume2.threshold
         print("Isosurface threshold: %0.3f" % th)
-
+#Add zoom out functionality for the third dimension
+    elif event.text != '' and event.text in '=-':
+        z = -1 if event.text == '-' else +1
+        result += z
+        if result > 0:
+            volume1.transform = scene.STTransform(scale=(1, 1, result))
+        else:
+            result = 1
+        print("Volume scale: %d" % result)
 
 # for testing performance
 #@canvas.connect
