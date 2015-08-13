@@ -20,4 +20,4 @@ install:
   - python setup.py install
 
 script:
-  - py.test
+  - py.test vispy_volume
