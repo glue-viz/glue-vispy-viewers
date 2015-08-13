@@ -20,6 +20,3 @@ class GlueVispyViewer(DataViewer):
         self._vispy_widget.set_canvas()
         self._vispy_widget.canvas.render()
         return True
-
-from glue.config import qt_client
-qt_client.add(GlueVispyViewer)
