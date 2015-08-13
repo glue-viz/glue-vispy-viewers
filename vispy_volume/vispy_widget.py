@@ -19,8 +19,8 @@ class QtVispyWidget(QtGui.QWidget):
         self.canvas.measure_fps()
 
         self.data = None
-        self.volume1, view = None
-        self.cam1, cam2, cam3 = None
+        self.volume1 = view = None
+        self.cam1 = cam2 = cam3 = None
 
         self.canvas.events.key_press.connect(self.on_key_press)
 
