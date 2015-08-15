@@ -1,11 +1,17 @@
 import numpy as np
 from ..vispy_widget import QtVispyWidget
+from glue.qt import get_qapp
+
 
 class Event(object):
     def __init__(self, text):
         self.text = text
 
+
 def test_widget():
+
+    # Make sure QApplication is started
+    get_qapp()
 
     # Create fake data
     data = np.arange(1000).reshape((10,10,10))
