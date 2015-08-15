@@ -16,8 +16,8 @@ before_install:
 install:
   - conda create --yes -n test python=$PYTHON_VERSION
   - source activate test
-  - conda install --yes glueviz pytest mock
+  - conda install --yes glueviz pytest mock vispy
   - python setup.py install
 
 script:
-  - py.test
+  - py.test vispy_volume
