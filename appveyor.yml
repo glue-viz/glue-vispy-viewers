@@ -5,7 +5,7 @@ environment:
 
   global:
       PYTHON: "C:\\conda"
-      MINICONDA_VERSION: "3.5.5"
+      MINICONDA_VERSION: "latest"
       CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\.continuous-integration\\appveyor\\windows_sdk.cmd"
       PYTHON_ARCH: "64" # needs to be set for CMD_IN_ENV to succeed. If a mix
                         # of 32 bit and 64 bit builds are needed, move this
@@ -13,6 +13,7 @@ environment:
 
   matrix:
       - PYTHON_VERSION: "2.7"
+      - PYTHON_VERSION: "3.4"
 
 platform:
     -x64
@@ -31,6 +32,9 @@ install:
 
     # Check that we have the expected version of Python
     - "python --version"
+
+    # Specify which OpenGL version to use
+    - "SET VISPY_GL_LIB=%CD%\\opengl32.dll"
 
     # Install specified version of numpy and dependencies
     - "conda install -q --yes glueviz pytest mock vispy"
