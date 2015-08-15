@@ -33,11 +33,11 @@ install:
     - "python --version"
 
     # Install specified version of numpy and dependencies
-    - "conda install -q --yes glueviz pytest mock vispy
+    - "conda install -q --yes glueviz pytest mock vispy"
 
 # Not a .NET project, we build SunPy in the install step instead
 build: false
 
 test_script:
-  - "%CMD_IN_ENV% py.test"
+  - "%CMD_IN_ENV% py.test vispy_volume"
 
