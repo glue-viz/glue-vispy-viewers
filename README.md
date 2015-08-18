@@ -10,3 +10,9 @@ To install the plugin:
     
 This will auto-register the plugin with Glue. Now simply start up Glue, open a
 data cube, drag it onto the main canvas, then select '3D viewer'.
+
+To run the tests, do:
+
+    py.test vispy_volume
+
+at the root of the repository. This requires the [pytest](http://pytest.org) module to be installed.
