@@ -35,9 +35,16 @@ class QtVispyWidget(QtGui.QWidget):
     def set_data(self, data):
         self.data = data
 
+    def set_subsets(self, subsets):
+        self.subsets = subsets
+
     def set_canvas(self):
+
+        # TODO: need to implement the visualiation of the subsets in this method
+
         if self.data is None:
             return
+
         vol1 = np.nan_to_num(np.array(self.data))
 
         # Prepare canvas
@@ -115,5 +122,3 @@ class QtVispyWidget(QtGui.QWidget):
             else:
                 self.result = 1
     #        print("Volume scale: %d" % result)
-
-
