@@ -18,6 +18,7 @@ class QtVispyWidget(QtGui.QWidget):
     opaque_cmap = next(opaque_cmaps)
     translucent_cmap = next(translucent_cmaps)
     result = 1
+    zoom_size = 0
 
     def __init__(self, parent=None):
         super(QtVispyWidget, self).__init__(parent=parent)
@@ -26,11 +27,13 @@ class QtVispyWidget(QtGui.QWidget):
         self.canvas.measure_fps()
 
         self.data = None
-        self.volume1 = self.view = None
+        self.volume1 = self.axis= self.view = None
         self.cam1 = self.cam2 = self.cam3 = None
         # self.cmap = None
+        self.text = scene.visuals.Text('', color='white', bold=True, font_size=800, parent=None)
 
         self.canvas.events.key_press.connect(self.on_key_press)
+        self.canvas.events.mouse_wheel.connect(self.on_mouse_wheel)
 
     def set_data(self, data):
         self.data = data
@@ -63,9 +66,12 @@ class QtVispyWidget(QtGui.QWidget):
         fov = 60.
         self.cam1 = scene.cameras.FlyCamera(parent=self.view.scene, fov=fov, name='Fly')
         self.cam2 = scene.cameras.TurntableCamera(parent=self.view.scene, fov=fov,
-                                             name='Turntable')
+                                            name='Turntable')
         self.cam3 = scene.cameras.ArcballCamera(parent=self.view.scene, fov=fov, name='Arcball')
         self.view.camera = self.cam2  # Select turntable at firstate_texture=emulate_texture)
+
+        # Add a 3D axis to keep us oriented
+        self.axis = scene.visuals.XYZAxis(parent=self.view.scene)
 
     def set_colormap(self):
         # Setup colormap iterators
@@ -75,7 +81,15 @@ class QtVispyWidget(QtGui.QWidget):
         translucent_cmap = next(translucent_cmaps)
         result = 1
 
-    # Implement key presses
+    def on_mouse_wheel(self, event):
+        self.zoom_size+=event.delta[1]
+        self.text.text = 'X %s' % round(self.zoom_size, 1)
+        self.text.parent = self.view.scene
+        # Temporary position value
+        self.text.pos = 0, 0, 0
+        # text.draw(tr_sys)
+        self.text.show = True
+
     # @canvas.events.key_press.connect
     def on_key_press(self, event):
 

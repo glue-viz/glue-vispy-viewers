@@ -29,3 +29,6 @@ def test_widget():
     w.on_key_press(Event(text='1'))
     w.on_key_press(Event(text='2'))
     w.on_key_press(Event(text='3'))
+
+    #Test mouse_wheel
+    w.on_mouse_wheel(Event(type=mouse_wheel)
