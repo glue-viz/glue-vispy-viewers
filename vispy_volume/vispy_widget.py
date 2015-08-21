@@ -29,7 +29,7 @@ class QtVispyWidget(QtGui.QWidget):
 
         # Set up a viewbox to display the image with interactive pan/zoom
         self.view = self.canvas.central_widget.add_view()
-        self.view.border_color = 'b'
+        self.view.border_color = 'red'
         self.view.parent = self.canvas.scene
 
         # Set whether we are emulating a 3D texture

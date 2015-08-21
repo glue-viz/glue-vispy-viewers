@@ -1,11 +1,11 @@
-__author__ = 'penny'
+import numpy as np
 
 from glue.qt.widgets.data_viewer import DataViewer
 from glue.core import message as msg
 
 # Add a __init__.py file to this folder can solve the relative import problem
 from .vispy_widget import QtVispyWidget
-
+from .options_widget import VolumeOptionsWidget
 
 class GlueVispyViewer(DataViewer):
 
@@ -17,6 +17,8 @@ class GlueVispyViewer(DataViewer):
         self.setCentralWidget(self._vispy_widget.canvas.native)
         self._data = None
         self._subsets = []
+        # self._layer_view = onewidget()
+        self._options_widget = VolumeOptionsWidget()
 
     def register_to_hub(self, hub):
 
@@ -39,6 +41,9 @@ class GlueVispyViewer(DataViewer):
 
     def add_data(self, data):
         self._data = data['PRIMARY']
+        initial_level = "{0:.3g}".format(np.nanpercentile(data['PRIMARY'], 99))
+        self._options_widget.levels = initial_level
+        self._options_widget.update_viewer()
         self._update_data()
         return True
 
@@ -68,3 +73,11 @@ class GlueVispyViewer(DataViewer):
 
     def _redraw(self):
         self._vispy_widget.canvas.render()
+
+    # Add side panels
+    '''def layer_view(self):
+
+        return self._layer_view'''
+
+    def options_widget(self):
+        return self._options_widget

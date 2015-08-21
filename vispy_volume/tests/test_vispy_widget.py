@@ -31,6 +31,6 @@ def test_widget():
     w.on_key_press(KeyEvent(text='2'))
     w.on_key_press(KeyEvent(text='3'))
 
-    #Test mouse_wheel
+    # Test mouse_wheel
     w.on_mouse_wheel(MouseEvent(type='mouse_wheel', delta=(0, 0.5)))
     w.on_mouse_wheel(MouseEvent(type='mouse_wheel', delta=(0, -0.3)))
