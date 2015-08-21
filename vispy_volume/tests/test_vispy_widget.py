@@ -3,10 +3,14 @@ from ..vispy_widget import QtVispyWidget
 from glue.qt import get_qapp
 
 
-class Event(object):
+class KeyEvent(object):
     def __init__(self, text):
         self.text = text
 
+class MouseEvent(object):
+    def __init__(self, delta, type):
+        self.type = type
+        self.delta = delta
 
 def test_widget():
 
@@ -26,9 +30,10 @@ def test_widget():
     w.set_colormap()
 
     # Test key presses
-    w.on_key_press(Event(text='1'))
-    w.on_key_press(Event(text='2'))
-    w.on_key_press(Event(text='3'))
+    w.on_key_press(KeyEvent(text='1'))
+    w.on_key_press(KeyEvent(text='2'))
+    w.on_key_press(KeyEvent(text='3'))
 
     #Test mouse_wheel
-    w.on_mouse_wheel(Event(type=mouse_wheel)
+    w.on_mouse_wheel(MouseEvent(type='mouse_wheel', delta=(0, 0.5)))
+    w.on_mouse_wheel(MouseEvent(type='mouse_wheel', delta=(0, -0.3)))
