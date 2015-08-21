@@ -23,11 +23,8 @@ def test_widget():
     # Set up widget
     w = QtVispyWidget()
     w.set_data(data)
-    w.set_canvas()
+    w.add_volume_visual()
     w.canvas.render()
-
-    # Test changing colormap
-    w.set_colormap()
 
     # Test key presses
     w.on_key_press(KeyEvent(text='1'))

@@ -55,7 +55,7 @@ class GlueVispyViewer(DataViewer):
 
     def _update_data(self):
         self._vispy_widget.set_data(self._data)
-        self._vispy_widget.set_canvas()
+        self._vispy_widget.add_volume_visual()
         self._redraw()
 
     def _update_subsets(self):
