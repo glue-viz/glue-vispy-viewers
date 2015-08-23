@@ -3,10 +3,19 @@ from ..vispy_widget import QtVispyWidget
 from glue.qt import get_qapp
 
 
-class Event(object):
+class KeyEvent(object):
     def __init__(self, text):
         self.text = text
 
+class MouseEvent(object):
+    def __init__(self, delta, type):
+        self.type = type
+        self.delta = delta
+
+class TimerEvent(object):
+    def __init__(self, type, iteration):
+        self.type = type
+        self.iteration = iteration
 
 def test_widget():
 
@@ -19,13 +28,17 @@ def test_widget():
     # Set up widget
     w = QtVispyWidget()
     w.set_data(data)
-    w.set_canvas()
+    w.add_volume_visual()
     w.canvas.render()
 
-    # Test changing colormap
-    w.set_colormap()
+    # Test timer
+    w.on_timer(TimerEvent(type='timer_timeout', iteration=3))
 
     # Test key presses
-    w.on_key_press(Event(text='1'))
-    w.on_key_press(Event(text='2'))
-    w.on_key_press(Event(text='3'))
+    w.on_key_press(KeyEvent(text='1'))
+    w.on_key_press(KeyEvent(text='2'))
+    w.on_key_press(KeyEvent(text='3'))
+
+    # Test mouse_wheel
+    w.on_mouse_wheel(MouseEvent(type='mouse_wheel', delta=(0, 0.5)))
+    w.on_mouse_wheel(MouseEvent(type='mouse_wheel', delta=(0, -0.3)))

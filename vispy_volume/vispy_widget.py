@@ -3,7 +3,7 @@ import numpy as np
 from itertools import cycle
 
 from glue.external.qt import QtGui, QtCore
-from vispy import scene
+from vispy import scene, app
 from vispy.color import get_colormaps
 from .colormaps import TransFire, TransGrays
 
@@ -18,19 +18,45 @@ class QtVispyWidget(QtGui.QWidget):
     opaque_cmap = next(opaque_cmaps)
     translucent_cmap = next(translucent_cmaps)
     result = 1
+    zoom_size = 0
 
     def __init__(self, parent=None):
         super(QtVispyWidget, self).__init__(parent=parent)
 
-        self.canvas = scene.SceneCanvas(keys='interactive', size=(800, 600), show=True)
+        # Prepare canvas
+        self.canvas = scene.SceneCanvas(keys='interactive', show=True)
         self.canvas.measure_fps()
 
-        self.data = None
-        self.volume1 = self.view = None
-        self.cam1 = self.cam2 = self.cam3 = None
-        # self.cmap = None
+        # Set up a viewbox to display the image with interactive pan/zoom
+        self.view = self.canvas.central_widget.add_view()
+        self.view.border_color = 'red'
+        self.view.parent = self.canvas.scene
 
+        # Set whether we are emulating a 3D texture
+        self.emulate_texture = False
+
+        self.data = None
+        self.volume1 = None
+        self.zoom_text = self.add_text_visual()
+        self.zoom_timer = app.Timer(0.2, connect=self.on_timer, start=False)
+
+        # Add a 3D axis to keep us oriented
+        self.axis = scene.visuals.XYZAxis(parent=self.view.scene)
+
+        # Set up cameras
+        self.cam1, self.cam2, self.cam3 = self.set_cam()
+        self.view.camera = self.cam2  # Select turntable at firstate_texture=emulate_texture)
+
+        # Connect events
         self.canvas.events.key_press.connect(self.on_key_press)
+        self.canvas.events.mouse_wheel.connect(self.on_mouse_wheel)
+
+    '''def set_canvas_size(self, width, height):
+        if type(width)=='int':
+            self.canvas.size = (width, height)
+        else:
+            self.canvas.size = (400, 300)
+        self.canvas.update()'''
 
     def set_data(self, data):
         self.data = data
@@ -38,7 +64,7 @@ class QtVispyWidget(QtGui.QWidget):
     def set_subsets(self, subsets):
         self.subsets = subsets
 
-    def set_canvas(self):
+    def add_volume_visual(self):
 
         # TODO: need to implement the visualiation of the subsets in this method
 
@@ -47,42 +73,45 @@ class QtVispyWidget(QtGui.QWidget):
 
         vol1 = np.nan_to_num(np.array(self.data))
 
-        # Prepare canvas
-        # Set up a viewbox to display the image with interactive pan/zoom
-        self.view = self.canvas.central_widget.add_view()
-
-        # Set whether we are emulating a 3D texture
-        emulate_texture = False
-
         # Create the volume visuals, only one is visible
-        self.volume1 = scene.visuals.Volume(vol1, parent=self.view.scene, threshold=0.1,
-                                       emulate_texture=emulate_texture)
-        # volume1.transform = scene.STTransform(translate=(64, 64, 0))
+        volume1 = scene.visuals.Volume(vol1, parent=self.view.scene, threshold=0.1,
+                                       emulate_texture=self.emulate_texture)
+        trans = (-vol1.shape[2]/2, -vol1.shape[1]/2, -vol1.shape[0]/2)
+        volume1.transform = scene.STTransform(translate=trans)
+        self.volume1 = volume1
 
+    def add_text_visual(self):
+        # Create the text visual to show zoom scale
+        text = scene.visuals.Text('', parent=self.canvas.scene, color='white', bold=True, font_size=20)
+        text.pos = self.canvas.size[0]-80, 80
+        return text
+
+    def on_timer(self, event):
+        self.zoom_text.color = [1,1,1,float((7-event.iteration) % 8)/8]
+        self.canvas.update()
+
+    def set_cam(self):
         # Create two cameras (1 for firstperson, 3 for 3d person)
         fov = 60.
-        self.cam1 = scene.cameras.FlyCamera(parent=self.view.scene, fov=fov, name='Fly')
-        self.cam2 = scene.cameras.TurntableCamera(parent=self.view.scene, fov=fov,
-                                             name='Turntable')
-        self.cam3 = scene.cameras.ArcballCamera(parent=self.view.scene, fov=fov, name='Arcball')
-        self.view.camera = self.cam2  # Select turntable at firstate_texture=emulate_texture)
+        cam1 = scene.cameras.FlyCamera(parent=self.view.scene, fov=fov, name='Fly')
+        cam2 = scene.cameras.TurntableCamera(parent=self.view.scene, fov=fov,
+                                            name='Turntable')
+        cam3 = scene.cameras.ArcballCamera(parent=self.view.scene, fov=fov, name='Arcball')
+        return cam1, cam2, cam3
 
-    def set_colormap(self):
-        # Setup colormap iterators
-        opaque_cmaps = cycle(get_colormaps())
-        translucent_cmaps = cycle([TransFire(), TransGrays()])
-        opaque_cmap = next(opaque_cmaps)
-        translucent_cmap = next(translucent_cmaps)
-        result = 1
+    def on_mouse_wheel(self, event):
+        self.zoom_size += event.delta[1]
+        self.zoom_text.text = 'X %s' % round(self.zoom_size, 1)
+        self.zoom_text.show = True
+        self.zoom_timer.start(interval=0.2, iterations=8)
 
-    # Implement key presses
+
     # @canvas.events.key_press.connect
     def on_key_press(self, event):
 
         if self.view is None:
             return
         if event.text == '1':
-        # if event.key() == QtCore.Qt.Key_Shift:
             cam_toggle = {self.cam1: self.cam2, self.cam2: self.cam3, self.cam3: self.cam1}
             self.view.camera = cam_toggle.get(self.view.camera, self.cam2)
             self.canvas.render()
