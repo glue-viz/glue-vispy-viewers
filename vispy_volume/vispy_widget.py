@@ -3,7 +3,7 @@ import numpy as np
 from itertools import cycle
 
 from glue.external.qt import QtGui, QtCore
-from vispy import scene
+from vispy import scene, app
 from vispy.color import get_colormaps
 from .colormaps import TransFire, TransGrays
 
@@ -29,7 +29,7 @@ class QtVispyWidget(QtGui.QWidget):
 
         # Set up a viewbox to display the image with interactive pan/zoom
         self.view = self.canvas.central_widget.add_view()
-        self.view.border_color = 'b'
+        self.view.border_color = 'red'
         self.view.parent = self.canvas.scene
 
         # Set whether we are emulating a 3D texture
@@ -37,8 +37,8 @@ class QtVispyWidget(QtGui.QWidget):
 
         self.data = None
         self.volume1 = None
-        self.text = self.add_text_visual()
-        self.text.pos = 80, self.canvas.size[1]/4
+        self.zoom_text = self.add_text_visual()
+        self.zoom_timer = app.Timer(0.2, connect=self.on_timer, start=False)
 
         # Add a 3D axis to keep us oriented
         self.axis = scene.visuals.XYZAxis(parent=self.view.scene)
@@ -50,6 +50,13 @@ class QtVispyWidget(QtGui.QWidget):
         # Connect events
         self.canvas.events.key_press.connect(self.on_key_press)
         self.canvas.events.mouse_wheel.connect(self.on_mouse_wheel)
+
+    '''def set_canvas_size(self, width, height):
+        if type(width)=='int':
+            self.canvas.size = (width, height)
+        else:
+            self.canvas.size = (400, 300)
+        self.canvas.update()'''
 
     def set_data(self, data):
         self.data = data
@@ -76,7 +83,12 @@ class QtVispyWidget(QtGui.QWidget):
     def add_text_visual(self):
         # Create the text visual to show zoom scale
         text = scene.visuals.Text('', parent=self.canvas.scene, color='white', bold=True, font_size=20)
+        text.pos = self.canvas.size[0]-80, 80
         return text
+
+    def on_timer(self, event):
+        self.zoom_text.color = [1,1,1,float((7-event.iteration) % 8)/8]
+        self.canvas.update()
 
     def set_cam(self):
         # Create two cameras (1 for firstperson, 3 for 3d person)
@@ -89,8 +101,10 @@ class QtVispyWidget(QtGui.QWidget):
 
     def on_mouse_wheel(self, event):
         self.zoom_size += event.delta[1]
-        self.text.text = 'X %s' % round(self.zoom_size, 1)
-        self.text.show = True
+        self.zoom_text.text = 'X %s' % round(self.zoom_size, 1)
+        self.zoom_text.show = True
+        self.zoom_timer.start(interval=0.2, iterations=8)
+
 
     # @canvas.events.key_press.connect
     def on_key_press(self, event):
