@@ -6,6 +6,8 @@ from glue.qt.qtutil import load_ui
 from glue.qt import get_qapp
 # from palettable.colorbrewer import COLOR_MAPS
 from vispy.color import Colormap, get_colormaps
+# from .mpl_widget import MplWidget, defer_draw
+
 
 __all__ = ["VolumeOptionsWidget"]
 
@@ -24,7 +26,7 @@ class VolumeOptionsWidget(QtGui.QWidget):
         for map_name in get_colormaps():
             self.ui.cmap_menu.addItem(map_name)
 
-        self.ui.apply.clicked.connect(self.update_viewer)
+        # self.ui.apply.clicked.connect(self.update_viewer)
 
         self._vispy_widget = vispy_widget
         # self.levels = []
@@ -46,6 +48,21 @@ class VolumeOptionsWidget(QtGui.QWidget):
         # self._vispy_widget.alpha = self.alpha
         # self._vispy_widget.levels = self.levels
         self._vispy_widget.translucent_cmap = self.cmap
+
+    '''@defer_draw
+    def _update_render_console(self, is_monochrome):
+        if is_monochrome:
+            self.ui.rgb_options.hide()
+            self.ui.mono_att_label.show()
+            self.ui.attributeComboBox.show()
+            self.client.rgb_mode(False)
+        else:
+            self.ui.mono_att_label.hide()
+            self.ui.attributeComboBox.hide()
+            self.ui.rgb_options.show()
+            rgb = self.client.rgb_mode(True)
+            if rgb is not None:
+                self.ui.rgb_options.artist = rgb'''
 
     '''@property
     def live(self):
