@@ -11,8 +11,8 @@ from vispy.color import Colormap, get_colormaps
 
 __all__ = ["VolumeOptionsWidget"]
 
-# UI_MAIN = os.path.join(os.path.dirname(__file__), 'options_widget.ui')
-UI_MAIN = '/Users/penny/Works/glue-3d-viewer/vispy_volume/options_widget.ui'
+UI_MAIN = os.path.join(os.path.dirname(__file__), 'options_widget.ui')
+# UI_MAIN = '/Users/penny/Works/glue-3d-viewer/vispy_volume/options_widget.ui'
 
 class VolumeOptionsWidget(QtGui.QWidget):
 
