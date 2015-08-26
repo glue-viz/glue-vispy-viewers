@@ -1,24 +1,13 @@
 from __future__ import absolute_import, division, print_function
 import numpy as np
-from itertools import cycle
-
 from glue.external.qt import QtGui, QtCore
 from vispy import scene, app
-from vispy.color import get_colormaps
-from .colormaps import TransFire, TransGrays
+from vispy.color import get_colormaps, get_colormap
 
 __all__ = ['QtVispyWidget']
 
 
 class QtVispyWidget(QtGui.QWidget):
-
-    # Setup colormap iterators
-    opaque_cmaps = cycle(get_colormaps())
-    translucent_cmaps = cycle([TransFire(), TransGrays()])
-    opaque_cmap = next(opaque_cmaps)
-    translucent_cmap = next(translucent_cmaps)
-    result = 1
-    zoom_size = 0
 
     def __init__(self, parent=None):
         super(QtVispyWidget, self).__init__(parent=parent)
@@ -37,6 +26,7 @@ class QtVispyWidget(QtGui.QWidget):
 
         self.data = None
         self.volume1 = None
+        self.zoom_size = 0
         self.zoom_text = self.add_text_visual()
         self.zoom_timer = app.Timer(0.2, connect=self.on_timer, start=False)
 
@@ -45,18 +35,15 @@ class QtVispyWidget(QtGui.QWidget):
 
         # Set up cameras
         self.cam1, self.cam2, self.cam3 = self.set_cam()
+        # self.cam_dist = 100 # Set a default value as 100
         self.view.camera = self.cam2  # Select turntable at firstate_texture=emulate_texture)
+
+        # Set up default colormap
+        self.color_map = get_colormap('autumn')
 
         # Connect events
         self.canvas.events.key_press.connect(self.on_key_press)
         self.canvas.events.mouse_wheel.connect(self.on_mouse_wheel)
-
-    '''def set_canvas_size(self, width, height):
-        if type(width)=='int':
-            self.canvas.size = (width, height)
-        else:
-            self.canvas.size = (400, 300)
-        self.canvas.update()'''
 
     def set_data(self, data):
         self.data = data
@@ -73,17 +60,24 @@ class QtVispyWidget(QtGui.QWidget):
 
         vol1 = np.nan_to_num(np.array(self.data))
 
-        # Create the volume visuals, only one is visible
-        volume1 = scene.visuals.Volume(vol1, parent=self.view.scene, threshold=0.1,
+        # Create the volume visual and give default settings
+        volume1 = scene.visuals.Volume(vol1, parent=self.view.scene, threshold=0.1, method='mip',
                                        emulate_texture=self.emulate_texture)
+        volume1.cmap = self.color_map
+
         trans = (-vol1.shape[2]/2, -vol1.shape[1]/2, -vol1.shape[0]/2)
+        axis_scale = (vol1.shape[2], vol1.shape[1], vol1.shape[0])
         volume1.transform = scene.STTransform(translate=trans)
+
+        self.axis.transform = scene.STTransform(translate=trans, scale=axis_scale)
+        self.cam2.distance = self.cam3.distance = vol1.shape[1]
+
         self.volume1 = volume1
 
     def add_text_visual(self):
         # Create the text visual to show zoom scale
-        text = scene.visuals.Text('', parent=self.canvas.scene, color='white', bold=True, font_size=20)
-        text.pos = self.canvas.size[0]-80, 80
+        text = scene.visuals.Text('', parent=self.canvas.scene, color='white', bold=True, font_size=16)
+        text.pos = 60, 60
         return text
 
     def on_timer(self, event):
@@ -93,7 +87,24 @@ class QtVispyWidget(QtGui.QWidget):
     def set_cam(self):
         # Create two cameras (1 for firstperson, 3 for 3d person)
         fov = 60.
+        '''
+        The fly camera provides a way to explore 3D data using an interaction style that resembles a flight simulator.
+        Moving:
+
+        * arrow keys, or WASD to move forward, backward, left and right
+        * F and C keys move up and down
+        * Space bar to brake
+
+        Viewing:
+
+        * Use the mouse while holding down LMB to control the pitch and yaw.
+        * Alternatively, the pitch and yaw can be changed using the keys
+            IKJL
+        * The camera auto-rotates to make the bottom point down, manual
+            rolling can be performed using Q and E.'''
         cam1 = scene.cameras.FlyCamera(parent=self.view.scene, fov=fov, name='Fly')
+
+        # 3D camera class that orbits around a center point while maintaining a view on a center point.
         cam2 = scene.cameras.TurntableCamera(parent=self.view.scene, fov=fov,
                                             name='Turntable')
         cam3 = scene.cameras.ArcballCamera(parent=self.view.scene, fov=fov, name='Arcball')
@@ -105,13 +116,14 @@ class QtVispyWidget(QtGui.QWidget):
         self.zoom_text.show = True
         self.zoom_timer.start(interval=0.2, iterations=8)
 
-
     # @canvas.events.key_press.connect
     def on_key_press(self, event):
 
         if self.view is None:
             return
-        if event.text == '1':
+
+    # We could move these keypress functionality to the side_panel
+    '''    if event.text == '1':
             cam_toggle = {self.cam1: self.cam2, self.cam2: self.cam3, self.cam3: self.cam1}
             self.view.camera = cam_toggle.get(self.view.camera, self.cam2)
             self.canvas.render()
@@ -127,12 +139,12 @@ class QtVispyWidget(QtGui.QWidget):
             self.volume1.visible = not self.volume1.visible
 
         # Color scheme cannot work now
-        elif event.text == '4':
-            if self.volume1.method in ['mip', 'iso']:
-                cmap = self.opaque_cmap = next(self.opaque_cmaps)
-            else:
-                cmap = self.translucent_cmap = next(self.translucent_cmaps)
-            self.volume1.cmap = cmap
+        # elif event.text == '4':
+        #     if self.volume1.method in ['mip', 'iso']:
+        #         cmap = self.opaque_cmap = next(self.opaque_cmaps)
+        #     else:
+        #         cmap = self.translucent_cmap  = next(self.translucent_cmaps)
+        #     self.volume1.cmap = cmap
 
         elif event.text == '0':
             self.cam1.set_range()
@@ -150,4 +162,4 @@ class QtVispyWidget(QtGui.QWidget):
                 self.volume1.transform = scene.STTransform(scale=(1, 1, self.result))
             else:
                 self.result = 1
-    #        print("Volume scale: %d" % result)
+    #        print("Volume scale: %d" % result)'''
