@@ -1,26 +1,13 @@
-# from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import, division, print_function
 import numpy as np
-from itertools import cycle
-
 from glue.external.qt import QtGui, QtCore
 from vispy import scene, app
 from vispy.color import get_colormaps, get_colormap
-from .colormaps import TransFire, TransGrays
 
 __all__ = ['QtVispyWidget']
 
 
 class QtVispyWidget(QtGui.QWidget):
-
-    # Setup colormap iterators
-    '''opaque_cmaps = cycle(get_colormaps())
-    translucent_cmaps = cycle([TransFire(), TransGrays()])
-    opaque_cmap = next(opaque_cmaps)
-    translucent_cmap = next(translucent_cmaps)'''
-    opaque_cmap = get_colormap('autumn')
-    translucent_cmap = get_colormap('autumn')
-    result = 1
-    zoom_size = 0
 
     def __init__(self, parent=None):
         super(QtVispyWidget, self).__init__(parent=parent)
@@ -39,6 +26,7 @@ class QtVispyWidget(QtGui.QWidget):
 
         self.data = None
         self.volume1 = None
+        self.zoom_size = 0
         self.zoom_text = self.add_text_visual()
         self.zoom_timer = app.Timer(0.2, connect=self.on_timer, start=False)
 
@@ -49,6 +37,9 @@ class QtVispyWidget(QtGui.QWidget):
         self.cam1, self.cam2, self.cam3 = self.set_cam()
         # self.cam_dist = 100 # Set a default value as 100
         self.view.camera = self.cam2  # Select turntable at firstate_texture=emulate_texture)
+
+        # Set up default colormap
+        self.color_map = get_colormap('autumn')
 
         # Connect events
         self.canvas.events.key_press.connect(self.on_key_press)
@@ -69,16 +60,18 @@ class QtVispyWidget(QtGui.QWidget):
 
         vol1 = np.nan_to_num(np.array(self.data))
 
-        # Create the volume visuals, only one is visible
-        volume1 = scene.visuals.Volume(vol1, parent=self.view.scene, threshold=0.1,
+        # Create the volume visual and give default settings
+        volume1 = scene.visuals.Volume(vol1, parent=self.view.scene, threshold=0.1, method='mip',
                                        emulate_texture=self.emulate_texture)
+        volume1.cmap = self.color_map
+
         trans = (-vol1.shape[2]/2, -vol1.shape[1]/2, -vol1.shape[0]/2)
         axis_scale = (vol1.shape[2], vol1.shape[1], vol1.shape[0])
         volume1.transform = scene.STTransform(translate=trans)
+
         self.axis.transform = scene.STTransform(translate=trans, scale=axis_scale)
-        # self.cam_dist = vol1.shape[1]
         self.cam2.distance = self.cam3.distance = vol1.shape[1]
-        # self.cam2.center = (-vol1.shape[2]/2, -vol1.shape[1]/2, -vol1.shape[0]/2)
+
         self.volume1 = volume1
 
     def add_text_visual(self):
@@ -128,7 +121,9 @@ class QtVispyWidget(QtGui.QWidget):
 
         if self.view is None:
             return
-        if event.text == '1':
+
+    # We could move these keypress functionality to the side_panel
+    '''    if event.text == '1':
             cam_toggle = {self.cam1: self.cam2, self.cam2: self.cam3, self.cam3: self.cam1}
             self.view.camera = cam_toggle.get(self.view.camera, self.cam2)
             self.canvas.render()
@@ -167,4 +162,4 @@ class QtVispyWidget(QtGui.QWidget):
                 self.volume1.transform = scene.STTransform(scale=(1, 1, self.result))
             else:
                 self.result = 1
-    #        print("Volume scale: %d" % result)
+    #        print("Volume scale: %d" % result)'''

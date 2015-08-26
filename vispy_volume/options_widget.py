@@ -1,12 +1,8 @@
 import os
-import six
-import numpy as np
 from glue.external.qt import QtGui
 from glue.qt.qtutil import load_ui
 from glue.qt import get_qapp
-# from palettable.colorbrewer import COLOR_MAPS
-from vispy.color import Colormap, get_colormaps
-# from .mpl_widget import MplWidget, defer_draw
+from vispy.color import get_colormaps
 
 
 __all__ = ["VolumeOptionsWidget"]
@@ -26,63 +22,41 @@ class VolumeOptionsWidget(QtGui.QWidget):
         for map_name in get_colormaps():
             self.ui.cmap_menu.addItem(map_name)
 
-        # self.ui.apply.clicked.connect(self.update_viewer)
-
         self._vispy_widget = vispy_widget
-        # self.levels = []
-        # self.spectral_stretch = 1.
-        # self.alpha = 0.5
 
-        self.ui.cmap_menu.currentIndexChanged.connect(self.update_live)
-        # self.ui.alpha_slider.valueChanged.connect(self.update_live)
-        # self.ui.values_field.returnPressed.connect(self.update_live)
-        # self.ui.spectral_stretch_field.returnPressed.connect(self.update_live)
+        self.ui.threshold_lab.hide()
+        self.ui.threshold_slider.hide()
 
-    def update_live(self):
-        # if self.live:
-        self.update_viewer()
+        # UI control connect
+        self.ui.cmap_menu.currentIndexChanged.connect(self.update_viewer)
+        self.ui.threshold_slider.valueChanged.connect(self.update_threshold)
+        self.ui.vol_radio.toggled.connect(self._update_render_method)
+
+    def update_threshold(self):
+        self._vispy_widget.volume1.threshold = self.threshold
 
     def update_viewer(self):
-        # self._vispy_widget.spectral_stretch = self.spectral_stretch
-        self._vispy_widget.opaque_cmap = self.cmap
-        # self._vispy_widget.alpha = self.alpha
-        # self._vispy_widget.levels = self.levels
-        self._vispy_widget.translucent_cmap = self.cmap
+        self._vispy_widget.volume1.cmap = self.cmap
 
-    '''@defer_draw
-    def _update_render_console(self, is_monochrome):
-        if is_monochrome:
-            self.ui.rgb_options.hide()
-            self.ui.mono_att_label.show()
-            self.ui.attributeComboBox.show()
-            self.client.rgb_mode(False)
+
+    def _update_render_method(self, is_volren):
+        if is_volren:
+            self.ui.threshold_slider.hide()
+            self.ui.threshold_lab.hide()
+            self._vispy_widget.volume1.method = 'mip'
+
         else:
-            self.ui.mono_att_label.hide()
-            self.ui.attributeComboBox.hide()
-            self.ui.rgb_options.show()
-            rgb = self.client.rgb_mode(True)
-            if rgb is not None:
-                self.ui.rgb_options.artist = rgb'''
-
-    '''@property
-    def live(self):
-        return self.ui.live_checkbox.isChecked()
+            self.ui.threshold_slider.show()
+            self.ui.threshold_lab.show()
+            self._vispy_widget.volume1.method = 'iso'
 
     @property
-    def spectral_stretch(self):
-        return float(self.ui.spectral_stretch_field.text())
+    def threshold(self):
+        return self.ui.threshold_slider.value() / 100.
 
-    @spectral_stretch.setter
-    def spectral_stretch(self, spectral_stretch):
-        self.ui.spectral_stretch_field.setText("{0:g}".format(spectral_stretch))
-
-    @property
-    def alpha(self):
-        return self.ui.alpha_slider.value() / 100.
-
-    @alpha.setter
-    def alpha(self, value):
-        return self.ui.alpha_slider.setValue(value * 100.)'''
+    @threshold.setter
+    def threshold(self, value):
+        return self.ui.threshold_slider.setValue(value * 100.)
 
     @property
     def cmap(self):
@@ -92,24 +66,6 @@ class VolumeOptionsWidget(QtGui.QWidget):
     def cmap(self, value):
         index = self.ui.cmap_menu.fingText(value)
         self.ui.cmap_menu.setCurrentIndex(index)
-
-    '''@property
-    def levels(self):
-        text = self.ui.values_field.text()
-        try:
-            return np.array(text.split(','), dtype=float)
-        except:
-            QtGui.QMessageBox.critical(self,
-                                       "Error", "Could not parse levels: {0}".format(text),
-                                       buttons=QtGui.QMessageBox.Ok)
-            return np.array([])
-
-    @levels.setter
-    def levels(self, levels):
-        if isinstance(levels, six.string_types):
-            self.ui.values_field.setText(levels)
-        else:
-            self.ui.values_field.setText(", ".join([str(x) for x in levels]))'''
 
 
 if __name__ == "__main__":

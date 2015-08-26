@@ -35,7 +35,7 @@
      </layout>
     </item>
     <item row="1" column="0">
-     <widget class="QRadioButton" name="radioButton_2">
+     <widget class="QRadioButton" name="vol_radio">
       <property name="text">
        <string>Volume Rendering</string>
       </property>
@@ -45,7 +45,7 @@
      </widget>
     </item>
     <item row="1" column="1">
-     <widget class="QRadioButton" name="radioButton">
+     <widget class="QRadioButton" name="iso_radio">
       <property name="text">
        <string>Isosurface</string>
       </property>
@@ -62,7 +62,7 @@
      <height>91</height>
     </rect>
    </property>
-   <widget class="QLabel" name="label_3">
+   <widget class="QLabel" name="cmap_lab">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -85,7 +85,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QLabel" name="label_2">
+   <widget class="QLabel" name="threshold_lab">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -98,7 +98,7 @@
      <string>Threshold:</string>
     </property>
    </widget>
-   <widget class="QSlider" name="horizontalSlider">
+   <widget class="QSlider" name="threshold_slider">
     <property name="geometry">
      <rect>
       <x>100</x>

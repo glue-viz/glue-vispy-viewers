@@ -2,7 +2,6 @@
 
 from __future__ import print_function
 
-import os
 from setuptools import setup, find_packages
 
 entry_points = """
@@ -15,6 +14,6 @@ setup(name='glue-3d-viewer',
       description = "Experimental VisPy plugin for glue",
       # packages = find_packages(),
       packages = ['vispy_volume'],
-      package_data={'vispy_volume': ['*.ui'], 'vispy_volume': ['*.png']},
+      package_data={'vispy_volume': ['*.ui']},
       entry_points=entry_points
     )
