@@ -33,6 +33,8 @@ class QtVispyWidget(QtGui.QWidget):
         # Add a 3D axis to keep us oriented
         self.axis = scene.visuals.XYZAxis(parent=self.view.scene)
 
+        self.widget_axis_scale = [1, 1, 1]
+
         # Set up cameras
         self.cam1, self.cam2, self.cam3 = self.set_cam()
         # self.cam_dist = 100 # Set a default value as 100
@@ -66,13 +68,15 @@ class QtVispyWidget(QtGui.QWidget):
         volume1.cmap = self.color_map
 
         trans = (-vol1.shape[2]/2, -vol1.shape[1]/2, -vol1.shape[0]/2)
-        axis_scale = (vol1.shape[2], vol1.shape[1], vol1.shape[0])
+        _axis_scale = (vol1.shape[2], vol1.shape[1], vol1.shape[0])
         volume1.transform = scene.STTransform(translate=trans)
 
-        self.axis.transform = scene.STTransform(translate=trans, scale=axis_scale)
+        self.axis.transform = scene.STTransform(translate=trans, scale=_axis_scale)
         self.cam2.distance = self.cam3.distance = vol1.shape[1]
 
         self.volume1 = volume1
+        self.widget_axis_scale = self.axis.transform.scale
+
 
     def add_text_visual(self):
         # Create the text visual to show zoom scale
