@@ -2,7 +2,8 @@ import os
 from glue.external.qt import QtGui
 from glue.qt.qtutil import load_ui
 from glue.qt import get_qapp
-from vispy.color import get_colormaps
+from vispy.color import get_colormaps, get_colormap
+from vispy import color
 from vispy import scene
 
 
@@ -55,36 +56,42 @@ class VolumeOptionsWidget(QtGui.QWidget):
     def update_stretch_slider(self):
         _index = self.ui.stretch_menu.currentIndex()
         self._stretch_scale[_index] = self.stretch_slider_value+1
-        # _new_axis_scale = self._vispy_widget.widget_axis_scale[_index] + self.stretch_slider_value
-        # self._vispy_widget.axis.transform.scale = _new_axis_scale
         self.update_viewer()
 
     def update_viewer(self):
         self._vispy_widget.volume1.cmap = self.cmap
         self._vispy_widget.volume1.transform.scale = self._stretch_scale
-        self._vispy_widget.volume1.threshold = self.threshold
+        # self._vispy_widget.volume1.threshold = self.threshold
+
+        # TODO: a cmap for isosurface shoud be added, just do a trick here
+        _iso_color = get_colormap(self.cmap).colors[0]
+        _iso_color.alpha = 0.3
+        self._vispy_widget.iso1._color = color.Color(_iso_color)
+        self._vispy_widget.iso1.level = self.threshold
+        self._vispy_widget.iso1.transform.scale = self._stretch_scale
 
     def _update_render_method(self, is_volren):
         if is_volren:
             self.ui.threshold_slider.hide()
             self.ui.threshold_lab.hide()
-            self._vispy_widget.volume1.method = 'mip'
+            # self._vispy_widget.volume1.method = 'mip'
 
         else:
+            self.ui.threshold = 0
             self.ui.threshold_slider.show()
             self.ui.threshold_lab.show()
-            self._vispy_widget.volume1.method = 'iso'
+            # self._vispy_widget.volume1.method = 'iso'
 
         # May need a initiation for _strech_scale here
 
-
+    # The value limitation is 0~99
     @property
     def threshold(self):
-        return self.ui.threshold_slider.value() / 100.
+        return self.ui.threshold_slider.value() / 20.
 
     @threshold.setter
     def threshold(self, value):
-        return self.ui.threshold_slider.setValue(value * 100.)
+        return self.ui.threshold_slider.setValue(value * 20.)
 
     @property
     def stretch_slider_value(self):

@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>10</y>
+     <y>0</y>
      <width>311</width>
      <height>61</height>
     </rect>
@@ -57,9 +57,9 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>100</y>
-     <width>291</width>
-     <height>141</height>
+     <y>60</y>
+     <width>281</width>
+     <height>114</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_3">
@@ -140,11 +140,15 @@
       </item>
      </layout>
     </item>
+    <item row="2" column="0">
+     <widget class="Line" name="line">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
-  <zorder>gridLayoutWidget</zorder>
-  <zorder>gridLayoutWidget_2</zorder>
-  <zorder>horizontalLayoutWidget</zorder>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
