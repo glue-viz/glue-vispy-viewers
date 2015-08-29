@@ -16,27 +16,39 @@ class QtVispyWidget(QtGui.QWidget):
         self.canvas = scene.SceneCanvas(keys='interactive', show=True)
         self.canvas.measure_fps()
 
+        self.grid = self.canvas.central_widget.add_grid()
+
         # Set up a viewbox to display the image with interactive pan/zoom
-        self.view = self.canvas.central_widget.add_view()
+
+        self.view = self.grid.add_view(name='vb1')
         self.view.border_color = 'red'
         self.view.parent = self.canvas.scene
+
+        self.view2 = self.grid.add_view(name='vb1')
+        self.view2.border_color = 'red'
+        self.view2.parent = self.canvas.scene
+
 
         # Set whether we are emulating a 3D texture
         self.emulate_texture = False
 
         self.data = None
         self.volume1 = None
+        self.iso1 = None
         self.zoom_size = 0
         self.zoom_text = self.add_text_visual()
         self.zoom_timer = app.Timer(0.2, connect=self.on_timer, start=False)
 
         # Add a 3D axis to keep us oriented
         self.axis = scene.visuals.XYZAxis(parent=self.view.scene)
+        self.axis2 = scene.visuals.XYZAxis(parent=self.view2.scene)
+
+        self.widget_axis_scale = [1, 1, 1]
 
         # Set up cameras
         self.cam1, self.cam2, self.cam3 = self.set_cam()
         # self.cam_dist = 100 # Set a default value as 100
-        self.view.camera = self.cam2  # Select turntable at firstate_texture=emulate_texture)
+        self.view.camera = self.view2.camera = self.cam2  # Select turntable at firstate_texture=emulate_texture)
 
         # Set up default colormap
         self.color_map = get_colormap('autumn')
@@ -65,14 +77,25 @@ class QtVispyWidget(QtGui.QWidget):
                                        emulate_texture=self.emulate_texture)
         volume1.cmap = self.color_map
 
-        trans = (-vol1.shape[2]/2, -vol1.shape[1]/2, -vol1.shape[0]/2)
-        axis_scale = (vol1.shape[2], vol1.shape[1], vol1.shape[0])
-        volume1.transform = scene.STTransform(translate=trans)
+        # Create the isosurface visual and give default settings
+        # vol_rotate = [vol1[0], vol1[1], vol1[2]]
+        # vol2 = vol1.reshape((vol1.shape[2], vol1.shape[1], vol1.shape[0]))
+        iso1 = scene.visuals.Isosurface(vol1, color=(0.5, 0.5, 1, 0.6), level=vol1.mean()*5, parent=self.view2.scene)
 
-        self.axis.transform = scene.STTransform(translate=trans, scale=axis_scale)
+        trans = (-vol1.shape[2]/2, -vol1.shape[1]/2, -vol1.shape[0]/2)
+        _axis_scale = (vol1.shape[2], vol1.shape[1], vol1.shape[0])
+
+        volume1.transform = scene.STTransform(translate=trans)
+        # iso1.transform = scene.AffineTransform(rotate=(90,(1,0,0)), translate=trans)
+        iso1.transform = scene.STTransform(translate=trans)
+
+        self.axis.transform = self.axis2.transform = scene.STTransform(translate=trans, scale=_axis_scale)
         self.cam2.distance = self.cam3.distance = vol1.shape[1]
 
         self.volume1 = volume1
+        self.iso1 = iso1
+        self.widget_axis_scale = self.axis.transform.scale
+
 
     def add_text_visual(self):
         # Create the text visual to show zoom scale
@@ -113,7 +136,6 @@ class QtVispyWidget(QtGui.QWidget):
     def on_mouse_wheel(self, event):
         self.zoom_size += event.delta[1]
         self.zoom_text.text = 'X %s' % round(self.zoom_size, 1)
-        self.zoom_text.show = True
         self.zoom_timer.start(interval=0.2, iterations=8)
 
     # @canvas.events.key_press.connect

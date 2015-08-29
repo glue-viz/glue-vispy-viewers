@@ -2,7 +2,9 @@ import os
 from glue.external.qt import QtGui
 from glue.qt.qtutil import load_ui
 from glue.qt import get_qapp
-from vispy.color import get_colormaps
+from vispy.color import get_colormaps, get_colormap
+from vispy import color
+from vispy import scene
 
 
 __all__ = ["VolumeOptionsWidget"]
@@ -22,41 +24,91 @@ class VolumeOptionsWidget(QtGui.QWidget):
         for map_name in get_colormaps():
             self.ui.cmap_menu.addItem(map_name)
 
+        for vol_name in ['RA', 'DEC', 'VEL']:
+            self.ui.stretch_menu.addItem(vol_name)
+
+        # Set up default values for side panel
         self._vispy_widget = vispy_widget
+        self._stretch_scale = [1, 1, 1]
+
+        # self._axis_scale = None
+        self.threshold = 0
+        self.stretch_slider_value = 0
+        self.cmap = 'hsl'
+        self.stretch_menu_item = 'RA'
 
         self.ui.threshold_lab.hide()
         self.ui.threshold_slider.hide()
 
         # UI control connect
-        self.ui.cmap_menu.currentIndexChanged.connect(self.update_viewer)
-        self.ui.threshold_slider.valueChanged.connect(self.update_threshold)
+        self.ui.stretch_menu.currentIndexChanged.connect(self.update_stretch_menu)
+        self.ui.stretch_slider.valueChanged.connect(self.update_stretch_slider)
         self.ui.vol_radio.toggled.connect(self._update_render_method)
 
-    def update_threshold(self):
-        self._vispy_widget.volume1.threshold = self.threshold
+        self.ui.cmap_menu.currentIndexChanged.connect(self.update_viewer)
+        self.ui.threshold_slider.valueChanged.connect(self.update_viewer)
+
+    def update_stretch_menu(self):
+        self.stretch_slider_value = 0
+        self._stretch_scale = [1, 1, 1]
+        self.update_viewer()
+
+    def update_stretch_slider(self):
+        _index = self.ui.stretch_menu.currentIndex()
+        self._stretch_scale[_index] = self.stretch_slider_value+1
+        self.update_viewer()
 
     def update_viewer(self):
         self._vispy_widget.volume1.cmap = self.cmap
+        self._vispy_widget.volume1.transform.scale = self._stretch_scale
+        # self._vispy_widget.volume1.threshold = self.threshold
 
+        # TODO: a cmap for isosurface shoud be added, just do a trick here
+        _iso_color = get_colormap(self.cmap).colors[0]
+        _iso_color.alpha = 0.3
+        self._vispy_widget.iso1._color = color.Color(_iso_color)
+        self._vispy_widget.iso1.level = self.threshold
+        self._vispy_widget.iso1.transform.scale = self._stretch_scale
 
     def _update_render_method(self, is_volren):
         if is_volren:
             self.ui.threshold_slider.hide()
             self.ui.threshold_lab.hide()
-            self._vispy_widget.volume1.method = 'mip'
+            # self._vispy_widget.volume1.method = 'mip'
 
         else:
+            self.ui.threshold = 0
             self.ui.threshold_slider.show()
             self.ui.threshold_lab.show()
-            self._vispy_widget.volume1.method = 'iso'
+            # self._vispy_widget.volume1.method = 'iso'
 
+        # May need a initiation for _strech_scale here
+
+    # The value limitation is 0~99
     @property
     def threshold(self):
-        return self.ui.threshold_slider.value() / 100.
+        return self.ui.threshold_slider.value() / 20.
 
     @threshold.setter
     def threshold(self, value):
-        return self.ui.threshold_slider.setValue(value * 100.)
+        return self.ui.threshold_slider.setValue(value * 20.)
+
+    @property
+    def stretch_slider_value(self):
+        return self.ui.stretch_slider.value() / 10.
+
+    @stretch_slider_value.setter
+    def stretch_slider_value(self, value):
+        return self.ui.stretch_slider.setValue(value * 10. )
+
+    @property
+    def stretch_menu_item(self):
+        return self.ui.stretch_menu.currentText()
+
+    @stretch_menu_item.setter
+    def stretch_menu_item(self, value):
+        index = self.ui.stretch_menu.findText(value)
+        self.ui.stretch_menu.setCurrentIndex(index)
 
     @property
     def cmap(self):
@@ -64,7 +116,7 @@ class VolumeOptionsWidget(QtGui.QWidget):
 
     @cmap.setter
     def cmap(self, value):
-        index = self.ui.cmap_menu.fingText(value)
+        index = self.ui.cmap_menu.findText(value)
         self.ui.cmap_menu.setCurrentIndex(index)
 
 
