@@ -9,7 +9,6 @@ from vispy import scene
 __all__ = ["VolumeOptionsWidget"]
 
 UI_MAIN = os.path.join(os.path.dirname(__file__), 'options_widget.ui')
-# UI_MAIN = '/Users/penny/Works/glue-3d-viewer/vispy_volume/options_widget.ui'
 
 class VolumeOptionsWidget(QtGui.QWidget):
 
@@ -30,22 +29,27 @@ class VolumeOptionsWidget(QtGui.QWidget):
         self._vispy_widget = vispy_widget
         self._stretch_scale = [1, 1, 1]
 
-        # self._axis_scale = None
-        self.threshold = 0
         self.stretch_slider_value = 0
         self.cmap = 'hsl'
         self.stretch_menu_item = 'RA'
 
-        self.ui.threshold_lab.hide()
-        self.ui.threshold_slider.hide()
-
+        # Add an instruction for fly camera keypress
+        _canvas = self._vispy_widget.canvas
+        self.fly_text = scene.visuals.Text('', parent=_canvas.scene, color=[1,1,1,0.7],\
+                                      bold=True, font_size=16, pos=[_canvas.size[0]/2, _canvas.size[1]/2])
         # UI control connect
         self.ui.stretch_menu.currentIndexChanged.connect(self.update_stretch_menu)
         self.ui.stretch_slider.valueChanged.connect(self.update_stretch_slider)
-        self.ui.vol_radio.toggled.connect(self._update_render_method)
+        self.ui.nor_mode.toggled.connect(self._update_render_method)
 
         self.ui.cmap_menu.currentIndexChanged.connect(self.update_viewer)
-        self.ui.threshold_slider.valueChanged.connect(self.update_viewer)
+        self.ui.reset_button.clicked.connect(self.reset_camera)
+
+    def reset_camera(self):
+        self._vispy_widget.view.camera.reset()
+        self.cmap = 'hsl'
+        self._stretch_scale = [1, 1, 1]
+        self.update_viewer()
 
     def update_stretch_menu(self):
         self.stretch_slider_value = 0
@@ -62,29 +66,18 @@ class VolumeOptionsWidget(QtGui.QWidget):
     def update_viewer(self):
         self._vispy_widget.volume1.cmap = self.cmap
         self._vispy_widget.volume1.transform.scale = self._stretch_scale
-        self._vispy_widget.volume1.threshold = self.threshold
+        # self._vispy_widget.volume1.threshold = self.threshold
 
     def _update_render_method(self, is_volren):
         if is_volren:
-            self.ui.threshold_slider.hide()
-            self.ui.threshold_lab.hide()
-            self._vispy_widget.volume1.method = 'mip'
+            self._vispy_widget.view.camera = self._vispy_widget.cam2
+            self.fly_text.text = ''
 
         else:
-            self.ui.threshold_slider.show()
-            self.ui.threshold_lab.show()
-            self._vispy_widget.volume1.method = 'iso'
+            self._vispy_widget.view.camera = self._vispy_widget.cam1
+            _text_string = 'Key WASD for moving, IJKL for roll'
+            self.fly_text.text = _text_string
 
-        # May need a initiation for _strech_scale here
-
-
-    @property
-    def threshold(self):
-        return self.ui.threshold_slider.value() / 100.
-
-    @threshold.setter
-    def threshold(self, value):
-        return self.ui.threshold_slider.setValue(value * 100.)
 
     @property
     def stretch_slider_value(self):
