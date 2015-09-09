@@ -37,8 +37,6 @@ class VolumeOptionsWidget(QtGui.QWidget):
         _canvas = self._vispy_widget.canvas
         self.fly_text = scene.visuals.Text('', parent=_canvas.scene, color=[1,1,1,0.7],\
                                       bold=True, font_size=16, pos=[_canvas.size[0]/2, _canvas.size[1]/2])
-
-        self.ui.label_2.hide()
         # UI control connect
         self.ui.stretch_menu.currentIndexChanged.connect(self.update_stretch_menu)
         self.ui.stretch_slider.valueChanged.connect(self.update_stretch_slider)
@@ -67,23 +65,20 @@ class VolumeOptionsWidget(QtGui.QWidget):
 
     def update_viewer(self):
         self._vispy_widget.volume1.cmap = self.cmap
+        self._vispy_widget.volume1.transform.scale = self._stretch_scale
         if self._vispy_widget.view.camera is self._vispy_widget.cam2:
             self._vispy_widget.cam2.distance = self._vispy_widget.get_vol().shape[1]
-            self._vispy_widget.cam2.scale_factor = self._vispy_widget.get_vol().shape[1]
-        self._vispy_widget.volume1.transform.scale = self._stretch_scale
-
 
     def _update_render_method(self, is_volren):
         if is_volren:
             self._vispy_widget.view.camera = self._vispy_widget.cam2
-            self.ui.label_2.hide()
-            self.ui.label_3.show()
             self.fly_text.text = ''
 
         else:
             self._vispy_widget.view.camera = self._vispy_widget.cam1
-            self.ui.label_2.show()
-            self.ui.label_3.hide()
+            # _text_string = 'Key WASD for moving, IJKL for roll'
+            _text_string = '* WASD or arrow keys - move around * SPACE - brake * FC - move up-down * IJKL or mouse - look around'
+            self.fly_text.text = _text_string
 
 
     @property
