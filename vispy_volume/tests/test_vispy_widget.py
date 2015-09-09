@@ -35,9 +35,9 @@ def test_widget():
     w.on_timer(TimerEvent(type='timer_timeout', iteration=3))
 
     # Test key presses
-    w.on_key_press(KeyEvent(text='1'))
-    w.on_key_press(KeyEvent(text='2'))
-    w.on_key_press(KeyEvent(text='3'))
+    # w.on_key_press(KeyEvent(text='1'))
+    # w.on_key_press(KeyEvent(text='2'))
+    # w.on_key_press(KeyEvent(text='3'))
 
     # Test mouse_wheel
     w.on_mouse_wheel(MouseEvent(type='mouse_wheel', delta=(0, 0.5)))

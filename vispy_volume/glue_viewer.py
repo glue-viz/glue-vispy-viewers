@@ -14,6 +14,7 @@ class GlueVispyViewer(DataViewer):
         super(GlueVispyViewer, self).__init__(session, parent=parent)
         self._vispy_widget = QtVispyWidget()
         self._canvas = self._vispy_widget.canvas
+        self.viewer_size = [600, 400]
         self._canvas.size = self.viewer_size
         self.setCentralWidget(self._canvas.native)
 

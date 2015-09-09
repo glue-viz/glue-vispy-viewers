@@ -66,7 +66,8 @@ class VolumeOptionsWidget(QtGui.QWidget):
     def update_viewer(self):
         self._vispy_widget.volume1.cmap = self.cmap
         self._vispy_widget.volume1.transform.scale = self._stretch_scale
-        # self._vispy_widget.volume1.threshold = self.threshold
+        if self._vispy_widget.view.camera is self._vispy_widget.cam2:
+            self._vispy_widget.cam2.distance = self._vispy_widget.get_vol().shape[1]
 
     def _update_render_method(self, is_volren):
         if is_volren:
@@ -75,7 +76,8 @@ class VolumeOptionsWidget(QtGui.QWidget):
 
         else:
             self._vispy_widget.view.camera = self._vispy_widget.cam1
-            _text_string = 'Key WASD for moving, IJKL for roll'
+            # _text_string = 'Key WASD for moving, IJKL for roll'
+            _text_string = '* WASD or arrow keys - move around * SPACE - brake * FC - move up-down * IJKL or mouse - look around'
             self.fly_text.text = _text_string
 
 

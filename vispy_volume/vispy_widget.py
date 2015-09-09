@@ -41,10 +41,9 @@ class QtVispyWidget(QtGui.QWidget):
         self.view.camera = self.cam2  # Select turntable at firstate_texture=emulate_texture)
 
         # Set up default colormap
-        self.color_map = get_colormap('autumn')
+        self.color_map = get_colormap('hsl')
 
         # Connect events
-        self.canvas.events.key_press.connect(self.on_key_press)
         self.canvas.events.mouse_wheel.connect(self.on_mouse_wheel)
 
     def set_data(self, data):
@@ -53,15 +52,23 @@ class QtVispyWidget(QtGui.QWidget):
     def set_subsets(self, subsets):
         self.subsets = subsets
 
+    def get_vol(self):
+        if self.data is None:
+            return None
+        else:
+            vol1 = np.nan_to_num(np.array(self.data))
+            return vol1
+
     def add_volume_visual(self):
 
         # TODO: need to implement the visualiation of the subsets in this method
 
-        if self.data is None:
-            return
+        # if self.data is None:
+        #     return
 
-        vol1 = np.nan_to_num(np.array(self.data))
+        # vol1 = np.nan_to_num(np.array(self.data))
 
+        vol1 = self.get_vol()
         # Create the volume visual and give default settings
         volume1 = scene.visuals.Volume(vol1, parent=self.view.scene, threshold=0.1, method='mip',
                                        emulate_texture=self.emulate_texture)
@@ -72,7 +79,7 @@ class QtVispyWidget(QtGui.QWidget):
         volume1.transform = scene.STTransform(translate=trans)
 
         self.axis.transform = scene.STTransform(translate=trans, scale=_axis_scale)
-        self.cam2.distance = vol1.shape[1]
+        # self.cam2.distance = vol1.shape[1]
 
         self.volume1 = volume1
         self.widget_axis_scale = self.axis.transform.scale
@@ -119,9 +126,4 @@ class QtVispyWidget(QtGui.QWidget):
         self.zoom_text.text = 'X %s' % round(self.zoom_size, 1)
         self.zoom_timer.start(interval=0.2, iterations=8)
 
-    # @canvas.events.key_press.connect
-    def on_key_press(self, event):
-
-        if self.view is None:
-            return
 
