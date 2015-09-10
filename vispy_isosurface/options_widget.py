@@ -2,19 +2,18 @@ import os
 from glue.external.qt import QtGui
 from glue.qt.qtutil import load_ui
 from glue.qt import get_qapp
-from vispy.color import get_colormaps
-from vispy import scene
+from vispy.color import get_colormaps, get_colormap
+from vispy import color
 
-
-__all__ = ["VolumeOptionsWidget"]
+__all__ = ["IsosurfaceOptionsWidget"]
 
 UI_MAIN = os.path.join(os.path.dirname(__file__), 'options_widget.ui')
 
-class VolumeOptionsWidget(QtGui.QWidget):
+class IsosurfaceOptionsWidget(QtGui.QWidget):
 
     def __init__(self, parent=None, vispy_widget=None):
 
-        super(VolumeOptionsWidget, self).__init__(parent=parent)
+        super(IsosurfaceOptionsWidget, self).__init__(parent=parent)
 
         self.ui = load_ui(UI_MAIN, self)
         if self.ui is None:
@@ -29,20 +28,17 @@ class VolumeOptionsWidget(QtGui.QWidget):
         self._vispy_widget = vispy_widget
         self._stretch_scale = [1, 1, 1]
 
+        self.threshold = 0
         self.stretch_slider_value = 0
         self.cmap = 'hsl'
         self.stretch_menu_item = 'RA'
 
-        # Add an instruction for fly camera keypress
-        _canvas = self._vispy_widget.canvas
-        self.fly_text = scene.visuals.Text('', parent=_canvas.scene, color=[1,1,1,0.7],\
-                                      bold=True, font_size=16, pos=[_canvas.size[0]/2, _canvas.size[1]/2])
         # UI control connect
         self.ui.stretch_menu.currentIndexChanged.connect(self.update_stretch_menu)
         self.ui.stretch_slider.valueChanged.connect(self.update_stretch_slider)
-        self.ui.nor_mode.toggled.connect(self._update_render_method)
 
         self.ui.cmap_menu.currentIndexChanged.connect(self.update_viewer)
+        self.ui.threshold_slider.valueChanged.connect(self.update_viewer)
         self.ui.reset_button.clicked.connect(self.reset_camera)
 
     def reset_camera(self):
@@ -64,10 +60,18 @@ class VolumeOptionsWidget(QtGui.QWidget):
         self.update_viewer()
 
     def update_viewer(self):
-        self._vispy_widget.volume1.cmap = self.cmap
-        self._vispy_widget.volume1.transform.scale = self._stretch_scale
+        self._vispy_widget.isoVisual1.transform.scale = self._stretch_scale
         if self._vispy_widget.view.camera is self._vispy_widget.cam2:
-            self._vispy_widget.cam2.distance = self._vispy_widget.get_vol().shape[1]
+            self._vispy_widget.cam2.distance = self._vispy_widget.get_data().shape[1]
+            self._vispy_widget.cam2.scale_factor = self._vispy_widget.get_data().shape[1]
+
+
+        # TODO: a cmap for isosurface shoud be added, just do a trick here
+        _iso_color = get_colormap(self.cmap).colors[0]
+        _iso_color.alpha = 0.3
+        self._vispy_widget.isoVisual1._color = color.Color(_iso_color)
+        self._vispy_widget.isoVisual1.level = self.threshold
+        self._vispy_widget.isoVisual1.transform.scale = self._stretch_scale
 
     def _update_render_method(self, is_volren):
         if is_volren:
@@ -107,10 +111,17 @@ class VolumeOptionsWidget(QtGui.QWidget):
         index = self.ui.cmap_menu.findText(value)
         self.ui.cmap_menu.setCurrentIndex(index)
 
+    @property
+    def threshold(self):
+        return self.ui.threshold_slider.value() / 20.     # The value limitation is 0~99
+
+    @threshold.setter
+    def threshold(self, value):
+        return self.ui.threshold_slider.setValue(value * 20.)
 
 if __name__ == "__main__":
     app = get_qapp()
-    d = VolumeOptionsWidget()
+    d = IsosurfaceOptionsWidget()
     d.show()
     app.exec_()
     app.quit()

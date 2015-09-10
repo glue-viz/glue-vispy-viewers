@@ -4,13 +4,13 @@ from glue.external.qt import QtGui
 from vispy import scene, app
 from vispy.color import get_colormap
 
-__all__ = ['QtVispyWidget']
+__all__ = ['QtVispyIsoWidget']
 
 
-class QtVispyWidget(QtGui.QWidget):
+class QtVispyIsoWidget(QtGui.QWidget):
 
     def __init__(self, parent=None):
-        super(QtVispyWidget, self).__init__(parent=parent)
+        super(QtVispyIsoWidget, self).__init__(parent=parent)
 
         # Prepare canvas
         self.canvas = scene.SceneCanvas(keys='interactive', show=True)
@@ -25,7 +25,7 @@ class QtVispyWidget(QtGui.QWidget):
         self.emulate_texture = False
 
         self.data = None
-        self.volume1 = None
+        self.isoVisual1 = None
         self.zoom_size = 0
         self.zoom_text = self.add_text_visual()
         self.zoom_timer = app.Timer(0.2, connect=self.on_timer, start=False)
@@ -47,49 +47,51 @@ class QtVispyWidget(QtGui.QWidget):
         self.canvas.events.mouse_wheel.connect(self.on_mouse_wheel)
         self.canvas.events.resize.connect(self.on_resize)
 
+
     def set_data(self, data):
         self.data = data
 
     def set_subsets(self, subsets):
         self.subsets = subsets
 
-    def get_vol(self):
+    def get_data(self):
         if self.data is None:
             return None
         else:
-            vol1 = np.nan_to_num(np.array(self.data))
-            return vol1
+            isoData = np.nan_to_num(np.array(self.data))
+            return isoData
 
-    def add_volume_visual(self):
+    def add_isosurface_visual(self):
 
         # TODO: need to implement the visualiation of the subsets in this method
 
         # if self.data is None:
         #     return
 
-        # vol1 = np.nan_to_num(np.array(self.data))
+        # isoData = np.nan_to_num(np.array(self.data))
 
-        vol1 = self.get_vol()
+        isoData = self.get_data()
         # Create the volume visual and give default settings
-        volume1 = scene.visuals.Volume(vol1, parent=self.view.scene, threshold=0.1, method='mip',
-                                       emulate_texture=self.emulate_texture)
-        volume1.cmap = self.color_map
+        _isoColor = self.color_map.colors[0]
+        _isoColor.alpha = 0.3
+        _isoVisual = scene.visuals.Isosurface(isoData, color=_isoColor, \
+                                              parent=self.view.scene, level=isoData.max()/2)
 
-        trans = (-vol1.shape[2]/2, -vol1.shape[1]/2, -vol1.shape[0]/2)
-        _axis_scale = (vol1.shape[2], vol1.shape[1], vol1.shape[0])
-        volume1.transform = scene.STTransform(translate=trans)
+        trans = (-isoData.shape[2]/2, -isoData.shape[1]/2, -isoData.shape[0]/2)
+        _axis_scale = (isoData.shape[2], isoData.shape[1], isoData.shape[0])
+        _isoVisual.transform = scene.STTransform(translate=trans)
 
         self.axis.transform = scene.STTransform(translate=trans, scale=_axis_scale)
-        # self.cam2.distance = vol1.shape[1]
+        # self.cam2.distance = isoData.shape[1]
 
-        self.volume1 = volume1
+        self.isoVisual1 = _isoVisual
         self.widget_axis_scale = self.axis.transform.scale
 
 
     def add_text_visual(self):
         # Create the text visual to show zoom scale
         text = scene.visuals.Text('', parent=self.canvas.scene, color='white', bold=True, font_size=16)
-        text.pos = [self.canvas.size[0]/2, self.canvas.size[1]/2]
+        text.pos = [40, self.canvas.size[1]-40]
         return text
 
     def on_timer(self, event):
@@ -97,7 +99,7 @@ class QtVispyWidget(QtGui.QWidget):
         self.canvas.update()
 
     def on_resize(self, event):
-        self.zoom_text.pos = [self.canvas.size[0]/2, self.canvas.size[1]/2]
+        self.zoom_text.pos = [40, self.canvas.size[1]-40]
 
     def set_cam(self):
         # Create two cameras (1 for firstperson, 3 for 3d person)
@@ -122,7 +124,7 @@ class QtVispyWidget(QtGui.QWidget):
 
         # 3D camera class that orbits around a center point while maintaining a view on a center point.
         cam2 = scene.cameras.TurntableCamera(parent=self.view.scene, fov=fov,
-                                            name='Turntable', center=(0, 0, 0))
+                                            name='Turntable')
         return cam1, cam2
 
     def on_mouse_wheel(self, event):

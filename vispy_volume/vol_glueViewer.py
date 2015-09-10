@@ -3,16 +3,15 @@ import numpy as np
 from glue.qt.widgets.data_viewer import DataViewer
 from glue.core import message as msg
 
-from .vispy_widget import QtVispyWidget
+from .vol_vispyWidget import QtVispyWidget
 from .options_widget import VolumeOptionsWidget
 
+class GlueVispyViewer(DataViewer):
 
-class GlueVispyIsosurfaceViewer(DataViewer):
-
-    LABEL = "Isosurface"
+    LABEL = "3D Volume"
 
     def __init__(self, session, parent=None):
-        super(GlueVispyIsosurfaceViewer, self).__init__(session, parent=parent)
+        super(GlueVispyViewer, self).__init__(session, parent=parent)
         self._vispy_widget = QtVispyWidget()
         self._canvas = self._vispy_widget.canvas
         self.viewer_size = [600, 400]
@@ -25,7 +24,7 @@ class GlueVispyIsosurfaceViewer(DataViewer):
 
     def register_to_hub(self, hub):
 
-        super(GlueVispyIsosurfaceViewer, self).register_to_hub(hub)
+        super(GlueVispyViewer, self).register_to_hub(hub)
 
         dfilter = lambda x: True
         dcfilter = lambda x: True
@@ -41,6 +40,9 @@ class GlueVispyIsosurfaceViewer(DataViewer):
 
         hub.subscribe(self, msg.SubsetDeleteMessage,
                       handler=self._remove_subset)
+
+        hub.subscribe(self, msg.DataUpdateMessage,
+                      handler=self.update_window_title)
 
     def add_data(self, data):
         self._data = data['PRIMARY']
@@ -74,6 +76,15 @@ class GlueVispyIsosurfaceViewer(DataViewer):
 
     def _redraw(self):
         self._vispy_widget.canvas.render()
+
+    @property
+    def window_title(self):
+        c = self.client.component
+        if c is not None:
+            label = str(c.label)
+        else:
+            label = '3D Volume'
+        return label
 
     # Add side panels
     '''def layer_view(self):

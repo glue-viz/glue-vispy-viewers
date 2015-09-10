@@ -1,5 +1,5 @@
 import numpy as np
-from ..vispy_widget import QtVispyWidget
+from ..vol_vispyWidget import QtVispyWidget
 from glue.qt import get_qapp
 
 

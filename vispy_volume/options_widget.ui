@@ -19,7 +19,7 @@
      <x>10</x>
      <y>10</y>
      <width>271</width>
-     <height>71</height>
+     <height>61</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
@@ -122,9 +122,9 @@
   <widget class="QPushButton" name="reset_button">
    <property name="geometry">
     <rect>
-     <x>0</x>
+     <x>11</x>
      <y>240</y>
-     <width>152</width>
+     <width>131</width>
      <height>32</height>
     </rect>
    </property>
@@ -139,7 +139,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>90</y>
+     <y>80</y>
      <width>261</width>
      <height>61</height>
     </rect>
@@ -155,16 +155,29 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>90</y>
+     <y>80</y>
      <width>271</width>
      <height>61</height>
     </rect>
    </property>
    <property name="text">
     <string>* LMB: orbits the view around its center point.
-* RMB or scroll: change scale_factor (i.e. zoom level)
+* RMB or scroll: change scale_factor 
 * SHIFT + LMB: translate the center point
 * SHIFT + RMB: change FOV</string>
+   </property>
+  </widget>
+  <widget class="Line" name="line">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>140</y>
+     <width>271</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
    </property>
   </widget>
  </widget>

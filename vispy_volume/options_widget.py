@@ -68,8 +68,8 @@ class VolumeOptionsWidget(QtGui.QWidget):
     def update_viewer(self):
         self._vispy_widget.volume1.cmap = self.cmap
         if self._vispy_widget.view.camera is self._vispy_widget.cam2:
-            self._vispy_widget.cam2.distance = self._vispy_widget.get_vol().shape[1]
-            self._vispy_widget.cam2.scale_factor = self._vispy_widget.get_vol().shape[1]
+            self._vispy_widget.cam2.distance = self._vispy_widget.get_data().shape[1]
+            self._vispy_widget.cam2.scale_factor = self._vispy_widget.get_data().shape[1]
         self._vispy_widget.volume1.transform.scale = self._stretch_scale
 
 

@@ -45,6 +45,7 @@ class QtVispyWidget(QtGui.QWidget):
 
         # Connect events
         self.canvas.events.mouse_wheel.connect(self.on_mouse_wheel)
+        self.canvas.events.resize.connect(self.on_resize)
 
     def set_data(self, data):
         self.data = data
@@ -52,7 +53,7 @@ class QtVispyWidget(QtGui.QWidget):
     def set_subsets(self, subsets):
         self.subsets = subsets
 
-    def get_vol(self):
+    def get_data(self):
         if self.data is None:
             return None
         else:
@@ -68,7 +69,7 @@ class QtVispyWidget(QtGui.QWidget):
 
         # vol1 = np.nan_to_num(np.array(self.data))
 
-        vol1 = self.get_vol()
+        vol1 = self.get_data()
         # Create the volume visual and give default settings
         volume1 = scene.visuals.Volume(vol1, parent=self.view.scene, threshold=0.1, method='mip',
                                        emulate_texture=self.emulate_texture)
@@ -88,12 +89,15 @@ class QtVispyWidget(QtGui.QWidget):
     def add_text_visual(self):
         # Create the text visual to show zoom scale
         text = scene.visuals.Text('', parent=self.canvas.scene, color='white', bold=True, font_size=16)
-        text.pos = 60, 60
+        text.pos = [40, self.canvas.size[1]-40]
         return text
 
     def on_timer(self, event):
         self.zoom_text.color = [1,1,1,float((7-event.iteration) % 8)/8]
         self.canvas.update()
+
+    def on_resize(self, event):
+        self.zoom_text.pos = [40, self.canvas.size[1]-40]
 
     def set_cam(self):
         # Create two cameras (1 for firstperson, 3 for 3d person)
@@ -118,7 +122,7 @@ class QtVispyWidget(QtGui.QWidget):
 
         # 3D camera class that orbits around a center point while maintaining a view on a center point.
         cam2 = scene.cameras.TurntableCamera(parent=self.view.scene, fov=fov,
-                                            name='Turntable')
+                                            name='Turntable', center=(0, 0, 0))
         return cam1, cam2
 
     def on_mouse_wheel(self, event):
