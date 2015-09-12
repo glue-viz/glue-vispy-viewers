@@ -96,10 +96,13 @@
       <item>
        <widget class="QSlider" name="stretch_slider">
         <property name="minimum">
-         <number>0</number>
+         <number>-10</number>
         </property>
         <property name="maximum">
          <number>10</number>
+        </property>
+        <property name="singleStep">
+         <number>2</number>
         </property>
         <property name="value">
          <number>0</number>

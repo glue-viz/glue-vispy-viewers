@@ -36,9 +36,8 @@ class QtVispyWidget(QtGui.QWidget):
         self.widget_axis_scale = [1, 1, 1]
 
         # Set up cameras
-        self.cam1, self.cam2 = self.set_cam()
-        # self.cam_dist = 100 # Set a default value as 100
-        self.view.camera = self.cam2  # Select turntable at firstate_texture=emulate_texture)
+        self.flyCamera, self.turntableCamera = self.set_cam()
+        self.view.camera = self.turntableCamera  # Select turntable at firstate_texture=emulate_texture)
 
         # Set up default colormap
         self.color_map = get_colormap('hsl')
@@ -64,11 +63,6 @@ class QtVispyWidget(QtGui.QWidget):
 
         # TODO: need to implement the visualiation of the subsets in this method
 
-        # if self.data is None:
-        #     return
-
-        # vol1 = np.nan_to_num(np.array(self.data))
-
         vol1 = self.get_data()
         # Create the volume visual and give default settings
         volume1 = scene.visuals.Volume(vol1, parent=self.view.scene, threshold=0.1, method='mip',
@@ -80,11 +74,9 @@ class QtVispyWidget(QtGui.QWidget):
         volume1.transform = scene.STTransform(translate=trans)
 
         self.axis.transform = scene.STTransform(translate=trans, scale=_axis_scale)
-        # self.cam2.distance = vol1.shape[1]
 
         self.volume1 = volume1
         self.widget_axis_scale = self.axis.transform.scale
-
 
     def add_text_visual(self):
         # Create the text visual to show zoom scale
@@ -93,11 +85,11 @@ class QtVispyWidget(QtGui.QWidget):
         return text
 
     def on_timer(self, event):
-        self.zoom_text.color = [1,1,1,float((7-event.iteration) % 8)/8]
+        self.zoom_text.color = [1, 1, 1, float((7-event.iteration) % 8)/8]
         self.canvas.update()
 
     def on_resize(self, event):
-        self.zoom_text.pos = [40, self.canvas.size[1]-40]
+        self.zoom_text.pos = [40, self.canvas.size[1] - 40]
 
     def set_cam(self):
         # Create two cameras (1 for firstperson, 3 for 3d person)
@@ -122,7 +114,7 @@ class QtVispyWidget(QtGui.QWidget):
 
         # 3D camera class that orbits around a center point while maintaining a view on a center point.
         cam2 = scene.cameras.TurntableCamera(parent=self.view.scene, fov=fov,
-                                            name='Turntable', center=(0, 0, 0))
+                                             name='Turntable')
         return cam1, cam2
 
     def on_mouse_wheel(self, event):

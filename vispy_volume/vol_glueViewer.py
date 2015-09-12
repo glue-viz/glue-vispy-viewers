@@ -6,6 +6,7 @@ from glue.core import message as msg
 from .vol_vispyWidget import QtVispyWidget
 from .options_widget import VolumeOptionsWidget
 
+
 class GlueVispyViewer(DataViewer):
 
     LABEL = "3D Volume"
@@ -90,6 +91,15 @@ class GlueVispyViewer(DataViewer):
     '''def layer_view(self):
 
         return self._layer_view'''
+
+    def add_subset(self, subset):
+        pass
+
+    def restore_layers(self, rec, context):
+        pass
+
+    def notify(self, message):
+        pass
 
     def options_widget(self):
         return self._options_widget
