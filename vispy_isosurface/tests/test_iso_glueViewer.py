@@ -1,5 +1,5 @@
 from glue.qt import get_qapp
-from ..vol_glueViewer import GlueVispyViewer
+from ..iso_glueViewer import GlueIsoVispyViewer
 from glue.config import qt_client
 
 def test_viewer():
@@ -9,4 +9,4 @@ def test_viewer():
 
     # v = GlueVispyViewer()
 
-    qt_client.add(GlueVispyViewer)
+    qt_client.add(GlueIsoVispyViewer)

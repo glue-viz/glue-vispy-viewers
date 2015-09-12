@@ -1,5 +1,5 @@
 import numpy as np
-from ..vol_vispyWidget import QtVispyWidget
+from ..iso_vispyWidget import QtVispyIsoWidget
 from glue.qt import get_qapp
 
 
@@ -26,9 +26,9 @@ def test_widget():
     data = np.arange(1000).reshape((10,10,10))
 
     # Set up widget
-    w = QtVispyWidget()
+    w = QtVispyIsoWidget()
     w.set_data(data)
-    w.add_volume_visual()
+    w.add_isosurface_visual()
     w.canvas.render()
 
     # Test timer

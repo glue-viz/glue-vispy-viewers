@@ -3,27 +3,29 @@ import numpy as np
 from glue.qt.widgets.data_viewer import DataViewer
 from glue.core import message as msg
 
-from .vispy_widget import QtVispyWidget
-from .options_widget import VolumeOptionsWidget
+from .iso_vispyWidget import QtVispyIsoWidget
+from .options_widget import IsosurfaceOptionsWidget
 
-class GlueVispyViewer(DataViewer):
 
-    LABEL = "3D Volume"
+class GlueIsoVispyViewer(DataViewer):
+
+    LABEL = "Isosurface"
 
     def __init__(self, session, parent=None):
-        super(GlueVispyViewer, self).__init__(session, parent=parent)
-        self._vispy_widget = QtVispyWidget()
-        self._canvas = self._vispy_widget.canvas
+        super(GlueIsoVispyViewer, self).__init__(session, parent=parent)
+        self._vispy_Isowidget = QtVispyIsoWidget()
+        self._canvas = self._vispy_Isowidget.canvas
+        self.viewer_size = [600, 400]
         self._canvas.size = self.viewer_size
         self.setCentralWidget(self._canvas.native)
 
         self._data = None
         self._subsets = []
-        self._options_widget = VolumeOptionsWidget(vispy_widget=self._vispy_widget)
+        self._options_widget = IsosurfaceOptionsWidget(vispy_widget=self._vispy_Isowidget)
 
     def register_to_hub(self, hub):
 
-        super(GlueVispyViewer, self).register_to_hub(hub)
+        super(GlueIsoVispyViewer, self).register_to_hub(hub)
 
         dfilter = lambda x: True
         dcfilter = lambda x: True
@@ -57,21 +59,21 @@ class GlueVispyViewer(DataViewer):
         self._update_subsets()
 
     def _update_data(self):
-        self._vispy_widget.set_data(self._data)
-        self._vispy_widget.add_volume_visual()
+        self._vispy_Isowidget.set_data(self._data)
+        self._vispy_Isowidget.add_isosurface_visual()
         self._options_widget.update_viewer()
         self._redraw()
 
     def _update_subsets(self):
         # TODO: in future, we should be smarter and not compute the masks just
         # for style changes, but this will do for now for experimentation.
-        self._vispy_widget.set_subsets([{'mask': s.to_mask(),
+        self._vispy_Isowidget.set_subsets([{'mask': s.to_mask(),
                                          'color': s.style.color,
                                          'alpha': s.style.alpha} for s in self._subsets])
         self._redraw()
 
     def _redraw(self):
-        self._vispy_widget.canvas.render()
+        self._vispy_Isowidget.canvas.render()
 
     # Add side panels
     '''def layer_view(self):

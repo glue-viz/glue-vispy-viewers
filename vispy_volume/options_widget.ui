@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>330</width>
-    <height>271</height>
+    <width>288</width>
+    <height>279</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,99 +18,170 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>311</width>
-     <height>111</height>
+     <width>271</width>
+     <height>61</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
+    <item row="1" column="1">
+     <layout class="QHBoxLayout" name="horizontalLayout_4">
+      <item>
+       <widget class="QRadioButton" name="fly_mode">
+        <property name="text">
+         <string>Fly Mode</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
     <item row="0" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>3D Volume Methods:</string>
+         <string>View Mode:</string>
         </property>
        </widget>
       </item>
      </layout>
     </item>
     <item row="1" column="0">
-     <widget class="QRadioButton" name="vol_radio">
+     <widget class="QRadioButton" name="nor_mode">
       <property name="text">
-       <string>Volume Rendering</string>
+       <string>Normal Mode</string>
       </property>
       <property name="checked">
        <bool>true</bool>
       </property>
      </widget>
     </item>
-    <item row="1" column="1">
-     <widget class="QRadioButton" name="iso_radio">
-      <property name="text">
-       <string>Isosurface</string>
-      </property>
-     </widget>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="gridLayoutWidget_2">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>160</y>
+     <width>271</width>
+     <height>71</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout_3">
+    <item row="0" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout_6">
+      <item>
+       <widget class="QLabel" name="cmap_lab">
+        <property name="text">
+         <string>Colormaps:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="cmap_menu"/>
+      </item>
+     </layout>
+    </item>
+    <item row="1" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <widget class="QLabel" name="stretch_lab">
+        <property name="text">
+         <string>Stretch:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="stretch_menu"/>
+      </item>
+      <item>
+       <widget class="QSlider" name="stretch_slider">
+        <property name="minimum">
+         <number>-10</number>
+        </property>
+        <property name="maximum">
+         <number>10</number>
+        </property>
+        <property name="singleStep">
+         <number>2</number>
+        </property>
+        <property name="value">
+         <number>0</number>
+        </property>
+        <property name="tracking">
+         <bool>true</bool>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="tickPosition">
+         <enum>QSlider::NoTicks</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="vol_ren_widget" native="true">
+  <widget class="QPushButton" name="reset_button">
+   <property name="geometry">
+    <rect>
+     <x>11</x>
+     <y>240</y>
+     <width>131</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Reset View</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>80</y>
+     <width>261</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>* WASD or arrow keys - move around 
+* SPACE - brake 
+* FC - move up-down 
+* IJKL or mouse - look around </string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_3">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>80</y>
+     <width>271</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>* LMB: orbits the view around its center point.
+* RMB or scroll: change scale_factor 
+* SHIFT + LMB: translate the center point
+* SHIFT + RMB: change FOV</string>
+   </property>
+  </widget>
+  <widget class="Line" name="line">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>140</y>
-     <width>311</width>
-     <height>91</height>
+     <width>271</width>
+     <height>20</height>
     </rect>
    </property>
-   <widget class="QLabel" name="cmap_lab">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>0</y>
-      <width>149</width>
-      <height>76</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Colormaps:</string>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="cmap_menu">
-    <property name="geometry">
-     <rect>
-      <x>100</x>
-      <y>30</y>
-      <width>171</width>
-      <height>26</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="threshold_lab">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>40</y>
-      <width>95</width>
-      <height>76</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Threshold:</string>
-    </property>
-   </widget>
-   <widget class="QSlider" name="threshold_slider">
-    <property name="geometry">
-     <rect>
-      <x>100</x>
-      <y>70</y>
-      <width>160</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
-   </widget>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
