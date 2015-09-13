@@ -29,8 +29,9 @@ class VolumeOptionsWidget(QtGui.QWidget):
 
         # Set up default values for side panel
         self._vispy_widget = vispy_widget
+        self._widget_data = None
         self._stretch_scale = [1, 1, 1]
-
+        self._stretch_tran = []
         # self.stretch_slider_value = 0
         self.cmap = 'hsl'
         self.stretch_menu_item = 'RA'
@@ -51,24 +52,30 @@ class VolumeOptionsWidget(QtGui.QWidget):
 
     def reset_camera(self):
         self._vispy_widget.view.camera.reset()
-        self.cmap = 'hsl'
         self.update_stretch_menu()
         self.update_viewer()
 
     def update_stretch_menu(self):
         self.stretch_slider_value = 0.0
         self._stretch_scale = [1, 1, 1]
+        self._stretch_tran = [-self._widget_data.shape[2]/2, -self._widget_data.shape[1]/2, -self._widget_data.shape[0]/2]
         self._vispy_widget.volume1.transform.scale = self._stretch_scale
+        self._vispy_widget.volume1.transform.translate = self._stretch_tran
 
     def update_stretch_slider(self):
         _index = self.ui.stretch_menu.currentIndex()
         self._stretch_scale[_index] = self.stretch_slider_value
+        self._stretch_tran[_index] = -self.stretch_slider_value*self._widget_data.shape[2-_index]/2
+
         # _new_axis_scale = self._vispy_widget.widget_axis_scale[_index] + self.stretch_slider_value
         # self._vispy_widget.axis.transform.scale = _new_axis_scale
+        self._vispy_widget.volume1.transform.translate = self._stretch_tran
         self._vispy_widget.volume1.transform.scale = self._stretch_scale
 
-
     def update_viewer(self):
+        self._widget_data = self._vispy_widget.get_data()
+        self._stretch_tran = [-self._widget_data.shape[2]/2, -self._widget_data.shape[1]/2, -self._widget_data.shape[0]/2]
+
         _cube_data = self._vispy_widget.get_data()
         _cube_dist = sqrt(_cube_data.shape[0]**2 + _cube_data.shape[1]**2 + _cube_data.shape[2]**2)
         self._vispy_widget.volume1.cmap = self.cmap
