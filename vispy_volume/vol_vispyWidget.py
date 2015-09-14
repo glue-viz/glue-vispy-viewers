@@ -40,7 +40,7 @@ class QtVispyWidget(QtGui.QWidget):
         self.view.camera = self.turntableCamera  # Select turntable at firstate_texture=emulate_texture)
 
         # Set up default colormap
-        self.color_map = get_colormap('hsl')
+        # self.color_map = get_colormap('grays')
 
         # Connect events
         self.canvas.events.mouse_wheel.connect(self.on_mouse_wheel)
@@ -67,7 +67,7 @@ class QtVispyWidget(QtGui.QWidget):
         # Create the volume visual and give default settings
         volume1 = scene.visuals.Volume(vol1, parent=self.view.scene, threshold=0.1, method='mip',
                                        emulate_texture=self.emulate_texture)
-        volume1.cmap = self.color_map
+        # volume1.cmap = self.color_map
 
         trans = (-vol1.shape[2]/2, -vol1.shape[1]/2, -vol1.shape[0]/2)
         _axis_scale = (vol1.shape[2], vol1.shape[1], vol1.shape[0])

@@ -9,7 +9,7 @@ from .options_widget import IsosurfaceOptionsWidget
 
 class GlueIsoVispyViewer(DataViewer):
 
-    LABEL = "Isosurface"
+    LABEL = "3D Isosurface Rendering"
 
     def __init__(self, session, parent=None):
         super(GlueIsoVispyViewer, self).__init__(session, parent=parent)

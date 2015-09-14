@@ -9,7 +9,7 @@ from .options_widget import VolumeOptionsWidget
 
 class GlueVispyViewer(DataViewer):
 
-    LABEL = "3D Volume"
+    LABEL = "3D Volume Rendering"
 
     def __init__(self, session, parent=None):
         super(GlueVispyViewer, self).__init__(session, parent=parent)
