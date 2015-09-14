@@ -20,19 +20,16 @@ class VolumeOptionsWidget(QtGui.QWidget):
 
         self.ui = load_ui(UI_MAIN, self)
         if self.ui is None:
-            return
+            return None
         for map_name in get_colormaps():
             self.ui.cmap_menu.addItem(map_name)
-
-        # for vol_name in ['RA', 'DEC', 'VEL']:
-        #     self.ui.stretch_menu.addItem(vol_name)
 
         # Set up default values for side panel
         self._vispy_widget = vispy_widget
         self._widget_data = None
         self._stretch_scale = [1, 1, 1]
         self._stretch_tran = []
-        # self.stretch_slider_value = 0
+        self._slider_value = {}
         self.cmap = 'grays'
         self.stretch_menu_item = 'RA'
 
@@ -43,9 +40,9 @@ class VolumeOptionsWidget(QtGui.QWidget):
 
         self.ui.label_2.hide()
         # UI control connect
-        self.ui.ra_stretchSlider.valueChanged.connect(self.update_ra_stretch_slider)
-        self.ui.dec_stretchSlider.valueChanged.connect(self.update_dec_stretch_slider)
-        self.ui.vel_stretchSlider.valueChanged.connect(self.update_vel_stretch_slider)
+        self.ui.ra_stretchSlider.valueChanged.connect(lambda: self.update_stretch_slider(which_slider=0))
+        self.ui.dec_stretchSlider.valueChanged.connect(lambda: self.update_stretch_slider(which_slider=1))
+        self.ui.vel_stretchSlider.valueChanged.connect(lambda: self.update_stretch_slider(which_slider=2))
 
         self.ui.nor_mode.toggled.connect(self._update_render_method)
 
@@ -56,37 +53,16 @@ class VolumeOptionsWidget(QtGui.QWidget):
         self._vispy_widget.view.camera.reset()
         self.update_viewer()
 
-        self.ra_stretch_value = 0.0
-        self.dec_stretch_value = 0.0
-        self.vel_stretch_value = 0.0
-
         self._stretch_scale = [1, 1, 1]
-        self._vispy_widget.volume1.transform.scale = self._stretch_scale
-        self._vispy_widget.volume1.transform.translate = self._stretch_tran
+        self._vispy_widget.vol_visual.transform.scale = self._stretch_scale
+        self._vispy_widget.vol_visual.transform.translate = self._stretch_tran
 
-    def update_ra_stretch_slider(self):
-        _index = 0
-        self._stretch_scale[_index] = self.ra_stretch_value
-        self._stretch_tran[_index] = -self.ra_stretch_value*self._widget_data.shape[2-_index]/2
-
-        # _new_axis_scale = self._vispy_widget.widget_axis_scale[_index] + self.stretch_slider_value
-        # self._vispy_widget.axis.transform.scale = _new_axis_scale
-        self._vispy_widget.volume1.transform.translate = self._stretch_tran
-        self._vispy_widget.volume1.transform.scale = self._stretch_scale
-
-    def update_dec_stretch_slider(self):
-        _index = 1
-        self._stretch_scale[_index] = self.dec_stretch_value
-        self._stretch_tran[_index] = -self.dec_stretch_value*self._widget_data.shape[2-_index]/2
-        self._vispy_widget.volume1.transform.translate = self._stretch_tran
-        self._vispy_widget.volume1.transform.scale = self._stretch_scale
-
-    def update_vel_stretch_slider(self):
-        _index = 2
-        self._stretch_scale[_index] = self.vel_stretch_value
-        self._stretch_tran[_index] = -self.vel_stretch_value*self._widget_data.shape[2-_index]/2
-        self._vispy_widget.volume1.transform.translate = self._stretch_tran
-        self._vispy_widget.volume1.transform.scale = self._stretch_scale
+    def update_stretch_slider(self, which_slider):
+        _index = which_slider
+        self._stretch_scale[_index] = self.stretch_value(_index)
+        self._stretch_tran[_index] = -self.stretch_value(_index)*self._widget_data.shape[2-_index]/2
+        self._vispy_widget.vol_visual.transform.translate = self._stretch_tran
+        self._vispy_widget.vol_visual.transform.scale = self._stretch_scale
 
     def update_viewer(self):
         self._widget_data = self._vispy_widget.get_data()
@@ -94,7 +70,7 @@ class VolumeOptionsWidget(QtGui.QWidget):
 
         _cube_data = self._vispy_widget.get_data()
         _cube_dist = sqrt(_cube_data.shape[0]**2 + _cube_data.shape[1]**2 + _cube_data.shape[2]**2)
-        self._vispy_widget.volume1.cmap = self.cmap
+        self._vispy_widget.vol_visual.cmap = self.cmap
 
         # Set the camera factors
         if self._vispy_widget.view.camera is self._vispy_widget.turntableCamera:
@@ -115,31 +91,27 @@ class VolumeOptionsWidget(QtGui.QWidget):
             self.ui.label_2.show()
             self.ui.label_3.hide()
 
+
     # Value from -10 to 10
-    @property
-    def ra_stretch_value(self):
-        return 10.0**(self.ui.ra_stretchSlider.value()/10.0)
+    def stretch_value(self, which_slider):
+        if which_slider == 0:
+            return 10.0**(self.ui.ra_stretchSlider.value()/10.0)
+        elif which_slider == 1:
+            return 10.0**(self.ui.dec_stretchSlider.value()/10.0)
+        elif which_slider == 2:
+            return 10.0**(self.ui.vel_stretchSlider.value()/10.0)
+        else:
+            return None
 
-    @ra_stretch_value.setter
-    def ra_stretch_value(self, value):
-        return self.ui.ra_stretchSlider.setValue(10.0**(value*10.0))
-
-        # Value from -10 to 10
-    @property
-    def dec_stretch_value(self):
-        return 10.0**(self.ui.dec_stretchSlider.value()/10.0)
-
-    @dec_stretch_value.setter
-    def dec_stretch_value(self, value):
-        return self.ui.dec_stretchSlider.setValue(10.0**(value*10.0))
-
-    @property
-    def vel_stretch_value(self):
-        return 10.0**(self.ui.vel_stretchSlider.value()/10.0)
-
-    @vel_stretch_value.setter
-    def vel_stretch_value(self, value):
-        return self.ui.vel_stretchSlider.setValue(10.0**(value*10.0))
+    def set_stretch_value(self, which_slider, value):
+        if which_slider == 0:
+            return self.ui.ra_stretchSlider.setValue(10.0**(value*10.0))
+        elif which_slider == 1:
+            return self.ui.dec_stretchSlider.setValue(10.0**(value*10.0))
+        elif which_slider == 2:
+            return self.ui.vel_stretchSlider.setValue(10.0**(value*10.0))
+        else:
+            return None
 
     @property
     def cmap(self):

@@ -16,9 +16,9 @@
   <widget class="QWidget" name="gridLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>10</x>
+     <x>20</x>
      <y>7</y>
-     <width>271</width>
+     <width>251</width>
      <height>51</height>
     </rect>
    </property>
@@ -60,10 +60,10 @@
   <widget class="QWidget" name="gridLayoutWidget_2">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>138</y>
+     <x>20</x>
+     <y>140</y>
      <width>251</width>
-     <height>121</height>
+     <height>130</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_3">
@@ -155,17 +155,8 @@
         <property name="singleStep">
          <number>2</number>
         </property>
-        <property name="value">
-         <number>0</number>
-        </property>
-        <property name="tracking">
-         <bool>true</bool>
-        </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::NoTicks</enum>
         </property>
        </widget>
       </item>
@@ -197,7 +188,7 @@
   <widget class="QPushButton" name="reset_button">
    <property name="geometry">
     <rect>
-     <x>0</x>
+     <x>20</x>
      <y>270</y>
      <width>131</width>
      <height>32</height>

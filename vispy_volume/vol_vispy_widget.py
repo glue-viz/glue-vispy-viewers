@@ -25,9 +25,9 @@ class QtVispyWidget(QtGui.QWidget):
         self.emulate_texture = False
 
         self.data = None
-        self.volume1 = None
+        self.vol_visual = None
         self.zoom_size = 0
-        self.zoom_text = self.add_text_visual()
+        self.zoom_text_visual = self.add_text_visual()
         self.zoom_timer = app.Timer(0.2, connect=self.on_timer, start=False)
 
         # Add a 3D axis to keep us oriented
@@ -63,19 +63,19 @@ class QtVispyWidget(QtGui.QWidget):
 
         # TODO: need to implement the visualiation of the subsets in this method
 
-        vol1 = self.get_data()
+        vol_data = self.get_data()
         # Create the volume visual and give default settings
-        volume1 = scene.visuals.Volume(vol1, parent=self.view.scene, threshold=0.1, method='mip',
+        vol_visual = scene.visuals.Volume(vol_data, parent=self.view.scene, threshold=0.1, method='mip',
                                        emulate_texture=self.emulate_texture)
         # volume1.cmap = self.color_map
 
-        trans = (-vol1.shape[2]/2, -vol1.shape[1]/2, -vol1.shape[0]/2)
-        _axis_scale = (vol1.shape[2], vol1.shape[1], vol1.shape[0])
-        volume1.transform = scene.STTransform(translate=trans)
+        trans = (-vol_data.shape[2]/2, -vol_data.shape[1]/2, -vol_data.shape[0]/2)
+        _axis_scale = (vol_data.shape[2], vol_data.shape[1], vol_data.shape[0])
+        vol_visual.transform = scene.STTransform(translate=trans)
 
         self.axis.transform = scene.STTransform(translate=trans, scale=_axis_scale)
 
-        self.volume1 = volume1
+        self.vol_visual = vol_visual
         self.widget_axis_scale = self.axis.transform.scale
 
     def add_text_visual(self):
@@ -85,11 +85,11 @@ class QtVispyWidget(QtGui.QWidget):
         return text
 
     def on_timer(self, event):
-        self.zoom_text.color = [1, 1, 1, float((7-event.iteration) % 8)/8]
+        self.zoom_text_visual.color = [1, 1, 1, float((7-event.iteration) % 8)/8]
         self.canvas.update()
 
     def on_resize(self, event):
-        self.zoom_text.pos = [40, self.canvas.size[1] - 40]
+        self.zoom_text_visual.pos = [40, self.canvas.size[1] - 40]
 
     def set_cam(self):
         # Create two cameras (1 for firstperson, 3 for 3d person)
@@ -119,7 +119,7 @@ class QtVispyWidget(QtGui.QWidget):
 
     def on_mouse_wheel(self, event):
         self.zoom_size += event.delta[1]
-        self.zoom_text.text = 'X %s' % round(self.zoom_size, 1)
+        self.zoom_text_visual.text = 'X %s' % round(self.zoom_size, 1)
         self.zoom_timer.start(interval=0.2, iterations=8)
 
 
