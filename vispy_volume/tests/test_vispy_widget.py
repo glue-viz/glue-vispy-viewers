@@ -45,4 +45,4 @@ def test_widget():
     w.on_mouse_wheel(MouseEvent(type='mouse_wheel', delta=(0, -0.3)))
 
     op = VolumeOptionsWidget(vispy_widget=w)
-    op.update_viewer()
+    op.init_viewer()

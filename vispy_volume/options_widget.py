@@ -46,16 +46,19 @@ class VolumeOptionsWidget(QtGui.QWidget):
 
         self.ui.nor_mode.toggled.connect(self._update_render_method)
 
-        self.ui.cmap_menu.currentIndexChanged.connect(self.update_viewer)
-        self.ui.reset_button.clicked.connect(self.reset_camera)
+        self.ui.cmap_menu.currentIndexChanged.connect(self.update_cmap_menu)
+        self.ui.reset_button.clicked.connect(self.reset_view)
 
-    def reset_camera(self):
+    def reset_view(self):
         self._vispy_widget.view.camera.reset()
-        self.update_viewer()
+        self.init_viewer()
 
         self._stretch_scale = [1, 1, 1]
         self._vispy_widget.vol_visual.transform.scale = self._stretch_scale
         self._vispy_widget.vol_visual.transform.translate = self._stretch_tran
+        self.set_stretch_value(0, 0)
+        self.set_stretch_value(1, 0)
+        self.set_stretch_value(2, 0)
 
     def update_stretch_slider(self, which_slider):
         _index = which_slider
@@ -64,20 +67,22 @@ class VolumeOptionsWidget(QtGui.QWidget):
         self._vispy_widget.vol_visual.transform.translate = self._stretch_tran
         self._vispy_widget.vol_visual.transform.scale = self._stretch_scale
 
-    def update_viewer(self):
+    def update_cmap_menu(self):
+        self._vispy_widget.vol_visual.cmap = self.cmap
+
+
+    def init_viewer(self):
         self._widget_data = self._vispy_widget.get_data()
         self._stretch_tran = [-self._widget_data.shape[2]/2, -self._widget_data.shape[1]/2, -self._widget_data.shape[0]/2]
 
-        _cube_data = self._vispy_widget.get_data()
-        _cube_dist = sqrt(_cube_data.shape[0]**2 + _cube_data.shape[1]**2 + _cube_data.shape[2]**2)
-        self._vispy_widget.vol_visual.cmap = self.cmap
+        _cube_diagonal = sqrt(self._widget_data.shape[0]**2 + self._widget_data.shape[1]**2 + self._widget_data.shape[2]**2)
 
-        # Set the camera factors
+        # Set the camera factors:
         if self._vispy_widget.view.camera is self._vispy_widget.turntableCamera:
             _turntableCamera_fov = self._vispy_widget.turntableCamera.fov
-            _cam_dist = _cube_dist / (tan(radians(_turntableCamera_fov)))
+            _cam_dist = _cube_diagonal / (tan(radians(_turntableCamera_fov)))
             self._vispy_widget.turntableCamera.distance = _cam_dist
-            self._vispy_widget.turntableCamera.scale_factor = _cube_dist
+            self._vispy_widget.turntableCamera.scale_factor = _cube_diagonal
 
     def _update_render_method(self, is_volren):
         if is_volren:
@@ -105,11 +110,11 @@ class VolumeOptionsWidget(QtGui.QWidget):
 
     def set_stretch_value(self, which_slider, value):
         if which_slider == 0:
-            return self.ui.ra_stretchSlider.setValue(10.0**(value*10.0))
+            return self.ui.ra_stretchSlider.setValue(value)
         elif which_slider == 1:
-            return self.ui.dec_stretchSlider.setValue(10.0**(value*10.0))
+            return self.ui.dec_stretchSlider.setValue(value)
         elif which_slider == 2:
-            return self.ui.vel_stretchSlider.setValue(10.0**(value*10.0))
+            return self.ui.vel_stretchSlider.setValue(value)
         else:
             return None
 
