@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 from glue.external.qt import QtGui
 from vispy import scene, app
+
 from vispy.color import get_colormap
 
 __all__ = ['QtVispyWidget']
@@ -29,6 +30,8 @@ class QtVispyWidget(QtGui.QWidget):
         self.zoom_size = 0
         self.zoom_text_visual = self.add_text_visual()
         self.zoom_timer = app.Timer(0.2, connect=self.on_timer, start=False)
+        self.cube_diagonal = 0.0
+        self.ori_distance = 0.0
 
         # Add a 3D axis to keep us oriented
         self.axis = scene.visuals.XYZAxis(parent=self.view.scene)
@@ -48,6 +51,8 @@ class QtVispyWidget(QtGui.QWidget):
 
     def set_data(self, data):
         self.data = data
+        self.cube_diagonal = np.sqrt(self.get_data().shape[0]**2 + self.get_data().shape[1]**2 + self.get_data().shape[2]**2)
+        self.ori_distance = self.cube_diagonal / (np.tan(np.radians(60)))
 
     def set_subsets(self, subsets):
         self.subsets = subsets
@@ -91,9 +96,8 @@ class QtVispyWidget(QtGui.QWidget):
     def on_resize(self, event):
         self.zoom_text_visual.pos = [40, self.canvas.size[1] - 40]
 
-    def set_cam(self):
+    def set_cam(self, cam_fov=60):
         # Create two cameras (1 for firstperson, 3 for 3d person)
-        fov = 60.
         '''
         The fly camera provides a way to explore 3D data using an interaction style that resembles a flight simulator.
         Moving:
@@ -110,16 +114,19 @@ class QtVispyWidget(QtGui.QWidget):
         * The camera auto-rotates to make the bottom point down, manual
             rolling can be performed using Q and E.
         '''
-        cam1 = scene.cameras.FlyCamera(parent=self.view.scene, fov=fov, name='Fly')
+        cam1 = scene.cameras.FlyCamera(parent=self.view.scene, fov=cam_fov, name='Fly')
 
         # 3D camera class that orbits around a center point while maintaining a view on a center point.
-        cam2 = scene.cameras.TurntableCamera(parent=self.view.scene, fov=fov,
+        cam2 = scene.cameras.TurntableCamera(parent=self.view.scene, fov=cam_fov,
                                              name='Turntable')
         return cam1, cam2
 
     def on_mouse_wheel(self, event):
-        self.zoom_size += event.delta[1]
-        self.zoom_text_visual.text = 'X %s' % round(self.zoom_size, 1)
-        self.zoom_timer.start(interval=0.2, iterations=8)
+        if self.view.camera is self.turntableCamera:
+            self.zoom_size = self.ori_distance / self.view.camera.distance
+            # self.zoom_size += event.delta[1]
+            self.zoom_text_visual.text = 'X %s' % round(self.zoom_size, 1)
+            self.zoom_timer.start(interval=0.2, iterations=8)
+        # TODO: add a bound for fly_mode mouse_wheel
 
 

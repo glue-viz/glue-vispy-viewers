@@ -33,11 +33,6 @@ class VolumeOptionsWidget(QtGui.QWidget):
         self.cmap = 'grays'
         self.stretch_menu_item = 'RA'
 
-        # Add an instruction for fly camera keypress
-        _canvas = self._vispy_widget.canvas
-        self.fly_text = scene.visuals.Text('', parent=_canvas.scene, color=[1, 1, 1, 0.7],
-                                           bold=True, font_size=16, pos=[_canvas.size[0]/2, _canvas.size[1]/2])
-
         self.ui.label_2.hide()
         # UI control connect
         self.ui.ra_stretchSlider.valueChanged.connect(lambda: self.update_stretch_slider(which_slider=0))
@@ -45,7 +40,6 @@ class VolumeOptionsWidget(QtGui.QWidget):
         self.ui.vel_stretchSlider.valueChanged.connect(lambda: self.update_stretch_slider(which_slider=2))
 
         self.ui.nor_mode.toggled.connect(self._update_render_method)
-
         self.ui.cmap_menu.currentIndexChanged.connect(self.update_cmap_menu)
         self.ui.reset_button.clicked.connect(self.reset_view)
 
@@ -56,6 +50,7 @@ class VolumeOptionsWidget(QtGui.QWidget):
         self._stretch_scale = [1, 1, 1]
         self._vispy_widget.vol_visual.transform.scale = self._stretch_scale
         self._vispy_widget.vol_visual.transform.translate = self._stretch_tran
+
         self.set_stretch_value(0, 0)
         self.set_stretch_value(1, 0)
         self.set_stretch_value(2, 0)
@@ -70,32 +65,25 @@ class VolumeOptionsWidget(QtGui.QWidget):
     def update_cmap_menu(self):
         self._vispy_widget.vol_visual.cmap = self.cmap
 
-
     def init_viewer(self):
         self._widget_data = self._vispy_widget.get_data()
         self._stretch_tran = [-self._widget_data.shape[2]/2, -self._widget_data.shape[1]/2, -self._widget_data.shape[0]/2]
 
-        _cube_diagonal = sqrt(self._widget_data.shape[0]**2 + self._widget_data.shape[1]**2 + self._widget_data.shape[2]**2)
-
-        # Set the camera factors:
+        # Init factors for turntableCamera according to dataset
         if self._vispy_widget.view.camera is self._vispy_widget.turntableCamera:
-            _turntableCamera_fov = self._vispy_widget.turntableCamera.fov
-            _cam_dist = _cube_diagonal / (tan(radians(_turntableCamera_fov)))
-            self._vispy_widget.turntableCamera.distance = _cam_dist
-            self._vispy_widget.turntableCamera.scale_factor = _cube_diagonal
+            self._vispy_widget.turntableCamera.distance = self._vispy_widget.ori_distance
+            self._vispy_widget.turntableCamera.scale_factor = self._vispy_widget.cube_diagonal
 
     def _update_render_method(self, is_volren):
         if is_volren:
             self._vispy_widget.view.camera = self._vispy_widget.turntableCamera
             self.ui.label_2.hide()
             self.ui.label_3.show()
-            self.fly_text.text = ''
 
         else:
             self._vispy_widget.view.camera = self._vispy_widget.flyCamera
             self.ui.label_2.show()
             self.ui.label_3.hide()
-
 
     # Value from -10 to 10
     def stretch_value(self, which_slider):
