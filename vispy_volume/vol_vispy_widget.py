@@ -122,6 +122,8 @@ class QtVispyWidget(QtGui.QWidget):
         return cam1, cam2
 
     def on_mouse_wheel(self, event):
+        if self.view.camera.distance is None:
+            self.view.camera.distance = 10.0
         if self.view.camera is self.turntableCamera:
             self.zoom_size = self.ori_distance / self.view.camera.distance
             # self.zoom_size += event.delta[1]
