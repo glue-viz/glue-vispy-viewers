@@ -3,13 +3,13 @@ import numpy as np
 from glue.qt.widgets.data_viewer import DataViewer
 from glue.core import message as msg
 
-from .iso_vispyWidget import QtVispyIsoWidget
+from .iso_vispy_widget import QtVispyIsoWidget
 from .options_widget import IsosurfaceOptionsWidget
 
 
 class GlueIsoVispyViewer(DataViewer):
 
-    LABEL = "Isosurface"
+    LABEL = "3D Isosurface Rendering"
 
     def __init__(self, session, parent=None):
         super(GlueIsoVispyViewer, self).__init__(session, parent=parent)

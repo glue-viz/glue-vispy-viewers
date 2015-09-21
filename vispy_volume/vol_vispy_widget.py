@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 from glue.external.qt import QtGui
 from vispy import scene, app
+
 from vispy.color import get_colormap
 
 __all__ = ['QtVispyWidget']
@@ -25,10 +26,12 @@ class QtVispyWidget(QtGui.QWidget):
         self.emulate_texture = False
 
         self.data = None
-        self.volume1 = None
+        self.vol_visual = None
         self.zoom_size = 0
-        self.zoom_text = self.add_text_visual()
+        self.zoom_text_visual = self.add_text_visual()
         self.zoom_timer = app.Timer(0.2, connect=self.on_timer, start=False)
+        self.cube_diagonal = 0.0
+        self.ori_distance = 0.0
 
         # Add a 3D axis to keep us oriented
         self.axis = scene.visuals.XYZAxis(parent=self.view.scene)
@@ -40,7 +43,7 @@ class QtVispyWidget(QtGui.QWidget):
         self.view.camera = self.turntableCamera  # Select turntable at firstate_texture=emulate_texture)
 
         # Set up default colormap
-        self.color_map = get_colormap('hsl')
+        # self.color_map = get_colormap('grays')
 
         # Connect events
         self.canvas.events.mouse_wheel.connect(self.on_mouse_wheel)
@@ -48,6 +51,8 @@ class QtVispyWidget(QtGui.QWidget):
 
     def set_data(self, data):
         self.data = data
+        self.cube_diagonal = np.sqrt(self.get_data().shape[0]**2 + self.get_data().shape[1]**2 + self.get_data().shape[2]**2)
+        self.ori_distance = self.cube_diagonal / (np.tan(np.radians(60)))
 
     def set_subsets(self, subsets):
         self.subsets = subsets
@@ -63,19 +68,19 @@ class QtVispyWidget(QtGui.QWidget):
 
         # TODO: need to implement the visualiation of the subsets in this method
 
-        vol1 = self.get_data()
+        vol_data = self.get_data()
         # Create the volume visual and give default settings
-        volume1 = scene.visuals.Volume(vol1, parent=self.view.scene, threshold=0.1, method='mip',
+        vol_visual = scene.visuals.Volume(vol_data, parent=self.view.scene, threshold=0.1, method='mip',
                                        emulate_texture=self.emulate_texture)
-        volume1.cmap = self.color_map
+        # volume1.cmap = self.color_map
 
-        trans = (-vol1.shape[2]/2, -vol1.shape[1]/2, -vol1.shape[0]/2)
-        _axis_scale = (vol1.shape[2], vol1.shape[1], vol1.shape[0])
-        volume1.transform = scene.STTransform(translate=trans)
+        trans = (-vol_data.shape[2]/2, -vol_data.shape[1]/2, -vol_data.shape[0]/2)
+        _axis_scale = (vol_data.shape[2], vol_data.shape[1], vol_data.shape[0])
+        vol_visual.transform = scene.STTransform(translate=trans)
 
         self.axis.transform = scene.STTransform(translate=trans, scale=_axis_scale)
 
-        self.volume1 = volume1
+        self.vol_visual = vol_visual
         self.widget_axis_scale = self.axis.transform.scale
 
     def add_text_visual(self):
@@ -85,15 +90,14 @@ class QtVispyWidget(QtGui.QWidget):
         return text
 
     def on_timer(self, event):
-        self.zoom_text.color = [1, 1, 1, float((7-event.iteration) % 8)/8]
+        self.zoom_text_visual.color = [1, 1, 1, float((7-event.iteration) % 8)/8]
         self.canvas.update()
 
     def on_resize(self, event):
-        self.zoom_text.pos = [40, self.canvas.size[1] - 40]
+        self.zoom_text_visual.pos = [40, self.canvas.size[1] - 40]
 
-    def set_cam(self):
+    def set_cam(self, cam_fov=60):
         # Create two cameras (1 for firstperson, 3 for 3d person)
-        fov = 60.
         '''
         The fly camera provides a way to explore 3D data using an interaction style that resembles a flight simulator.
         Moving:
@@ -110,16 +114,21 @@ class QtVispyWidget(QtGui.QWidget):
         * The camera auto-rotates to make the bottom point down, manual
             rolling can be performed using Q and E.
         '''
-        cam1 = scene.cameras.FlyCamera(parent=self.view.scene, fov=fov, name='Fly')
+        cam1 = scene.cameras.FlyCamera(parent=self.view.scene, fov=cam_fov, name='Fly')
 
         # 3D camera class that orbits around a center point while maintaining a view on a center point.
-        cam2 = scene.cameras.TurntableCamera(parent=self.view.scene, fov=fov,
+        cam2 = scene.cameras.TurntableCamera(parent=self.view.scene, fov=cam_fov,
                                              name='Turntable')
         return cam1, cam2
 
     def on_mouse_wheel(self, event):
-        self.zoom_size += event.delta[1]
-        self.zoom_text.text = 'X %s' % round(self.zoom_size, 1)
-        self.zoom_timer.start(interval=0.2, iterations=8)
+        if self.view.camera.distance is None:
+            self.view.camera.distance = 10.0
+        if self.view.camera is self.turntableCamera:
+            self.zoom_size = self.ori_distance / self.view.camera.distance
+            # self.zoom_size += event.delta[1]
+            self.zoom_text_visual.text = 'X %s' % round(self.zoom_size, 1)
+            self.zoom_timer.start(interval=0.2, iterations=8)
+        # TODO: add a bound for fly_mode mouse_wheel
 
 

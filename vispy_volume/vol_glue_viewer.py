@@ -3,13 +3,13 @@ import numpy as np
 from glue.qt.widgets.data_viewer import DataViewer
 from glue.core import message as msg
 
-from .vol_vispyWidget import QtVispyWidget
+from .vol_vispy_widget import QtVispyWidget
 from .options_widget import VolumeOptionsWidget
 
 
 class GlueVispyViewer(DataViewer):
 
-    LABEL = "3D Volume"
+    LABEL = "3D Volume Rendering"
 
     def __init__(self, session, parent=None):
         super(GlueVispyViewer, self).__init__(session, parent=parent)
@@ -64,7 +64,7 @@ class GlueVispyViewer(DataViewer):
     def _update_data(self):
         self._vispy_widget.set_data(self._data)
         self._vispy_widget.add_volume_visual()
-        self._options_widget.update_viewer()
+        self._options_widget.init_viewer()
         self._redraw()
 
     def _update_subsets(self):

@@ -1,5 +1,6 @@
 import numpy as np
-from ..vol_vispyWidget import QtVispyWidget
+from ..vol_vispy_widget import QtVispyWidget
+from ..options_widget import VolumeOptionsWidget
 from glue.qt import get_qapp
 
 
@@ -42,3 +43,6 @@ def test_widget():
     # Test mouse_wheel
     w.on_mouse_wheel(MouseEvent(type='mouse_wheel', delta=(0, 0.5)))
     w.on_mouse_wheel(MouseEvent(type='mouse_wheel', delta=(0, -0.3)))
+
+    op = VolumeOptionsWidget(vispy_widget=w)
+    op.init_viewer()
