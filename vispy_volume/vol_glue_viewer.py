@@ -1,5 +1,3 @@
-import numpy as np
-
 from glue.qt.widgets.data_viewer import DataViewer
 from glue.core import message as msg
 
@@ -12,7 +10,9 @@ class GlueVispyViewer(DataViewer):
     LABEL = "3D Volume Rendering"
 
     def __init__(self, session, parent=None):
+
         super(GlueVispyViewer, self).__init__(session, parent=parent)
+
         self._vispy_widget = QtVispyWidget()
         self._canvas = self._vispy_widget.canvas
         self.viewer_size = [600, 400]
@@ -45,8 +45,19 @@ class GlueVispyViewer(DataViewer):
         hub.subscribe(self, msg.DataUpdateMessage,
                       handler=self.update_window_title)
 
+        hub.subscribe(self, msg.ComponentsChangedMessage,
+                      handler=self._update_data)
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        self._data = data
+
     def add_data(self, data):
-        self._data = data['PRIMARY']
+        self.data = data
         self._update_data()
         return True
 
@@ -62,9 +73,8 @@ class GlueVispyViewer(DataViewer):
         self._update_subsets()
 
     def _update_data(self):
-        self._vispy_widget.set_data(self._data)
+        self._vispy_widget.data = self.data
         self._vispy_widget.add_volume_visual()
-        self._options_widget.init_viewer()
         self._redraw()
 
     def _update_subsets(self):
@@ -88,9 +98,8 @@ class GlueVispyViewer(DataViewer):
         return label
 
     # Add side panels
-    '''def layer_view(self):
-
-        return self._layer_view'''
+    # def layer_view(self):
+    #     return self._layer_view
 
     def add_subset(self, subset):
         pass
@@ -103,4 +112,3 @@ class GlueVispyViewer(DataViewer):
 
     def options_widget(self):
         return self._options_widget
-

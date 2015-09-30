@@ -14,6 +14,7 @@ __all__ = ['QtVispyWidget']
 class QtVispyWidget(QtGui.QWidget):
 
     def __init__(self, parent=None):
+
         super(QtVispyWidget, self).__init__(parent=parent)
 
         # Prepare canvas
@@ -31,6 +32,8 @@ class QtVispyWidget(QtGui.QWidget):
                                 sys.version_info[0] < 3)
 
         self.data = None
+        self.axes_names = None
+
         self.vol_visual = None
         self.zoom_size = 0
         self.zoom_text_visual = self.add_text_visual()
@@ -54,30 +57,72 @@ class QtVispyWidget(QtGui.QWidget):
         self.canvas.events.mouse_wheel.connect(self.on_mouse_wheel)
         self.canvas.events.resize.connect(self.on_resize)
 
-    def set_data(self, data):
-        self.data = data
-        self.cube_diagonal = np.sqrt(self.get_data().shape[0]**2 + self.get_data().shape[1]**2 + self.get_data().shape[2]**2)
-        self.ori_distance = self.cube_diagonal / (np.tan(np.radians(60)))
+        self._shown_data = None
 
-    def set_subsets(self, subsets):
-        self.subsets = subsets
+    @property
+    def data(self):
+        return self._data
 
-    def get_data(self):
+    @data.setter
+    def data(self, data):
+        if data is None:
+            self._data = data
+        else:
+            self._data = data
+            first_data = data[data.components[0]]
+            self.cube_diagonal = np.sqrt(first_data.shape[0] ** 2 +
+                                         first_data.shape[1] ** 2 +
+                                         first_data.shape[2] ** 2)
+            self.ori_distance = self.cube_diagonal / (np.tan(np.radians(60)))
+            self.options_widget.set_valid_components([c.label for c in data.component_ids()])
+            self._refresh()
+
+    @property
+    def component(self):
         if self.data is None:
             return None
         else:
-            vol1 = np.nan_to_num(np.array(self.data))
-            return vol1
+            return self.data[self.options_widget.visible_component]
+
+    def _refresh(self):
+        """
+        This method can be called if the options widget is updated.
+        """
+
+        if self.data is None:
+            return
+
+        stretch_scale = self.options_widget.stretch
+        stretch_tran = [-0.5 * stretch_scale[idx] * self.component.shape[2-idx] for idx in range(3)]
+
+        if self.vol_visual is not None:
+
+            self.vol_visual.transform.translate = stretch_tran
+            self.vol_visual.transform.scale = stretch_scale
+            self.vol_visual.cmap = self.options_widget.cmap
+
+            array = self.component
+            self.vol_visual.set_data(array, (array.min(), array.max()))
+
+        if self.options_widget.view_mode == "Normal View Mode":
+            self.view.camera = self.turntableCamera
+            self.turntableCamera.distance = self.ori_distance
+            self.turntableCamera.scale_factor = self.cube_diagonal
+        else:
+            self.view.camera = self.flyCamera
+
+    def set_subsets(self, subsets):
+        self.subsets = subsets
 
     def add_volume_visual(self):
 
         # TODO: need to implement the visualiation of the subsets in this method
 
-        vol_data = self.get_data()
+        vol_data = self.component
+
         # Create the volume visual and give default settings
         vol_visual = scene.visuals.Volume(vol_data, parent=self.view.scene, threshold=0.1, method='mip',
-                                       emulate_texture=self.emulate_texture)
-        # volume1.cmap = self.color_map
+                                          emulate_texture=self.emulate_texture)
 
         trans = (-vol_data.shape[2]/2, -vol_data.shape[1]/2, -vol_data.shape[0]/2)
         _axis_scale = (vol_data.shape[2], vol_data.shape[1], vol_data.shape[0])
@@ -127,13 +172,11 @@ class QtVispyWidget(QtGui.QWidget):
         return cam1, cam2
 
     def on_mouse_wheel(self, event):
-        if self.view.camera.distance is None:
-            self.view.camera.distance = 10.0
         if self.view.camera is self.turntableCamera:
+            if self.view.camera.distance is None:
+                self.view.camera.distance = 10.0
             self.zoom_size = self.ori_distance / self.view.camera.distance
             # self.zoom_size += event.delta[1]
             self.zoom_text_visual.text = 'X %s' % round(self.zoom_size, 1)
             self.zoom_timer.start(interval=0.2, iterations=8)
         # TODO: add a bound for fly_mode mouse_wheel
-
-
