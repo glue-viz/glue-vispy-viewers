@@ -108,8 +108,11 @@ class VolumeOptionsWidget(QtGui.QWidget):
     def set_valid_components(self, components):
         self.ui.component.clear()
         for component in components:
-            print(component)
             self.ui.component.addItem(component, component)
+
+    def set_axis_names(self, names):
+        for idx in range(3):
+            self.axis_labels[idx].setText(names[idx])
 
     def _reset_view(self):
         """

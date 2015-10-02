@@ -75,6 +75,7 @@ class QtVispyWidget(QtGui.QWidget):
                                          first_data.shape[2] ** 2)
             self.ori_distance = self.cube_diagonal / (np.tan(np.radians(60)))
             self.options_widget.set_valid_components([c.label for c in data.component_ids()])
+            self.options_widget.set_axis_names([data.coords.axis_label(idx) for idx in range(3)][::-1])
             self._refresh()
 
     @property
