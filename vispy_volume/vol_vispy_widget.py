@@ -27,7 +27,8 @@ class QtVispyWidget(QtGui.QWidget):
 
         # Set whether we are emulating a 3D texture. This needs to be enabled
         # as a workaround on Windows otherwise VisPy crashes.
-        self.emulate_texture = sys.platform == 'win32'
+        self.emulate_texture = (sys.platform == 'win32' and
+                                sys.version_info[0] < 3)
 
         self.data = None
         self.vol_visual = None
