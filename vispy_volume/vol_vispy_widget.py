@@ -1,4 +1,7 @@
 from __future__ import absolute_import, division, print_function
+
+import sys
+
 import numpy as np
 from glue.external.qt import QtGui
 from vispy import scene, app
@@ -22,8 +25,9 @@ class QtVispyWidget(QtGui.QWidget):
         self.view.border_color = 'red'
         self.view.parent = self.canvas.scene
 
-        # Set whether we are emulating a 3D texture
-        self.emulate_texture = False
+        # Set whether we are emulating a 3D texture. This needs to be enabled
+        # as a workaround on Windows otherwise VisPy crashes.
+        self.emulate_texture = sys.platform == 'win32'
 
         self.data = None
         self.vol_visual = None
