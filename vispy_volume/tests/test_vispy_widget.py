@@ -2,6 +2,7 @@ import numpy as np
 from ..vol_vispy_widget import QtVispyWidget
 from ..options_widget import VolumeOptionsWidget
 from glue.qt import get_qapp
+from glue.core import Data
 
 
 class KeyEvent(object):
@@ -24,11 +25,12 @@ def test_widget():
     get_qapp()
 
     # Create fake data
-    data = np.arange(1000).reshape((10,10,10))
+    data = Data(primary=np.arange(1000).reshape((10,10,10)))
 
     # Set up widget
     w = QtVispyWidget()
-    w.set_data(data)
+    op = VolumeOptionsWidget(vispy_widget=w)
+    w.data = data
     w.add_volume_visual()
     w.canvas.render()
 
@@ -44,5 +46,3 @@ def test_widget():
     w.on_mouse_wheel(MouseEvent(type='mouse_wheel', delta=(0, 0.5)))
     w.on_mouse_wheel(MouseEvent(type='mouse_wheel', delta=(0, -0.3)))
 
-    op = VolumeOptionsWidget(vispy_widget=w)
-    op.init_viewer()
