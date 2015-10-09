@@ -83,8 +83,7 @@ class VolumeOptionsWidget(QtGui.QWidget):
                               self.ui.y_val,
                               self.ui.z_val]
 
-        self.cmin = 'auto'
-        self.cmax = 'auto'
+        self._reset_clim()
 
         self._reset_view()
 
@@ -105,6 +104,8 @@ class VolumeOptionsWidget(QtGui.QWidget):
             self.stretch_sliders[idx].valueChanged.connect(self._refresh_viewer)
 
             self.slider_values[idx].returnPressed.connect(partial(self._update_sliders_from_labels, idx))
+
+        self.ui.component.currentIndexChanged.connect(self._reset_clim)
 
         self.ui.reset_button.clicked.connect(self._reset_view)
         self.ui.view_tabs.currentChanged.connect(self._refresh_viewer)
@@ -132,12 +133,18 @@ class VolumeOptionsWidget(QtGui.QWidget):
 
         self.cmap = 'grays'
 
+        self._reset_clim()
+
         self.view_mode = "Normal View Mode"
 
         if self._vispy_widget is not None:
             self._vispy_widget.view.camera.reset()
 
         self._refresh_viewer()
+
+    def _reset_clim(self):
+        self.cmin = 'auto'
+        self.cmax = 'auto'
 
     @property
     def stretch(self):
