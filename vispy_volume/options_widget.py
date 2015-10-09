@@ -51,6 +51,9 @@ class VolumeOptionsWidget(QtGui.QWidget):
     slider_y_label = TextProperty('ui.y_val', 'y slider label')
     slider_z_label = TextProperty('ui.z_val', 'z slider label')
 
+    cmin = TextProperty('ui.clim_min')
+    cmax = TextProperty('ui.clim_max')
+
     def __init__(self, parent=None, vispy_widget=None):
 
         super(VolumeOptionsWidget, self).__init__(parent=parent)
@@ -80,6 +83,9 @@ class VolumeOptionsWidget(QtGui.QWidget):
                               self.ui.y_val,
                               self.ui.z_val]
 
+        self.cmin = 'auto'
+        self.cmax = 'auto'
+
         self._reset_view()
 
         for idx in range(3):
@@ -104,6 +110,8 @@ class VolumeOptionsWidget(QtGui.QWidget):
         self.ui.view_tabs.currentChanged.connect(self._refresh_viewer)
         self.ui.cmap_menu.currentIndexChanged.connect(self._refresh_viewer)
         self.ui.component.currentIndexChanged.connect(self._refresh_viewer)
+        self.ui.clim_min.returnPressed.connect(self._refresh_viewer)
+        self.ui.clim_max.returnPressed.connect(self._refresh_viewer)
 
     def set_valid_components(self, components):
         self.ui.component.clear()
