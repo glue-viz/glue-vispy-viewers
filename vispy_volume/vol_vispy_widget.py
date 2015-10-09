@@ -6,8 +6,6 @@ import numpy as np
 from glue.external.qt import QtGui
 from vispy import scene, app
 
-from vispy.color import get_colormap
-
 __all__ = ['QtVispyWidget']
 
 
@@ -83,7 +81,7 @@ class QtVispyWidget(QtGui.QWidget):
         if self.data is None:
             return None
         else:
-            return self.data[self.options_widget.visible_component]
+            return np.nan_to_num(self.data[self.options_widget.visible_component])
 
     def _refresh(self):
         """
@@ -103,7 +101,11 @@ class QtVispyWidget(QtGui.QWidget):
             self.vol_visual.cmap = self.options_widget.cmap
 
             array = self.component
-            self.vol_visual.set_data(array, (array.min(), array.max()))
+
+            self._update_clim(array)
+
+            self.vol_visual.set_data(array, (float(self.options_widget.cmin),
+                                             float(self.options_widget.cmax)))
 
         if self.options_widget.view_mode == "Normal View Mode":
             self.view.camera = self.turntableCamera
@@ -111,6 +113,14 @@ class QtVispyWidget(QtGui.QWidget):
             self.turntableCamera.scale_factor = self.cube_diagonal
         else:
             self.view.camera = self.flyCamera
+
+    def _update_clim(self, array):
+
+        if self.options_widget.cmin == 'auto':
+            self.options_widget.cmin = "%.4g" % np.min(array)
+
+        if self.options_widget.cmax == 'auto':
+            self.options_widget.cmax = "%.4g" % np.max(array)
 
     def set_subsets(self, subsets):
         self.subsets = subsets
@@ -121,8 +131,13 @@ class QtVispyWidget(QtGui.QWidget):
 
         vol_data = self.component
 
+        self._update_clim(vol_data)
+
         # Create the volume visual and give default settings
-        vol_visual = scene.visuals.Volume(vol_data, parent=self.view.scene, threshold=0.1, method='mip',
+        vol_visual = scene.visuals.Volume(vol_data,
+                                          clim=(float(self.options_widget.cmin),
+                                                float(self.options_widget.cmax)),
+                                          parent=self.view.scene, threshold=0.1, method='mip',
                                           emulate_texture=self.emulate_texture)
 
         trans = (-vol_data.shape[2]/2, -vol_data.shape[1]/2, -vol_data.shape[0]/2)
