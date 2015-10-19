@@ -31,6 +31,7 @@ class QtVispyWidget(QtGui.QWidget):
 
         self.data = None
         self.axes_names = None
+        self._current_array = None
 
         self.vol_visual = None
         self.zoom_size = 0
@@ -81,7 +82,7 @@ class QtVispyWidget(QtGui.QWidget):
         if self.data is None:
             return None
         else:
-            return np.nan_to_num(self.data[self.options_widget.visible_component])
+            return self.data[self.options_widget.visible_component]
 
     def _refresh(self):
         """
@@ -102,10 +103,14 @@ class QtVispyWidget(QtGui.QWidget):
 
             array = self.component
 
-            self._update_clim(array)
-
-            self.vol_visual.set_data(array, (float(self.options_widget.cmin),
-                                             float(self.options_widget.cmax)))
+            if array is not self._current_array[0] or (self.options_widget.cmin, self.options_widget.cmax) != self._current_array[1]:
+                self._current_array = (array,
+                                       (self.options_widget.cmin,
+                                        self.options_widget.cmax))
+                array = np.nan_to_num(array)
+                self._update_clim(array)
+                self.vol_visual.set_data(array, (float(self.options_widget.cmin),
+                                                 float(self.options_widget.cmax)))
 
         if self.options_widget.view_mode == "Normal View Mode":
             self.view.camera = self.turntableCamera
@@ -129,11 +134,13 @@ class QtVispyWidget(QtGui.QWidget):
 
         # TODO: need to implement the visualiation of the subsets in this method
 
-        vol_data = self.component
-
-        self._update_clim(vol_data)
-
         # Create the volume visual and give default settings
+        vol_data = self.component
+        self._current_array = (vol_data,
+                               (self.options_widget.cmin,
+                                self.options_widget.cmax))
+        vol_data = np.nan_to_num(vol_data)
+        self._update_clim(vol_data)
         vol_visual = scene.visuals.Volume(vol_data,
                                           clim=(float(self.options_widget.cmin),
                                                 float(self.options_widget.cmax)),
