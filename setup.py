@@ -6,15 +6,17 @@ from setuptools import setup, find_packages
 
 entry_points = """
 [glue.plugins]
-vispy_volume=vispy_volume:setup
-vispy_isosurface=vispy_isosurface:setup
+vispy_volume=glue_vispy_viewers.volume:setup
 """
 
-setup(name='glue-3d-viewer',
+# Add the following to the above entry points to enable the isosurface viewer
+# vispy_isosurface=glue_vispy_viewers.isosurface:setup
+
+setup(name='glue-vispy-viewers',
       version="0.1.dev0",
       description = "Experimental VisPy plugin for glue",
-      # packages = find_packages(),
-      packages = ['vispy_volume', 'vispy_isosurface'],
-      package_data={'vispy_volume': ['*.ui'], 'vispy_isosurface': ['*.ui']},
+      packages = find_packages(),
+      package_data={'glue_vispy_viewers.volume': ['*.ui'],
+                    'glue_vispy_viewers.isosurface': ['*.ui']},
       entry_points=entry_points
     )

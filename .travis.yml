@@ -20,4 +20,4 @@ install:
   - python setup.py install
 
 script:
-  - py.test vispy_volume
+  - py.test glue_vispy_viewers
