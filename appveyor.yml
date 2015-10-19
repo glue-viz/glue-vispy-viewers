@@ -43,5 +43,5 @@ install:
 build: false
 
 test_script:
-  - "%CMD_IN_ENV% py.test vispy_volume"
+  - "%CMD_IN_ENV% py.test glue_vispy_viewers"
 

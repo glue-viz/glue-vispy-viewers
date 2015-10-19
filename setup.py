@@ -7,8 +7,10 @@ from setuptools import setup, find_packages
 entry_points = """
 [glue.plugins]
 vispy_volume=glue_vispy_viewers.volume:setup
-vispy_isosurface=glue_vispy_viewers.isosurface:setup
 """
+
+# Add the following to the above entry points to enable the isosurface viewer
+# vispy_isosurface=glue_vispy_viewers.isosurface:setup
 
 setup(name='glue-vispy-viewers',
       version="0.1.dev0",
