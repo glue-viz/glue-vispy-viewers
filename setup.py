@@ -20,7 +20,7 @@ except (IOError, ImportError):
         LONG_DESCRIPTION = infile.read()
 
 setup(name='glue-vispy-viewers',
-      version="0.1.dev0",
+      version="0.1",
       description='Vispy-based viewers for Glue',
       long_description=LONG_DESCRIPTION,
       url="https://github.com/glue-viz/glue-3d-viewer",
