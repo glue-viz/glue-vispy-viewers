@@ -34,6 +34,7 @@ class QtVispyWidget(QtGui.QWidget):
         self._current_array = None
 
         self.vol_visual = None
+        self.subvol_visual = None
         self.zoom_size = 0
         self.zoom_text_visual = self.add_text_visual()
         self.zoom_timer = app.Timer(0.2, connect=self.on_timer, start=False)
@@ -134,30 +135,14 @@ class QtVispyWidget(QtGui.QWidget):
     def update_volume_visual(self):
         # TODO: implement mask here
         for s in self.subsets:
-            # _new_mask = s['mask'].reshape(self.component.shape)
-            _new_shape = (self.component.shape[2], self.component.shape[1], self.component.shape[0])
             # I think the mask array here is not as the same shape as the data, it would be smaller shape...
             if s['mask'].size == self.component.size:
-                # _new_mask = s['mask'].reshape(self.component.shape)
-                # _mask_data = self.component[_new_mask]
                 vol_data = np.nan_to_num(self.component)
                 _mask = (np.logical_and(vol_data, s['mask'])).astype(int)
-                # _mask = np.logical_and(self.component, s['mask']).astype(int)
-                # _mask_data = np.einsum('ij,jkl->ikl', _mask, self.component)
                 _mask_data = _mask * self.component
-                print(_mask[1][1])
-                print(_mask_data[1][1])
-                print(self.component[1][1])
-                print('s.size = %d, component.size = %d, newmask.size = %d' % (s['mask'].size, self.component.size, _mask_data.size))
-                print('mask_data shape:', _mask_data.shape)
-                print('component shape:', self.component.shape)
-
-                subset_visual = scene.visuals.Volume(_mask_data,
-                                                     clim=(float(self.options_widget.cmin),
-                                                           float(self.options_widget.cmax)),
-                                                     parent=self.view.scene, cmap='fire', method='mip',
-                                                     emulate_texture=self.emulate_texture)
-                subset_visual.transform = self.vol_visual.transform
+                print(scene.visuals)
+                print(dir(self.vol_visual))
+                self.subvol_visual.set_data(_mask_data)
                 self.vol_visual.visible = False
 
     def add_volume_visual(self):
@@ -185,6 +170,16 @@ class QtVispyWidget(QtGui.QWidget):
 
         self.vol_visual = vol_visual
         self.widget_axis_scale = self.axis.transform.scale
+
+        # Add the sub-volume visual
+        subvol_visual = scene.visuals.Volume(np.zeros(vol_data.shape),
+                                          clim=(float(self.options_widget.cmin),
+                                                float(self.options_widget.cmax)),
+                                          parent=self.view.scene, threshold=0.3, cmap='hot', method='mip',
+                                          emulate_texture=self.emulate_texture)
+
+        subvol_visual.transform = scene.STTransform(translate=trans)
+        self.subvol_visual = subvol_visual
 
     def add_text_visual(self):
         # Create the text visual to show zoom scale
