@@ -71,6 +71,7 @@ class GlueVispyViewer(DataViewer):
     def _remove_subset(self, message):
         self._subsets.remove(message.subset)
         self._update_subsets()
+        self._vispy_widget.vol_visual.visible = True
 
     def _update_data(self):
         self._vispy_widget.data = self.data
