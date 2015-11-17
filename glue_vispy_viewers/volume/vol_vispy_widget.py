@@ -34,7 +34,9 @@ class QtVispyWidget(QtGui.QWidget):
         self._current_array = None
 
         self.vol_visual = None
-        self.subvol_visual = None
+        self.sub_vol_visual = None
+        self.subsets = None
+
         self.zoom_size = 0
         self.zoom_text_visual = self.add_text_visual()
         self.zoom_timer = app.Timer(0.2, connect=self.on_timer, start=False)
@@ -135,14 +137,14 @@ class QtVispyWidget(QtGui.QWidget):
     def update_volume_visual(self):
         # TODO: implement mask here
         for s in self.subsets:
-            # I think the mask array here is not as the same shape as the data, it would be smaller shape...
             if s['mask'].size == self.component.size:
                 vol_data = np.nan_to_num(self.component)
+
                 _mask = (np.logical_and(vol_data, s['mask'])).astype(int)
                 _mask_data = _mask * self.component
                 print(scene.visuals)
                 print(dir(self.vol_visual))
-                self.subvol_visual.set_data(_mask_data)
+                self.sub_vol_visual.set_data(_mask_data)
                 self.vol_visual.visible = False
 
     def add_volume_visual(self):
@@ -172,14 +174,14 @@ class QtVispyWidget(QtGui.QWidget):
         self.widget_axis_scale = self.axis.transform.scale
 
         # Add the sub-volume visual
-        subvol_visual = scene.visuals.Volume(np.zeros(vol_data.shape),
+        sub_vol_visual = scene.visuals.Volume(np.zeros(vol_data.shape),
                                           clim=(float(self.options_widget.cmin),
                                                 float(self.options_widget.cmax)),
                                           parent=self.view.scene, threshold=0.3, cmap='hot', method='mip',
                                           emulate_texture=self.emulate_texture)
 
-        subvol_visual.transform = scene.STTransform(translate=trans)
-        self.subvol_visual = subvol_visual
+        sub_vol_visual.transform = scene.STTransform(translate=trans)
+        self.sub_vol_visual = sub_vol_visual
 
     def add_text_visual(self):
         # Create the text visual to show zoom scale
