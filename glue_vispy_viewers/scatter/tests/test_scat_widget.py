@@ -69,3 +69,5 @@ def test_widget():
     w.on_mouse_wheel(MouseEvent(type='mouse_wheel', delta=(0, 0.5)))
     w.on_mouse_wheel(MouseEvent(type='mouse_wheel', delta=(0, -0.3)))
 
+    # Test mouse_press, move, release
+    # w.on_mouse_press(MouseEvent(type='mouse_press', pos=(5, 5)))

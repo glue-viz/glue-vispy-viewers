@@ -16,10 +16,6 @@ class ScatVispyViewer(DataViewer):
         self.viewer_size = [600, 400]
         self._canvas.size = self.viewer_size
         self.setCentralWidget(self._canvas.native)
-
-        # Should be put in on_resize but put here first to set the projection for gloo
-        self._vispy_widget.set_projection()
-
         self._data = None
         self._subsets = []
 
@@ -63,11 +59,7 @@ class ScatVispyViewer(DataViewer):
 
     def _update_data(self):
         self._vispy_widget.set_data(self._data)
-        # data = self._vispy_widget.get_data()
         self._vispy_widget.set_program()
-        # self._vispy_widget.set_projection()
-        # self._options_widget.init_viewer()
-        # print('data position is:', self._vispy_widget.data['a_position'])
         self._redraw()
 
     def _update_subsets(self):
@@ -79,8 +71,6 @@ class ScatVispyViewer(DataViewer):
         self._redraw()
 
     def _redraw(self):
-        # self._vispy_widget.on_draw()
-        # self._vispy_widget.canvas.render()
         self._vispy_widget.canvas.show()
         self._vispy_widget.canvas.update()
 

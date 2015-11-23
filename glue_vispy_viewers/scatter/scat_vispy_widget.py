@@ -218,62 +218,38 @@ class QtScatVispyWidget(QtGui.QWidget):
         }
         """
 
-
-        # Initialize
-        # gloo.set_state('translucent', clear_color='black')
-        # gloo.glDisable(gloo.GL_DEPTH_TEST)
-        # gloo.glEnable(gloo.GL_BLEND)
-        # gloo.glBlendFunc(gloo.GL_SRC_ALPHA, gloo.GL_ONE) #_MINUS_SRC_ALPHA)
-
         # Prepare canvas
         self.canvas = app.Canvas(keys='interactive', show=False)
         self.canvas.size = [600, 400]
         self.canvas.measure_fps()
 
-        # Set up a viewbox to display the image with interactive pan/zoom
-        # self.view = self.canvas.central_widget.add_view()
-        # self.view.border_color = 'red'
-        # self.view.parent = self.canvas.scene
-        self.view = np.eye(4,dtype=np.float32)
-
-
-
-        # If you want to use gloo without vispy.app, use a gloo.context.FakeCanvas.
-
+        # TODO: OpenGL code doesn't work now; If you want to use gloo without vispy.app, use a gloo.context.FakeCanvas.
         gloo.set_state('translucent', clear_color='white')
-
-        self.program = gloo.Program(vert, frag)
         gloo.gl.use_gl('gl2 debug')
-        # self.program = gloo.Program(self.VERT_SHADER, self.FRAG_SHADER)
-        self.model = np.eye(4,dtype=np.float32)
-        self.projection = np.eye(4,dtype=np.float32)
-        self.theta, self.phi = 0,0
 
-        self.translate = 20  # For cute Penny: this is used to set the initial size :-)
+        # Prepare canvas.program and related parameters
+        self.canvas.program = gloo.Program(vert, frag)
+        self.model = np.eye(4, dtype=np.float32)
+        self.projection = np.eye(4, dtype=np.float32)
+
+        # Set up a viewbox to display the image with interactive pan/zoom
+        self.view = np.eye(4, dtype=np.float32)
+        self.translate = 20  # This is used to set the initial size :-)
         self.view = translate((0, 0, -self.translate)) #Is there anything like self.view.translate?
 
+        # Prepare data and subsets
         self.data = None
-        '''self.zoom_size = 0
-        self.zoom_text_visual = self.add_text_visual()
-        self.zoom_timer = app.Timer(0.2, connect=self.on_timer, start=False)
 
-        # Add a 3D axis to keep us oriented
-        # self.axis = scene.visuals.XYZAxis(parent=self.view.scene)
-        # self.widget_axis_scale = [1, 1, 1]'''
-
-        # self.program.bind(gloo.VertexBuffer(data))
-
-        # self.program['u_size'] = 5./self.translate
-        # self.program['u_model'] = self.model
-        # self.program['u_view'] = self.view
-
+        # Set parameters for timer
         self.timer_dt = 1.0/60
         self.timer_t = 0.0
         self.timer = app.Timer(self.timer_dt)
         self.timer.connect(self.on_timer)
 
+        # Prepare for mouse event and rotate
         self.is_dragging = False
         self.is_mouse_pressed = False
+        self.theta, self.phi = 0, 0
 
         self.prev_phi = 0.0
         self.prev_theta = 0.0
@@ -286,32 +262,19 @@ class QtScatVispyWidget(QtGui.QWidget):
         self.canvas.events.mouse_wheel.connect(self.on_mouse_wheel)
         self.canvas.events.draw.connect(self.on_draw)
         self.canvas.events.resize.connect(self.on_resize)
-
-        # gl.glClearColor(0,0,0,1)
-        # gl.glDisable(gl.GL_DEPTH_TEST)
-        # gl.glEnable(gl.GL_BLEND)
-        # gl.glBlendFunc (gl.GL_SRC_ALPHA, gl.GL_ONE)
-
-    # def on_initialize(self, event):
-    #     gl.glClearColor(0,0,0,1)
-    #     gl.glDisable(gl.GL_DEPTH_TEST)
-    #     gl.glEnable(gl.GL_BLEND)
-    #     gl.glBlendFunc (gl.GL_SRC_ALPHA, gl.GL_ONE) #_MINUS_SRC_ALPHA)
-    #     Start the timer upon initialization.
-        # self.timer.start()
-        # print('Timer.start')
+        self.canvas.events.mouse_press.connect(self.on_mouse_press)
+        self.canvas.events.mouse_move.connect(self.on_mouse_move)
+        self.canvas.events.mouse_release.connect(self.on_mouse_release)
 
     def set_data(self, data):
         self.data = data
 
-    # def set_frame_data(self,data):
-    #     self.program.bind(gloo.VertexBuffer(data))
-
-        print('Data bind!')
-
+    # TODO: Add subset functionality
     def set_subsets(self, subsets):
         self.subsets = subsets
 
+    # TODO: Customize the data component to general styles
+    # Set canvas.program according to loading_data
     def set_program(self):
         if self.data is None:
             return None
@@ -343,25 +306,16 @@ class QtScatVispyWidget(QtGui.QWidget):
             u_linewidth = 1.0
             u_antialias = 1.0
 
-            self.program.bind(gloo.VertexBuffer(data))
+            self.canvas.program.bind(gloo.VertexBuffer(data))
 
-            self.program['u_linewidth'] = u_linewidth
-            self.program['u_antialias'] = u_antialias
-            self.program['u_model'] = self.model
-            self.program['u_view'] = self.view
-            self.program['u_size'] = 5 / self.translate
+            self.canvas.program['u_linewidth'] = u_linewidth
+            self.canvas.program['u_antialias'] = u_antialias
+            self.canvas.program['u_model'] = self.model
+            self.canvas.program['u_view'] = self.view
+            self.canvas.program['u_size'] = 5 / self.translate
 
             print('data is:', data)
             self.timer.start()
-            # return data
-
-    def on_key_press(self, event):
-        if event.text == ' ':
-            if self.timer.running:
-                self.timer.stop()
-                print('Press enter!')
-            else:
-                self.timer.start()
 
     def on_timer(self, event):
         self.timer_t += self.timer_dt # keep track on the current time
@@ -370,82 +324,54 @@ class QtScatVispyWidget(QtGui.QWidget):
         self.model = np.eye(4, dtype=np.float32)
         self.model = np.dot(rotate(self.theta, (0, 0, 1)),
                             rotate(self.phi, (0, 1, 0)))
-        self.program['u_model'] = self.model
+        self.canvas.program['u_model'] = self.model
         self.update()
 
+    # Set projection for canvas.program
     def set_projection(self):
-        # width, height = event.size
-        # gloo.glViewport(0, 0, width, height)
-        # self.projection = perspective( 45.0, width/float(height), 1.0, 1000.0 )
-        # self.program['u_projection'] = self.projection
         gloo.set_viewport(0, 0, self.canvas.physical_size[0], self.canvas.physical_size[1])
         self.projection = perspective(45.0, self.canvas.size[0] /
                                       float(self.canvas.size[1]), 1.0, 1000.0)
-        self.program['u_projection'] = self.projection
+        self.canvas.program['u_projection'] = self.projection
+
+    def on_resize(self, event):
+        self.set_projection()
+
+    def on_draw(self, event):
+        gloo.clear()
+        self.canvas.program.draw(mode='points')
 
     def on_mouse_wheel(self, event):
         self.translate -= event.delta[1]
         self.translate = max(2, self.translate)
         self.view = translate((0, 0, -self.translate))
 
-        self.program['u_view'] = self.view
-        self.program['u_size'] = 5 / self.translate
+        self.canvas.program['u_view'] = self.view
+        self.canvas.program['u_size'] = 5 / self.translate
         self.canvas.update()
 
-    # Now the resize works well
-    def on_resize(self, event):
-        self.set_projection()
+    def on_mouse_press(self, event):
+        self.canvas.prev_cursor_x, self.canvas.prev_cursor_y = event.pos
+        self.canvas.dragging_marked = False
+        self.is_mouse_pressed = True
 
-    def on_draw(self, event):
-        # gloo.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-        # gloo.clear()
-        # RuntimeError: Program validation error
-        gloo.clear()
-        self.program.draw(mode='points')
+    def on_mouse_move(self, event):
+        if event.is_dragging:
+            self.is_dragging = True
+            x, y = event.pos
+            dx = x-self.canvas.prev_cursor_x
+            dy = y-self.canvas.prev_cursor_y
+            self.phi += float(dx)/x*180
+            self.theta += float(dy)/y*180
 
+            self.model = np.dot(rotate(self.theta, (0, 0, 1)),
+                                rotate(self.phi, (0, 1, 0)))
 
-    # def on_paint(self, event):
-    #     gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-    #     self.program.draw(gl.GL_POINTS)
+            self.canvas.prev_cursor_x, self.canvas.prev_cursor_y = event.pos
+            self.prev_timer_t = self.timer_t
+            self.canvas.program['u_model'] = self.model
+            self.canvas.update()
 
-    '''def add_volume_visual(self):
-
-        # TODO: need to implement the visualiation of the subsets in this method
-
-        vol_data = self.get_data()
-        # Create the volume visual and give default settings
-        vol_visual = scene.visuals.Volume(vol_data, parent=self.view.scene, threshold=0.1, method='mip',
-                                       emulate_texture=self.emulate_texture)
-        # volume1.cmap = self.color_map
-
-        trans = (-vol_data.shape[2]/2, -vol_data.shape[1]/2, -vol_data.shape[0]/2)
-        _axis_scale = (vol_data.shape[2], vol_data.shape[1], vol_data.shape[0])
-        vol_visual.transform = scene.STTransform(translate=trans)
-
-        self.axis.transform = scene.STTransform(translate=trans, scale=_axis_scale)
-
-        self.vol_visual = vol_visual
-        self.widget_axis_scale = self.axis.transform.scale
-
-    def add_text_visual(self):
-        # Create the text visual to show zoom scale
-        text = scene.visuals.Text('', parent=self.canvas.scene, color='white', bold=True, font_size=16)
-        text.pos = [40, self.canvas.size[1]-40]
-        return text
-
-    def on_timer(self, event):
-        self.zoom_text_visual.color = [1, 1, 1, float((7-event.iteration) % 8)/8]
-        self.canvas.update()
-
-    def on_resize(self, event):
-        self.zoom_text_visual.pos = [40, self.canvas.size[1] - 40]
-
-    def on_mouse_wheel(self, event):
-        if self.view.camera.distance is None:
-            self.view.camera.distance = 10.0
-        if self.view.camera is self.turntableCamera:
-            self.zoom_size = self.ori_distance / self.view.camera.distance
-            # self.zoom_size += event.delta[1]
-            self.zoom_text_visual.text = 'X %s' % round(self.zoom_size, 1)
-            self.zoom_timer.start(interval=0.2, iterations=8)
-        # TODO: add a bound for fly_mode mouse_wheel'''
+    def on_mouse_release(self, event):
+        self.is_dragging = False
+        self.is_mouse_pressed = False
