@@ -50,10 +50,12 @@ def test_widget():
     # op = VolumeOptionsWidget(vispy_widget=w)
     w.data = test_categorical_data()
     w.set_program()
-    w.set_projection()
+    # w.set_projection()
     # w.on_draw()
     w.canvas.show()
 
+    # Test apply_zoom
+    # w.apply_zoom()
 
     # Test timer
     # w.on_timer(TimerEvent(type='timer_timeout', iteration=3))
@@ -64,6 +66,6 @@ def test_widget():
     # w.on_key_press(KeyEvent(text='3'))
 
     # Test mouse_wheel
-    # w.on_mouse_wheel(MouseEvent(type='mouse_wheel', delta=(0, 0.5)))
-    # w.on_mouse_wheel(MouseEvent(type='mouse_wheel', delta=(0, -0.3)))
+    w.on_mouse_wheel(MouseEvent(type='mouse_wheel', delta=(0, 0.5)))
+    w.on_mouse_wheel(MouseEvent(type='mouse_wheel', delta=(0, -0.3)))
 

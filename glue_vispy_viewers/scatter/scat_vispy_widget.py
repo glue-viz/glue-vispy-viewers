@@ -239,8 +239,7 @@ class QtScatVispyWidget(QtGui.QWidget):
 
 
         # If you want to use gloo without vispy.app, use a gloo.context.FakeCanvas.
-        # fake_can = gloo.context.FakeCanvas()
-        # fake_can.flush()
+
         gloo.set_state('translucent', clear_color='white')
 
         self.program = gloo.Program(vert, frag)
@@ -268,9 +267,6 @@ class QtScatVispyWidget(QtGui.QWidget):
         # self.program['u_model'] = self.model
         # self.program['u_view'] = self.view
 
-
-
-
         self.timer_dt = 1.0/60
         self.timer_t = 0.0
         self.timer = app.Timer(self.timer_dt)
@@ -286,12 +282,10 @@ class QtScatVispyWidget(QtGui.QWidget):
         self.rotate_theta_speed = 0.0
         self.rotate_phi_speed = 0.0
 
-
         # Connect events
         self.canvas.events.mouse_wheel.connect(self.on_mouse_wheel)
         self.canvas.events.draw.connect(self.on_draw)
-
-        # self.canvas.events.resize.connect(self.on_resize)
+        self.canvas.events.resize.connect(self.on_resize)
 
         # gl.glClearColor(0,0,0,1)
         # gl.glDisable(gl.GL_DEPTH_TEST)
@@ -379,7 +373,7 @@ class QtScatVispyWidget(QtGui.QWidget):
         self.program['u_model'] = self.model
         self.update()
 
-    def set_projection(self):
+    '''def set_projection(self):
         # width, height = event.size
         # gloo.glViewport(0, 0, width, height)
         # self.projection = perspective( 45.0, width/float(height), 1.0, 1000.0 )
@@ -387,7 +381,7 @@ class QtScatVispyWidget(QtGui.QWidget):
         gloo.set_viewport(0, 0, self.canvas.physical_size[0], self.canvas.physical_size[1])
         self.projection = perspective(45.0, self.canvas.size[0] /
                                       float(self.canvas.size[1]), 1.0, 1000.0)
-        self.program['u_projection'] = self.projection
+        self.program['u_projection'] = self.projection'''
 
     def on_mouse_wheel(self, event):
         self.translate -= event.delta[1]
@@ -396,19 +390,22 @@ class QtScatVispyWidget(QtGui.QWidget):
 
         self.program['u_view'] = self.view
         self.program['u_size'] = 5 / self.translate
-        self.update()
+        self.canvas.update()
+
+    # Now the resize works well
+    def on_resize(self, event):
+        gloo.set_viewport(0, 0, self.canvas.physical_size[0], self.canvas.physical_size[1])
+        self.projection = perspective(45.0, self.size[0] /
+                                      float(self.size[1]), 1.0, 1000.0)
+        self.program['u_projection'] = self.projection
 
     def on_draw(self, event):
         # gloo.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         # gloo.clear()
+        # RuntimeError: Program validation error
         gloo.clear()
         self.program.draw(mode='points')
 
-    '''def apply_zoom(self):
-        gloo.set_viewport(0, 0, self.canvas.physical_size[0], self.canvas.physical_size[1])
-        self.projection = perspective(45.0, self.size[0] /
-                                      float(self.size[1]), 1.0, 1000.0)
-        self.program['u_projection'] = self.projection'''
 
     # def on_paint(self, event):
     #     gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)

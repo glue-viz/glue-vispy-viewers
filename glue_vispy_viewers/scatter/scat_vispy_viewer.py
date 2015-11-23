@@ -65,7 +65,7 @@ class ScatVispyViewer(DataViewer):
         self._vispy_widget.set_data(self._data)
         # data = self._vispy_widget.get_data()
         self._vispy_widget.set_program()
-        self._vispy_widget.set_projection()
+        # self._vispy_widget.set_projection()
         # self._options_widget.init_viewer()
         # print('data position is:', self._vispy_widget.data['a_position'])
         self._redraw()
