@@ -373,7 +373,7 @@ class QtScatVispyWidget(QtGui.QWidget):
         self.program['u_model'] = self.model
         self.update()
 
-    '''def set_projection(self):
+    def set_projection(self):
         # width, height = event.size
         # gloo.glViewport(0, 0, width, height)
         # self.projection = perspective( 45.0, width/float(height), 1.0, 1000.0 )
@@ -381,7 +381,7 @@ class QtScatVispyWidget(QtGui.QWidget):
         gloo.set_viewport(0, 0, self.canvas.physical_size[0], self.canvas.physical_size[1])
         self.projection = perspective(45.0, self.canvas.size[0] /
                                       float(self.canvas.size[1]), 1.0, 1000.0)
-        self.program['u_projection'] = self.projection'''
+        self.program['u_projection'] = self.projection
 
     def on_mouse_wheel(self, event):
         self.translate -= event.delta[1]
@@ -394,10 +394,7 @@ class QtScatVispyWidget(QtGui.QWidget):
 
     # Now the resize works well
     def on_resize(self, event):
-        gloo.set_viewport(0, 0, self.canvas.physical_size[0], self.canvas.physical_size[1])
-        self.projection = perspective(45.0, self.size[0] /
-                                      float(self.size[1]), 1.0, 1000.0)
-        self.program['u_projection'] = self.projection
+        self.set_projection()
 
     def on_draw(self, event):
         # gloo.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
