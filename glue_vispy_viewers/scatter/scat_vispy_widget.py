@@ -19,7 +19,7 @@ class QtScatVispyWidget(QtGui.QWidget):
 
         super(QtScatVispyWidget, self).__init__(parent=parent)
 
-        vert = """
+        vert ="""
         #version 120
 
         // Uniforms
@@ -56,6 +56,7 @@ class QtScatVispyWidget(QtGui.QWidget):
             gl_PointSize = v_size + 2*(v_linewidth + 1.5*v_antialias);
         }
         """
+
 
         frag = """
         #version 120
@@ -225,14 +226,15 @@ class QtScatVispyWidget(QtGui.QWidget):
         # gloo.glBlendFunc(gloo.GL_SRC_ALPHA, gloo.GL_ONE) #_MINUS_SRC_ALPHA)
 
         # Prepare canvas
-        self.canvas = scene.SceneCanvas(keys='interactive', show=False)
+        self.canvas = app.Canvas(keys='interactive', show=False)
         self.canvas.size = [600, 400]
         self.canvas.measure_fps()
 
         # Set up a viewbox to display the image with interactive pan/zoom
-        self.view = self.canvas.central_widget.add_view()
-        self.view.border_color = 'red'
-        self.view.parent = self.canvas.scene
+        # self.view = self.canvas.central_widget.add_view()
+        # self.view.border_color = 'red'
+        # self.view.parent = self.canvas.scene
+        self.view = np.eye(4,dtype=np.float32)
 
 
 
@@ -242,6 +244,7 @@ class QtScatVispyWidget(QtGui.QWidget):
         gloo.set_state('translucent', clear_color='white')
 
         self.program = gloo.Program(vert, frag)
+        gloo.gl.use_gl('gl2 debug')
         # self.program = gloo.Program(self.VERT_SHADER, self.FRAG_SHADER)
         self.model = np.eye(4,dtype=np.float32)
         self.projection = np.eye(4,dtype=np.float32)
@@ -256,8 +259,8 @@ class QtScatVispyWidget(QtGui.QWidget):
         self.zoom_timer = app.Timer(0.2, connect=self.on_timer, start=False)
 
         # Add a 3D axis to keep us oriented
-        self.axis = scene.visuals.XYZAxis(parent=self.view.scene)
-        self.widget_axis_scale = [1, 1, 1]'''
+        # self.axis = scene.visuals.XYZAxis(parent=self.view.scene)
+        # self.widget_axis_scale = [1, 1, 1]'''
 
         # self.program.bind(gloo.VertexBuffer(data))
 
@@ -329,7 +332,7 @@ class QtScatVispyWidget(QtGui.QWidget):
 
             # Dot size determination according to the mass - *2 for larger size
             S = np.zeros(n)
-            S[...] = 5* self.data.get_component('mass').data**(1./3)/1.e1
+            S[...] = 5* self.data.get_component('mass').data**(1./3)/1.e5
 
 
             # Wrap the data into a package
@@ -397,8 +400,8 @@ class QtScatVispyWidget(QtGui.QWidget):
 
     def on_draw(self, event):
         # gloo.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-        gloo.clear()
         # gloo.clear()
+        gloo.clear()
         self.program.draw(mode='points')
 
     '''def apply_zoom(self):

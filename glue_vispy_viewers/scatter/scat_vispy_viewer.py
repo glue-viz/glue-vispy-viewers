@@ -80,7 +80,7 @@ class ScatVispyViewer(DataViewer):
 
     def _redraw(self):
         # self._vispy_widget.on_draw()
-        self._vispy_widget.canvas.render()
+        # self._vispy_widget.canvas.render()
         self._vispy_widget.canvas.show()
         self._vispy_widget.canvas.update()
 
