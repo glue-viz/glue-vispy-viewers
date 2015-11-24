@@ -289,7 +289,7 @@ class QtScatVispyWidget(QtGui.QWidget):
 
             # Dot size determination according to the mass - *2 for larger size
             S = np.zeros(n)
-            S[...] = 5* self.data.get_component('mass').data**(1./3)/1.e5
+            S[...] = 5* self.data.get_component('mass').data**(1./3)/1.e1
 
 
             # Wrap the data into a package
@@ -338,8 +338,16 @@ class QtScatVispyWidget(QtGui.QWidget):
         self.set_projection()
 
     def on_draw(self, event):
-        gloo.clear()
-        self.canvas.program.draw(mode='points')
+        # gloo.clear()
+        # self.canvas.program.draw(mode='points')
+        gloo.gl.glClear(gloo.gl.GL_COLOR_BUFFER_BIT | gloo.gl.GL_DEPTH_BUFFER_BIT)
+        # gloo.clear(color=True, depth=True)
+        self.canvas.program.draw(gloo.gl.GL_POINTS)
+        # self.canvas.update()
+
+    def on_paint(self, event):
+        gloo.gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+        self.program.draw(gloo.gl.GL_POINTS)
 
     def on_mouse_wheel(self, event):
         self.translate -= event.delta[1]
