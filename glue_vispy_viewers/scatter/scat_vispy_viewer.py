@@ -2,6 +2,8 @@ from glue.qt.widgets.data_viewer import DataViewer
 from glue.core import message as msg
 
 from .scat_vispy_widget import QtScatVispyWidget
+from .options_widget import ScatOptionsWidget
+
 
 class ScatVispyViewer(DataViewer):
 
@@ -18,6 +20,8 @@ class ScatVispyViewer(DataViewer):
         self.setCentralWidget(self._canvas.native)
         self._data = None
         self._subsets = []
+        self._options_widget = ScatOptionsWidget(vispy_widget=self._vispy_widget)
+
 
     def register_to_hub(self, hub):
 
@@ -95,4 +99,7 @@ class ScatVispyViewer(DataViewer):
 
     def notify(self, message):
         pass
+
+    def options_widget(self):
+        return self._options_widget
 

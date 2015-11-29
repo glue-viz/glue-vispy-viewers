@@ -317,6 +317,10 @@ class QtScatVispyWidget(QtGui.QWidget):
             print('data is:', data)
             self.timer.start()
 
+    # TODO: to be implemented
+    def _refresh(self):
+        self.update()
+
     def on_timer(self, event):
         self.timer_t += self.timer_dt # keep track on the current time
         self.theta += self.rotate_theta_speed
@@ -338,12 +342,8 @@ class QtScatVispyWidget(QtGui.QWidget):
         self.set_projection()
 
     def on_draw(self, event):
-        # gloo.clear()
-        # self.canvas.program.draw(mode='points')
         gloo.gl.glClear(gloo.gl.GL_COLOR_BUFFER_BIT | gloo.gl.GL_DEPTH_BUFFER_BIT)
-        # gloo.clear(color=True, depth=True)
         self.canvas.program.draw(gloo.gl.GL_POINTS)
-        # self.canvas.update()
 
     def on_paint(self, event):
         gloo.gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
