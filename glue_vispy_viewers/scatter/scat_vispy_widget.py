@@ -239,6 +239,7 @@ class QtScatVispyWidget(QtGui.QWidget):
 
         # Prepare data and subsets
         self.data = None
+        self.bind_data = None
 
         # Set parameters for timer
         self.timer_dt = 1.0/60
@@ -266,8 +267,30 @@ class QtScatVispyWidget(QtGui.QWidget):
         self.canvas.events.mouse_move.connect(self.on_mouse_move)
         self.canvas.events.mouse_release.connect(self.on_mouse_release)
 
-    def set_data(self, data):
-        self.data = data
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        if data is None:
+            self._data = data
+        else:
+            self._data = data
+            first_data = data[data.components[0]]
+            self.options_widget.set_valid_components([c.label for c in data.component_ids()])
+            self._refresh()
+
+
+    @property
+    def components(self):
+        if self.data is None:
+            return None
+        else:
+            components = [self.data[self.options_widget.xatt],
+                          self.data[self.options_widget.yatt], self.data[self.options_widget.zatt]]
+            print('Component[0] is:', components[0].shape)
+            return components
 
     # TODO: Add subset functionality
     def set_subsets(self, subsets):
@@ -279,13 +302,13 @@ class QtScatVispyWidget(QtGui.QWidget):
         if self.data is None:
             return None
         else:
-            n = len(self.data.get_component('x_gal').data)
+            n = len(self.components[0])
             P = np.zeros((n,3), dtype=np.float32)
 
             X, Y, Z =  P[:,0],P[:,1],P[:,2]
-            X[...] = self.data.get_component('x_gal').data
-            Y[...] = self.data.get_component('y_gal').data
-            Z[...] = self.data.get_component('z_gal').data
+            X[...] = self.components[0]
+            Y[...] = self.components[1]
+            Z[...] = self.components[2]
 
             # Dot size determination according to the mass - *2 for larger size
             S = np.zeros(n)
@@ -306,7 +329,8 @@ class QtScatVispyWidget(QtGui.QWidget):
             u_linewidth = 1.0
             u_antialias = 1.0
 
-            self.canvas.program.bind(gloo.VertexBuffer(data))
+            self.bind_data = data
+            self.canvas.program.bind(gloo.VertexBuffer(self.bind_data))
 
             self.canvas.program['u_linewidth'] = u_linewidth
             self.canvas.program['u_antialias'] = u_antialias
@@ -319,6 +343,8 @@ class QtScatVispyWidget(QtGui.QWidget):
 
     # TODO: to be implemented
     def _refresh(self):
+        if self.data is None:
+            return
         self.update()
 
     def on_timer(self, event):

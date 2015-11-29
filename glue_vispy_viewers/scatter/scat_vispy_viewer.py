@@ -62,8 +62,8 @@ class ScatVispyViewer(DataViewer):
         self._update_subsets()
 
     def _update_data(self):
-        self._vispy_widget.set_data(self._data)
-        self._vispy_widget.set_program()
+        self._vispy_widget.data = self._data
+        # self._vispy_widget.set_program()
         self._redraw()
 
     def _update_subsets(self):

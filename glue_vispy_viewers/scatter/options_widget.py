@@ -31,14 +31,8 @@ class ScatOptionsWidget(QtGui.QWidget):
     zmin = TextProperty('ui.zmin', 'Lower z limit of plot')
     zmax = TextProperty('ui.zmax', 'Upper z limit of plot')
 
-    hidden = ButtonProperty('ui.hidden_attributes', 'Show hidden attributes')
+    hidden = ButtonProperty('ui.hidden_attributes', 'Show hidden attributes')'''
 
-    xatt = CurrentComboProperty('ui.xAxisComboBox',
-                                'Attribute to plot on x axis')
-    yatt = CurrentComboProperty('ui.yAxisComboBox',
-                                'Attribute to plot on y axis')
-    zatt = CurrentComboProperty('ui.zAxisComboBox',
-                                'Attribute to plot on z axis')'''
 
     def __init__(self, parent=None, vispy_widget=None):
 
@@ -55,6 +49,9 @@ class ScatOptionsWidget(QtGui.QWidget):
         if vispy_widget is not None:
             self._vispy_widget.options_widget = self
 
+        self.xatt = CurrentComboProperty('ui.xAxisComboBox')
+        self.yatt = CurrentComboProperty('ui.yAxisComboBox')
+        self.zatt = CurrentComboProperty('ui.zAxisComboBox')
         self._connect()
 
     # From 2D scatter
@@ -72,6 +69,7 @@ class ScatOptionsWidget(QtGui.QWidget):
         ui.zmin.returnPressed.connect(self._refresh_viewer)
         ui.zmax.returnPressed.connect(self._refresh_viewer)
 
+        ui.axis_apply.clicked.connect(self._refresh_program)
         ui.reset_button.clicked.connect(self._reset_view)
 
     # TODO: implement it
@@ -100,3 +98,7 @@ class ScatOptionsWidget(QtGui.QWidget):
     def _refresh_viewer(self):
         if self._vispy_widget is not None:
             self._vispy_widget._refresh()
+
+    def _refresh_program(self):
+        if self._vispy_widget is not None:
+            self._vispy_widget.set_program()

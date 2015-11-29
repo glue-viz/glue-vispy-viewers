@@ -215,12 +215,12 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
-         <widget class="QPushButton" name="snapLimits">
+         <widget class="QPushButton" name="axis_apply">
           <property name="toolTip">
            <string>Rescale plot limits to fit data</string>
           </property>
           <property name="text">
-           <string>Auto scale</string>
+           <string>Apply</string>
           </property>
          </widget>
         </item>
