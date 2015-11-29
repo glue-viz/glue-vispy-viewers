@@ -223,7 +223,6 @@ class QtScatVispyWidget(QtGui.QWidget):
         self.canvas.size = [600, 400]
         self.canvas.measure_fps()
 
-        # TODO: OpenGL code doesn't work now; If you want to use gloo without vispy.app, use a gloo.context.FakeCanvas.
         gloo.set_state('translucent', clear_color='white')
         gloo.gl.use_gl('gl2 debug')
 
@@ -235,7 +234,7 @@ class QtScatVispyWidget(QtGui.QWidget):
         # Set up a viewbox to display the image with interactive pan/zoom
         self.view = np.eye(4, dtype=np.float32)
         self.translate = 20  # This is used to set the initial size :-)
-        self.view = translate((0, 0, -self.translate)) #Is there anything like self.view.translate?
+        self.view = translate((0, 0, -self.translate))  # Is there anything like self.view.translate?
 
         # Prepare data and subsets
         self.data = None
@@ -287,22 +286,24 @@ class QtScatVispyWidget(QtGui.QWidget):
         if self.data is None:
             return None
         else:
-            components = [self.data[self.options_widget.xatt],
-                          self.data[self.options_widget.yatt], self.data[self.options_widget.zatt]]
-            print('Component[0] is:', components[0].shape)
+            components = [self.data[self.options_widget.ui.xAxisComboBox.currentText()],
+                          self.data[self.options_widget.ui.yAxisComboBox.currentText()],
+                          self.data[self.options_widget.ui.zAxisComboBox.currentText()],
+                          self.data[self.options_widget.ui.SizeComboBox.currentText()]]
             return components
 
     # TODO: Add subset functionality
     def set_subsets(self, subsets):
         self.subsets = subsets
 
-    # TODO: Customize the data component to general styles
+    # TODO: Implement the size algorithm
     # Set canvas.program according to loading_data
     def set_program(self):
         if self.data is None:
             return None
         else:
-            n = len(self.components[0])
+            if not hasattr(self, 'components'): return
+            n = len(self.components[3])
             P = np.zeros((n,3), dtype=np.float32)
 
             X, Y, Z =  P[:,0],P[:,1],P[:,2]
@@ -312,8 +313,7 @@ class QtScatVispyWidget(QtGui.QWidget):
 
             # Dot size determination according to the mass - *2 for larger size
             S = np.zeros(n)
-            S[...] = 5* self.data.get_component('mass').data**(1./3)/1.e1
-
+            S[...] = 5* self.components[3]**(1./3)/1.e1
 
             # Wrap the data into a package
             data = np.zeros(n, [('a_position', np.float32, 3),
@@ -338,8 +338,8 @@ class QtScatVispyWidget(QtGui.QWidget):
             self.canvas.program['u_view'] = self.view
             self.canvas.program['u_size'] = 5 / self.translate
 
-            print('data is:', data)
             self.timer.start()
+            self.canvas.update()
 
     # TODO: to be implemented
     def _refresh(self):
@@ -370,10 +370,6 @@ class QtScatVispyWidget(QtGui.QWidget):
     def on_draw(self, event):
         gloo.gl.glClear(gloo.gl.GL_COLOR_BUFFER_BIT | gloo.gl.GL_DEPTH_BUFFER_BIT)
         self.canvas.program.draw(gloo.gl.GL_POINTS)
-
-    def on_paint(self, event):
-        gloo.gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-        self.program.draw(gloo.gl.GL_POINTS)
 
     def on_mouse_wheel(self, event):
         self.translate -= event.delta[1]
