@@ -29,7 +29,8 @@ class QtScatVispyWidget(QtGui.QWidget):
         self.axes_names = None
         self._current_array = None
 
-        self.vol_visual = None
+        # create scatter object and fill in the data
+        self.scatter = scene.visuals.Markers()
 
         # Add a 3D axis to keep us oriented
         self.axis = scene.visuals.XYZAxis(parent=self.view.scene)
@@ -96,11 +97,8 @@ class QtScatVispyWidget(QtGui.QWidget):
             # size = np.ones((n, 1))
             # size[:, 0] = self.components[3]
             S[...] = self.components[3] ** (1. / 3) / 1.e1
+            self.scatter.set_data(P, symbol='disc', edge_color=None, face_color=(1, 1, 1, .5), size=S)
 
-            # create scatter object and fill in the data
-            scatter = scene.visuals.Markers()
-            scatter.set_data(P, symbol='disc', edge_color=None, face_color=(1, 1, 1, .5), size=S)
-
-            self.view.add(scatter)
+            self.view.add(self.scatter)
             self.canvas.update()
 
