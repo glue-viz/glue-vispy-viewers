@@ -205,7 +205,11 @@
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="ClimComboBox"/>
+         <widget class="QComboBox" name="ClimComboBox">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>

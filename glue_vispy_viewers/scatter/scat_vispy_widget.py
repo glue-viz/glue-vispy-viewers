@@ -68,6 +68,16 @@ class QtScatVispyWidget(QtGui.QWidget):
                           self.data[self.options_widget.ui.ClimComboBox.currentText()]]
             return components
 
+    # For better get the component for clim dataset
+    def clim_components(self, clim_filter):
+        if self.components is None:
+            return None
+        else:
+            clim_components = []
+            for each_com in self.components:
+                clim_components.append(each_com[clim_filter])
+            return clim_components
+
     def _refresh(self):
         """
         This method can be called if the options widget is updated.
@@ -105,11 +115,41 @@ class QtScatVispyWidget(QtGui.QWidget):
             self._update_clim()
             self.canvas.update()
 
+    # Set the clim dataset and apply the new dataset to the current scatter visual
+    # TODO: add more clim options? Now the user could only clim one property
+    def apply_clim(self):
+
+        currentid = self.options_widget.ui.ClimComboBox.currentText()
+        _clim_pro = self.data[currentid]
+
+        # self.options_widget.cmin is in unicode type
+        _cmin = float(self.options_widget.cmin)
+        _cmax = float(self.options_widget.cmax)
+
+        # Get new clim_components according to the filter
+        more = _clim_pro > _cmin
+        less = _clim_pro < _cmax
+        clim_filter = np.all([more, less], axis=0)
+        _clim_components = self.clim_components(clim_filter)
+
+        n = len(_clim_components[0])
+        P = np.zeros((n, 3), dtype=np.float32)
+
+        X, Y, Z = P[:, 0], P[:, 1], P[:, 2]
+        X[...] = _clim_components[0]
+        Y[...] = _clim_components[1]
+        Z[...] = _clim_components[2]
+
+        # Dot size determination according to the mass - *2 for larger size
+        S = np.zeros(n)
+        S[...] = _clim_components[3] ** (1. / 3) / 1.e1
+        # Reset the data for scatter visual display
+        self.scatter.set_data(P, symbol='disc', edge_color=None, face_color=(1, 1, 1, .5), size=S)
+        self.canvas.update()
+
     def _update_clim(self):
         array = self.components[4]
-        print('===========')
-        print('array for component[4]', array)
-        print('===========')
+
         self.options_widget.cmin = "%.4g" % np.nanmin(array)
         self.options_widget.cmax = "%.4g" % np.nanmax(array)
 

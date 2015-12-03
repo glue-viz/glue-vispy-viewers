@@ -40,7 +40,7 @@ class ScatOptionsWidget(QtGui.QWidget):
         ui = self.ui
 
         ui.axis_apply.clicked.connect(self._apply)
-        ui.reset_button.clicked.connect(self._reset_view)
+        ui.reset_button.clicked.connect(self._apply)
         ui.ClimComboBox.currentIndexChanged.connect(self._clim_change)
         ui.clim_min.returnPressed.connect(self._draw_clim)
         ui.clim_max.returnPressed.connect(self._draw_clim)
@@ -63,9 +63,11 @@ class ScatOptionsWidget(QtGui.QWidget):
             self._vispy_widget._update_clim()
 
     def _draw_clim(self):
-        return
+
         # Pick the dataset between the threshold and draw them in different symbol
         # Add another visual into it?
+        if self._vispy_widget is not None:
+            self._vispy_widget.apply_clim()
 
     def _apply(self):
         self._reset_clim()
