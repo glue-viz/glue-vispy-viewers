@@ -64,7 +64,8 @@ class QtScatVispyWidget(QtGui.QWidget):
             components = [self.data[self.options_widget.ui.xAxisComboBox.currentText()],
                           self.data[self.options_widget.ui.yAxisComboBox.currentText()],
                           self.data[self.options_widget.ui.zAxisComboBox.currentText()],
-                          self.data[self.options_widget.ui.SizeComboBox.currentText()]]
+                          self.data[self.options_widget.ui.SizeComboBox.currentText()],
+                          self.data[self.options_widget.ui.ClimComboBox.currentText()]]
             return components
 
     def _refresh(self):
@@ -98,7 +99,17 @@ class QtScatVispyWidget(QtGui.QWidget):
             # size[:, 0] = self.components[3]
             S[...] = self.components[3] ** (1. / 3) / 1.e1
             self.scatter.set_data(P, symbol='disc', edge_color=None, face_color=(1, 1, 1, .5), size=S)
-
             self.view.add(self.scatter)
+
+            # set clim value
+            self._update_clim()
             self.canvas.update()
+
+    def _update_clim(self):
+        array = self.components[4]
+        print('===========')
+        print('array for component[4]', array)
+        print('===========')
+        self.options_widget.cmin = "%.4g" % np.nanmin(array)
+        self.options_widget.cmax = "%.4g" % np.nanmax(array)
 

@@ -196,25 +196,23 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label">
-        <property name="frameShape">
-         <enum>QFrame::NoFrame</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Sunken</enum>
-        </property>
-        <property name="text">
-         <string>Plot Limits</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QLabel" name="clim_label">
+          <property name="text">
+           <string>Plot Limit</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="ClimComboBox"/>
+        </item>
+       </layout>
       </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_4">
         <item>
-         <widget class="QLabel" name="xmin_label">
+         <widget class="QLabel" name="cmin_label">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
             <horstretch>0</horstretch>
@@ -228,15 +226,15 @@
            </size>
           </property>
           <property name="text">
-           <string>x min</string>
+           <string>Min</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="xmin"/>
+         <widget class="QLineEdit" name="clim_min"/>
         </item>
         <item>
-         <widget class="QLabel" name="xmax_label">
+         <widget class="QLabel" name="cmax_label">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
             <horstretch>0</horstretch>
@@ -250,115 +248,26 @@
            </size>
           </property>
           <property name="text">
-           <string>x max</string>
+           <string>Max</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="xmax"/>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_5">
-        <item>
-         <widget class="QLabel" name="ymin_label">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>40</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>y min</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="ymin"/>
-        </item>
-        <item>
-         <widget class="QLabel" name="ymax_label">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>40</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>y max</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="ymax"/>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_6">
-        <item>
-         <widget class="QLabel" name="zmin_label">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>40</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>z min</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="zmin"/>
-        </item>
-        <item>
-         <widget class="QLabel" name="zmax_label">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>40</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>z max</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="zmax"/>
+         <widget class="QLineEdit" name="clim_max"/>
         </item>
        </layout>
       </item>
       <item>
        <widget class="QPushButton" name="reset_button">
         <property name="text">
-         <string>Reset</string>
+         <string>Reset Limit</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Color</string>
         </property>
        </widget>
       </item>
