@@ -5,7 +5,7 @@ import sys
 import numpy as np
 from glue.external.qt import QtGui
 from vispy import scene, app
-from vispy.color import get_colormap
+from vispy.color import get_colormap, Color
 
 __all__ = ['QtScatVispyWidget']
 
@@ -31,6 +31,9 @@ class QtScatVispyWidget(QtGui.QWidget):
 
         # create scatter object and fill in the data
         self.scatter = scene.visuals.Markers()
+
+        # Add a grid plane
+        self.grid = scene.visuals.GridLines(scale=(500, 500))
 
         # Add a 3D axis to keep us oriented
         self.axis = scene.visuals.XYZAxis(parent=self.view.scene)
@@ -108,7 +111,16 @@ class QtScatVispyWidget(QtGui.QWidget):
             # size = np.ones((n, 1))
             # size[:, 0] = self.components[3]
             S[...] = self.components[3] ** (1. / 3) / 1.e1
-            self.scatter.set_data(P, symbol='disc', edge_color=None, face_color=(1, 1, 1, .5), size=S)
+
+
+            scatter_color =Color(self.options_widget.color, self.options_widget.opacity/100.0)
+
+            # Set default color = 'gold'
+            print('=============')
+            print('scatter_color is', scatter_color)
+            print('=============')
+
+            self.scatter.set_data(P, symbol='disc', edge_color=None, face_color=scatter_color, size=S)
             self.view.add(self.scatter)
 
             # set clim value
@@ -144,7 +156,7 @@ class QtScatVispyWidget(QtGui.QWidget):
         S = np.zeros(n)
         S[...] = _clim_components[3] ** (1. / 3) / 1.e1
         # Reset the data for scatter visual display
-        self.scatter.set_data(P, symbol='disc', edge_color=None, face_color=(1, 1, 1, .5), size=S)
+        self.scatter.set_data(P, symbol='disc', edge_color=None, face_color=self.options_widget.color, size=S)
         self.canvas.update()
 
     def _update_clim(self):

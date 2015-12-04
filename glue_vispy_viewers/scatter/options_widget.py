@@ -2,11 +2,11 @@ import os
 import math
 
 from glue.external.qt import QtGui
-from glue.qt.widget_properties import CurrentComboProperty, TextProperty, ButtonProperty
+from glue.qt.widget_properties import CurrentComboProperty, TextProperty, ValueProperty
 from glue.qt.qtutil import load_ui
 from glue.qt import get_qapp
 
-from vispy.color import get_colormaps
+from vispy.color import get_colormaps, get_color_dict, get_color_names
 
 __all__ = ["ScatterOptionsWidget"]
 
@@ -17,6 +17,9 @@ class ScatOptionsWidget(QtGui.QWidget):
 
     cmin = TextProperty('ui.clim_min')
     cmax = TextProperty('ui.clim_max')
+
+    color = CurrentComboProperty('ui.ColorComboBox')
+    opacity = ValueProperty('ui.OpacitySlider')
 
     def __init__(self, parent=None, vispy_widget=None):
 
@@ -33,6 +36,12 @@ class ScatOptionsWidget(QtGui.QWidget):
         if vispy_widget is not None:
             self._vispy_widget.options_widget = self
 
+        # There are 155 color options
+        for map_name in get_color_names()[0:40]:
+            self.ui.ColorComboBox.addItem(map_name, map_name)
+
+        # self.opacity = self.ui.opacity.value()
+
         self._connect()
 
     # From 2D scatter
@@ -42,6 +51,9 @@ class ScatOptionsWidget(QtGui.QWidget):
         ui.axis_apply.clicked.connect(self._apply)
         ui.reset_button.clicked.connect(self._apply)
         ui.ClimComboBox.currentIndexChanged.connect(self._clim_change)
+        ui.ColorComboBox.currentIndexChanged.connect(self._refresh_program)
+        ui.OpacitySlider.valueChanged.connect(self._refresh_program)
+
         ui.clim_min.returnPressed.connect(self._draw_clim)
         ui.clim_max.returnPressed.connect(self._draw_clim)
 
