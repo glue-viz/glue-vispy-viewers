@@ -40,21 +40,12 @@ class ScatOptionsWidget(QtGui.QWidget):
         for map_name in get_color_names():
             self.ui.ColorComboBox.addItem(map_name, map_name)
 
-
-        '''scene = QtGui.QGraphicsScene()
-        scene.addText("Hello, world!")
-        view = self.ui.graphicsView
-        view.show()'''
-
-
+        # Add a color display area here
         # self.opacity = self.ui.opacity.value()
         self.color_view = self.ui.graphicsView
-        print('=======')
-        print('Color_view and color is: first !', self.color_view, self.color)
         self.color_scene = QtGui.QGraphicsScene()
-        self.color_scene.setBackgroundBrush(QtGui.QColor(self.color))
+        self.color_view.setBackgroundBrush(QtGui.QColor(self.color))
         self.color_view.setScene(self.color_scene)
-        # self.color_view.update()
         self.color_view.show()
 
         self._connect()
@@ -90,7 +81,6 @@ class ScatOptionsWidget(QtGui.QWidget):
             self._vispy_widget._update_clim()
 
     def _draw_clim(self):
-
         # Pick the dataset between the threshold and draw them in different symbol
         # Add another visual into it?
         if self._vispy_widget is not None:
@@ -109,18 +99,11 @@ class ScatOptionsWidget(QtGui.QWidget):
         self.cmax = 'auto'
 
     def _color_changed(self):
-        # Set color display
-        self.color_scene.setBackgroundBrush(QtGui.QColor(self.color))
         self.color_view.setScene(self.color_scene)
-        # self.color_view.render(QtGui.QPainter())
-        print('=======')
-        print('Color_view and color is:', self.color_view, self.color, self.ui.axis_apply)
         self.color_view.setBackgroundBrush(QtGui.QColor(self.color))
-
         self.color_view.show()
-        # self.color_view.update()
 
-        self._refresh_program()
+        # self._refresh_program()
 
     # TODO: self._vispy_widget._refresh() is empty now
     def _refresh_viewer(self):

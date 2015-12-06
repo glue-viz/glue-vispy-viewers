@@ -6,8 +6,7 @@ import numpy as np
 from glue.external.qt import QtGui
 from vispy import scene, app
 from vispy.color import get_colormap, Color
-# from vispy.visuals.transforms import (STTransform, MatrixTransform,\
-#                                       ChainTransform, TransformSystem)
+from vispy.visuals import transforms
 
 
 __all__ = ['QtScatVispyWidget']
@@ -36,23 +35,33 @@ class QtScatVispyWidget(QtGui.QWidget):
         self.scatter = scene.visuals.Markers()
 
         # Add a grid plane
-        self.grid = scene.visuals.GridLines(parent=self.view)
-        # affine = scene.transforms.MatrixTransform()
-        # trans = self.view.transform
-        # self.grid.transform = STTransform(translate=(0, 1), scale=(0.5, 0.5))
+        # The pos of the visual will be at the center of the parent !
+        a = 400 - self.canvas.size[0]/2.0
+        b = 300 - self.canvas.size[1]/2.0
+        self.grid = scene.visuals.GridLines(scale=(0.5, 0.5), parent=self.view)
 
-        # trans = self.grid.transform
-
+        # Try to set the center of grid identical with the censer of the axis
+        # But found not so necessary now
+        # self.grid.transform = transforms.STTransform(translate=(a, b))
 
         # Add a 3D axis to keep us oriented
         self.axis = scene.visuals.XYZAxis(parent=self.view.scene)
         print('==========')
-        print('axis tranform', self.axis.transform)
+        print('canvas size', self.canvas.size)
         self.widget_axis_scale = [1, 1, 1]
 
         # trans.scale = self.axis.transform.scale
 
         self._shown_data = None
+        self.canvas.events.resize.connect(self.on_resize)
+
+    def on_resize(self, event):
+        # TODO: resize of the grid?
+        print('==============')
+        print('canvas size', self.canvas.size)
+        a = 400 - self.canvas.size[0]/2.0
+        b = 300 - self.canvas.size[1]/2.0
+        # self.grid.transform = transforms.STTransform(translate=(a, b))
 
     @property
     def data(self):

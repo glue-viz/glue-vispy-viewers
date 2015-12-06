@@ -153,33 +153,6 @@
        </layout>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
-        <item>
-         <widget class="QLabel" name="sizelabel">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="text">
-           <string>size</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QComboBox" name="SizeComboBox"/>
-        </item>
-        <item>
-         <widget class="QPushButton" name="axis_apply">
-          <property name="toolTip">
-           <string>Rescale plot limits to fit data</string>
-          </property>
-          <property name="text">
-           <string>Apply</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
        <layout class="QHBoxLayout" name="horizontalLayout_5">
         <item>
          <widget class="QLabel" name="label_2">
@@ -210,6 +183,33 @@
           </property>
           <property name="cacheMode">
            <set>QGraphicsView::CacheBackground</set>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QLabel" name="sizelabel">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="text">
+           <string>size</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="SizeComboBox"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="axis_apply">
+          <property name="toolTip">
+           <string>Rescale plot limits to fit data</string>
+          </property>
+          <property name="text">
+           <string>Apply</string>
           </property>
          </widget>
         </item>
