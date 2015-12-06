@@ -6,6 +6,9 @@ import numpy as np
 from glue.external.qt import QtGui
 from vispy import scene, app
 from vispy.color import get_colormap, Color
+# from vispy.visuals.transforms import (STTransform, MatrixTransform,\
+#                                       ChainTransform, TransformSystem)
+
 
 __all__ = ['QtScatVispyWidget']
 
@@ -33,15 +36,21 @@ class QtScatVispyWidget(QtGui.QWidget):
         self.scatter = scene.visuals.Markers()
 
         # Add a grid plane
-        self.grid = scene.visuals.GridLines(scale=(500, 500))
+        self.grid = scene.visuals.GridLines(parent=self.view)
+        # affine = scene.transforms.MatrixTransform()
+        # trans = self.view.transform
+        # self.grid.transform = STTransform(translate=(0, 1), scale=(0.5, 0.5))
+
+        # trans = self.grid.transform
+
 
         # Add a 3D axis to keep us oriented
         self.axis = scene.visuals.XYZAxis(parent=self.view.scene)
-
+        print('==========')
+        print('axis tranform', self.axis.transform)
         self.widget_axis_scale = [1, 1, 1]
 
-        # Set up default colormap
-        self.color_map = get_colormap('hot')
+        # trans.scale = self.axis.transform.scale
 
         self._shown_data = None
 
@@ -155,8 +164,10 @@ class QtScatVispyWidget(QtGui.QWidget):
         # Dot size determination according to the mass - *2 for larger size
         S = np.zeros(n)
         S[...] = _clim_components[3] ** (1. / 3) / 1.e1
+        scatter_color =Color(self.options_widget.color, self.options_widget.opacity/100.0)
+
         # Reset the data for scatter visual display
-        self.scatter.set_data(P, symbol='disc', edge_color=None, face_color=self.options_widget.color, size=S)
+        self.scatter.set_data(P, symbol='disc', edge_color=None, face_color=scatter_color, size=S)
         self.canvas.update()
 
     def _update_clim(self):

@@ -1,7 +1,7 @@
 import os
 import math
 
-from glue.external.qt import QtGui
+from glue.external.qt import QtGui, QtCore
 from glue.qt.widget_properties import CurrentComboProperty, TextProperty, ValueProperty
 from glue.qt.qtutil import load_ui
 from glue.qt import get_qapp
@@ -37,10 +37,25 @@ class ScatOptionsWidget(QtGui.QWidget):
             self._vispy_widget.options_widget = self
 
         # There are 155 color options
-        for map_name in get_color_names()[0:40]:
+        for map_name in get_color_names():
             self.ui.ColorComboBox.addItem(map_name, map_name)
 
+
+        '''scene = QtGui.QGraphicsScene()
+        scene.addText("Hello, world!")
+        view = self.ui.graphicsView
+        view.show()'''
+
+
         # self.opacity = self.ui.opacity.value()
+        self.color_view = self.ui.graphicsView
+        print('=======')
+        print('Color_view and color is: first !', self.color_view, self.color)
+        self.color_scene = QtGui.QGraphicsScene()
+        self.color_scene.setBackgroundBrush(QtGui.QColor(self.color))
+        self.color_view.setScene(self.color_scene)
+        # self.color_view.update()
+        self.color_view.show()
 
         self._connect()
 
@@ -51,7 +66,7 @@ class ScatOptionsWidget(QtGui.QWidget):
         ui.axis_apply.clicked.connect(self._apply)
         ui.reset_button.clicked.connect(self._apply)
         ui.ClimComboBox.currentIndexChanged.connect(self._clim_change)
-        ui.ColorComboBox.currentIndexChanged.connect(self._refresh_program)
+        ui.ColorComboBox.currentIndexChanged.connect(self._color_changed)
         ui.OpacitySlider.valueChanged.connect(self._refresh_program)
 
         ui.clim_min.returnPressed.connect(self._draw_clim)
@@ -92,6 +107,20 @@ class ScatOptionsWidget(QtGui.QWidget):
     def _reset_clim(self):
         self.cmin = 'auto'
         self.cmax = 'auto'
+
+    def _color_changed(self):
+        # Set color display
+        self.color_scene.setBackgroundBrush(QtGui.QColor(self.color))
+        self.color_view.setScene(self.color_scene)
+        # self.color_view.render(QtGui.QPainter())
+        print('=======')
+        print('Color_view and color is:', self.color_view, self.color, self.ui.axis_apply)
+        self.color_view.setBackgroundBrush(QtGui.QColor(self.color))
+
+        self.color_view.show()
+        # self.color_view.update()
+
+        self._refresh_program()
 
     # TODO: self._vispy_widget._refresh() is empty now
     def _refresh_viewer(self):

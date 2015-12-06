@@ -191,6 +191,28 @@
         <item>
          <widget class="QComboBox" name="ColorComboBox"/>
         </item>
+        <item>
+         <widget class="QGraphicsView" name="graphicsView">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="backgroundBrush">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>255</red>
+             <green>255</green>
+             <blue>255</blue>
+            </color>
+           </brush>
+          </property>
+          <property name="cacheMode">
+           <set>QGraphicsView::CacheBackground</set>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
       <item>
