@@ -59,6 +59,7 @@ class QtScatVispyWidget(QtGui.QWidget):
         # TODO: resize of the grid?
         print('==============')
         print('canvas size', self.canvas.size)
+        print('view size', self.view.size)
         a = 400 - self.canvas.size[0]/2.0
         b = 300 - self.canvas.size[1]/2.0
         # self.grid.transform = transforms.STTransform(translate=(a, b))
@@ -131,7 +132,7 @@ class QtScatVispyWidget(QtGui.QWidget):
             S[...] = self.components[3] ** (1. / 3) / 1.e1
 
 
-            scatter_color =Color(self.options_widget.color, self.options_widget.opacity/100.0)
+            scatter_color =Color(self.options_widget.true_color, self.options_widget.opacity/100.0)
 
             # Set default color = 'gold'
             print('=============')
@@ -173,7 +174,7 @@ class QtScatVispyWidget(QtGui.QWidget):
         # Dot size determination according to the mass - *2 for larger size
         S = np.zeros(n)
         S[...] = _clim_components[3] ** (1. / 3) / 1.e1
-        scatter_color =Color(self.options_widget.color, self.options_widget.opacity/100.0)
+        scatter_color =Color(self.options_widget.true_color, self.options_widget.opacity/100.0)
 
         # Reset the data for scatter visual display
         self.scatter.set_data(P, symbol='disc', edge_color=None, face_color=scatter_color, size=S)

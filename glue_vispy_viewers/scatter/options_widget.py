@@ -48,6 +48,8 @@ class ScatOptionsWidget(QtGui.QWidget):
         self.color_view.setScene(self.color_scene)
         self.color_view.show()
 
+        self.true_color = self.color
+
         self._connect()
 
     # From 2D scatter
@@ -62,6 +64,14 @@ class ScatOptionsWidget(QtGui.QWidget):
 
         ui.clim_min.returnPressed.connect(self._draw_clim)
         ui.clim_max.returnPressed.connect(self._draw_clim)
+        ui.advanceButton.clicked.connect(self._color_picker_show)
+
+    def _color_picker_show(self):
+        color = QtGui.QColorDialog.getColor()
+        self.true_color = color.name()
+        self.color_view.setScene(self.color_scene)
+        self.color_view.setBackgroundBrush(QtGui.QColor(self.true_color))
+        self.color_view.show()
 
     def set_valid_components(self, components):
         self.ui.xAxisComboBox.clear()
@@ -102,6 +112,7 @@ class ScatOptionsWidget(QtGui.QWidget):
         self.color_view.setScene(self.color_scene)
         self.color_view.setBackgroundBrush(QtGui.QColor(self.color))
         self.color_view.show()
+        self.true_color = self.color
 
         # self._refresh_program()
 
