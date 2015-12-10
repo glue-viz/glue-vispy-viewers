@@ -57,55 +57,68 @@ class QtScatVispyWidget(QtGui.QWidget):
         self.canvas.events.resize.connect(self.on_resize)
 
     def add_fila(self):
-        vol = np.genfromtxt('/Users/penny/Works/filaments_vispy/Penny_Bones_Updated.txt',
-                            delimiter='\t', dtype=None)
+        vol = np.genfromtxt('/Users/penny/Works/filaments_vispy/Penny_Bones_Updated.txt', delimiter='\t', dtype=None)
         fila = []
-        # fila's structure is [filament_name, glong, glat, distance_kpc, radius_pc]
-        for n in np.arange(0, vol.shape[0]-1, 1):
+        # fila's structure is [filament_name, glong, glat, gdistance_kpc, radius_pc]
+        for n in np.arange(0, vol.shape[0], 1):
             fila.append([vol[n][0], vol[n][1], vol[n][2], vol[n][3], vol[n][4]])
         filament_name = []
         filament_name.append(vol[0][0])
         i=0
         points = []
+        one_fila = []
+        new_fila = []
+        # Sort the lbd data through longitude
         for each_line in fila:
             if each_line[0] == filament_name[i]:
-                # add pos to the points
-                # l, b, d = radians(each_line[1]), radians(each_line[2]), each_line[3]
-                l, b, d = each_line[1], each_line[2], each_line[3]
-                # Using equations (7) & (8) to for the following calculation
-                # Galactic Coordinate to Solar center Cartesian Coordinate
-                # points.append([d*degrees(cos(l))*degrees(cos(b)), d*degrees(sin(l))*degrees(cos(b)), d*degrees(sin(b))])
-                points.append([d*cos(l)*cos(b), d*sin(l)*cos(b), d*sin(b)])
-                # Galactic Coordinate to Galactic center Cartesian Coordinate
-                '''thita = asin(0.025/8.0)
-                x_gal = 8.0*cos(thita) - d*(cos(l)*cos(b)*cos(thita)+sin(b)*sin(thita))
-                y_gal = -d*sin(l)*cos(b)
-                z_gal = 8.0*sin(thita)-d*(cos(l)*cos(b)*sin(thita)-sin(b)*cos(thita))
-                points.append([x_gal, y_gal, z_gal])'''
-                radius = each_line[4]
-                print('============')
-                print('points', points)
-                # print('x_gal, y_gal, z_gal:', x_gal, y_gal, z_gal)
+                one_fila.append(each_line)
             else:
-                # Draw points
-
-                l = scene.visuals.Tube(points,
-                                       color='yellow',
-                                       shading='flat',
-                                       tube_points=8,
-                                       radius=float(radius)/10.0)
-                self.view.add(l)
-                points = []
-                # redefine the points
-                i += 1
+                sort_fila = np.sort(one_fila, axis=0)
+                new_fila.append(sort_fila)
+                one_fila = []
+                one_fila.append(each_line)
+                i=i+1
                 filament_name.append(each_line[0])
+        sort_fila = np.sort(one_fila, axis=0)
+        new_fila.append(sort_fila)
 
+        i = 0
+        new_filament_name = []
+        new_filament_name.append(vol[0][0])
+
+        for each_fila in new_fila:
+            for each_new_line in each_fila:
+                if each_new_line[0] == new_filament_name[i]:
+                    l=radians(float(each_new_line[1]))
+                    b=radians(float(each_new_line[2]))
+                    d=float(each_new_line[3])
+                    points.append([d*cos(l)*cos(b), d*sin(l)*cos(b), d*sin(b)])
+                    # Sort the points according to the first dimension
+                    radius = float(each_new_line[4])/1000.0
+                else:
+                    l = scene.visuals.Tube(points,
+                                    color='yellow',
+                                    shading='flat',
+                                    tube_points=8,
+                                    radius=float(radius))
+                    '''print('=========')
+                    print('radius:', radius)
+                    print('sort_points:', sort_points)'''
+                    self.view.add(l)
+                    points = []
+                    l=radians(float(each_new_line[1]))
+                    b=radians(float(each_new_line[2]))
+                    d=float(each_new_line[3])
+                    points.append([d*cos(l)*cos(b), d*sin(l)*cos(b), d*sin(b)])
+                    # redefine the points
+                    i=i+1
+                    new_filament_name.append(each_new_line[0])
         # Draw points
         l = scene.visuals.Tube(points,
                         color='yellow',
                         shading='flat',
                         tube_points=8,
-                        radius=float(radius)/10.0)
+                        radius=float(radius))
         self.view.add(l)
         self.canvas.update()
 
