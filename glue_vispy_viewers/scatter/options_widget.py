@@ -48,6 +48,8 @@ class ScatOptionsWidget(QtGui.QWidget):
         self.color_view.setScene(self.color_scene)
         self.color_view.show()
 
+        self.fila_flag = 0
+
         self.true_color = self.color
 
         self._connect()
@@ -65,6 +67,12 @@ class ScatOptionsWidget(QtGui.QWidget):
         ui.clim_min.returnPressed.connect(self._draw_clim)
         ui.clim_max.returnPressed.connect(self._draw_clim)
         ui.advanceButton.clicked.connect(self._color_picker_show)
+        ui.filaButton.clicked.connect(self.filament_show)
+
+    def filament_show(self):
+        if self._vispy_widget is not None and self.fila_flag == 0:
+            self._vispy_widget.add_fila()
+            self.fila_flag = 1
 
     def _color_picker_show(self):
         color = QtGui.QColorDialog.getColor()
