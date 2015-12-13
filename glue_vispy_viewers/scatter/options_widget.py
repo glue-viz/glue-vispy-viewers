@@ -3,6 +3,7 @@ import math
 
 from glue.external.qt import QtGui, QtCore
 from glue.qt.widget_properties import CurrentComboProperty, TextProperty, ValueProperty
+from vispy.scene.cameras import MagnifyCamera, Magnify1DCamera
 from glue.qt.qtutil import load_ui
 from glue.qt import get_qapp
 
@@ -49,6 +50,7 @@ class ScatOptionsWidget(QtGui.QWidget):
         self.color_view.show()
 
         self.fila_flag = 0
+        self.cam_flag = 0
 
         self.true_color = self.color
 
@@ -68,6 +70,17 @@ class ScatOptionsWidget(QtGui.QWidget):
         ui.clim_max.returnPressed.connect(self._draw_clim)
         ui.advanceButton.clicked.connect(self._color_picker_show)
         ui.filaButton.clicked.connect(self.filament_show)
+        ui.magnifyButton.clicked.connect(self.magnify_show)
+
+    def magnify_show(self):
+        if self.cam_flag == 0:
+            self._vispy_widget.view.camera = MagnifyCamera()
+            self._vispy_widget.view.camera.rect = (-5, -5, 10, 10)
+            self.cam_flag = 1
+        else:
+            self._vispy_widget.view.camera = self._vispy_widget.turn_cam
+            self.cam_flag = 0
+            self._vispy_widget.canvas.update()
 
     def filament_show(self):
         if self._vispy_widget is not None and self.fila_flag == 0:

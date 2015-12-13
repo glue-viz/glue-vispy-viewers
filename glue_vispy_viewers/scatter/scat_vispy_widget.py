@@ -7,6 +7,8 @@ from glue.external.qt import QtGui
 from vispy import scene, app
 from vispy.color import get_colormap, Color
 from math import cos, sin, asin, radians, degrees
+from vispy.scene.cameras import MagnifyCamera, Magnify1DCamera
+
 from vispy.visuals import transforms
 
 
@@ -26,7 +28,9 @@ class QtScatVispyWidget(QtGui.QWidget):
         self.view = self.canvas.central_widget.add_view()
         self.view.border_color = 'red'
         self.view.parent = self.canvas.scene
-        self.view.camera = 'turntable'  # or try 'arcball'
+        self.turn_cam = scene.cameras.TurntableCamera(parent=self.view.scene, name='Turntable')
+        self.mag_cam = MagnifyCamera()
+        self.view.camera = self.turn_cam # or try 'arcball'
 
         self.data = None
         self.axes_names = None
@@ -94,7 +98,7 @@ class QtScatVispyWidget(QtGui.QWidget):
                     d=float(each_new_line[3])
                     points.append([d*cos(l)*cos(b), d*sin(l)*cos(b), d*sin(b)])
                     # Sort the points according to the first dimension
-                    radius = float(each_new_line[4])/1000.0
+                    radius = float(each_new_line[4])/100.0
                 else:
                     l = scene.visuals.Tube(points,
                                     color='yellow',
