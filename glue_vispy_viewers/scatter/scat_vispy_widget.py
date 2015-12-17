@@ -6,7 +6,7 @@ import numpy as np
 from glue.external.qt import QtGui
 from vispy import scene, app
 from vispy.color import get_colormap, Color
-from math import cos, sin, asin, radians, degrees
+from math import cos, sin, asin, radians, degrees, tan
 from vispy.scene.cameras import MagnifyCamera, Magnify1DCamera
 
 from vispy.visuals import transforms
@@ -54,6 +54,9 @@ class QtScatVispyWidget(QtGui.QWidget):
         print('==========')
         print('canvas size', self.canvas.size)
         self.widget_axis_scale = [1, 1, 1]
+
+        # Set a flag to make the transform just work once
+        self.trans_flag = 0
 
         # trans.scale = self.axis.transform.scale
 
@@ -198,18 +201,18 @@ class QtScatVispyWidget(QtGui.QWidget):
             S = np.zeros(n)
             # size = np.ones((n, 1))
             # size[:, 0] = self.components[3]
-            S[...] = self.components[3] ** (1. / 3) / 1.e1
-
+            # S[...] = 100* self.components[3] ** (1. / 3) / 1.e1
+            S[...] = self.components[3]
+            print('size:', S)
 
             scatter_color =Color(self.options_widget.true_color, self.options_widget.opacity/100.0)
 
-            # Set default color = 'gold'
-            print('=============')
-            print('scatter_color is', scatter_color)
-            print('=============')
-
             self.scatter.set_data(P, symbol='disc', edge_color=None, face_color=scatter_color, size=S)
             self.view.add(self.scatter)
+
+            if self.trans_flag == 0:
+                # Set transform for axis and camera
+                self.set_transform()
 
             # set clim value
             self._update_clim()
@@ -254,4 +257,33 @@ class QtScatVispyWidget(QtGui.QWidget):
 
         self.options_widget.cmin = "%.4g" % np.nanmin(array)
         self.options_widget.cmax = "%.4g" % np.nanmax(array)
+
+    def get_minmax(self, array):
+        return float("%.4g" % np.nanmin(array)), float("%.4g" % np.nanmax(array))
+
+    # Set the transform of axis and distance of turntable camera according to the scale of the data
+    # After clicking the 'apply'
+    def set_transform(self):
+        # Get the min and max of each axis
+        xmin, xmax = self.get_minmax(self.components[0])
+        ymin, ymax = self.get_minmax(self.components[1])
+        zmin, zmax = self.get_minmax(self.components[2])
+        sizemin, sizemax = self.get_minmax(self.components[3])
+        _axis_scale = (sizemax ** (1. / 3) / 1.e1, sizemax ** (1. / 3) / 1.e1, sizemax ** (1. / 3) / 1.e1)
+        trans = (-(xmax+xmin)/2.0, -(ymax+ymin)/2.0, -(zmax+zmin)/2.0)
+        print('=============')
+        print('trans is', trans)
+        print('=============')
+
+        self.scatter.transform = scene.STTransform(translate=trans)
+        max_dis = np.nanmax([(xmax-xmin)/2.0, (ymax-ymin)/2.0, (zmax-zmin)/2.0])
+        print('scatter trnasform', trans)
+        self.turn_cam.fov = 30.0
+        self.turn_cam.distance = tan(radians(60))*float(max_dis)
+        print('turn_cam distance', self.turn_cam.distance)
+
+        self.axis.transform = scene.STTransform(scale=_axis_scale)
+
+        self.trans_flag = 1
+
 
