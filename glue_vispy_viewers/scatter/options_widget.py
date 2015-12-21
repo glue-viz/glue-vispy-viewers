@@ -65,6 +65,7 @@ class ScatOptionsWidget(QtGui.QWidget):
         ui.ClimComboBox.currentIndexChanged.connect(self._clim_change)
         ui.ColorComboBox.currentIndexChanged.connect(self._color_changed)
         ui.OpacitySlider.valueChanged.connect(self._refresh_program)
+        ui.sizeSlider.valueChanged.connect(self._refresh_program)
 
         ui.clim_min.returnPressed.connect(self._draw_clim)
         ui.clim_max.returnPressed.connect(self._draw_clim)

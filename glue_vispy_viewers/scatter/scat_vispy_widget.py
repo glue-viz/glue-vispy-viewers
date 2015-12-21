@@ -274,8 +274,8 @@ class QtScatVispyWidget(QtGui.QWidget):
         print('=============')
         print('trans is', trans)
         print('=============')
-
-        self.scatter.transform = scene.STTransform(translate=trans)
+        stretch_scale = (3.0, 5.0, 1.0)
+        self.scatter.transform = scene.STTransform(translate=trans, scale=stretch_scale)
         max_dis = np.nanmax([(xmax-xmin)/2.0, (ymax-ymin)/2.0, (zmax-zmin)/2.0])
         print('scatter trnasform', trans)
         self.turn_cam.fov = 30.0
