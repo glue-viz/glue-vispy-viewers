@@ -201,9 +201,9 @@ class QtScatVispyWidget(QtGui.QWidget):
             S = np.zeros(n)
             # size = np.ones((n, 1))
             # size[:, 0] = self.components[3]
-            # S[...] = 100* self.components[3] ** (1. / 3) / 1.e1
-            S[...] = self.components[3]
-            print('size:', S)
+            S[...] = self.components[3] ** (1. / 3) / 1.e1
+            # S[...] = self.components[3]
+            # print('size:', S)
 
             scatter_color =Color(self.options_widget.true_color, self.options_widget.opacity/100.0)
 
