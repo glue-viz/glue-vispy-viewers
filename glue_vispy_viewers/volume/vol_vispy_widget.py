@@ -16,7 +16,7 @@ class QtVispyWidget(QtGui.QWidget):
         super(QtVispyWidget, self).__init__(parent=parent)
 
         # Prepare canvas
-        self.canvas = scene.SceneCanvas(keys='interactive', show=False)
+        self.canvas = scene.SceneCanvas(keys='interactive', show=False, always_on_top=False)
         self.canvas.measure_fps()
 
         # Set up a viewbox to display the image with interactive pan/zoom

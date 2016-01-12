@@ -21,7 +21,7 @@ class QtScatVispyWidget(QtGui.QWidget):
         super(QtScatVispyWidget, self).__init__(parent=parent)
 
         # Prepare canvas
-        self.canvas = scene.SceneCanvas(keys='interactive', show=False)
+        self.canvas = scene.SceneCanvas(keys='interactive', show=False, always_on_top=False)
         self.canvas.measure_fps()
 
         # Set up a viewbox to display the image with interactive pan/zoom
@@ -213,6 +213,7 @@ class QtScatVispyWidget(QtGui.QWidget):
             if self.trans_flag == 0:
                 # Set transform for axis and camera
                 self.set_transform()
+            # self.scatter.transform = scene.STTransform(translate=(), scale=stretch_scale)
 
             # set clim value
             self._update_clim()
@@ -271,15 +272,19 @@ class QtScatVispyWidget(QtGui.QWidget):
         sizemin, sizemax = self.get_minmax(self.components[3])
         _axis_scale = (sizemax ** (1. / 3) / 1.e1, sizemax ** (1. / 3) / 1.e1, sizemax ** (1. / 3) / 1.e1)
         trans = (-(xmax+xmin)/2.0, -(ymax+ymin)/2.0, -(zmax+zmin)/2.0)
+        # trans = (0, 0, 0)
+        # trans = (-(zmax+zmin)/2.0, -(ymax+ymin)/2.0, -(xmax+xmin)/2.0)
         print('=============')
         print('trans is', trans)
         print('=============')
-        stretch_scale = (3.0, 5.0, 1.0)
-        self.scatter.transform = scene.STTransform(translate=trans, scale=stretch_scale)
+        # stretch_scale = (3.0, 5.0, 1.0)
+        # self.scatter.transform = scene.STTransform(translate=trans, scale=stretch_scale)
+        self.scatter.transform = scene.STTransform(translate=trans)
         max_dis = np.nanmax([(xmax-xmin)/2.0, (ymax-ymin)/2.0, (zmax-zmin)/2.0])
+
         print('scatter trnasform', trans)
         self.turn_cam.fov = 30.0
-        self.turn_cam.distance = tan(radians(60))*float(max_dis)
+        self.turn_cam.distance = tan(radians(90.0-self.turn_cam.fov/2.0))*float(max_dis)
         print('turn_cam distance', self.turn_cam.distance)
 
         self.axis.transform = scene.STTransform(scale=_axis_scale)
