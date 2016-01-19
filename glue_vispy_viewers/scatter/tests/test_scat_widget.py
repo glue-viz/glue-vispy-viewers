@@ -49,7 +49,7 @@ def test_widget():
     w = QtScatVispyWidget()
     # op = VolumeOptionsWidget(vispy_widget=w)
     w.data = test_categorical_data()
-    w.set_program()
+    w._refresh()
     # w.set_projection()
     # w.on_draw()
     w.canvas.show()

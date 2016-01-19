@@ -63,12 +63,12 @@
        <number>10</number>
       </property>
       <item>
-       <layout class="QHBoxLayout" name="xAxisLayout" stretch="0,4,0">
+       <layout class="QHBoxLayout" name="xAxisLayout" stretch="0,4,0,0">
         <property name="spacing">
          <number>8</number>
         </property>
         <item>
-         <widget class="QLabel" name="xlabel">
+         <widget class="QLabel" name="x_lab">
           <property name="text">
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#ff0000;&quot;&gt;x axis&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
@@ -91,21 +91,30 @@
          </widget>
         </item>
         <item>
-         <widget class="QSlider" name="horizontalSlider">
+         <widget class="QSlider" name="x_stretch_slider">
+          <property name="minimum">
+           <number>-10000</number>
+          </property>
+          <property name="maximum">
+           <number>10000</number>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QLineEdit" name="x_val"/>
+        </item>
        </layout>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="yAxisLayout" stretch="0,4,0">
+       <layout class="QHBoxLayout" name="yAxisLayout" stretch="0,4,0,0">
         <property name="spacing">
          <number>8</number>
         </property>
         <item>
-         <widget class="QLabel" name="ylabel">
+         <widget class="QLabel" name="y_lab">
           <property name="text">
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#00ff00;&quot;&gt;y axis&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
@@ -128,21 +137,30 @@
          </widget>
         </item>
         <item>
-         <widget class="QSlider" name="horizontalSlider_2">
+         <widget class="QSlider" name="y_stretch_slider">
+          <property name="minimum">
+           <number>-10000</number>
+          </property>
+          <property name="maximum">
+           <number>10000</number>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QLineEdit" name="y_val"/>
+        </item>
        </layout>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="zAxisLayout" stretch="0,4,0">
+       <layout class="QHBoxLayout" name="zAxisLayout" stretch="0,4,0,0">
         <property name="spacing">
          <number>8</number>
         </property>
         <item>
-         <widget class="QLabel" name="zlabel">
+         <widget class="QLabel" name="z_lab">
           <property name="text">
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#0000ff;&quot;&gt;z axis&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
@@ -165,11 +183,20 @@
          </widget>
         </item>
         <item>
-         <widget class="QSlider" name="horizontalSlider_3">
+         <widget class="QSlider" name="z_stretch_slider">
+          <property name="minimum">
+           <number>-10000</number>
+          </property>
+          <property name="maximum">
+           <number>10000</number>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
          </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="z_val"/>
         </item>
        </layout>
       </item>
@@ -270,12 +297,12 @@
          </widget>
         </item>
         <item>
-         <widget class="QSlider" name="sizeSlider">
+         <widget class="QSlider" name="size_stretch_slider">
           <property name="minimum">
-           <number>1</number>
+           <number>-10000</number>
           </property>
           <property name="maximum">
-           <number>100</number>
+           <number>10000</number>
           </property>
           <property name="value">
            <number>1</number>
@@ -284,6 +311,9 @@
            <enum>Qt::Horizontal</enum>
           </property>
          </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="size_val"/>
         </item>
        </layout>
       </item>
@@ -404,28 +434,7 @@
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_8">
-        <item>
-         <widget class="QPushButton" name="filaButton">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>Filament Show</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="magnifyButton">
-          <property name="text">
-           <string>Magnify</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
+       <layout class="QHBoxLayout" name="horizontalLayout_8"/>
       </item>
       <item>
        <spacer name="verticalSpacer">

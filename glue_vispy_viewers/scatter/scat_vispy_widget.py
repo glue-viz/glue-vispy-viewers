@@ -7,7 +7,6 @@ from glue.external.qt import QtGui
 from vispy import scene, app
 from vispy.color import get_colormap, Color
 from math import cos, sin, asin, radians, degrees, tan
-from vispy.scene.cameras import MagnifyCamera, Magnify1DCamera
 
 from vispy.visuals import transforms
 
@@ -29,7 +28,6 @@ class QtScatVispyWidget(QtGui.QWidget):
         self.view.border_color = 'red'
         self.view.parent = self.canvas.scene
         self.turn_cam = scene.cameras.TurntableCamera(parent=self.view.scene, name='Turntable')
-        self.mag_cam = MagnifyCamera()
         self.view.camera = self.turn_cam # or try 'arcball'
 
         self.data = None
@@ -37,7 +35,8 @@ class QtScatVispyWidget(QtGui.QWidget):
         self._current_array = None
 
         # create scatter object and fill in the data
-        self.scatter = scene.visuals.Markers()
+        self.scat_visual = None
+        self.scat_visual_data = None
 
         # Add a grid plane
         # The pos of the visual will be at the center of the parent !
@@ -63,71 +62,7 @@ class QtScatVispyWidget(QtGui.QWidget):
         self._shown_data = None
         self.canvas.events.resize.connect(self.on_resize)
 
-    def add_fila(self):
-        vol = np.genfromtxt('/Users/penny/Works/filaments_vispy/Penny_Bones_Updated.txt', delimiter='\t', dtype=None)
-        fila = []
-        # fila's structure is [filament_name, glong, glat, gdistance_kpc, radius_pc]
-        for n in np.arange(0, vol.shape[0], 1):
-            fila.append([vol[n][0], vol[n][1], vol[n][2], vol[n][3], vol[n][4]])
-        filament_name = []
-        filament_name.append(vol[0][0])
-        i=0
-        points = []
-        one_fila = []
-        new_fila = []
-        # Sort the lbd data through longitude
-        for each_line in fila:
-            if each_line[0] == filament_name[i]:
-                one_fila.append(each_line)
-            else:
-                sort_fila = np.sort(one_fila, axis=0)
-                new_fila.append(sort_fila)
-                one_fila = []
-                one_fila.append(each_line)
-                i=i+1
-                filament_name.append(each_line[0])
-        sort_fila = np.sort(one_fila, axis=0)
-        new_fila.append(sort_fila)
 
-        i = 0
-        new_filament_name = []
-        new_filament_name.append(vol[0][0])
-
-        for each_fila in new_fila:
-            for each_new_line in each_fila:
-                if each_new_line[0] == new_filament_name[i]:
-                    l=radians(float(each_new_line[1]))
-                    b=radians(float(each_new_line[2]))
-                    d=float(each_new_line[3])
-                    points.append([d*cos(l)*cos(b), d*sin(l)*cos(b), d*sin(b)])
-                    # Sort the points according to the first dimension
-                    radius = float(each_new_line[4])/100.0
-                else:
-                    l = scene.visuals.Tube(points,
-                                    color='yellow',
-                                    shading='flat',
-                                    tube_points=8,
-                                    radius=float(radius))
-                    '''print('=========')
-                    print('radius:', radius)
-                    print('sort_points:', sort_points)'''
-                    self.view.add(l)
-                    points = []
-                    l=radians(float(each_new_line[1]))
-                    b=radians(float(each_new_line[2]))
-                    d=float(each_new_line[3])
-                    points.append([d*cos(l)*cos(b), d*sin(l)*cos(b), d*sin(b)])
-                    # redefine the points
-                    i=i+1
-                    new_filament_name.append(each_new_line[0])
-        # Draw points
-        l = scene.visuals.Tube(points,
-                        color='yellow',
-                        shading='flat',
-                        tube_points=8,
-                        radius=float(radius))
-        self.view.add(l)
-        self.canvas.update()
 
     def on_resize(self, event):
         # TODO: resize of the grid?
@@ -170,21 +105,15 @@ class QtScatVispyWidget(QtGui.QWidget):
             clim_components = []
             for each_com in self.components:
                 clim_components.append(each_com[clim_filter])
-            return clim_components
+            # S = self.scat_visual_data[2]
+            # clim_components.append(S[clim_filter])
 
-    def _refresh(self):
-        """
-        This method can be called if the options widget is updated.
-        """
-        if self.data is None:
-            return
-            array = self.component
-            self.update()
+            return clim_components
 
     def set_subsets(self, subsets):
         self.subsets = subsets
 
-    def set_program(self):
+    def add_scatter_visual(self):
         if self.data is None:
             return None
         else:
@@ -197,18 +126,22 @@ class QtScatVispyWidget(QtGui.QWidget):
             Y[...] = self.components[1]
             Z[...] = self.components[2]
 
-            # Dot size determination according to the mass - *2 for larger size
             S = np.zeros(n)
-            # size = np.ones((n, 1))
-            # size[:, 0] = self.components[3]
-            S[...] = self.components[3] ** (1. / 3) / 1.e1
-            # S[...] = self.components[3]
-            # print('size:', S)
+            # Normalize the size based on median value of selected property to between 1-10
+            m = np.median(np.nan_to_num(self.components[3]))
 
-            scatter_color =Color(self.options_widget.true_color, self.options_widget.opacity/100.0)
+            if m < 1.0 or m > 10.0:
+                S[...] = self.components[3] * (1.0/m)
+            else:
+                S[...] = self.components[3]
 
-            self.scatter.set_data(P, symbol='disc', edge_color=None, face_color=scatter_color, size=S)
-            self.view.add(self.scatter)
+            scatter_color = Color(self.options_widget.true_color, self.options_widget.opacity/100.0)
+            scat_visual = scene.visuals.Markers()
+            scat_visual.set_data(P, symbol='disc', edge_color=None, face_color=scatter_color, size=S)
+            self.scat_visual = scat_visual
+            # Save this for refresh
+            self.scat_visual_data = [P, scatter_color, S]
+            self.view.add(self.scat_visual)
 
             if self.trans_flag == 0:
                 # Set transform for axis and camera
@@ -218,6 +151,64 @@ class QtScatVispyWidget(QtGui.QWidget):
             # set clim value
             self._update_clim()
             self.canvas.update()
+
+    def update_scatter_visual(self):
+        # It's similar to the add_scatter_visual but used for axis&size combobox update
+        if self.scat_visual is None:
+            return
+
+        n = len(self.components[3])
+        P = np.zeros((n, 3), dtype=np.float32)
+
+        X, Y, Z = P[:, 0], P[:, 1], P[:, 2]
+        X[...] = self.components[0]
+        Y[...] = self.components[1]
+        Z[...] = self.components[2]
+
+        S = np.zeros(n)
+        # Normalize the size based on median value of selected property to between 1-10
+        m = np.median(np.nan_to_num(self.components[3]))
+
+        if m < 1.0 or m > 10.0:
+            S[...] = self.components[3] * (1.0/m)
+        else:
+            S[...] = self.components[3]
+
+        scatter_color = Color(self.options_widget.true_color, self.options_widget.opacity/100.0)
+        self.scat_visual.set_data(P, symbol='disc', edge_color=None, face_color=scatter_color, size=S)
+        # Save this for refresh
+        self.scat_visual_data = [P, scatter_color, S]
+
+        self.set_transform()
+
+        # set clim value
+        self._update_clim()
+        self.canvas.update()
+
+    def _refresh(self):
+        """
+        This method can be called if the stretch sliders are updated.
+        """
+        if self.data is None:
+            return
+
+        if self.scat_visual is not None and self.scat_visual_data is not None:
+            stretch_scale = self.options_widget.stretch
+            # stretch_tran = [-0.5 * stretch_scale[idx] * len(self.components[2-idx]) for idx in range(3)]
+            P = self.scat_visual_data[0]
+            n = P.shape[0]
+            new_P = np.zeros((n, 3), dtype=np.float32)
+            for idx in range(3):
+                new_P[:, idx] = P[:, idx] * stretch_scale[idx]
+
+            S = self.scat_visual_data[2]
+            new_S = np.zeros(n)
+            new_S = S[...] * stretch_scale[3]
+
+            scatter_color = Color(self.options_widget.true_color, self.options_widget.opacity/100.0)
+            self.scat_visual.set_data(new_P, symbol='disc', edge_color=None,
+                                      face_color=scatter_color, size=new_S)
+            # self.scat_visual_data = [new_P, scatter_color, new_S]
 
     # Set the clim dataset and apply the new dataset to the current scatter visual
     # TODO: add more clim options? Now the user could only clim one property
@@ -246,11 +237,18 @@ class QtScatVispyWidget(QtGui.QWidget):
 
         # Dot size determination according to the mass - *2 for larger size
         S = np.zeros(n)
-        S[...] = _clim_components[3] ** (1. / 3) / 1.e1
+        m = np.median(np.nan_to_num(_clim_components[3]))
+
+        if m < 1.0 or m > 10.0:
+            S[...] = _clim_components[3] * (1.0/m)
+        else:
+            S[...] = _clim_components[3]
+
+        # S[...] = _clim_components[3] ** (1. / 3) / 1.e1
         scatter_color =Color(self.options_widget.true_color, self.options_widget.opacity/100.0)
 
         # Reset the data for scatter visual display
-        self.scatter.set_data(P, symbol='disc', edge_color=None, face_color=scatter_color, size=S)
+        self.scat_visual.set_data(P, symbol='disc', edge_color=None, face_color=scatter_color, size=S)
         self.canvas.update()
 
     def _update_clim(self):
@@ -272,20 +270,13 @@ class QtScatVispyWidget(QtGui.QWidget):
         sizemin, sizemax = self.get_minmax(self.components[3])
         _axis_scale = (sizemax ** (1. / 3) / 1.e1, sizemax ** (1. / 3) / 1.e1, sizemax ** (1. / 3) / 1.e1)
         trans = (-(xmax+xmin)/2.0, -(ymax+ymin)/2.0, -(zmax+zmin)/2.0)
-        # trans = (0, 0, 0)
-        # trans = (-(zmax+zmin)/2.0, -(ymax+ymin)/2.0, -(xmax+xmin)/2.0)
-        print('=============')
-        print('trans is', trans)
-        print('=============')
         # stretch_scale = (3.0, 5.0, 1.0)
-        # self.scatter.transform = scene.STTransform(translate=trans, scale=stretch_scale)
-        self.scatter.transform = scene.STTransform(translate=trans)
+        # self.scat_visual.transform = scene.STTransform(translate=trans, scale=stretch_scale)
+        self.scat_visual.transform = scene.STTransform(translate=trans)
         max_dis = np.nanmax([(xmax-xmin)/2.0, (ymax-ymin)/2.0, (zmax-zmin)/2.0])
 
-        print('scatter trnasform', trans)
         self.turn_cam.fov = 30.0
         self.turn_cam.distance = tan(radians(90.0-self.turn_cam.fov/2.0))*float(max_dis)
-        print('turn_cam distance', self.turn_cam.distance)
 
         self.axis.transform = scene.STTransform(scale=_axis_scale)
 

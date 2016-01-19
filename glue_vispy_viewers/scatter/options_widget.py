@@ -3,7 +3,6 @@ import math
 
 from glue.external.qt import QtGui, QtCore
 from glue.qt.widget_properties import CurrentComboProperty, TextProperty, ValueProperty
-from vispy.scene.cameras import MagnifyCamera, Magnify1DCamera
 from glue.qt.qtutil import load_ui
 from glue.qt import get_qapp
 
@@ -37,6 +36,25 @@ class ScatOptionsWidget(QtGui.QWidget):
         if vispy_widget is not None:
             self._vispy_widget.options_widget = self
 
+        self.stretch_sliders = [self.ui.x_stretch_slider,
+                                self.ui.y_stretch_slider,
+                                self.ui.z_stretch_slider,
+                                self.ui.size_stretch_slider]
+
+        self.slider_values = [self.ui.x_val,
+                              self.ui.y_val,
+                              self.ui.z_val,
+                              self.ui.size_val]
+
+        for idx in range(4):
+            self._update_labels_from_sliders(idx)
+
+        # Constrain size of slider value boxes
+
+        for slider_value in self.slider_values:
+            slider_value.setMaximumWidth(60)
+            slider_value.setFixedWidth(60)
+
         # There are 155 color options
         for map_name in get_color_names():
             self.ui.ColorComboBox.addItem(map_name, map_name)
@@ -49,44 +67,31 @@ class ScatOptionsWidget(QtGui.QWidget):
         self.color_view.setScene(self.color_scene)
         self.color_view.show()
 
-        self.fila_flag = 0
-        self.cam_flag = 0
-
         self.true_color = self.color
 
         self._connect()
 
     # From 2D scatter
     def _connect(self):
-        ui = self.ui
+        self.ui.axis_apply.clicked.connect(self._apply)
+        self.ui.reset_button.clicked.connect(self._apply)
+        self.ui.ClimComboBox.currentIndexChanged.connect(self._clim_change)
+        self.ui.ColorComboBox.currentIndexChanged.connect(self._color_changed)
+        self.ui.OpacitySlider.valueChanged.connect(self._refresh_viewer)
+        # self.ui.sizeSlider.valueChanged.connect(self._refresh_program)
 
-        ui.axis_apply.clicked.connect(self._apply)
-        ui.reset_button.clicked.connect(self._apply)
-        ui.ClimComboBox.currentIndexChanged.connect(self._clim_change)
-        ui.ColorComboBox.currentIndexChanged.connect(self._color_changed)
-        ui.OpacitySlider.valueChanged.connect(self._refresh_program)
-        ui.sizeSlider.valueChanged.connect(self._refresh_program)
+        self.ui.clim_min.returnPressed.connect(self._draw_clim)
+        self.ui.clim_max.returnPressed.connect(self._draw_clim)
+        self.ui.advanceButton.clicked.connect(self._color_picker_show)
 
-        ui.clim_min.returnPressed.connect(self._draw_clim)
-        ui.clim_max.returnPressed.connect(self._draw_clim)
-        ui.advanceButton.clicked.connect(self._color_picker_show)
-        ui.filaButton.clicked.connect(self.filament_show)
-        ui.magnifyButton.clicked.connect(self.magnify_show)
+        # Connect slider and values both wways
+        from functools import partial
+        for idx in range(4):
 
-    def magnify_show(self):
-        if self.cam_flag == 0:
-            self._vispy_widget.view.camera = MagnifyCamera()
-            self._vispy_widget.view.camera.rect = (-5, -5, 10, 10)
-            self.cam_flag = 1
-        else:
-            self._vispy_widget.view.camera = self._vispy_widget.turn_cam
-            self.cam_flag = 0
-            self._vispy_widget.canvas.update()
+            self.stretch_sliders[idx].valueChanged.connect(partial(self._update_labels_from_sliders, idx))
+            self.stretch_sliders[idx].valueChanged.connect(self._refresh_viewer)
 
-    def filament_show(self):
-        if self._vispy_widget is not None and self.fila_flag == 0:
-            self._vispy_widget.add_fila()
-            self.fila_flag = 1
+            self.slider_values[idx].returnPressed.connect(partial(self._update_sliders_from_labels, idx))
 
     def _color_picker_show(self):
         color = QtGui.QColorDialog.getColor()
@@ -120,11 +125,14 @@ class ScatOptionsWidget(QtGui.QWidget):
 
     def _apply(self):
         self._reset_clim()
-        self._refresh_program()
-
-    def _reset_view(self):
-        # self._reset_clim()
-        self._refresh_viewer()
+        if self._vispy_widget.scat_visual is None:
+            self._vispy_widget.add_scatter_visual()
+        else:
+            # Only axis & size combo refresh
+            self._vispy_widget.update_scatter_visual()
+            # Reset slider bars
+            for idx in range(4):
+                self.stretch_sliders[idx].setValue(0)
 
     def _reset_clim(self):
         self.cmin = 'auto'
@@ -136,14 +144,33 @@ class ScatOptionsWidget(QtGui.QWidget):
         self.color_view.show()
         self.true_color = self.color
 
-        # self._refresh_program()
+    def _opacity_change(self):
+        if self._vispy_widget is not None:
+            self._vispy_widget.opacity_change()
 
-    # TODO: self._vispy_widget._refresh() is empty now
     def _refresh_viewer(self):
+        # Including sliders update
         if self._vispy_widget is not None:
             self._vispy_widget._refresh()
 
-    def _refresh_program(self):
+    @property
+    def stretch(self):
+        return [10.0 ** (slider.value()/1e4) for slider in self.stretch_sliders]
 
-        if self._vispy_widget is not None:
-            self._vispy_widget.set_program()
+    def _update_labels_from_sliders(self, idx):
+        if self._event_lock:
+            return  # prevent infinite event loop
+        self._event_lock = True
+        try:
+            self.slider_values[idx].setText("{0:6.2f}".format(self.stretch[idx]))
+        finally:
+            self._event_lock = False
+
+    def _update_sliders_from_labels(self, idx):
+        if self._event_lock:
+            return  # prevent infinite event loop
+        self._event_lock = True
+        try:
+            self.stretch_sliders[idx].setValue(1e4 * math.log10(float(self.slider_values[idx].text())))
+        finally:
+            self._event_lock = False
