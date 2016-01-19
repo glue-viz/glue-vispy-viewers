@@ -145,7 +145,7 @@ class QtScatVispyWidget(QtGui.QWidget):
 
             if self.trans_flag == 0:
                 # Set transform for axis and camera
-                self.set_transform()
+                self.set_transform([self.components[0], self.components[0], self.components[0]], self.components[3])
             # self.scatter.transform = scene.STTransform(translate=(), scale=stretch_scale)
 
             # set clim value
@@ -179,7 +179,7 @@ class QtScatVispyWidget(QtGui.QWidget):
         # Save this for refresh
         self.scat_visual_data = [P, scatter_color, S]
 
-        self.set_transform()
+        self.set_transform([self.components[0], self.components[1], self.components[2]], self.components[3])
 
         # set clim value
         self._update_clim()
@@ -187,7 +187,7 @@ class QtScatVispyWidget(QtGui.QWidget):
 
     def _refresh(self):
         """
-        This method can be called if the stretch sliders are updated.
+        This method can be called if the stretch & opacity sliders are updated.
         """
         if self.data is None:
             return
@@ -208,6 +208,9 @@ class QtScatVispyWidget(QtGui.QWidget):
             scatter_color = Color(self.options_widget.true_color, self.options_widget.opacity/100.0)
             self.scat_visual.set_data(new_P, symbol='disc', edge_color=None,
                                       face_color=scatter_color, size=new_S)
+
+            # Update the transform according to the stretch made here
+            self.set_transform([new_P[:, 0], new_P[:, 1], new_P[:, 2]], new_S)
             # self.scat_visual_data = [new_P, scatter_color, new_S]
 
     # Set the clim dataset and apply the new dataset to the current scatter visual
@@ -262,12 +265,12 @@ class QtScatVispyWidget(QtGui.QWidget):
 
     # Set the transform of axis and distance of turntable camera according to the scale of the data
     # After clicking the 'apply'
-    def set_transform(self):
+    def set_transform(self, position, size):
         # Get the min and max of each axis
-        xmin, xmax = self.get_minmax(self.components[0])
-        ymin, ymax = self.get_minmax(self.components[1])
-        zmin, zmax = self.get_minmax(self.components[2])
-        sizemin, sizemax = self.get_minmax(self.components[3])
+        xmin, xmax = self.get_minmax(position[0])
+        ymin, ymax = self.get_minmax(position[1])
+        zmin, zmax = self.get_minmax(position[2])
+        sizemin, sizemax = self.get_minmax(size)
         _axis_scale = (sizemax ** (1. / 3) / 1.e1, sizemax ** (1. / 3) / 1.e1, sizemax ** (1. / 3) / 1.e1)
         trans = (-(xmax+xmin)/2.0, -(ymax+ymin)/2.0, -(zmax+zmin)/2.0)
         # stretch_scale = (3.0, 5.0, 1.0)
