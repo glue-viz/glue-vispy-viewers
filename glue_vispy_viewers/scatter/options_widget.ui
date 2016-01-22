@@ -429,7 +429,7 @@
       <item>
        <widget class="QPushButton" name="reset_button">
         <property name="text">
-         <string>Reset Limit</string>
+         <string>Reset View</string>
         </property>
        </widget>
       </item>

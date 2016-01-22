@@ -50,7 +50,6 @@ class ScatOptionsWidget(QtGui.QWidget):
             self._update_labels_from_sliders(idx)
 
         # Constrain size of slider value boxes
-
         for slider_value in self.slider_values:
             slider_value.setMaximumWidth(60)
             slider_value.setFixedWidth(60)
@@ -60,7 +59,6 @@ class ScatOptionsWidget(QtGui.QWidget):
             self.ui.ColorComboBox.addItem(map_name, map_name)
 
         # Add a color display area here
-        # self.opacity = self.ui.opacity.value()
         self.color_view = self.ui.graphicsView
         self.color_scene = QtGui.QGraphicsScene()
         self.color_view.setBackgroundBrush(QtGui.QColor(self.color))
@@ -71,34 +69,24 @@ class ScatOptionsWidget(QtGui.QWidget):
 
         self._connect()
 
-    # From 2D scatter
     def _connect(self):
         self.ui.axis_apply.clicked.connect(self._apply)
         self.ui.reset_button.clicked.connect(self._apply)
-        self.ui.ClimComboBox.currentIndexChanged.connect(self._clim_change)
-        self.ui.ColorComboBox.currentIndexChanged.connect(self._color_changed)
+        self.ui.ClimComboBox.currentIndexChanged.connect(self._clim_combo_change)
+        self.ui.ColorComboBox.currentIndexChanged.connect(self._color_change)
         self.ui.OpacitySlider.valueChanged.connect(self._refresh_viewer)
-        # self.ui.sizeSlider.valueChanged.connect(self._refresh_program)
 
-        self.ui.clim_min.returnPressed.connect(self._draw_clim)
-        self.ui.clim_max.returnPressed.connect(self._draw_clim)
+        self.ui.clim_min.returnPressed.connect(self._apply_clim)
+        self.ui.clim_max.returnPressed.connect(self._apply_clim)
         self.ui.advanceButton.clicked.connect(self._color_picker_show)
 
-        # Connect slider and values both wways
+        # Connect slider and values both ways
         from functools import partial
         for idx in range(4):
-
             self.stretch_sliders[idx].valueChanged.connect(partial(self._update_labels_from_sliders, idx))
             self.stretch_sliders[idx].valueChanged.connect(self._refresh_viewer)
 
             self.slider_values[idx].returnPressed.connect(partial(self._update_sliders_from_labels, idx))
-
-    def _color_picker_show(self):
-        color = QtGui.QColorDialog.getColor()
-        self.true_color = color.name()
-        self.color_view.setScene(self.color_scene)
-        self.color_view.setBackgroundBrush(QtGui.QColor(self.true_color))
-        self.color_view.show()
 
     def set_valid_components(self, components):
         self.ui.xAxisComboBox.clear()
@@ -113,17 +101,22 @@ class ScatOptionsWidget(QtGui.QWidget):
             self.ui.SizeComboBox.addItem(component, component)
             self.ui.ClimComboBox.addItem(component, component)
 
-    def _clim_change(self):
-        if self._vispy_widget is not None:
-            self._vispy_widget._update_clim()
+    def _reset_clim(self):
+        self.cmin = 'auto'
+        self.cmax = 'auto'
 
-    def _draw_clim(self):
-        # Pick the dataset between the threshold and draw them in different symbol
-        # Add another visual into it?
+    def _clim_combo_change(self):
+        if self._vispy_widget is not None:
+            self._vispy_widget.update_clim()
+
+    def _apply_clim(self):
         if self._vispy_widget is not None:
             self._vispy_widget.apply_clim()
 
     def _apply(self):
+        """
+        Add or update basic properties to display a scatter visual; Reset view
+        """
         self._reset_clim()
         if self._vispy_widget.scat_visual is None:
             self._vispy_widget.add_scatter_visual()
@@ -134,11 +127,14 @@ class ScatOptionsWidget(QtGui.QWidget):
             for idx in range(4):
                 self.stretch_sliders[idx].setValue(0)
 
-    def _reset_clim(self):
-        self.cmin = 'auto'
-        self.cmax = 'auto'
+    def _color_picker_show(self):
+        color = QtGui.QColorDialog.getColor()
+        self.true_color = color.name()
+        self.color_view.setScene(self.color_scene)
+        self.color_view.setBackgroundBrush(QtGui.QColor(self.true_color))
+        self.color_view.show()
 
-    def _color_changed(self):
+    def _color_change(self):
         self.color_view.setScene(self.color_scene)
         self.color_view.setBackgroundBrush(QtGui.QColor(self.color))
         self.color_view.show()
