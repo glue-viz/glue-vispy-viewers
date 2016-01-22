@@ -8,9 +8,6 @@ from vispy import scene, app
 from vispy.color import get_colormap, Color
 from math import cos, sin, asin, radians, degrees, tan
 
-from vispy.visuals import transforms
-
-
 __all__ = ['QtScatVispyWidget']
 
 # TODO : create a custom visual inherited from Markers
@@ -36,14 +33,7 @@ class QtScatVispyWidget(QtGui.QWidget):
 
         # create scatter object and fill in the data
         self.scat_visual = None
-
-        """
-        Use scat_data and scat_data_refresh to make the scatter visual consistent with
-        stretch scale and threshold/clim
-        Because the realization of stretch scale and threshold/clim is through update & modify the visual data
-        """
         self.scat_data = None
-        self.scat_data_refresh = None
 
         # Add a grid plane
         self.grid = scene.visuals.GridLines(scale=(0.5, 0.5), parent=self.view)
@@ -95,20 +85,20 @@ class QtScatVispyWidget(QtGui.QWidget):
             Y[...] = self.components[1]
             Z[...] = self.components[2]
 
+            # Normalize the sizes so that it falls into [1:20], as this range achieves optimal rendering
             S = np.zeros(n)
-            # Normalize the size based on median value of selected property to between 1-10
-            m = np.median(np.nan_to_num(self.components[3]))
-
-            if m < 1.0 or m > 10.0:
-                S[...] = self.components[3] * (1.0/m)
-            else:
-                S[...] = self.components[3]
+            S[...] = np.abs(np.nan_to_num(self.components[3])) ** (1.0/3)
+            S = (S-np.min(S)) / (np.max(S)-np.min(S)) # normalize to [0,1]
+            S[np.isneginf(S)] = 0
+            S[np.isinf(S)] = 0
+            S *= 20.0/np.max(S)
 
             scatter_color = Color(self.options_widget.true_color, self.options_widget.opacity/100.0)
             scat_visual = scene.visuals.Markers()
             scat_visual.set_data(P, symbol='disc', edge_color=None, face_color=scatter_color, size=S)
             self.scat_visual = scat_visual
-            # Save this for refresh
+
+            # Save scatter data for update
             self.scat_data = [P, scatter_color, S]
             self.view.add(self.scat_visual)
 
@@ -116,122 +106,85 @@ class QtScatVispyWidget(QtGui.QWidget):
                 # Set transform for axis and camera
                 self.set_transform([self.components[0], self.components[1], self.components[2]], self.components[3])
 
-            self.update_clim()
+            self._update_clim()
             self.canvas.update()
 
-    # TODO: I should put all update of visual data into this update_scatter_visual function
-    # and all updates of those UI options into _refresh and use it to call the update_scatter_visual to
-    # update current visual !
-
-    def update_scatter_visual(self):
+    def update_scatter_visual(self, pos, color, size, symbol='disc'):
         """
         This method is called when basic properties for scatter visual got updated
-        including the selection of axis & size combobox
         """
-        P = self.scat_data[0]
-        scatter_color = self.scat_data[1]
-        S = self.scat_data[2]
-        self.scat_visual.set_data(P, symbol='disc', edge_color=None, face_color=scatter_color, size=S)
-        self.set_transform([self.components[0], self.components[1], self.components[2]], self.components[3])
-        self.update_clim()
+        self.scat_visual.set_data(pos, symbol=symbol, edge_color=None, face_color=color, size=size)
+        self.set_transform([pos[:, 0], pos[:, 1], pos[:, 2]], size)
         self.canvas.update()
 
     def _refresh(self):
         """
-        This method can be called if the stretch & opacity sliders are updated.
+        This method can be called if the sliders & clim got changed
         """
         if self.data is None:
             return
 
         if self.scat_visual is not None and self.scat_data is not None:
-            stretch_scale = self.options_widget.stretch
-            # stretch_tran = [-0.5 * stretch_scale[idx] * len(self.components[2-idx]) for idx in range(3)]
-            P = self.scat_data[0]
-            n = P.shape[0]
-            new_P = np.zeros((n, 3), dtype=np.float32)
-            for idx in range(3):
-                new_P[:, idx] = P[:, idx] * stretch_scale[idx]
+            # Add clim here
+            currentid = self.options_widget.ui.ClimComboBox.currentText()
+            _clim_pro = self.data[currentid]
 
-            S = self.scat_data[2]
-            new_S = np.zeros(n)
-            new_S = S[...] * stretch_scale[3]
+            if self.options_widget.cmin == 'auto' or self.options_widget.cmax == 'auto':
+                self._update_clim()
+
+            # self.options_widget.cmin is in unicode type
+            _cmin = float(self.options_widget.cmin)
+            _cmax = float(self.options_widget.cmax)
+
+            # Get new clim_components according to the filter
+            more = _clim_pro > _cmin
+            less = _clim_pro < _cmax
+            clim_filter = np.all([more, less], axis=0)
+            _clim_scat_data = self.clim_for_scat_data(clim_filter)  # [position, color, size]
+
+            # Stretch control here
+            stretch_scale = self.options_widget.stretch
+            n = len(_clim_scat_data[0])
+            P = np.zeros((n, 3), dtype=np.float32)
+
+            for idx in range(3):
+                P[:, idx] = _clim_scat_data[idx] * stretch_scale[idx]
+
+            # Normalize the sizes so that it falls into [1:20], as this range achieves optimal rendering
+            S = np.zeros(n)
+            S[...] = np.abs(np.nan_to_num(_clim_scat_data[3])) ** (1.0/3)
+            S = (S-np.min(S)) / (np.max(S)-np.min(S)) # normalize to [0,1]
+            S[np.isneginf(S)] = 0
+            S[np.isinf(S)] = 0
+            S = S * 20.0/np.max(S) * stretch_scale[3]
 
             scatter_color = Color(self.options_widget.true_color, self.options_widget.opacity/100.0)
 
-            self.scat_visual.set_data(new_P, symbol='disc', edge_color=None,
-                                      face_color=scatter_color, size=new_S)
+            self.update_scatter_visual(P, scatter_color, S)
+            # self._update_clim()
 
-            # Update the transform according to the stretch made here
-            self.set_transform([new_P[:, 0], new_P[:, 1], new_P[:, 2]], new_S)
-            self.scat_data_refresh = [new_P, scatter_color, new_S]
-
-    def apply_clim(self):
-        """
-        This method can be called if the clim max & min textbox got updated
-        """
-        # TODO: put it together with _refresh
-        currentid = self.options_widget.ui.ClimComboBox.currentText()
-        _clim_pro = self.data[currentid]
-
-        # self.options_widget.cmin is in unicode type
-        _cmin = float(self.options_widget.cmin)
-        _cmax = float(self.options_widget.cmax)
-
-        # Get new clim_components according to the filter
-        more = _clim_pro > _cmin
-        less = _clim_pro < _cmax
-        clim_filter = np.all([more, less], axis=0)
-        _clim_scat_data = self.clim_for_scat_data(clim_filter)  # [position, color, size]
-
-        n = len(_clim_scat_data[0])
-        P = np.zeros((n, 3), dtype=np.float32)
-
-        X, Y, Z = P[:, 0], P[:, 1], P[:, 2]
-        X[...] = _clim_scat_data[0]
-        Y[...] = _clim_scat_data[1]
-        Z[...] = _clim_scat_data[2]
-
-        # Dot size determination according to the mass - *2 for larger size
-        S = np.zeros(n)
-        m = np.median(np.nan_to_num(_clim_scat_data[3]))
-
-        if m < 1.0 or m > 10.0:
-            S[...] = _clim_scat_data[3] * (1.0/m)
-        else:
-            S[...] = _clim_scat_data[3]
-
-        scatter_color = Color(self.options_widget.true_color, self.options_widget.opacity/100.0)
-
-        # Reset the data for scatter visual display
-        self.scat_visual.set_data(P, symbol='disc', edge_color=None, face_color=scatter_color, size=S)
-        self.canvas.update()
-        # self.scat_data = [P, scatter_color, S]
-
-    def update_clim(self):
+    def _update_clim(self):
         array = self.components[4]
-
         self.options_widget.cmin = "%.4g" % np.nanmin(array)
         self.options_widget.cmax = "%.4g" % np.nanmax(array)
 
     def clim_for_scat_data(self, clim_filter):
         clim_scat_data = []
-        for idx in range(3):
-            each_com = self.scat_data_refresh[0][:, idx]
+        for each_com in self.components:
             clim_scat_data.append(each_com[clim_filter])
-        S = self.scat_data_refresh[2]
-        clim_scat_data.append(S[clim_filter])
+
         return clim_scat_data
 
-    def get_minmax(self, array):
+    def get_min_and_max(self, array):
         return float("%.4g" % np.nanmin(array)), float("%.4g" % np.nanmax(array))
 
-    # Set the transform of visual&axis and distance of turntable camera according to the scale of the data
+    # Set the transform of visual & axis and distance of turntable camera according to the scale of the data
     def set_transform(self, position, size):
-        # Get the min and max of each axis
-        xmin, xmax = self.get_minmax(position[0])
-        ymin, ymax = self.get_minmax(position[1])
-        zmin, zmax = self.get_minmax(position[2])
-        sizemin, sizemax = self.get_minmax(size)
+        xmin, xmax = self.get_min_and_max(position[0])
+        ymin, ymax = self.get_min_and_max(position[1])
+        zmin, zmax = self.get_min_and_max(position[2])
+        sizemin, sizemax = self.get_min_and_max(size)
+        # TODO: some bugs here
         _axis_scale = (sizemax ** (1. / 3) / 1.e1, sizemax ** (1. / 3) / 1.e1, sizemax ** (1. / 3) / 1.e1)
         trans = (-(xmax+xmin)/2.0, -(ymax+ymin)/2.0, -(zmax+zmin)/2.0)
         self.scat_visual.transform = scene.STTransform(translate=trans)

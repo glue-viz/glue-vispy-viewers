@@ -66,18 +66,18 @@ class ScatOptionsWidget(QtGui.QWidget):
         self.color_view.show()
 
         self.true_color = self.color
-
+        self._reset_clim()
         self._connect()
 
     def _connect(self):
         self.ui.axis_apply.clicked.connect(self._apply)
-        self.ui.reset_button.clicked.connect(self._apply)
+        self.ui.reset_button.clicked.connect(self._reset_view)
         self.ui.ClimComboBox.currentIndexChanged.connect(self._clim_combo_change)
         self.ui.ColorComboBox.currentIndexChanged.connect(self._color_change)
         self.ui.OpacitySlider.valueChanged.connect(self._refresh_viewer)
 
-        self.ui.clim_min.returnPressed.connect(self._apply_clim)
-        self.ui.clim_max.returnPressed.connect(self._apply_clim)
+        self.ui.clim_min.returnPressed.connect(self._refresh_viewer)
+        self.ui.clim_max.returnPressed.connect(self._refresh_viewer)
         self.ui.advanceButton.clicked.connect(self._color_picker_show)
 
         # Connect slider and values both ways
@@ -107,7 +107,7 @@ class ScatOptionsWidget(QtGui.QWidget):
 
     def _clim_combo_change(self):
         if self._vispy_widget is not None:
-            self._vispy_widget.update_clim()
+            self._vispy_widget._update_clim()
 
     def _apply_clim(self):
         if self._vispy_widget is not None:
@@ -115,17 +115,26 @@ class ScatOptionsWidget(QtGui.QWidget):
 
     def _apply(self):
         """
-        Add or update basic properties to display a scatter visual; Reset view
+        Add or update basic properties to display a scatter visual
         """
-        self._reset_clim()
         if self._vispy_widget.scat_visual is None:
             self._vispy_widget.add_scatter_visual()
         else:
             # Only axis & size combo refresh
-            self._vispy_widget.update_scatter_visual()
-            # Reset slider bars
-            for idx in range(4):
-                self.stretch_sliders[idx].setValue(0)
+            self._reset_clim()
+            self._refresh_viewer()
+
+    def _reset_view(self):
+        """
+        Reset sliders, camera, clim combobox & text
+        """
+        for idx in range(4):
+            self.stretch_sliders[idx].setValue(0)
+        self._reset_clim()
+
+        if self._vispy_widget is not None:
+            self._vispy_widget.view.camera.reset()
+        self._refresh_viewer()
 
     def _color_picker_show(self):
         color = QtGui.QColorDialog.getColor()
