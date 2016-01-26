@@ -6,9 +6,12 @@ from vispy import scene
 from vispy.color import Color
 from math import radians, tan
 
+from matplotlib.colors import ColorConverter
+converter = ColorConverter()
+
 __all__ = ['QtScatVispyWidget']
 
-# TODO : create a custom visual inherited from Markers
+# TODO : instead of using customized colormap and opacity, use 'double click' on the left top panel
 class QtScatVispyWidget(QtGui.QWidget):
     def __init__(self, parent=None):
 
@@ -32,6 +35,11 @@ class QtScatVispyWidget(QtGui.QWidget):
         # create scatter object and fill in the data
         self.scat_visual = None
         self.scat_data = None
+
+        self.scatter_color = None
+
+        self._subset_changed = False
+        self.subsets = []
 
         # Add a grid plane
         self.grid = scene.visuals.GridLines(scale=(0.5, 0.5), parent=self.view)
@@ -60,6 +68,7 @@ class QtScatVispyWidget(QtGui.QWidget):
         if self.data is None:
             return None
         else:
+            # self.data = np.nan_to_num(self.data)
             components = [self.data[self.options_widget.ui.xAxisComboBox.currentText()],
                           self.data[self.options_widget.ui.yAxisComboBox.currentText()],
                           self.data[self.options_widget.ui.zAxisComboBox.currentText()],
@@ -67,8 +76,12 @@ class QtScatVispyWidget(QtGui.QWidget):
                           self.data[self.options_widget.ui.ClimComboBox.currentText()]]
             return components
 
+    # TODO: not all subsets be removed, a few left & when set_subsets be called
     def set_subsets(self, subsets):
         self.subsets = subsets
+        self._subset_changed = True
+        print('subset.shape', self.subsets)
+        self._refresh()
 
     def add_scatter_visual(self):
         if self.data is None:
@@ -91,19 +104,24 @@ class QtScatVispyWidget(QtGui.QWidget):
             S[np.isinf(S)] = 0
             S *= 20.0/np.max(S)
 
-            scatter_color = Color(self.options_widget.true_color, self.options_widget.opacity/100.0)
+            self.scatter_color = np.ones((n, 4), dtype=np.float32)
+            alpha = self.options_widget.opacity/100.0
+            for idx in range(n):
+                    self.scatter_color[idx] = Color(self.options_widget.true_color, alpha).rgba
             scat_visual = scene.visuals.Markers()
-            scat_visual.set_data(P, symbol='disc', edge_color=None, face_color=scatter_color, size=S)
+            scat_visual.set_data(P, symbol='disc', edge_color=None, face_color=self.scatter_color, size=S)
             self.scat_visual = scat_visual
 
             # Save scatter data for update
-            self.scat_data = [P, scatter_color, S]
+            self.scat_data = [P, self.scatter_color, S]
             self.view.add(self.scat_visual)
 
             if self.trans_flag == 0:
                 # Set transform for axis and camera
                 self.set_transform([self.components[0], self.components[1], self.components[2]], self.components[3])
 
+            print('--------')
+            print('n in addvisual is', n)
             self._update_clim()
             self.canvas.update()
 
@@ -122,7 +140,7 @@ class QtScatVispyWidget(QtGui.QWidget):
         if self.data is None:
             return
 
-        if self.scat_visual is not None and self.scat_data is not None:
+        if self.scat_visual is not None:
             # Add clim here
             currentid = self.options_widget.ui.ClimComboBox.currentText()
             _clim_pro = self.data[currentid]
@@ -135,8 +153,8 @@ class QtScatVispyWidget(QtGui.QWidget):
             _cmax = float(self.options_widget.cmax)
 
             # Get new clim_components according to the filter
-            more = _clim_pro > _cmin
-            less = _clim_pro < _cmax
+            more = _clim_pro >= _cmin
+            less = _clim_pro <= _cmax
             clim_filter = np.all([more, less], axis=0)
             _clim_scat_data = self.clim_for_scat_data(clim_filter)  # [position, color, size]
 
@@ -156,10 +174,28 @@ class QtScatVispyWidget(QtGui.QWidget):
             S[np.isinf(S)] = 0
             S = S * 20.0/np.max(S) * stretch_scale[3]
 
-            scatter_color = Color(self.options_widget.true_color, self.options_widget.opacity/100.0)
+            alpha = self.options_widget.opacity/100.0
+            color = np.array(Color(self.options_widget.true_color, alpha).hex)
 
-            self.update_scatter_visual(P, scatter_color, S)
-            # self._update_clim()
+            if self._subset_changed:
+                self._subset_changed = False
+                for isubset, subset in enumerate(self.subsets):
+                    mask = subset['mask']
+                    highlight_color = subset['color']
+                    color_array = np.reshape(np.repeat(color, len(mask), axis=0), len(mask))
+                    print(mask.shape)
+                    print(color_array.shape)
+                    np.place(color_array, mask, highlight_color)
+
+                    for idx in range(n):
+                        # TODO: a better color calculation for color setting of multiple subsets
+                        self.scatter_color[idx] = (Color(color_array[idx]).rgba + self.scatter_color[idx])/2.0
+
+            print(self.scatter_color)
+            # Enable the opacity
+            self.scatter_color[:, 3] = alpha
+
+            self.update_scatter_visual(P, self.scatter_color, S)
 
     def _update_clim(self):
         array = self.components[4]
