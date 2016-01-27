@@ -102,4 +102,3 @@ class ScatVispyViewer(DataViewer):
 
     def options_widget(self):
         return self._options_widget
-

@@ -2,7 +2,12 @@ import os
 import math
 
 from glue.external.qt import QtGui
-from glue.qt.widget_properties import CurrentComboProperty, WidgetProperty, TextProperty
+
+try:
+    from glue.utils.qt.widget_properties import CurrentComboProperty, TextProperty, WidgetProperty
+except ImportError:
+    from glue.qt.widget_properties import CurrentComboProperty, TextProperty, WidgetProperty
+
 from glue.qt.qtutil import load_ui
 from glue.qt import get_qapp
 
