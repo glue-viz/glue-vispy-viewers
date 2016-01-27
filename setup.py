@@ -7,6 +7,7 @@ from setuptools import setup, find_packages
 entry_points = """
 [glue.plugins]
 vispy_volume=glue_vispy_viewers.volume:setup
+vispy_scatter=glue_vispy_viewers.scatter:setup
 """
 
 # Add the following to the above entry points to enable the isosurface viewer
@@ -28,6 +29,7 @@ setup(name='glue-vispy-viewers',
       author_email='glueviz@gmail.com',
       packages = find_packages(),
       package_data={'glue_vispy_viewers.volume': ['*.ui'],
-                    'glue_vispy_viewers.isosurface': ['*.ui']},
+                    'glue_vispy_viewers.isosurface': ['*.ui'],
+                    'glue_vispy_viewers.scatter': ['*.ui']},
       entry_points=entry_points
     )
