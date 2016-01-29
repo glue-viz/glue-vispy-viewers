@@ -155,24 +155,29 @@ class QtScatVispyWidget(QtGui.QWidget):
             # Get new clim_components according to the filter
             more = _clim_pro >= _cmin
             less = _clim_pro <= _cmax
+            print('more and less', more, less)
+            # more and less [ True  True  True ...,  True  True  True] [ True  True  True ...,  True  True  True]
             clim_filter = np.all([more, less], axis=0)
-            _clim_scat_data = self.clim_for_scat_data(clim_filter)  # [position, color, size]
 
             # Stretch control here
             stretch_scale = self.options_widget.stretch
-            n = len(_clim_scat_data[0])
+            n = len(self.components[0])
             P = np.zeros((n, 3), dtype=np.float32)
 
+            print('compare the lenth of data and after clim:', len(self.components[3]), n)
             for idx in range(3):
-                P[:, idx] = _clim_scat_data[idx] * stretch_scale[idx]
+                P[:, idx] = self.components[idx] * stretch_scale[idx]
 
             # Normalize the sizes so that it falls into [1:20], as this range achieves optimal rendering
             S = np.zeros(n)
-            S[...] = np.abs(np.nan_to_num(_clim_scat_data[3])) ** (1.0/3)
+            S[...] = np.abs(np.nan_to_num(self.components[3])) ** (1.0/3)
             S = (S-np.min(S)) / (np.max(S)-np.min(S)) # normalize to [0,1]
             S[np.isneginf(S)] = 0
             S[np.isinf(S)] = 0
             S = S * 20.0/np.max(S) * stretch_scale[3]
+
+            # Instead of moving those clim points from the dataset, here set the size of them to 0
+            np.place(S, np.logical_not(clim_filter), 0)
 
             alpha = self.options_widget.opacity/100.0
             color = np.array(Color(self.options_widget.true_color, alpha).hex)
@@ -180,15 +185,18 @@ class QtScatVispyWidget(QtGui.QWidget):
             if self._subset_changed:
                 self._subset_changed = False
                 for isubset, subset in enumerate(self.subsets):
+                    # if the mask is all fault, then continue
                     mask = subset['mask']
+                    if not any(mask):
+                        continue
                     highlight_color = subset['color']
                     color_array = np.reshape(np.repeat(color, len(mask), axis=0), len(mask))
                     print(mask.shape)
                     print(color_array.shape)
+                    # TODO: the mask should be do on the previous subset_color, not from the repeat of colormap
                     np.place(color_array, mask, highlight_color)
-
                     for idx in range(n):
-                        # TODO: a better color calculation for color setting of multiple subsets
+                        # TODO: how to deal with the overlapped part?
                         self.scatter_color[idx] = (Color(color_array[idx]).rgba + self.scatter_color[idx])/2.0
 
             print(self.scatter_color)
@@ -201,13 +209,6 @@ class QtScatVispyWidget(QtGui.QWidget):
         array = self.components[4]
         self.options_widget.cmin = "%.4g" % np.nanmin(array)
         self.options_widget.cmax = "%.4g" % np.nanmax(array)
-
-    def clim_for_scat_data(self, clim_filter):
-        clim_scat_data = []
-        for each_com in self.components:
-            clim_scat_data.append(each_com[clim_filter])
-
-        return clim_scat_data
 
     def get_min_and_max(self, array):
         return float("%.4g" % np.nanmin(array)), float("%.4g" % np.nanmax(array))
