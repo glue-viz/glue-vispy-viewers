@@ -185,19 +185,28 @@ class QtScatVispyWidget(QtGui.QWidget):
             if self._subset_changed:
                 self._subset_changed = False
                 for isubset, subset in enumerate(self.subsets):
-                    # if the mask is all fault, then continue
+                    # if the mask is all fault (newly created subset), then continue
                     mask = subset['mask']
                     if not any(mask):
                         continue
                     highlight_color = subset['color']
                     color_array = np.reshape(np.repeat(color, len(mask), axis=0), len(mask))
-                    print(mask.shape)
-                    print(color_array.shape)
-                    # TODO: the mask should be do on the previous subset_color, not from the repeat of colormap
                     np.place(color_array, mask, highlight_color)
+
+                    # Calculating an weighted averaging of mixed color, blend using alpha (opacity)
+                    fg_color = np.ones((n, 4), dtype=np.float32)
                     for idx in range(n):
-                        # TODO: how to deal with the overlapped part?
-                        self.scatter_color[idx] = (Color(color_array[idx]).rgba + self.scatter_color[idx])/2.0
+                        fg_color[idx] = Color(color_array[idx]).rgba
+                    # Set the alpha of those unmasked points as 0
+                    np.place(fg_color[:, 3], np.logical_not(mask), 0.0)
+                    bg_color = self.scatter_color
+                    re_color = np.ones((n, 4), dtype=np.float32) # result color
+                    re_color[:, 3] = 1.0 - (1.0 - bg_color[:, 3]) * (1.0 - fg_color[:, 3])  # composite opacity
+
+                    re_color[:, 0] = fg_color[:, 0] * fg_color[:, 3] / re_color[:, 3] + bg_color[:, 0] * (1 - fg_color[:, 3]) / re_color[:, 3]
+                    re_color[:, 1] = fg_color[:, 1] * fg_color[:, 3] / re_color[:, 3] + bg_color[:, 1] * (1 - fg_color[:, 3]) / re_color[:, 3]
+                    re_color[:, 2] = fg_color[:, 2] * fg_color[:, 3] / re_color[:, 3] + bg_color[:, 2] * (1 - fg_color[:, 3]) / re_color[:, 3]
+                    self.scatter_color = re_color
 
             print(self.scatter_color)
             # Enable the opacity
@@ -219,7 +228,7 @@ class QtScatVispyWidget(QtGui.QWidget):
         ymin, ymax = self.get_min_and_max(position[1])
         zmin, zmax = self.get_min_and_max(position[2])
         sizemin, sizemax = self.get_min_and_max(size)
-        # TODO: some bugs here
+        # TODO: set the center of the view as the 'mass of center'
         _axis_scale = (sizemax ** (1. / 3) / 1.e1, sizemax ** (1. / 3) / 1.e1, sizemax ** (1. / 3) / 1.e1)
         trans = (-(xmax+xmin)/2.0, -(ymax+ymin)/2.0, -(zmax+zmin)/2.0)
         self.scat_visual.transform = scene.STTransform(translate=trans)
