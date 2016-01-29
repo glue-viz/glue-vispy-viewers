@@ -50,6 +50,7 @@ class ScatVispyViewer(DataViewer):
         self._update_data()
         return True
 
+# TODO: modify the remove, update for subsets, not really work now
     def _add_subset(self, message):
         self._subsets.append(message.subset)
         self._update_subsets()
