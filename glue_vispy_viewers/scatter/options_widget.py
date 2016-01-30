@@ -1,14 +1,22 @@
 import os
 import math
 
-from glue.external.qt import QtGui, QtCore
-from glue.qt.widget_properties import CurrentComboProperty, TextProperty, ValueProperty
+from glue.external.qt import QtGui
+
+try:
+    from glue.utils.qt.widget_properties import CurrentComboProperty, TextProperty, ValueProperty
+except ImportError:
+    from glue.qt.widget_properties import CurrentComboProperty, TextProperty, ValueProperty
+
 from glue.qt.qtutil import load_ui
-from glue.qt import get_qapp
 
+<<<<<<< HEAD
 from vispy.color import get_colormaps, get_color_dict, get_color_names, Color
+=======
+from vispy.color import get_color_names
+>>>>>>> 8c273de5046746561fc209910d4084d4585f1b61
 
-__all__ = ["ScatterOptionsWidget"]
+__all__ = ["ScatOptionsWidget"]
 
 UI_MAIN = os.path.join(os.path.dirname(__file__), 'options_widget.ui')
 
