@@ -10,11 +10,8 @@ except ImportError:
 
 from glue.qt.qtutil import load_ui
 
-<<<<<<< HEAD
 from vispy.color import get_colormaps, get_color_dict, get_color_names, Color
-=======
-from vispy.color import get_color_names
->>>>>>> 8c273de5046746561fc209910d4084d4585f1b61
+
 
 __all__ = ["ScatOptionsWidget"]
 
