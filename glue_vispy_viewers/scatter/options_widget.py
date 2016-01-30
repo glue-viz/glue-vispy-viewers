@@ -6,7 +6,7 @@ from glue.qt.widget_properties import CurrentComboProperty, TextProperty, ValueP
 from glue.qt.qtutil import load_ui
 from glue.qt import get_qapp
 
-from vispy.color import get_colormaps, get_color_dict, get_color_names
+from vispy.color import get_colormaps, get_color_dict, get_color_names, Color
 
 __all__ = ["ScatterOptionsWidget"]
 
@@ -148,6 +148,8 @@ class ScatOptionsWidget(QtGui.QWidget):
         self.color_view.setBackgroundBrush(QtGui.QColor(self.color))
         self.color_view.show()
         self.true_color = self.color
+        if self._vispy_widget is not None:
+            self._vispy_widget.scatter_color[:, 0:3] = Color(self.true_color).rgb
 
     def _opacity_change(self):
         if self._vispy_widget is not None:
