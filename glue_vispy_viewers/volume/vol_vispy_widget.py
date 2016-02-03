@@ -5,6 +5,7 @@ import sys
 import numpy as np
 from glue.external.qt import QtGui
 from vispy import scene, app
+from .subset_volume import get_combined_data
 
 __all__ = ['QtVispyWidget']
 
@@ -14,6 +15,9 @@ class QtVispyWidget(QtGui.QWidget):
     def __init__(self, parent=None):
 
         super(QtVispyWidget, self).__init__(parent=parent)
+
+        self._subset_changed = False
+        self.subsets = []
 
         # Prepare canvas
         self.canvas = scene.SceneCanvas(keys='interactive', show=False, always_on_top=False)
@@ -93,24 +97,29 @@ class QtVispyWidget(QtGui.QWidget):
             return
 
         stretch_scale = self.options_widget.stretch
-        stretch_tran = [-0.5 * stretch_scale[idx] * self.component.shape[2-idx] for idx in range(3)]
+        stretch_tran = [-0.5 * stretch_scale[idx] * self.component.shape[2 - idx] for idx in range(3)]
 
         if self.vol_visual is not None:
 
             self.vol_visual.transform.translate = stretch_tran
             self.vol_visual.transform.scale = stretch_scale
-            self.vol_visual.cmap = self.options_widget.cmap
 
             array = self.component
 
-            if array is not self._current_array[0] or (self.options_widget.cmin, self.options_widget.cmax) != self._current_array[1]:
+            if array is not self._current_array[0] or (self.options_widget.cmin, self.options_widget.cmax) != self._current_array[1] or self._subset_changed:
                 self._current_array = (array,
                                        (self.options_widget.cmin,
                                         self.options_widget.cmax))
                 array = np.nan_to_num(array)
                 self._update_clim(array)
-                self.vol_visual.set_data(array, (float(self.options_widget.cmin),
-                                                 float(self.options_widget.cmax)))
+
+                clim = (float(self.options_widget.cmin),
+                        float(self.options_widget.cmax))
+
+                combined_data = get_combined_data(array, clim, self.subsets)
+                self.vol_visual.set_data(combined_data, clim=(0, 1))
+
+                self._subset_changed = False
 
         if self.options_widget.view_mode == "Normal View Mode":
             self.view.camera = self.turntableCamera
@@ -118,6 +127,8 @@ class QtVispyWidget(QtGui.QWidget):
             self.turntableCamera.scale_factor = self.cube_diagonal
         else:
             self.view.camera = self.flyCamera
+
+        self.canvas.update()
 
     def _update_clim(self, array):
 
@@ -128,7 +139,9 @@ class QtVispyWidget(QtGui.QWidget):
             self.options_widget.cmax = "%.4g" % np.max(array)
 
     def set_subsets(self, subsets):
+        self._subset_changed = True
         self.subsets = subsets
+        self._refresh()
 
     def add_volume_visual(self):
 
@@ -141,13 +154,19 @@ class QtVispyWidget(QtGui.QWidget):
                                 self.options_widget.cmax))
         vol_data = np.nan_to_num(vol_data)
         self._update_clim(vol_data)
-        vol_visual = scene.visuals.Volume(vol_data,
-                                          clim=(float(self.options_widget.cmin),
-                                                float(self.options_widget.cmax)),
-                                          parent=self.view.scene, threshold=0.1, method='mip',
-                                          emulate_texture=self.emulate_texture)
 
-        trans = (-vol_data.shape[2]/2, -vol_data.shape[1]/2, -vol_data.shape[0]/2)
+        clim = (float(self.options_widget.cmin),
+                float(self.options_widget.cmax))
+
+        combined_data = get_combined_data(vol_data, clim, [])
+
+        vol_visual = scene.visuals.Volume(combined_data,
+                                          parent=self.view.scene,
+                                          emulate_texture=self.emulate_texture,
+                                          clim=(0, 1),
+                                          method='additive_rgba')
+
+        trans = (-vol_data.shape[2] / 2, -vol_data.shape[1] / 2, -vol_data.shape[0] / 2)
         _axis_scale = (vol_data.shape[2], vol_data.shape[1], vol_data.shape[0])
         vol_visual.transform = scene.STTransform(translate=trans)
 
@@ -159,11 +178,11 @@ class QtVispyWidget(QtGui.QWidget):
     def add_text_visual(self):
         # Create the text visual to show zoom scale
         text = scene.visuals.Text('', parent=self.canvas.scene, color='white', bold=True, font_size=16)
-        text.pos = [40, self.canvas.size[1]-40]
+        text.pos = [40, self.canvas.size[1] - 40]
         return text
 
     def on_timer(self, event):
-        self.zoom_text_visual.color = [1, 1, 1, float((7-event.iteration) % 8)/8]
+        self.zoom_text_visual.color = [1, 1, 1, float((7 - event.iteration) % 8) / 8]
         self.canvas.update()
 
     def on_resize(self, event):
