@@ -114,7 +114,7 @@ class VolumeOptionsWidget(QtGui.QWidget):
         self.ui.component.currentIndexChanged.connect(self._reset_clim)
 
         self.ui.reset_button.clicked.connect(self._reset_view)
-        self.ui.view_tabs.currentChanged.connect(self._refresh_viewer)
+        self.ui.view_tabs.currentChanged.connect(self._vispy_widget._update_camera)
         self.ui.cmap_menu.currentIndexChanged.connect(self._refresh_viewer)
         self.ui.component.currentIndexChanged.connect(self._refresh_viewer)
         self.ui.clim_min.returnPressed.connect(self._refresh_viewer)

@@ -67,6 +67,8 @@ class QtVispyWidget(QtGui.QWidget):
 
         self._shown_data = None
 
+        self._camera_updated = False
+
     @property
     def data(self):
         return self._data
@@ -129,6 +131,15 @@ class QtVispyWidget(QtGui.QWidget):
                     subset_data[~subset['mask']] = clim[0]
                     self.vol_visual.set_volume(subset['label'], subset_data, clim, cmap)
 
+        if self._camera_updated:
+            self.canvas.update()
+        else:
+            self._update_camera()
+
+    def _update_camera(self):
+
+        self._camera_updated = True
+
         if self.options_widget.view_mode == "Normal View Mode":
             self.view.camera = self.turntableCamera
             self.turntableCamera.distance = self.ori_distance
@@ -183,6 +194,8 @@ class QtVispyWidget(QtGui.QWidget):
 
         self.vol_visual = vol_visual
         self.widget_axis_scale = self.axis.transform.scale
+
+        self._update_camera()
 
     def add_text_visual(self):
         # Create the text visual to show zoom scale
