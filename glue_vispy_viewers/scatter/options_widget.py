@@ -5,10 +5,11 @@ from glue.external.qt import QtGui
 
 try:
     from glue.utils.qt.widget_properties import CurrentComboProperty, TextProperty, ValueProperty
+    from glue.utils.qt import load_ui
 except ImportError:
     from glue.qt.widget_properties import CurrentComboProperty, TextProperty, ValueProperty
+    from glue.qt.qtutil import load_ui
 
-from glue.qt.qtutil import load_ui
 
 from vispy.color import get_colormaps, get_color_dict, get_color_names, Color
 

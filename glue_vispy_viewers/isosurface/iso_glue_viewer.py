@@ -1,4 +1,8 @@
-from glue.qt.widgets.data_viewer import DataViewer
+try:
+    from glue.viewers.common.qt.data_viewer import DataViewer
+except ImportError:
+    from glue.qt.widgets.data_viewer import DataViewer
+
 from glue.core import message as msg
 
 from .iso_vispy_widget import QtVispyIsoWidget
