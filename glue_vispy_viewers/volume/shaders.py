@@ -161,7 +161,7 @@ def get_shaders(n_volume_max):
         declarations += "uniform float u_weight_{0:d};\n".format(i)
         color_calculation += ("if (u_enabled_{0:d} == 1) {{\n"
                               "  color += u_weight_{0:d} * $cmap{0:d}($sample(u_volumetex_{0:d}, loc).g);\n"
-                              "  n_tex += u_weight_{0:d};\n}}\n").format(i)
+                              "  n_tex += 1;\n}}\n").format(i)
 
     color_calculation += "\ncolor /= n_tex;".format(1. / n_volume_max)
 

@@ -138,6 +138,10 @@ class QtVispyWidget(QtGui.QWidget):
 
         self.canvas.update()
 
+    def _update_data_weight(self):
+        self.vol_visual.set_weight('data', float(self.options_widget.data_weight) / 100.)
+        self.canvas.update()
+
     def _update_clim(self, array):
 
         if self.options_widget.cmin == 'auto':

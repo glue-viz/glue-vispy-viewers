@@ -4,10 +4,10 @@ import math
 from glue.external.qt import QtGui, get_qapp
 
 try:
-    from glue.utils.qt.widget_properties import CurrentComboProperty, TextProperty, WidgetProperty
+    from glue.utils.qt.widget_properties import CurrentComboProperty, TextProperty, WidgetProperty, ValueProperty
     from glue.utils.qt import load_ui
 except ImportError:
-    from glue.qt.widget_properties import CurrentComboProperty, TextProperty, WidgetProperty
+    from glue.qt.widget_properties import CurrentComboProperty, TextProperty, WidgetProperty, ValueProperty
     from glue.qt.qtutil import load_ui
 
 from vispy.color import get_colormaps
@@ -57,6 +57,8 @@ class VolumeOptionsWidget(QtGui.QWidget):
 
     cmin = TextProperty('ui.clim_min')
     cmax = TextProperty('ui.clim_max')
+
+    data_weight = ValueProperty('ui.data_weight_slider')
 
     def __init__(self, parent=None, vispy_widget=None):
 
@@ -117,6 +119,7 @@ class VolumeOptionsWidget(QtGui.QWidget):
         self.ui.component.currentIndexChanged.connect(self._refresh_viewer)
         self.ui.clim_min.returnPressed.connect(self._refresh_viewer)
         self.ui.clim_max.returnPressed.connect(self._refresh_viewer)
+        self.ui.data_weight_slider.valueChanged.connect(self._vispy_widget._update_data_weight)
 
     def set_valid_components(self, components):
         self.ui.component.clear()
