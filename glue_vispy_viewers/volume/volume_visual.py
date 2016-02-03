@@ -140,20 +140,26 @@ class MultiVolumeVisual(Visual):
                 return i
         raise ValueError("No free slots")
 
-    def add_volume(self, data, clim, cmap, label):
+    def set_volume(self, label, data, clim, cmap):
 
         if label in self.volumes:
             index = self.volumes[label]['index']
+            print("Using existing slot: {0}".format(index))
         else:
             index = self._free_slot_index
             self.volumes[label]['index'] = index
             self.volumes[label]['data'] = data
             self.volumes[label]['clim'] = clim
             self.volumes[label]['cmap'] = cmap
+            print("Using new slot: {0}".format(index))
 
         data = data.astype(np.float32)
         data -= clim[0]
         data /= clim[1] - clim[0]
+
+        # Make Python 2/3-friendly
+        if isinstance(cmap, str):
+            cmap = get_colormap(cmap)
 
         self.shared_program['u_volumetex_{0:d}'.format(index)].set_data(data)
         self.shared_program['u_enabled_{0:d}'.format(index)] = 1

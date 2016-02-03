@@ -84,7 +84,8 @@ class GlueVispyViewer(DataViewer):
     def _update_subsets(self):
         # TODO: in future, we should be smarter and not compute the masks just
         # for style changes, but this will do for now for experimentation.
-        self._vispy_widget.set_subsets([{'mask': s.to_mask(),
+        self._vispy_widget.set_subsets([{'label': s.label,
+                                         'mask': s.to_mask(),
                                          'color': s.style.color,
                                          'alpha': s.style.alpha} for s in self._subsets if s.to_mask().ndim == 3])
         self._redraw()
