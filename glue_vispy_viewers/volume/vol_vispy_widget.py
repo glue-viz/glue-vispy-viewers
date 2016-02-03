@@ -34,6 +34,9 @@ class QtVispyWidget(QtGui.QWidget):
         self._current_array = None
 
         self.vol_visual = None
+        self.sub_vol_visual = None
+        self.subsets = None
+
         self.zoom_size = 0
         self.zoom_text_visual = self.add_text_visual()
         self.zoom_timer = app.Timer(0.2, connect=self.on_timer, start=False)
@@ -129,6 +132,20 @@ class QtVispyWidget(QtGui.QWidget):
 
     def set_subsets(self, subsets):
         self.subsets = subsets
+        self.update_volume_visual()
+
+    def update_volume_visual(self):
+        # TODO: implement mask here
+        for s in self.subsets:
+            if s['mask'].size == self.component.size:
+                vol_data = np.nan_to_num(self.component)
+
+                _mask = (np.logical_and(vol_data, s['mask'])).astype(int)
+                _mask_data = _mask * self.component
+                print(scene.visuals)
+                print(dir(self.vol_visual))
+                self.sub_vol_visual.set_data(_mask_data)
+                self.vol_visual.visible = False
 
     def add_volume_visual(self):
 
@@ -155,6 +172,16 @@ class QtVispyWidget(QtGui.QWidget):
 
         self.vol_visual = vol_visual
         self.widget_axis_scale = self.axis.transform.scale
+
+        # Add the sub-volume visual
+        sub_vol_visual = scene.visuals.Volume(np.zeros(vol_data.shape),
+                                          clim=(float(self.options_widget.cmin),
+                                                float(self.options_widget.cmax)),
+                                          parent=self.view.scene, threshold=0.3, cmap='hot', method='mip',
+                                          emulate_texture=self.emulate_texture)
+
+        sub_vol_visual.transform = scene.STTransform(translate=trans)
+        self.sub_vol_visual = sub_vol_visual
 
     def add_text_visual(self):
         # Create the text visual to show zoom scale
