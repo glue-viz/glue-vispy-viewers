@@ -11,8 +11,8 @@ env:
   matrix:
     - PYTHON_VERSION=2.7
     - PYTHON_VERSION=3.4
-    - PYTHON_VERSION=2.7 PIP_DEPENDENCIES="https://github.com/vispy/vispy/archive/master.zip"
-    - PYTHON_VERSION=3.5 PIP_DEPENDENCIES="https://github.com/vispy/vispy/archive/master.zip"
+    - PYTHON_VERSION=2.7 PIP_DEPENDENCIES="https://github.com/vispy/vispy/archive/master.zip" PIP_DEPENDENCIES_FLAGS="--upgrade --no-deps"
+    - PYTHON_VERSION=3.5 PIP_DEPENDENCIES="https://github.com/vispy/vispy/archive/master.zip" PIP_DEPENDENCIES_FLAGS="--upgrade --no-deps"
 
 before_install:
   - export DISPLAY=:99.0
