@@ -39,7 +39,7 @@
 
 from vispy.gloo import Texture3D, TextureEmulated3D, VertexBuffer, IndexBuffer
 from vispy.visuals import Visual
-from vispy.visuals.shaders import Function
+from vispy.visuals.shaders import Function, ModularProgram
 from vispy.color import get_colormap
 from vispy.scene.visuals import create_visual_node
 
@@ -82,7 +82,12 @@ class MultiVolumeVisual(Visual):
 
         # Create OpenGL program
         vert_shader, frag_shader = get_shaders(n_volume_max)
-        super(MultiVolumeVisual, self).__init__(vcode=vert_shader, fcode=frag_shader)
+        try:
+            super(MultiVolumeVisual, self).__init__(vcode=vert_shader, fcode=frag_shader)
+        except TypeError:  # Older versions of VisPy
+            super(MultiVolumeVisual, self).__init__()
+            self._program = ModularProgram(vcode=vert_shader, fcode=frag_shader)
+            self.shared_program = self._program
 
         # Create gloo objects
         self._vertices = VertexBuffer()
@@ -131,7 +136,10 @@ class MultiVolumeVisual(Visual):
 
         self.volumes = defaultdict(dict)
 
-        self.freeze()
+        try:
+            self.freeze()
+        except AttributeError:  # Older versions of VisPy
+            pass
 
     @property
     def _free_slot_index(self):
