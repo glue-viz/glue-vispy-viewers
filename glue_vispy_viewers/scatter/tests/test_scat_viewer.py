@@ -1,4 +1,4 @@
-from glue.qt import get_qapp
+from glue.external.qt import get_qapp
 from ..scat_vispy_viewer import ScatVispyViewer
 from glue.config import qt_client
 

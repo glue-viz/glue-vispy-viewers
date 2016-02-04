@@ -1,7 +1,7 @@
 import numpy as np
 from ..scat_vispy_widget import QtScatVispyWidget
 from ..options_widget import ScatOptionsWidget
-from glue.qt import get_qapp
+from glue.external.qt import get_qapp
 # import pyfits
 import glue
 
