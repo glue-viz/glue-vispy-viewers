@@ -16,8 +16,6 @@ from ..vol_glue_viewer import GlueVispyViewer
 
 def test_viewer():
 
-    app = get_qapp()
-
     data = Data(x=np.arange(1000).reshape((10, 10, 10)) / 1000.)
     dc = DataCollection([data])
     app = GlueApplication(dc)
