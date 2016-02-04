@@ -1,7 +1,7 @@
 import numpy as np
 from ..vol_vispy_widget import QtVispyWidget
 from ..options_widget import VolumeOptionsWidget
-from glue.qt import get_qapp
+from glue.external.qt import get_qapp
 from glue.core import Data
 
 

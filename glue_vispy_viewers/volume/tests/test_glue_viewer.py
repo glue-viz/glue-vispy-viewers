@@ -1,6 +1,6 @@
 import operator
 import numpy as np
-from glue.qt import get_qapp
+from glue.external.qt import get_qapp
 from glue.core.data import Data
 from glue.core.data_collection import DataCollection
 

@@ -1,6 +1,6 @@
 import numpy as np
 from ..iso_vispy_widget import QtVispyIsoWidget
-from glue.qt import get_qapp
+from glue.external.qt import get_qapp
 
 
 class KeyEvent(object):
