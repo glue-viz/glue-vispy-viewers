@@ -36,6 +36,7 @@
 # This modified version is released under the BSD license given in the LICENSE
 # file in this repository.
 
+from glue.external import six
 
 from vispy.gloo import Texture3D, TextureEmulated3D, VertexBuffer, IndexBuffer
 from vispy.visuals import VolumeVisual, Visual
@@ -164,8 +165,7 @@ class MultiVolumeVisual(VolumeVisual):
         data -= clim[0]
         data /= clim[1] - clim[0]
 
-        # Make Python 2/3-friendly
-        if isinstance(cmap, str):
+        if isinstance(cmap, six.string_types):
             cmap = get_colormap(cmap)
 
         self.shared_program['u_volumetex_{0:d}'.format(index)].set_data(data)
