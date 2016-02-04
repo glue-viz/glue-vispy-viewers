@@ -3,7 +3,12 @@ import numpy as np
 from glue.qt import get_qapp
 from glue.core.data import Data
 from glue.core.data_collection import DataCollection
-from glue.app.qt.application import GlueApplication
+
+try:
+    from glue.app.qt.application import GlueApplication
+except:
+    from glue.qt.glue_application import GlueApplication
+
 from glue.core.subset import InequalitySubsetState
 # from glue.core.tests.util import simple_session
 from ..vol_glue_viewer import GlueVispyViewer
