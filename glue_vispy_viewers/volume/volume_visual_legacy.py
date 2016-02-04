@@ -3,6 +3,8 @@
 # class in vispy.visuals.volume, which is releaed under a BSD license included
 # here:
 #
+# NOTE: THIS IS CLASS EXISTS FOR COMPATIBILITY WITH VISPY 0.4.0 AND EARLIER
+#
 # ===========================================================================
 # Vispy is licensed under the terms of the (new) BSD license:
 #
@@ -39,6 +41,7 @@
 
 from vispy.gloo import Texture3D, TextureEmulated3D, VertexBuffer, IndexBuffer
 from vispy.visuals import VolumeVisual, Visual
+from vispy.visuals.volume import frag_dict
 from vispy.visuals.shaders import Function, ModularProgram
 from vispy.color import get_colormap
 from vispy.scene.visuals import create_visual_node
@@ -73,77 +76,81 @@ class MultiVolumeVisual(VolumeVisual):
     def __init__(self, n_volume_max=10, threshold=None, relative_step_size=0.8,
                  emulate_texture=False):
 
-        # Choose texture class
-        tex_cls = TextureEmulated3D if emulate_texture else Texture3D
+        Visual.__init__(self)
 
         self._n_volume_max = n_volume_max
-        self._initial_shape = True
-        self._vol_shape = (10, 10, 10)
-        self._need_vertex_update = True
-
-        # Create OpenGL program
-        vert_shader, frag_shader = get_shaders(n_volume_max)
-        
-        # We deliberately don't use super here because we don't want to call
-        # VolumeVisual.__init__
-        Visual.__init__(self, vcode=vert_shader, fcode=frag_shader)
-
-        # Create gloo objects
-        self._vertices = VertexBuffer()
-        self._texcoord = VertexBuffer(
-            np.array([
-                [0, 0, 0],
-                [1, 0, 0],
-                [0, 1, 0],
-                [1, 1, 0],
-                [0, 0, 1],
-                [1, 0, 1],
-                [0, 1, 1],
-                [1, 1, 1],
-            ], dtype=np.float32))
-
-        self.textures = []
-        for i in range(n_volume_max):
-
-            # Set up texture object
-            self.textures.append(tex_cls(self._vol_shape, interpolation='linear',
-                                          wrapping='clamp_to_edge'))
-
-            # Pass texture object and default colormap to shader program
-            self.shared_program['u_volumetex_{0}'.format(i)] = self.textures[i]
-            self.shared_program.frag['cmap{0:d}'.format(i)] = Function(get_colormap('grays').glsl_map)
-
-            # Make sure all textures are disbaled
-            self.shared_program['u_enabled_{0}'.format(i)] = 0
-            self.shared_program['u_weight_{0}'.format(i)] = 1
-
-        self.shared_program['a_position'] = self._vertices
-        self.shared_program['a_texcoord'] = self._texcoord
-        self.shared_program['u_shape'] = self._vol_shape[::-1]
-        self._draw_mode = 'triangle_strip'
-        self._index_buffer = IndexBuffer()
-
-        self.shared_program.frag['sampler_type'] = self.textures[0].glsl_sampler_type
-        self.shared_program.frag['sample'] = self.textures[0].glsl_sample
 
         # Only show back faces of cuboid. This is required because if we are
         # inside the volume, then the front faces are outside of the clipping
         # box and will not be drawn.
         self.set_gl_state('translucent', cull_face=False)
+        tex_cls = TextureEmulated3D if emulate_texture else Texture3D
 
+        # Storage of information of volume
+        self._initial_shape = True
+        self._vol_shape = ()
+        self._vertex_cache_id = ()
+        self._clim = None
+
+        # Create gloo objects
+        self._vbo = None
+        self._tex = tex_cls((10, 10, 10), interpolation='linear',
+                            wrapping='clamp_to_edge')
+
+        # Set custom vertex shader
+        vert_shader, frag_shader = get_shaders(n_volume_max)
+        frag_dict['additive_multi_volume'] = frag_shader
+
+        # Create program
+        self._program = ModularProgram(vert_shader)
+        self.textures = []
+        for i in range(n_volume_max):
+            self.textures.append(tex_cls((10, 10, 10), interpolation='linear',
+                                          wrapping='clamp_to_edge'))
+            self._program['u_volumetex_{0}'.format(i)] = self.textures[i]
+        self._index_buffer = None
+
+        # Set params
+        self.method = 'additive_multi_volume'
         self.relative_step_size = relative_step_size
+        self.threshold = threshold if (threshold is not None) else vol.mean()
+
+        for i in range(n_volume_max):
+            self._program.frag['cmap{0:d}'.format(i)] = Function(get_colormap('grays').glsl_map)
+            self._program['u_enabled_{0}'.format(i)] = 0
+            self._program['u_weight_{0}'.format(i)] = 1
+
+        self.xd = None
 
         self.volumes = defaultdict(dict)
 
-        try:
-            self.freeze()
-        except AttributeError:  # Older versions of VisPy
-            pass
+        self._create_vertex_data()
+
+    @property
+    def method(self):
+        return self._method
+
+    @method.setter
+    def method(self, method):
+        # Check and save
+        known_methods = list(frag_dict.keys())
+        if method not in known_methods:
+            raise ValueError('Volume render method should be in %r, not %r' %
+                             (known_methods, method))
+        self._method = method
+        # Get rid of specific variables - they may become invalid
+        self._program['u_threshold'] = None
+
+        self._program.frag = frag_dict[method]
+        #self._program.frag['calculate_steps'] = Function(calc_steps)
+        self._program.frag['sampler_type'] = self._tex.glsl_sampler_type
+        self._program.frag['sample'] = self._tex.glsl_sample
+        self.update()
 
     @property
     def _free_slot_index(self):
         for i in range(self._n_volume_max):
-            if self.shared_program['u_enabled_{0}'.format(i)] == 0:
+            if self._program['u_enabled_{0}'.format(i)] == 0:
                 return i
         raise ValueError("No free slots")
 
@@ -168,20 +175,21 @@ class MultiVolumeVisual(VolumeVisual):
         if isinstance(cmap, str):
             cmap = get_colormap(cmap)
 
-        self.shared_program['u_volumetex_{0:d}'.format(index)].set_data(data)
-        self.shared_program['u_enabled_{0:d}'.format(index)] = 1
-        self.shared_program.frag['cmap{0:d}'.format(index)] = Function(cmap.glsl_map)
+        self._program['u_volumetex_{0:d}'.format(index)].set_data(data)
+        self._program['u_enabled_{0:d}'.format(index)] = 1
+        self._program.frag['cmap{0:d}'.format(index)] = Function(cmap.glsl_map)
 
         if self._initial_shape:
             self._vol_shape = data.shape
-            self.shared_program['u_shape'] = data.shape[::-1]
+            self._program['u_shape'] = data.shape[::-1]
             self._initial_shape = False
+            self._create_vertex_data()
         elif data.shape != self._vol_shape:
             raise ValueError("Shape of arrays should be {0} instead of {1}".format(self._vol_shape, data.shape))
 
     def set_weight(self, label, weight):
         index = self.volumes[label]['index']
-        self.shared_program['u_weight_{0:d}'.format(index)] = weight
+        self._program['u_weight_{0:d}'.format(index)] = weight
 
 
 MultiVolume = create_visual_node(MultiVolumeVisual)

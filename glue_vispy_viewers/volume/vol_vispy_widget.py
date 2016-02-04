@@ -9,6 +9,7 @@ from matplotlib.colors import ColorConverter
 
 from .colors import get_translucent_cmap
 from .volume_visual import MultiVolume
+from .volume_visual_legacy import MultiVolume as MultiVolumeLegacy
 
 __all__ = ['QtVispyWidget']
 
@@ -178,8 +179,12 @@ class QtVispyWidget(QtGui.QWidget):
         vol_data = np.nan_to_num(vol_data)
         self._update_clim(vol_data)
 
-        vol_visual = MultiVolume(parent=self.view.scene, threshold=0.1,
-                                 emulate_texture=self.emulate_texture)
+        try:
+            vol_visual = MultiVolume(parent=self.view.scene, threshold=0.1,
+                                     emulate_texture=self.emulate_texture)
+        except:
+            vol_visual = MultiVolumeLegacy(parent=self.view.scene, threshold=0.1,
+                                           emulate_texture=self.emulate_texture)
 
         clim=(float(self.options_widget.cmin),
               float(self.options_widget.cmax))
