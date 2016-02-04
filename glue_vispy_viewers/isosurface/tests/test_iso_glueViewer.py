@@ -5,7 +5,7 @@ from glue.config import qt_client
 def test_viewer():
 
     # Make sure QApplication is started
-    get_qapp()
+    app = get_qapp()
 
     # v = GlueVispyViewer()
 

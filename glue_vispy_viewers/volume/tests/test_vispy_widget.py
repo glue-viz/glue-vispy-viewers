@@ -22,7 +22,7 @@ class TimerEvent(object):
 def test_widget():
 
     # Make sure QApplication is started
-    get_qapp()
+    app = get_qapp()
 
     # Create fake data
     data = Data(primary=np.arange(1000).reshape((10,10,10)))
@@ -45,4 +45,3 @@ def test_widget():
     # Test mouse_wheel
     w.on_mouse_wheel(MouseEvent(type='mouse_wheel', delta=(0, 0.5)))
     w.on_mouse_wheel(MouseEvent(type='mouse_wheel', delta=(0, -0.3)))
-

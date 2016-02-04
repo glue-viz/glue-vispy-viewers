@@ -20,7 +20,7 @@ class TimerEvent(object):
 def test_widget():
 
     # Make sure QApplication is started
-    get_qapp()
+    app = get_qapp()
 
     # Create fake data
     data = np.arange(1000).reshape((10,10,10))

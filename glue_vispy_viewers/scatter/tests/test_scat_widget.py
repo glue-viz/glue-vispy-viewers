@@ -41,7 +41,7 @@ def test_categorical_data():
 def test_widget():
 
     # Make sure QApplication is started
-    get_qapp()
+    app = get_qapp()
 
     # Set up widget
     w = QtScatVispyWidget()
