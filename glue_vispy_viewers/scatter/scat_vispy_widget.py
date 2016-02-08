@@ -1,12 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
-import sys
-
 import numpy as np
 from glue.external.qt import QtGui
-from vispy import scene, app
-from vispy.color import get_colormap, Color
-from math import cos, sin, asin, radians, degrees, tan
+from vispy import scene
+from vispy.color import Color
+from math import radians, tan
+
+from matplotlib.colors import ColorConverter
+converter = ColorConverter()
 
 from matplotlib.colors import ColorConverter
 converter = ColorConverter()

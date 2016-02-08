@@ -1,4 +1,8 @@
-from glue.qt.widgets.data_viewer import DataViewer
+try:
+    from glue.viewers.common.qt.data_viewer import DataViewer
+except ImportError:
+    from glue.qt.widgets.data_viewer import DataViewer
+
 from glue.core import message as msg
 
 from .scat_vispy_widget import QtScatVispyWidget
@@ -101,4 +105,3 @@ class ScatVispyViewer(DataViewer):
 
     def options_widget(self):
         return self._options_widget
-

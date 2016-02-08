@@ -1,23 +1,24 @@
 language: c
 
+sudo: false
+
 notifications:
   email: false
 
 env:
+  global:
+    - CONDA_DEPENDENCIES="glueviz pytest mock vispy"
   matrix:
     - PYTHON_VERSION=2.7
     - PYTHON_VERSION=3.4
 
 before_install:
-  - source .continuous-integration/travis/install_conda_$TRAVIS_OS_NAME.sh
-  - if [[ $TRAVIS_OS_NAME == linux ]]; then sudo rm -rf /dev/shm; sudo ln -s /run/shm /dev/shm; fi
-  - if [[ $TRAVIS_OS_NAME == linux ]]; then export DISPLAY=:99.0; sh -e /etc/init.d/xvfb start; fi
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
 
 install:
-  - conda create --yes -n test python=$PYTHON_VERSION
-  - source activate test
-  - conda install --yes glueviz pytest mock vispy
-  - python setup.py install
+  - git clone git://github.com/astropy/ci-helpers.git
+  - source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
 
 script:
   - py.test glue_vispy_viewers

@@ -328,7 +328,7 @@
      <item row="0" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
-        <widget class="GlueComboBox" name="component">
+        <widget class="QComboBox" name="component">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -363,13 +363,6 @@
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <customwidgets>
-  <customwidget>
-   <class>GlueComboBox</class>
-   <extends>QComboBox</extends>
-   <header>glue.qt.qtutil</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

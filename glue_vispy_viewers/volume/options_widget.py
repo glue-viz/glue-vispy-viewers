@@ -1,10 +1,14 @@
 import os
 import math
 
-from glue.external.qt import QtGui
-from glue.qt.widget_properties import CurrentComboProperty, WidgetProperty, TextProperty
-from glue.qt.qtutil import load_ui
-from glue.qt import get_qapp
+from glue.external.qt import QtGui, get_qapp
+
+try:
+    from glue.utils.qt.widget_properties import CurrentComboProperty, TextProperty, WidgetProperty
+    from glue.utils.qt import load_ui
+except ImportError:
+    from glue.qt.widget_properties import CurrentComboProperty, TextProperty, WidgetProperty
+    from glue.qt.qtutil import load_ui
 
 from vispy.color import get_colormaps
 
