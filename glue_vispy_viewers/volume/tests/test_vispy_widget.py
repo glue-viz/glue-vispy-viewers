@@ -1,7 +1,7 @@
 import numpy as np
 from ..vol_vispy_widget import QtVispyWidget
 from ..options_widget import VolumeOptionsWidget
-from glue.qt import get_qapp
+from glue.external.qt import get_qapp
 from glue.core import Data
 
 
@@ -20,9 +20,6 @@ class TimerEvent(object):
         self.iteration = iteration
 
 def test_widget():
-
-    # Make sure QApplication is started
-    get_qapp()
 
     # Create fake data
     data = Data(primary=np.arange(1000).reshape((10,10,10)))
@@ -45,4 +42,3 @@ def test_widget():
     # Test mouse_wheel
     w.on_mouse_wheel(MouseEvent(type='mouse_wheel', delta=(0, 0.5)))
     w.on_mouse_wheel(MouseEvent(type='mouse_wheel', delta=(0, -0.3)))
-
