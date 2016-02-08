@@ -40,9 +40,6 @@ def categorical_test_data():
 
 def test_widget():
 
-    # Make sure QApplication is started
-    app = get_qapp()
-
     # Set up widget
     w = QtScatVispyWidget()
     op = ScatOptionsWidget(vispy_widget=w)
