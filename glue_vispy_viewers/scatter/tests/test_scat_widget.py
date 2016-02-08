@@ -19,7 +19,7 @@ class TimerEvent(object):
         self.type = type
         self.iteration = iteration
 
-def test_categorical_data():
+def categorical_test_data():
 
     data = glue.core.data.Data(label="Test Cat Data 1")
 
@@ -46,7 +46,7 @@ def test_widget():
     # Set up widget
     w = QtScatVispyWidget()
     op = ScatOptionsWidget(vispy_widget=w)
-    w.data = test_categorical_data()
+    w.data = categorical_test_data()
     w.add_scatter_visual()
     w.canvas.show()
 
