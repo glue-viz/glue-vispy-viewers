@@ -22,7 +22,7 @@ To install the latest stable version of the plugin, you can do:
     
 or you can install the latest developer version from the git repository using:
 
-    python setup.py install
+    pip install https://github.com/glue-viz/glue-3d-viewer/archive/master.zip
     
 This will auto-register the plugin with Glue. Now simply start up Glue, open a
 data cube, drag it onto the main canvas, then select '3D viewer'.
