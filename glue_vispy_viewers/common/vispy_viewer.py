@@ -28,8 +28,9 @@ class VispyWidget(QtGui.QWidget):
         self.scene_transform = scene.STTransform()
 
         # Add a 3D axis to keep us oriented
-        self.axis = scene.visuals.XYZAxis(parent=self.view.scene)
-        self.axis.transform = self.scene_transform
+        self.axis = scene.visuals.XYZAxis()
+        self.add_visual(self.axis)
+
         # Create a turntable camera. For now, this is the only camerate type
         # we support, but if we support more in future, we should implement
         # that here
@@ -44,6 +45,10 @@ class VispyWidget(QtGui.QWidget):
         # We will keep a list of scene visuals used in the canvas, so that we
         # can easily change things related to the transforms.
         self.visuals = [self.axis]
+
+    def add_visual(self, visual):
+        visual.transform = self.scene_transform
+        self.view.add(visual)
 
     def _update_stretch(self, *stretch):
         self.scene_transform.scale = stretch
