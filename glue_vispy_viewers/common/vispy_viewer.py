@@ -47,9 +47,9 @@ class VispyWidget(QtGui.QWidget):
         layout.addWidget(self.canvas.native)
         self.setLayout(layout)
 
-        # We will keep a list of scene visuals used in the canvas, so that we
-        # can easily change things related to the transforms.
-        self.visuals = [self.axis]
+        # We need to call render here otherwise we'll later encounter an OpenGL
+        # program validation error.
+        self.canvas.render()
 
     def add_data_visual(self, visual):
         self.limit_transforms[visual] = scene.STTransform()

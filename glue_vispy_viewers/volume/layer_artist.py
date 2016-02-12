@@ -17,12 +17,13 @@ class VolumeLayerArtist(LayerArtistBase):
     each data viewer.
     """
 
-    def __init__(self, canvas=None, view=None):
+    def __init__(self, layer, canvas=None, view=None):
 
-        super(VolumeLayerArtist, self).__init__()
+        super(VolumeLayerArtist, self).__init__(layer)
 
-        # Keep a reference to the canvas
+        self.layer = layer
         self.canvas = canvas
+        self.view = view
 
         # We need to use MultiVolume instance to store volumes, but we should
         # only have one per canvas. Therefore, we store the MultiVolume
@@ -34,14 +35,17 @@ class VolumeLayerArtist(LayerArtistBase):
             emulate_texture = (sys.platform == 'win32' and
                                sys.version_info[0] < 3)
 
-            try:
-                canvas._multivol = MultiVolume(parent=view.scene, threshold=0.1,
-                                               emulate_texture=emulate_texture)
-            except:
-                canvas._multivol = MultiVolumeLegacy(parent=self.view.scene, threshold=0.1,
-                                                     emulate_texture=emulate_texture)
+            # TODO: can't do this without setting some data, or else the 
+            # program doesn't validate!!
 
-        self._multivol = canvas._multivol
+            # try:
+            #     canvas._multivol = MultiVolume(parent=view.scene, threshold=0.1,
+            #                                    emulate_texture=emulate_texture)
+            # except:
+            #     canvas._multivol = MultiVolumeLegacy(parent=self.view.scene, threshold=0.1,
+            #                                          emulate_texture=emulate_texture)
+
+        # self._multivol = canvas._multivol
         
     @property
     def visible(self):
@@ -49,7 +53,6 @@ class VolumeLayerArtist(LayerArtistBase):
         
     @visible.setter
     def visible(self, value):
-        print("SETTING VISIBILITY", value)
         self._visible = value
 
     def redraw(self):
