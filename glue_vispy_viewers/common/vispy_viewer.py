@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import sys
 
+import numpy as np
 from vispy import scene
 from glue.external.qt import QtGui, get_qapp
 
@@ -24,22 +25,28 @@ class VispyWidget(QtGui.QWidget):
         self.emulate_texture = (sys.platform == 'win32' and
                                 sys.version_info[0] < 3)
 
+        self.scene_transform = scene.STTransform()
+
         # Add a 3D axis to keep us oriented
         self.axis = scene.visuals.XYZAxis(parent=self.view.scene)
-
+        self.axis.transform = self.scene_transform
         # Create a turntable camera. For now, this is the only camerate type
         # we support, but if we support more in future, we should implement
         # that here
         self.view.camera = scene.cameras.TurntableCamera(parent=self.view.scene,
-                                                         fov=90)
+                                                         fov=60, distance=2)
 
         # Add the native canvas widget to this widget
         layout = QtGui.QVBoxLayout()
         layout.addWidget(self.canvas.native)
         self.setLayout(layout)
 
-    def _update_stretch(self):
-        pass
+        # We will keep a list of scene visuals used in the canvas, so that we
+        # can easily change things related to the transforms.
+        self.visuals = [self.axis]
+
+    def _update_stretch(self, *stretch):
+        self.scene_transform.scale = stretch
 
     def _update_attributes(self):
         pass

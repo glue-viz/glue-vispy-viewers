@@ -52,7 +52,7 @@ class VispyOptionsWidget(QtGui.QWidget):
             label.returnPressed.connect(partial(self._update_sliders_from_labels, slider, label))
             label.setText('1.0')
             label.returnPressed.emit()
-            slider.valueChanged.connect(self._vispy_widget._update_stretch)
+            slider.valueChanged.connect(self._update_stretch)
 
         self.ui.combo_x_attribute.currentIndexChanged.connect(self._vispy_widget._update_attributes)
         self.ui.combo_y_attribute.currentIndexChanged.connect(self._vispy_widget._update_attributes)
@@ -67,6 +67,11 @@ class VispyOptionsWidget(QtGui.QWidget):
         self.ui.value_z_max.returnPressed.connect(self._vispy_widget._update_limits)
 
         self.ui.reset_button.clicked.connect(self._vispy_widget._reset_view)
+
+    def _update_stretch(self):
+        self._vispy_widget._update_stretch(self.x_stretch,
+                                           self.y_stretch,
+                                           self.z_stretch)
 
     def _update_labels_from_sliders(self, label, slider):
         if self._event_lock:
