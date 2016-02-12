@@ -4,6 +4,7 @@ import sys
 
 import numpy as np
 from vispy import scene
+from vispy.geometry import create_cube
 from glue.external.qt import QtGui, get_qapp
 
 
@@ -26,10 +27,14 @@ class VispyWidget(QtGui.QWidget):
                                 sys.version_info[0] < 3)
 
         self.scene_transform = scene.STTransform()
+        self.limit_transforms = {}
 
-        # Add a 3D axis to keep us oriented
-        self.axis = scene.visuals.XYZAxis()
-        self.add_visual(self.axis)
+        # Add a 3D cube to show us the unit cube
+        vertices, filled_indices, outline_indices = create_cube()
+        self.axis = scene.visuals.Mesh(vertices['position'], outline_indices,
+                                       color=(1,1,1), mode='lines')
+        self.axis.transform = self.scene_transform
+        self.view.add(self.axis)
 
         # Create a turntable camera. For now, this is the only camerate type
         # we support, but if we support more in future, we should implement
@@ -46,18 +51,28 @@ class VispyWidget(QtGui.QWidget):
         # can easily change things related to the transforms.
         self.visuals = [self.axis]
 
-    def add_visual(self, visual):
-        visual.transform = self.scene_transform
+    def add_data_visual(self, visual):
+        self.limit_transforms[visual] = scene.STTransform()
+        visual.transform = self.limit_transforms[visual]
         self.view.add(visual)
 
     def _update_stretch(self, *stretch):
         self.scene_transform.scale = stretch
+        self._update_limits()
 
     def _update_attributes(self):
         pass
 
     def _update_limits(self):
-        pass
+        scale = [2 / (self.options.x_max - self.options.x_min) * self.options.x_stretch,
+                 2 / (self.options.y_max - self.options.y_min) * self.options.y_stretch,
+                 2 / (self.options.z_max - self.options.z_min) * self.options.z_stretch]
+        translate = [-0.5 * (self.options.x_min + self.options.x_max) * scale[0],
+                     -0.5 * (self.options.y_min + self.options.y_max) * scale[1],
+                     -0.5 * (self.options.z_min + self.options.z_max) * scale[2]]
+        for visual in self.limit_transforms:
+            self.limit_transforms[visual].scale = scale
+            self.limit_transforms[visual].translate = translate
 
     def _reset_view(self):
         self.view.camera.reset()
@@ -71,6 +86,21 @@ if __name__ == "__main__":
     w = VispyWidget()
     d = VispyOptionsWidget(vispy_widget=w)
     d.show()
+
+    positions = np.random.random((1000, 3))
+    scat_visual = scene.visuals.Markers()
+    scat_visual.set_data(positions, symbol='disc', edge_color=None, face_color='red')
+    w.add_data_visual(scat_visual)
+
+    d.x_min = 0
+    d.x_max = +1
+
+    d.y_min = 0
+    d.y_max = +1
+
+    d.z_min = 0
+    d.z_max = +1
+
     w.show()
     app.exec_()
     app.quit()
