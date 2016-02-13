@@ -68,6 +68,25 @@ class VispyOptionsWidget(QtGui.QWidget):
 
         self.ui.reset_button.clicked.connect(self._vispy_widget._reset_view)
 
+        self._set_attributes_enabled(False)
+        self._set_limits_enabled(False)
+
+    def _set_attributes_enabled(self, value):
+
+        self.ui.combo_x_attribute.setEnabled(value)
+        self.ui.combo_y_attribute.setEnabled(value)
+        self.ui.combo_z_attribute.setEnabled(value)
+
+    def _set_limits_enabled(self, value):
+
+        self.ui.value_x_min.setEnabled(value)
+        self.ui.value_y_min.setEnabled(value)
+        self.ui.value_z_min.setEnabled(value)
+
+        self.ui.value_x_max.setEnabled(value)
+        self.ui.value_y_max.setEnabled(value)
+        self.ui.value_z_max.setEnabled(value)
+
     def _update_stretch(self):
         self._vispy_widget._update_stretch(self.x_stretch,
                                            self.y_stretch,
