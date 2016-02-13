@@ -64,12 +64,24 @@ class VispyWidget(QtGui.QWidget):
         pass
 
     def _update_limits(self):
+
+        if len(self.limit_transforms) == 0:
+            return
+
+        if (self.options.x_min is None or self.options.x_max is None or
+            self.options.y_min is None or self.options.y_max is None or
+            self.options.z_min is None or self.options.z_max is None):
+            raise Exception("We should never get here because if any data is "
+                            "present, the limits should be set")
+
         scale = [2 / (self.options.x_max - self.options.x_min) * self.options.x_stretch,
                  2 / (self.options.y_max - self.options.y_min) * self.options.y_stretch,
                  2 / (self.options.z_max - self.options.z_min) * self.options.z_stretch]
+
         translate = [-0.5 * (self.options.x_min + self.options.x_max) * scale[0],
                      -0.5 * (self.options.y_min + self.options.y_max) * scale[1],
                      -0.5 * (self.options.z_min + self.options.z_max) * scale[2]]
+
         for visual in self.limit_transforms:
             self.limit_transforms[visual].scale = scale
             self.limit_transforms[visual].translate = translate
