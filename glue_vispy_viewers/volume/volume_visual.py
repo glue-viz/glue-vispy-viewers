@@ -161,6 +161,7 @@ class MultiVolumeVisual(VolumeVisual):
             self.volumes[label]['cmap'] = cmap
             print("Using new slot: {0}".format(index))
 
+        # TODO: on-the-fly scaling?
         data = data.astype(np.float32)
         data -= clim[0]
         data /= clim[1] - clim[0]

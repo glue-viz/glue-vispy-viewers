@@ -8,11 +8,14 @@ from glue.core import message as msg
 from ..common.viewer_options import VispyOptionsWidget
 from ..common.vispy_viewer import VispyWidget
 from .layer_artist import VolumeLayerArtist
+from .layer_style_widget import VolumeLayerStyleWidget
 
 
 class GlueVispyViewer(DataViewer):
 
     LABEL = "3D Volume Rendering"
+
+    _layer_style_widget_cls = VolumeLayerStyleWidget
 
     def __init__(self, session, parent=None):
 
@@ -98,9 +101,8 @@ class GlueVispyViewer(DataViewer):
     def window_title(self):
         return "3D Volume Rendering"
 
-    # Add side panels
-    # def layer_view(self):
-    #     return self._layer_view
+    def update_window_title(self, *args):
+        pass
 
     def add_subset(self, subset):
         pass

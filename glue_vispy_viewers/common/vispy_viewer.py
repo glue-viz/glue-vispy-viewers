@@ -7,6 +7,7 @@ from vispy import scene
 from vispy.geometry import create_cube
 from glue.external.qt import QtGui, get_qapp
 
+# TODO: Option to turn cube on/off
 
 class VispyWidget(QtGui.QWidget):
 

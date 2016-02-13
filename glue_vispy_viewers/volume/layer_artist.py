@@ -35,22 +35,24 @@ class VolumeLayerArtist(LayerArtistBase):
                                sys.version_info[0] < 3)
 
             try:
-                vispy_viewer._multivol = MultiVolume(threshold=0.1,
-                                                     emulate_texture=emulate_texture)
+                multivol = MultiVolume(threshold=0.1, emulate_texture=emulate_texture)
             except:
-                vispy_viewer._multivol = MultiVolumeLegacy(threshold=0.1,
-                                                           emulate_texture=emulate_texture)
+                multivol = MultiVolumeLegacy(threshold=0.1, emulate_texture=emulate_texture)
+
+            self.vispy_viewer.add_data_visual(multivol)
+            vispy_viewer._multivol = multivol
 
         self._multivol = vispy_viewer._multivol
 
-        self.vispy_viewer.add_data_visual(self._multivol)
+        self.attribute = None
+        self.clim = (0, 1)
+        self.cmap = 'grays'
 
-        self._set_data()
-
-    def _set_data(self):
+    def _update_data(self):
         # For now, hard code which attribute is picked
-        data = self.layer['PRIMARY']
-        self._multivol.set_volume('data', data, (data.min(), data.max()), 'grays')
+        data = self.layer[self.attribute]
+        self._multivol.set_volume(self.layer.label, data, self.clim, self.cmap)
+        self.redraw()
 
     @property
     def bbox(self):
@@ -70,7 +72,7 @@ class VolumeLayerArtist(LayerArtistBase):
         """
         Redraw the Vispy canvas
         """
-        self.canvas.update()
+        self.vispy_viewer.canvas.update()
 
     def clear(self):
         """
@@ -80,3 +82,24 @@ class VolumeLayerArtist(LayerArtistBase):
     def update(self):
         """
         """
+
+    def set(self, clim=None, attribute=None, cmap=None):
+        if clim is not None:
+            self.clim = clim
+        if attribute is not None:
+            self.attribute = attribute
+        if cmap is not None:
+            self.cmap = cmap
+        self._update_data()
+
+    def set_limits(self, *clim):
+        self.clim = clim
+        self._update_data()
+
+    def set_attribute(self, attribute):
+        self.attribute = attribute
+        self._update_data()
+
+    def set_alpha(self, alpha):
+        self._multivol.set_weight(self.layer.label, alpha)
+        self.redraw()
