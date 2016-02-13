@@ -43,11 +43,16 @@ class VolumeLayerArtist(LayerArtistBase):
                                                      emulate_texture=emulate_texture)
 
         self._multivol = canvas._multivol
-        
+
+        # For now, hard code which attribute is picked
+        data = layer['PRIMARY']
+
+        self._multivol.set_volume('data', data, (data.min(), data.max()), 'grays')
+
     @property
     def visible(self):
         return self._visible
-        
+
     @visible.setter
     def visible(self, value):
         self._visible = value
@@ -62,7 +67,7 @@ class VolumeLayerArtist(LayerArtistBase):
         """
         Remove the layer artist from the visualization
         """
-        
+
     def update(self):
         """
         """

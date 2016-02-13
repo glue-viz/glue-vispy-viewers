@@ -183,8 +183,8 @@ class MultiVolumeVisual(VolumeVisual):
         if self._initial_shape:
             self._vol_shape = data.shape
             self._program['u_shape'] = data.shape[::-1]
-            self._initial_shape = False
             self._create_vertex_data()
+            self._initial_shape = False
         elif data.shape != self._vol_shape:
             raise ValueError("Shape of arrays should be {0} instead of {1}".format(self._vol_shape, data.shape))
 
