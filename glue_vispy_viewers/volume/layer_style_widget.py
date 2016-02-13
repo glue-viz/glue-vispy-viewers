@@ -26,75 +26,85 @@ class VolumeLayerStyleWidget(QtGui.QWidget):
         self.ui = load_ui('layer_style_widget.ui', self,
                           directory=os.path.dirname(__file__))
 
-        self._setup_color_label()
-
         self.layer_artist = layer_artist
         self.layer = layer_artist.layer
-        connect_value(self.layer.style, 'alpha', self.ui.slider_alpha, scaling=1./100.)
+
+        self._setup_attribute_combo()
+        self._setup_color_label()
+
+        self._limits = {}
+
+        # Set up connections
         self.ui.value_min.returnPressed.connect(self._update_limits)
         self.ui.value_max.returnPressed.connect(self._update_limits)
         self.ui.combo_attribute.currentIndexChanged.connect(self._update_attribute)
         self.ui.slider_alpha.valueChanged.connect(self._update_alpha)
         add_callback(self.layer.style, 'color', self._update_color)
+        connect_value(self.layer.style, 'alpha', self.ui.slider_alpha, scaling=1./100.)
 
-        self._limits = {}
-
-        self.set_color(mpl_to_qt4_color(self.layer.style.color))
-
-        self._update_attributes()
+        # Set initial values
+        self._update_limits()
         self._update_attribute()
-
         self._update_color(self.layer.style.color)
+        self._update_alpha()
+        self.layer_artist.visible = True
 
-    def _update_color(self, value):
-        rgb = colorConverter.to_rgb(value)
-        cmap = get_translucent_cmap(*rgb)
-        self.layer_artist.set(cmap=cmap)
-
-    def _update_attributes(self):
+    def _setup_attribute_combo(self):
+        """
+        Set up the combo box with the list of attributes
+        """
         if isinstance(self.layer, Subset):
             visible_components = self.layer.data.visible_components
         else:
             visible_components = self.layer.visible_components
         labels = [(comp.label, comp) for comp in visible_components]
         update_combobox(self.ui.combo_attribute, labels)
-        self.ui.combo_attribute.setCurrentIndex(0)
 
-    @property
-    def _data(self):
-        if isinstance(self.layer, Subset):
-            return self.layer.to_mask().astype(float)
-        else:
-            return self.layer[self.attribute.label]
+    def _setup_color_label(self):
+        """
+        Set up the label used to display the selected color
+        """
+        self.label_color.mousePressed.connect(self.query_color)
+
+    def query_color(self, *args):
+        color = QtGui.QColorDialog.getColor(self._current_qcolor, self.label_color)
+        if color.isValid():
+            # The following should trigger the calling of _update_color, so
+            # we don't need to call it explicitly
+            self.layer.style.color = qt4_to_mpl_color(color)
+
+    def _update_color(self, value):
+
+        # Update the color box
+        qcolor = mpl_to_qt4_color(self.layer.style.color)
+        im = QtGui.QImage(80, 20, QtGui.QImage.Format_RGB32)
+        im.fill(qcolor)
+        pm = QtGui.QPixmap.fromImage(im)
+        self.label_color.setPixmap(pm)
+        self._current_qcolor = qcolor
+
+        # Update the colormap for the visualization
+        rgb = colorConverter.to_rgb(value)
+        cmap = get_translucent_cmap(*rgb)
+        self.layer_artist.set_cmap(cmap)
+
+    def _update_attribute(self):
+        self.layer_artist.set_attribute(self.attribute)
+
+    def _update_limits(self):
+
+        if self.attribute.label not in self._limits:
+            
+            if isinstance(self.layer, Subset):
+                self._limits[self.attribute.label] = 0, 2
+            else:
+                values = self.layer[self.attribute.label]
+                self._limits[self.attribute.label] = values.min(), values.max()
+
+            self.vmin, self.vmax = self._limits[self.attribute.label]
+
+        self.layer_artist.set_clim((self.vmin, self.vmax))
 
     def _update_alpha(self):
         # TODO: add scaling to ValueProperty
         self.layer_artist.set_alpha(self.alpha / 100.)
-
-    def _update_limits(self):
-        self._limits[self.attribute.label] = self.vmin, self.vmax
-        self.layer_artist.set(clim=(self.vmin, self.vmax))
-
-    def _update_attribute(self):
-        if self.attribute not in self._limits:
-            data = self._data
-            self._limits[self.attribute.label] = data.min(), data.max()
-        self.vmin, self.vmax = self._limits[self.attribute.label]
-        self.layer_artist.set(clim=(self.vmin, self.vmax), attribute=self.attribute.label)
-
-    def _setup_color_label(self):
-        self.label_color.mousePressed.connect(self.query_color)
-
-    def query_color(self, *args):
-        color = QtGui.QColorDialog.getColor(self._color, self.label_color)
-        if color.isValid():
-            self.set_color(color)
-
-    def set_color(self, color):
-        self._color = color
-
-        im = QtGui.QImage(80, 20, QtGui.QImage.Format_RGB32)
-        im.fill(color)
-        pm = QtGui.QPixmap.fromImage(im)
-        self.label_color.setPixmap(pm)
-        self.layer.style.color = qt4_to_mpl_color(self._color)

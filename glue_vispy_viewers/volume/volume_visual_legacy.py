@@ -40,7 +40,7 @@
 
 from glue.external import six
 
-from vispy.gloo import Texture3D, TextureEmulated3D, VertexBuffer, IndexBuffer
+from vispy.gloo import Texture3D, TextureEmulated3D
 from vispy.visuals import VolumeVisual, Visual
 from vispy.visuals.volume import frag_dict
 from vispy.visuals.shaders import Function, ModularProgram
@@ -49,7 +49,6 @@ from vispy.scene.visuals import create_visual_node
 
 import numpy as np
 
-from collections import defaultdict
 from .shaders import get_shaders
 
 
@@ -114,7 +113,6 @@ class MultiVolumeVisual(VolumeVisual):
         # Set params
         self.method = 'additive_multi_volume'
         self.relative_step_size = relative_step_size
-        self.threshold = threshold if (threshold is not None) else vol.mean()
 
         for i in range(n_volume_max):
             self._program.frag['cmap{0:d}'.format(i)] = Function(get_colormap('grays').glsl_map)
@@ -123,7 +121,7 @@ class MultiVolumeVisual(VolumeVisual):
 
         self.xd = None
 
-        self.volumes = defaultdict(dict)
+        self.volumes = {}
 
         self._create_vertex_data()
 
@@ -155,30 +153,59 @@ class MultiVolumeVisual(VolumeVisual):
                 return i
         raise ValueError("No free slots")
 
-    def set_volume(self, label, data, clim, cmap):
-
+    def allocate(self, label):
         if label in self.volumes:
-            index = self.volumes[label]['index']
-            print("Using existing slot: {0}".format(index))
-        else:
-            index = self._free_slot_index
-            self.volumes[label]['index'] = index
-            self.volumes[label]['data'] = data
-            self.volumes[label]['clim'] = clim
-            self.volumes[label]['cmap'] = cmap
-            print("Using new slot: {0}".format(index))
+            raise ValueError("Label {0} already exists".format(label))
+        index = self._free_slot_index
+        self.volumes[label] = {}
+        self.volumes[label]['index'] = index
 
-        data = data.astype(np.float32)
-        data -= clim[0]
-        data /= clim[1] - clim[0]
+    def enable(self, label):
+        index = self.volumes[label]['index']
+        self._program['u_enabled_{0}'.format(index)] = 1
 
-        # Make Python 2/3-friendly
+    def disable(self, label):
+        index = self.volumes[label]['index']
+        self._program['u_enabled_{0}'.format(index)] = 0
+
+    def deallocate(self, label):
+        index = self.volumes[label]['index']
+        self._program['u_enabled_{0}'.format(index)] = 0
+        self.volumes.pop(label)
+
+    def set_cmap(self, label, cmap):
+        index = self.volumes[label]['index']
+        self.volumes[label]['cmap'] = cmap
         if isinstance(cmap, six.string_types):
             cmap = get_colormap(cmap)
+        self._program.frag['cmap{0:d}'.format(index)] = Function(cmap.glsl_map)
+
+    def set_clim(self, label, clim):
+        self.volumes[label]['clim'] = clim
+        if 'data' in self.volumes[label]:
+            self._update_scaled_data(label)
+
+    def set_weight(self, label, weight):
+        index = self.volumes[label]['index']
+        self._program['u_weight_{0:d}'.format(index)] = weight
+
+    def set_data(self, label, data):
+        if not 'clim' in self.volumes[label]:
+            raise ValueError("set_clim should be called before set_data")
+        self.volumes[label]['data'] = data
+        self._update_scaled_data(label)
+    
+    def _update_scaled_data(self, label):
+        
+        index = self.volumes[label]['index']
+        clim = self.volumes[label]['clim']
+        data = self.volumes[label]['data']
+        
+        data = data.astype(np.float32)
+        data -= clim[0]
+        data /= (clim[1] - clim[0])
 
         self._program['u_volumetex_{0:d}'.format(index)].set_data(data)
-        self._program['u_enabled_{0:d}'.format(index)] = 1
-        self._program.frag['cmap{0:d}'.format(index)] = Function(cmap.glsl_map)
 
         if self._initial_shape:
             self._vol_shape = data.shape
@@ -188,12 +215,12 @@ class MultiVolumeVisual(VolumeVisual):
         elif data.shape != self._vol_shape:
             raise ValueError("Shape of arrays should be {0} instead of {1}".format(self._vol_shape, data.shape))
 
-    def set_weight(self, label, weight):
-        index = self.volumes[label]['index']
-        self._program['u_weight_{0:d}'.format(index)] = weight
+    @property
+    def enabled(self):
+        return [self._program['u_enabled_{0}'.format(i)] == 1 for i in range(self._n_volume_max)]
 
     def draw(self, transforms):
-        if self._initial_shape:
+        if not any(self.enabled):
             return
         else:
             super(MultiVolumeVisual, self).draw(transforms)

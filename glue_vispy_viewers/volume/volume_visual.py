@@ -148,6 +148,11 @@ class MultiVolumeVisual(VolumeVisual):
                 return i
         raise ValueError("No free slots")
 
+    def remove_volume(self, label):
+        if label in self.volumes:
+            index = self.volumes[label]['index']
+            self._program['u_enabled_{0}'.format(index)] = 0
+
     def set_volume(self, label, data, clim, cmap):
 
         if label in self.volumes:

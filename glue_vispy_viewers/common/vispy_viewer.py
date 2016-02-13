@@ -45,6 +45,7 @@ class VispyWidget(QtGui.QWidget):
 
         # Add the native canvas widget to this widget
         layout = QtGui.QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.canvas.native)
         self.setLayout(layout)
 

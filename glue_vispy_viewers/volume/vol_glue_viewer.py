@@ -4,6 +4,7 @@ except ImportError:
     from glue.qt.widgets.data_viewer import DataViewer
 
 from glue.core import message as msg
+from glue.external.qt import QtGui
 
 from ..common.viewer_options import VispyOptionsWidget
 from ..common.vispy_viewer import VispyWidget
@@ -77,6 +78,7 @@ class GlueVispyViewer(DataViewer):
             self._options_widget.set_limits(*layer_artist.bbox)
 
         self._layer_artist_container.append(layer_artist)
+
         return True
 
     def _add_subset(self, message):
@@ -90,12 +92,11 @@ class GlueVispyViewer(DataViewer):
         layer_artist = VolumeLayerArtist(message.subset, vispy_viewer=self._vispy_widget)
         self._layer_artist_container.append(layer_artist)
 
-        self._vispy_widget.canvas.update()
-
     def _update_subset(self, message):
         if message.subset in self._layer_artist_container:
             for layer_artist in self._layer_artist_container[message.subset]:
                 layer_artist._update_data()
+            self._vispy_widget.canvas.update()
 
     def _remove_subset(self, message):
         if message.subset in self._layer_artist_container:
@@ -107,15 +108,6 @@ class GlueVispyViewer(DataViewer):
         self._vispy_widget.add_volume_visual()
         self._redraw()
 
-    # def _update_subsets(self):
-    #     # TODO: in future, we should be smarter and not compute the masks just
-    #     # for style changes, but this will do for now for experimentation.
-    #     self._vispy_widget.set_subsets([{'label': s.label,
-    #                                      'mask': s.to_mask(),
-    #                                      'color': s.style.color,
-    #                                      'alpha': s.style.alpha} for s in self._subsets if s.to_mask().ndim == 3])
-    #     self._redraw()
-
     def _redraw(self):
         self._vispy_widget.canvas.render()
 
@@ -124,15 +116,6 @@ class GlueVispyViewer(DataViewer):
         return "3D Volume Rendering"
 
     def update_window_title(self, *args):
-        pass
-
-    def add_subset(self, subset):
-        pass
-
-    def restore_layers(self, rec, context):
-        pass
-
-    def notify(self, message):
         pass
 
     def options_widget(self):

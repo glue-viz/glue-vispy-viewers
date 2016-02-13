@@ -44,20 +44,7 @@ class VolumeLayerArtist(LayerArtistBase):
             vispy_viewer._multivol = multivol
 
         self._multivol = vispy_viewer._multivol
-
-        self.attribute = None
-        self.clim = (0, 1)
-        self.cmap = 'grays'
-
-    def _update_data(self):
-        # For now, hard code which attribute is picked
-        if isinstance(self.layer, Subset):
-            # data = self.layer.data[self.attribute] * self.layer.to_mask()
-            data = self.layer.to_mask().astype(float)
-        else:
-            data = self.layer[self.attribute]
-        self._multivol.set_volume(self.layer.label, data, self.clim, self.cmap)
-        self.redraw()
+        self._multivol.allocate(self.layer.label)
 
     @property
     def bbox(self):
@@ -72,6 +59,7 @@ class VolumeLayerArtist(LayerArtistBase):
     @visible.setter
     def visible(self, value):
         self._visible = value
+        self._update_visibility()
 
     def redraw(self):
         """
@@ -83,28 +71,42 @@ class VolumeLayerArtist(LayerArtistBase):
         """
         Remove the layer artist from the visualization
         """
+        self._multivol.deallocate(self.layer.label)
 
     def update(self):
         """
+        Update the visualization to reflect the underlying data
         """
+        self.redraw()
+        self._changed = False
 
-    def set(self, clim=None, attribute=None, cmap=None):
-        if clim is not None:
-            self.clim = clim
-        if attribute is not None:
-            self.attribute = attribute
-        if cmap is not None:
-            self.cmap = cmap
-        self._update_data()
+    def set_cmap(self, cmap):
+        self._multivol.set_cmap(self.layer.label, cmap)
+        self.redraw()
 
-    def set_limits(self, *clim):
-        self.clim = clim
-        self._update_data()
-
-    def set_attribute(self, attribute):
-        self.attribute = attribute
-        self._update_data()
+    def set_clim(self, clim):
+        self._multivol.set_clim(self.layer.label, clim)
+        self.redraw()
 
     def set_alpha(self, alpha):
         self._multivol.set_weight(self.layer.label, alpha)
+        self.redraw()
+
+    def set_attribute(self, attribute):
+        self._attribute = attribute
+        self._update_data()
+
+    def _update_data(self):
+        if isinstance(self.layer, Subset):
+            data = self.layer.to_mask().astype(float)
+        else:
+            data = self.layer[self._attribute]
+        self._multivol.set_data(self.layer.label, data)
+        self.redraw()
+
+    def _update_visibility(self):
+        if self.visible:
+            self._multivol.enable(self.layer.label)
+        else:
+            self._multivol.disable(self.layer.label)
         self.redraw()
