@@ -17,18 +17,17 @@ class VolumeLayerArtist(LayerArtistBase):
     each data viewer.
     """
 
-    def __init__(self, layer, canvas=None, view=None):
+    def __init__(self, layer, vispy_viewer):
 
         super(VolumeLayerArtist, self).__init__(layer)
 
         self.layer = layer
-        self.canvas = canvas
-        self.view = view
+        self.vispy_viewer = vispy_viewer
 
         # We need to use MultiVolume instance to store volumes, but we should
         # only have one per canvas. Therefore, we store the MultiVolume
-        # instance in the canvas.
-        if not hasattr(canvas, '_multivol'):
+        # instance in the vispy viewer instance.
+        if not hasattr(vispy_viewer, '_multivol'):
 
             # Set whether we are emulating a 3D texture. This needs to be
             # enabled as a workaround on Windows otherwise VisPy crashes.
@@ -36,18 +35,28 @@ class VolumeLayerArtist(LayerArtistBase):
                                sys.version_info[0] < 3)
 
             try:
-                canvas._multivol = MultiVolume(parent=view.scene, threshold=0.1,
-                                               emulate_texture=emulate_texture)
-            except:
-                canvas._multivol = MultiVolumeLegacy(parent=self.view.scene, threshold=0.1,
+                vispy_viewer._multivol = MultiVolume(threshold=0.1,
                                                      emulate_texture=emulate_texture)
+            except:
+                vispy_viewer._multivol = MultiVolumeLegacy(threshold=0.1,
+                                                           emulate_texture=emulate_texture)
 
-        self._multivol = canvas._multivol
+        self._multivol = vispy_viewer._multivol
 
+        self.vispy_viewer.add_data_visual(self._multivol)
+
+        self._set_data()
+
+    def _set_data(self):
         # For now, hard code which attribute is picked
-        data = layer['PRIMARY']
-
+        data = self.layer['PRIMARY']
         self._multivol.set_volume('data', data, (data.min(), data.max()), 'grays')
+
+    @property
+    def bbox(self):
+        return (0, self.layer.shape[2],
+                0, self.layer.shape[1],
+                0, self.layer.shape[0])
 
     @property
     def visible(self):

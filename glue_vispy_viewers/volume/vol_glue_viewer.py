@@ -57,9 +57,12 @@ class GlueVispyViewer(DataViewer):
         self._data = data
 
     def add_data(self, data):
-        layer_artist = VolumeLayerArtist(data,
-                                         canvas=self._vispy_widget.canvas,
-                                         view=self._vispy_widget.view)
+
+        layer_artist = VolumeLayerArtist(data, vispy_viewer=self._vispy_widget)
+
+        if len(self._layer_artist_container) == 0:
+            self._options_widget.set_limits(*layer_artist.bbox)
+
         self._layer_artist_container.append(layer_artist)
         return True
 

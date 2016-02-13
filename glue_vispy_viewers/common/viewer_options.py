@@ -71,6 +71,21 @@ class VispyOptionsWidget(QtGui.QWidget):
         self._set_attributes_enabled(False)
         self._set_limits_enabled(False)
 
+    def set_limits(self, x_min, x_max, y_min, y_max, z_min, z_max):
+
+        self._set_limits_enabled(False)
+
+        self.x_min = x_min
+        self.x_max = x_max
+        self.y_min = y_min
+        self.y_max = y_max
+        self.z_min = z_min
+        self.z_max = z_max
+
+        self._set_limits_enabled(True)
+
+        self.ui.value_x_min.returnPressed.emit()
+
     def _set_attributes_enabled(self, value):
 
         self.ui.combo_x_attribute.setEnabled(value)
