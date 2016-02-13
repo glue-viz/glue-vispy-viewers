@@ -194,13 +194,12 @@ class MultiVolumeVisual(VolumeVisual):
             raise ValueError("set_clim should be called before set_data")
         self.volumes[label]['data'] = data
         self._update_scaled_data(label)
-    
+
     def _update_scaled_data(self, label):
-        
         index = self.volumes[label]['index']
         clim = self.volumes[label]['clim']
         data = self.volumes[label]['data']
-        
+
         data = data.astype(np.float32)
         data -= clim[0]
         data /= (clim[1] - clim[0])
