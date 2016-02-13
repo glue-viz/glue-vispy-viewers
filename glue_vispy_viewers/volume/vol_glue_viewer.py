@@ -30,26 +30,33 @@ class GlueVispyViewer(DataViewer):
 
         super(GlueVispyViewer, self).register_to_hub(hub)
 
-        dfilter = lambda x: True
-        dcfilter = lambda x: True
-        subfilter = lambda x: True
+        def subset_has_data(x):
+            return x.sender.data in self._layer_artist_container.layers
+
+        def has_data(x):
+            return x.sender in self._layer_artist_container.layers
+
+        has_data_collection = lambda x: x.sender is self._data
 
         hub.subscribe(self, msg.SubsetCreateMessage,
                       handler=self._add_subset,
-                      filter=dfilter)
+                      filter=subset_has_data)
 
-        hub.subscribe(self, msg.SubsetUpdateMessage,
-                      handler=self._update_subset,
-                      filter=subfilter)
-
-        hub.subscribe(self, msg.SubsetDeleteMessage,
-                      handler=self._remove_subset)
+        # hub.subscribe(self, msg.SubsetUpdateMessage,
+        #               handler=self._update_subset,
+        #               filter=subset_has_data)
+        #
+        # hub.subscribe(self, msg.SubsetDeleteMessage,
+        #               handler=self._remove_subset,
+        #               filter=subset_has_data)
 
         hub.subscribe(self, msg.DataUpdateMessage,
-                      handler=self.update_window_title)
+                      handler=self.update_window_title,
+                      filter=has_data)
 
         hub.subscribe(self, msg.ComponentsChangedMessage,
-                      handler=self._update_data)
+                      handler=self._update_data,
+                      filter=has_data)
 
     @property
     def data(self):
@@ -70,29 +77,33 @@ class GlueVispyViewer(DataViewer):
         return True
 
     def _add_subset(self, message):
-        self._subsets.append(message.subset)
-        self._update_subsets()
+        print("ADD_SUBSET", message.subset, message.subset.to_mask().ndim)
+        if message.subset.to_mask().ndim != 3:
+            return
 
-    def _update_subset(self, message):
-        self._update_subsets()
+        layer_artist = VolumeLayerArtist(message.subset, vispy_viewer=self._vispy_widget)
+        self._layer_artist_container.append(layer_artist)
 
-    def _remove_subset(self, message):
-        self._subsets.remove(message.subset)
-        self._update_subsets()
+    # def _update_subset(self, message):
+    #     self._update_subsets()
+    #
+    # def _remove_subset(self, message):
+    #     self._subsets.remove(message.subset)
+    #     self._update_subsets()
 
     def _update_data(self):
         self._vispy_widget.data = self.data
         self._vispy_widget.add_volume_visual()
         self._redraw()
 
-    def _update_subsets(self):
-        # TODO: in future, we should be smarter and not compute the masks just
-        # for style changes, but this will do for now for experimentation.
-        self._vispy_widget.set_subsets([{'label': s.label,
-                                         'mask': s.to_mask(),
-                                         'color': s.style.color,
-                                         'alpha': s.style.alpha} for s in self._subsets if s.to_mask().ndim == 3])
-        self._redraw()
+    # def _update_subsets(self):
+    #     # TODO: in future, we should be smarter and not compute the masks just
+    #     # for style changes, but this will do for now for experimentation.
+    #     self._vispy_widget.set_subsets([{'label': s.label,
+    #                                      'mask': s.to_mask(),
+    #                                      'color': s.style.color,
+    #                                      'alpha': s.style.alpha} for s in self._subsets if s.to_mask().ndim == 3])
+    #     self._redraw()
 
     def _redraw(self):
         self._vispy_widget.canvas.render()

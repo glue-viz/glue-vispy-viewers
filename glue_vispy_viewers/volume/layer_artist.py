@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import sys
 
+from glue.core.data import Subset
 from glue.core.layer_artist import LayerArtistBase
 
 from .volume_visual import MultiVolume
@@ -50,7 +51,10 @@ class VolumeLayerArtist(LayerArtistBase):
 
     def _update_data(self):
         # For now, hard code which attribute is picked
-        data = self.layer[self.attribute]
+        if isinstance(self.layer, Subset):
+            data = self.layer.data[self.attribute] * self.layer.to_mask()
+        else:
+            data = self.layer[self.attribute]
         self._multivol.set_volume(self.layer.label, data, self.clim, self.cmap)
         self.redraw()
 

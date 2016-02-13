@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
+from glue.core.subset import Subset
 from matplotlib.colors import colorConverter
 
 from glue.external.qt import QtGui
@@ -47,7 +48,11 @@ class VolumeLayerStyleWidget(QtGui.QWidget):
         self.layer_artist.set(cmap=cmap)
 
     def _update_attributes(self):
-        labels = [(comp.label, comp) for comp in self.layer.visible_components]
+        if isinstance(self.layer, Subset):
+            visible_components = self.layer.data.visible_components
+        else:
+            visible_components = self.layer.visible_components
+        labels = [(comp.label, comp) for comp in visible_components]
         update_combobox(self.ui.combo_attribute, labels)
         self.ui.combo_attribute.setCurrentIndex(0)
 
