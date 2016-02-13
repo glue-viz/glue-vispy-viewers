@@ -35,17 +35,14 @@ class VolumeLayerArtist(LayerArtistBase):
             emulate_texture = (sys.platform == 'win32' and
                                sys.version_info[0] < 3)
 
-            # TODO: can't do this without setting some data, or else the 
-            # program doesn't validate!!
+            try:
+                canvas._multivol = MultiVolume(parent=view.scene, threshold=0.1,
+                                               emulate_texture=emulate_texture)
+            except:
+                canvas._multivol = MultiVolumeLegacy(parent=self.view.scene, threshold=0.1,
+                                                     emulate_texture=emulate_texture)
 
-            # try:
-            #     canvas._multivol = MultiVolume(parent=view.scene, threshold=0.1,
-            #                                    emulate_texture=emulate_texture)
-            # except:
-            #     canvas._multivol = MultiVolumeLegacy(parent=self.view.scene, threshold=0.1,
-            #                                          emulate_texture=emulate_texture)
-
-        # self._multivol = canvas._multivol
+        self._multivol = canvas._multivol
         
     @property
     def visible(self):

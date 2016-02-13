@@ -192,5 +192,11 @@ class MultiVolumeVisual(VolumeVisual):
         index = self.volumes[label]['index']
         self._program['u_weight_{0:d}'.format(index)] = weight
 
+    def draw(self, transforms):
+        if self._initial_shape:
+            return
+        else:
+            super(MultiVolumeVisual, self).draw(transforms)
+
 
 MultiVolume = create_visual_node(MultiVolumeVisual)
