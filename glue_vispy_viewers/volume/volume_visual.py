@@ -148,35 +148,58 @@ class MultiVolumeVisual(VolumeVisual):
                 return i
         raise ValueError("No free slots")
 
-    def remove_volume(self, label):
+    def allocate(self, label):
         if label in self.volumes:
-            index = self.volumes[label]['index']
-            self._program['u_enabled_{0}'.format(index)] = 0
+            raise ValueError("Label {0} already exists".format(label))
+        index = self._free_slot_index
+        self.volumes[label] = {}
+        self.volumes[label]['index'] = index
 
-    def set_volume(self, label, data, clim, cmap):
+    def enable(self, label):
+        index = self.volumes[label]['index']
+        self.shared_program['u_enabled_{0}'.format(index)] = 1
 
-        if label in self.volumes:
-            index = self.volumes[label]['index']
-            print("Using existing slot: {0}".format(index))
-        else:
-            index = self._free_slot_index
-            self.volumes[label]['index'] = index
-            self.volumes[label]['data'] = data
-            self.volumes[label]['clim'] = clim
-            self.volumes[label]['cmap'] = cmap
-            print("Using new slot: {0}".format(index))
+    def disable(self, label):
+        index = self.volumes[label]['index']
+        self.shared_program['u_enabled_{0}'.format(index)] = 0
 
-        # TODO: on-the-fly scaling?
-        data = data.astype(np.float32)
-        data -= clim[0]
-        data /= clim[1] - clim[0]
+    def deallocate(self, label):
+        index = self.volumes[label]['index']
+        self.shared_program['u_enabled_{0}'.format(index)] = 0
+        self.volumes.pop(label)
 
+    def set_cmap(self, label, cmap):
+        index = self.volumes[label]['index']
+        self.volumes[label]['cmap'] = cmap
         if isinstance(cmap, six.string_types):
             cmap = get_colormap(cmap)
+        self.shared_program.frag['cmap{0:d}'.format(index)] = Function(cmap.glsl_map)
+
+    def set_clim(self, label, clim):
+        self.volumes[label]['clim'] = clim
+        if 'data' in self.volumes[label]:
+            self._update_scaled_data(label)
+
+    def set_weight(self, label, weight):
+        index = self.volumes[label]['index']
+        self.shared_program['u_weight_{0:d}'.format(index)] = weight
+
+    def set_data(self, label, data):
+        if not 'clim' in self.volumes[label]:
+            raise ValueError("set_clim should be called before set_data")
+        self.volumes[label]['data'] = data
+        self._update_scaled_data(label)
+
+    def _update_scaled_data(self, label):
+        index = self.volumes[label]['index']
+        clim = self.volumes[label]['clim']
+        data = self.volumes[label]['data']
+
+        data = data.astype(np.float32)
+        data -= clim[0]
+        data /= (clim[1] - clim[0])
 
         self.shared_program['u_volumetex_{0:d}'.format(index)].set_data(data)
-        self.shared_program['u_enabled_{0:d}'.format(index)] = 1
-        self.shared_program.frag['cmap{0:d}'.format(index)] = Function(cmap.glsl_map)
 
         if self._initial_shape:
             self._vol_shape = data.shape
@@ -185,14 +208,15 @@ class MultiVolumeVisual(VolumeVisual):
         elif data.shape != self._vol_shape:
             raise ValueError("Shape of arrays should be {0} instead of {1}".format(self._vol_shape, data.shape))
 
-    def set_weight(self, label, weight):
-        index = self.volumes[label]['index']
-        self.shared_program['u_weight_{0:d}'.format(index)] = weight
+    @property
+    def enabled(self):
+        return [self.shared_program['u_enabled_{0}'.format(i)] == 1 for i in range(self._n_volume_max)]
 
-    def draw(self, transforms):
-        if self._initial_shape:
+    def draw(self):
+        if not any(self.enabled):
             return
         else:
-            super(MultiVolumeVisual, self).draw(transforms)
+            super(MultiVolumeVisual, self).draw()
+
 
 MultiVolume = create_visual_node(MultiVolumeVisual)
