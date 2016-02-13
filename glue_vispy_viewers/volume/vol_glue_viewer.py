@@ -42,13 +42,13 @@ class GlueVispyViewer(DataViewer):
                       handler=self._add_subset,
                       filter=subset_has_data)
 
-        # hub.subscribe(self, msg.SubsetUpdateMessage,
-        #               handler=self._update_subset,
-        #               filter=subset_has_data)
-        #
-        # hub.subscribe(self, msg.SubsetDeleteMessage,
-        #               handler=self._remove_subset,
-        #               filter=subset_has_data)
+        hub.subscribe(self, msg.SubsetUpdateMessage,
+                      handler=self._update_subset,
+                      filter=subset_has_data)
+
+        hub.subscribe(self, msg.SubsetDeleteMessage,
+                      handler=self._remove_subset,
+                      filter=subset_has_data)
 
         hub.subscribe(self, msg.DataUpdateMessage,
                       handler=self.update_window_title,
@@ -68,6 +68,9 @@ class GlueVispyViewer(DataViewer):
 
     def add_data(self, data):
 
+        if data in self._layer_artist_container:
+            return True
+
         layer_artist = VolumeLayerArtist(data, vispy_viewer=self._vispy_widget)
 
         if len(self._layer_artist_container) == 0:
@@ -77,19 +80,27 @@ class GlueVispyViewer(DataViewer):
         return True
 
     def _add_subset(self, message):
-        print("ADD_SUBSET", message.subset, message.subset.to_mask().ndim)
+
+        if message.subset in self._layer_artist_container:
+            return
+
         if message.subset.to_mask().ndim != 3:
             return
 
         layer_artist = VolumeLayerArtist(message.subset, vispy_viewer=self._vispy_widget)
         self._layer_artist_container.append(layer_artist)
 
-    # def _update_subset(self, message):
-    #     self._update_subsets()
-    #
-    # def _remove_subset(self, message):
-    #     self._subsets.remove(message.subset)
-    #     self._update_subsets()
+        self._vispy_widget.canvas.update()
+
+    def _update_subset(self, message):
+        if message.subset in self._layer_artist_container:
+            for layer_artist in self._layer_artist_container[message.subset]:
+                layer_artist._update_data()
+
+    def _remove_subset(self, message):
+        if message.subset in self._layer_artist_container:
+            self._layer_artist_container.pop(message.subset)
+            self._vispy_widget.canvas.update()
 
     def _update_data(self):
         self._vispy_widget.data = self.data

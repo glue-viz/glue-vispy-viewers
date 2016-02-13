@@ -52,7 +52,8 @@ class VolumeLayerArtist(LayerArtistBase):
     def _update_data(self):
         # For now, hard code which attribute is picked
         if isinstance(self.layer, Subset):
-            data = self.layer.data[self.attribute] * self.layer.to_mask()
+            # data = self.layer.data[self.attribute] * self.layer.to_mask()
+            data = self.layer.to_mask().astype(float)
         else:
             data = self.layer[self.attribute]
         self._multivol.set_volume(self.layer.label, data, self.clim, self.cmap)

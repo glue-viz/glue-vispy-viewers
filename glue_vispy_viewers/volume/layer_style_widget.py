@@ -30,7 +30,6 @@ class VolumeLayerStyleWidget(QtGui.QWidget):
 
         self.layer_artist = layer_artist
         self.layer = layer_artist.layer
-        self.set_color(mpl_to_qt4_color(self.layer.style.color))
         connect_value(self.layer.style, 'alpha', self.ui.slider_alpha, scaling=1./100.)
         self.ui.value_min.returnPressed.connect(self._update_limits)
         self.ui.value_max.returnPressed.connect(self._update_limits)
@@ -40,7 +39,12 @@ class VolumeLayerStyleWidget(QtGui.QWidget):
 
         self._limits = {}
 
+        self.set_color(mpl_to_qt4_color(self.layer.style.color))
+
         self._update_attributes()
+        self._update_attribute()
+
+        self._update_color(self.layer.style.color)
 
     def _update_color(self, value):
         rgb = colorConverter.to_rgb(value)
@@ -58,7 +62,10 @@ class VolumeLayerStyleWidget(QtGui.QWidget):
 
     @property
     def _data(self):
-        return self.layer[self.attribute.label]
+        if isinstance(self.layer, Subset):
+            return self.layer.to_mask().astype(float)
+        else:
+            return self.layer[self.attribute.label]
 
     def _update_alpha(self):
         # TODO: add scaling to ValueProperty
