@@ -62,9 +62,6 @@ class VispyWidget(QtGui.QWidget):
         self.scene_transform.scale = stretch
         self._update_limits()
 
-    def _update_attributes(self):
-        pass
-
     def _update_limits(self):
 
         if len(self.limit_transforms) == 0:
