@@ -34,10 +34,9 @@ class VispyScatterViewer(BaseVispyViewer):
         if message.subset in self._layer_artist_container:
             return
 
-        if message.subset.to_mask().ndim != 3:
-            return
-
         layer_artist = ScatterLayerArtist(message.subset, vispy_viewer=self._vispy_widget)
+        self._update_attributes(layer_artist)
+
         self._layer_artist_container.append(layer_artist)
 
     def _update_attributes(self, layer_artist=None):

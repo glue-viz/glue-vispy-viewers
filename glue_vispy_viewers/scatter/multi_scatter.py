@@ -1,3 +1,5 @@
+import numpy as np
+
 from vispy import scene
 from vispy.color import Color
 
@@ -16,35 +18,45 @@ class MultiColorScatter(scene.visuals.Markers):
         self._combined_data = None
         super(MultiColorScatter, self).__init__(*args, **kwargs)
 
-    def set_data_values(self, x, y, z):
-        """
-        Set the position of the datapoints
-        """
-        self._combined_data = np.array([x, y, z]).transpose()
-
     def allocate(self, label):
         if label in self.layers:
             raise ValueError("Layer {0} already exists".format(label))
         else:
-            self.layers[label] = {'mask': None,
-                                  'color': 'white',
+            self.layers[label] = {'data': None,
+                                  'mask': None,
+                                  'color': (1,1,1),
                                   'alpha': 1,
-                                  'zorder':0,
-                                  'size': 10}
+                                  'zorder':lambda: 0,
+                                  'size': 10,
+                                  'visible':True}
 
     def deallocate(self, label):
         self.layers.pop(label)
+
+    def set_data_values(self, label, x, y, z):
+        """
+        Set the position of the datapoints
+        """
+        # TODO: avoid re-allocating an array every time
+        self.layers[label]['data'] = np.array([x, y, z]).transpose()
+        self._update()
+
+    def set_visible(self, label, visible):
+        self.layers[label]['visible'] = visible
+        self._update()
 
     def set_mask(self, label, mask):
         self.layers[label]['mask'] = mask
         self._update()
 
     def set_size(self, label, size):
+        if not np.isscalar(size) and size.ndim > 1:
+            raise Exception("size should be a 1-d array")
         self.layers[label]['size'] = size
         self._update()
 
-    def set_color(self, label, color):
-        self.layers[label]['color'] = color
+    def set_color(self, label, rgb):
+        self.layers[label]['color'] = rgb
         self._update()
 
     def set_alpha(self, label, alpha):
@@ -61,12 +73,15 @@ class MultiColorScatter(scene.visuals.Markers):
         colors = []
         sizes = []
 
-        for label in sorted(self.layers, key=lambda x: self.layers[x]['zorder']):
+        for label in sorted(self.layers, key=lambda x: self.layers[x]['zorder']()):
 
             layer = self.layers[label]
 
+            if not layer['visible'] or layer['data'] is None:
+                continue
+
             if layer['mask'] is None:
-                n_points = self._combined_data.shape[0]
+                n_points = layer['data'].shape[0]
             else:
                 n_points = np.sum(layer['mask'])
 
@@ -75,18 +90,15 @@ class MultiColorScatter(scene.visuals.Markers):
                 # Data
 
                 if layer['mask'] is None:
-                    data.append(self._combined_data)
+                    data.append(layer['data'])
                 else:
-                    data.append(self._combined_data[layer['mask'], :])
+                    data.append(layer['data'][layer['mask'], :])
 
                 # Colors
 
-                if isinstance(layer['color'], six.string_types):
-                    rgba = Color(layer['color']).rgba
-                    rgba = np.repeat(rgba, n_points).reshape(4, -1).transpose()
-                    rgba[:, 3] = layer['alpha']
-                else:
-                    raise TypeError("Only string colors supported for now")
+                rgba = np.hstack([layer['color'], 0])
+                rgba = np.repeat(rgba, n_points).reshape(4, -1).transpose()
+                rgba[:, 3] = layer['alpha']
 
                 colors.append(rgba)
 
@@ -95,9 +107,15 @@ class MultiColorScatter(scene.visuals.Markers):
                 if np.isscalar(layer['size']):
                     size = np.repeat(layer['size'], n_points)
                 else:
-                    size = layer['size'][layer['mask']]
+                    if layer['mask'] is None:
+                        size = layer['size']
+                    else:
+                        size = layer['size'][layer['mask']]
 
                 sizes.append(size)
+
+        if len(data) == 0:
+            return
 
         data = np.vstack(data)
         colors = np.vstack(colors)
@@ -120,7 +138,6 @@ if __name__ == "__main__":
     view = canvas.central_widget.add_view()
     view.camera = scene.TurntableCamera(up='z', fov=60)
 
-    import numpy as np
     x = np.random.random(20)
     y = np.random.random(20)
     z = np.random.random(20)

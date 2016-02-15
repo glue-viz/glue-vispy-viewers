@@ -61,7 +61,7 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         self._radio_size.addButton(self.ui.radio_size_fixed)
         self._radio_size.addButton(self.ui.radio_size_linear)
 
-        label_data = [(comp.label, comp) for comp in self.layer.visible_components]
+        label_data = [(comp.label, comp) for comp in self.visible_components]
         update_combobox(self.ui.combo_size_attribute, label_data)
 
         self.ui.radio_size_fixed.setChecked(True)
@@ -89,7 +89,7 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         self._radio_color.addButton(self.ui.radio_color_fixed)
         self._radio_color.addButton(self.ui.radio_color_linear)
 
-        label_data = [(comp.label, comp) for comp in self.layer.visible_components]
+        label_data = [(comp.label, comp) for comp in self.visible_components]
         update_combobox(self.ui.combo_size_attribute, label_data)
 
         self.ui.radio_color_fixed.setChecked(True)
@@ -155,3 +155,10 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
     def _update_alpha(self):
         # TODO: add scaling to ValueProperty
         self.layer_artist.set_alpha(self.alpha / 100.)
+
+    @property
+    def visible_components(self):
+        if isinstance(self.layer, Subset):
+            return self.layer.data.visible_components
+        else:
+            return self.layer.visible_components

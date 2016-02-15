@@ -2,9 +2,11 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from vispy import scene
 from glue.core.data import Subset
 from glue.core.layer_artist import LayerArtistBase
+
+from .multi_scatter import MultiColorScatter
+
 
 class ScatterLayerArtist(LayerArtistBase):
     """
@@ -17,10 +19,20 @@ class ScatterLayerArtist(LayerArtistBase):
 
         self.layer = layer
         self.vispy_viewer = vispy_viewer
-        self._scat_visual = scene.visuals.Markers()
-        self.vispy_viewer.add_data_visual(self._scat_visual)
-        self._marker_data = None
 
+        # We need to use MultiColorScatter instance to store scatter plots, but
+        # we should only have one per canvas. Therefore, we store the
+        # MultiColorScatter instance in the vispy viewer instance.
+        if not hasattr(vispy_viewer, '_multiscat'):
+            multiscat = MultiColorScatter()
+            self.vispy_viewer.add_data_visual(multiscat)
+            vispy_viewer._multiscat = multiscat
+
+        self._multiscat = vispy_viewer._multiscat
+        self._multiscat.allocate(self.layer.label)
+        self._multiscat.set_zorder(self.layer.label, self.get_zorder)
+
+        self._marker_data = None
         self._size = 10
         self._color = (1, 1, 1)
         self._alpha = 1.
@@ -34,12 +46,17 @@ class ScatterLayerArtist(LayerArtistBase):
     @visible.setter
     def visible(self, value):
         self._visible = value
-        self._update_visibility()
+        self._multiscat.set_visible(self.layer.label, self.visible)
+        self.redraw()
+
+    def get_zorder(self):
+        return self.zorder
 
     def redraw(self):
         """
         Redraw the Vispy canvas
         """
+        self._multiscat._update()
         self.vispy_viewer.canvas.update()
 
     def clear(self):
@@ -69,9 +86,10 @@ class ScatterLayerArtist(LayerArtistBase):
             data = self.layer[self._size_attribute]
             size = np.abs(np.nan_to_num(data))
             size = 20 * (size - self._size_vmin) / (self._size_vmax - self._size_vmin)
-            self._size_data = size * self._size_scaling
+            size_data = size * self._size_scaling
         else:
-            self._size_data = self._size
+            size_data = self._size
+        self._multiscat.set_size(self.layer.label, size_data)
 
     def set_color(self, color=None, attribute=None, vmin=None, vmax=None, cmap=None):
         self._color = color
@@ -87,16 +105,10 @@ class ScatterLayerArtist(LayerArtistBase):
             data = self.layer[self._size_attribute]
             # TODO: implement colormap support
         else:
-            self._color_data = np.ones((self.n_points, 4), dtype=np.float32)
-            self._color_data[:, 0] = self._color[0]
-            self._color_data[:, 1] = self._color[1]
-            self._color_data[:, 2] = self._color[2]
-            self._color_data[:, 3] = self._alpha
+            self._multiscat.set_color(self.layer.label, self._color)
 
     def set_alpha(self, alpha):
-        self._alpha = alpha
-        self._update_color_data()
-        self._update_data()
+        self._multiscat.set_alpha(self.layer.label, alpha)
 
     @property
     def n_points(self):
@@ -112,15 +124,8 @@ class ScatterLayerArtist(LayerArtistBase):
         x = self.layer[self._x_coord]
         y = self.layer[self._y_coord]
         z = self.layer[self._z_coord]
-        # TODO: avoid re-allocating an array every time
         self._marker_data = np.array([x, y, z]).transpose()
-        if self._color_data is None:
-            self._update_color_data()
-        if self._size_data is None:
-            self._update_size_data()
-        self._scat_visual.set_data(self._marker_data,
-                                   edge_color=None, face_color=self._color_data,
-                                   size=self._size_data)
+        self._multiscat.set_data_values(self.layer.label, x, y, z)
         self.redraw()
 
     @property
@@ -131,10 +136,3 @@ class ScatterLayerArtist(LayerArtistBase):
         dmax = np.nanmax(self._marker_data,axis=0)
         # TODO: the following can be optimized
         return tuple(np.array([dmin, dmax]).transpose().ravel())
-
-    def _update_visibility(self):
-        if self.visible:
-            self._scat_visual.parent = self.vispy_viewer.view.scene
-        else:
-            self._scat_visual.parent = None
-        self.redraw()
