@@ -21,9 +21,11 @@ class ScatterLayerArtist(LayerArtistBase):
         self.vispy_viewer.add_data_visual(self._scat_visual)
         self._marker_data = None
 
+        self._size = 10
         self._color = (1, 1, 1)
         self._alpha = 1.
         self._color_data = None
+        self._size_data = None
 
     @property
     def visible(self):
@@ -32,7 +34,7 @@ class ScatterLayerArtist(LayerArtistBase):
     @visible.setter
     def visible(self, value):
         self._visible = value
-        # self._update_visibility()
+        self._update_visibility()
 
     def redraw(self):
         """
@@ -53,18 +55,43 @@ class ScatterLayerArtist(LayerArtistBase):
         self.redraw()
         self._changed = False
 
-    # def set_cmap(self, cmap):
-    #     self._multivol.set_cmap(self.layer.label, cmap)
-    #     self.redraw()
-    #
-    # def set_clim(self, clim):
-    #     self._multivol.set_clim(self.layer.label, clim)
-    #     self.redraw()
-    #
-    def set_color(self, color):
+    def set_size(self, size=None, attribute=None, vmin=None, vmax=None, scaling=None):
+        self._size = size
+        self._size_attribute = attribute
+        self._size_vmin = vmin
+        self._size_vmax = vmax
+        self._size_scaling = scaling
+        self._update_size_data()
+        self._update_data()
+
+    def _update_size_data(self):
+        if self._size is None:
+            data = self.layer[self._size_attribute]
+            size = np.abs(np.nan_to_num(data))
+            size = 20 * (size - self._size_vmin) / (self._size_vmax - self._size_vmin)
+            self._size_data = size * self._size_scaling
+        else:
+            self._size_data = self._size
+
+    def set_color(self, color=None, attribute=None, vmin=None, vmax=None, cmap=None):
         self._color = color
+        self._color_attribute = attribute
+        self._color_vmin = vmin
+        self._color_vmax = vmax
+        self._color_cmap = cmap
         self._update_color_data()
         self._update_data()
+
+    def _update_color_data(self):
+        if self._color is None:
+            data = self.layer[self._size_attribute]
+            # TODO: implement colormap support
+        else:
+            self._color_data = np.ones((self.n_points, 4), dtype=np.float32)
+            self._color_data[:, 0] = self._color[0]
+            self._color_data[:, 1] = self._color[1]
+            self._color_data[:, 2] = self._color[2]
+            self._color_data[:, 3] = self._alpha
 
     def set_alpha(self, alpha):
         self._alpha = alpha
@@ -73,16 +100,7 @@ class ScatterLayerArtist(LayerArtistBase):
 
     @property
     def n_points(self):
-        return self._marker_data.shape[0]
-
-    def _update_color_data(self):
-        if self._marker_data is None:
-            return
-        self._color_data = np.ones((self.n_points, 4), dtype=np.float32)
-        self._color_data[:, 0] = self._color[0]
-        self._color_data[:, 1] = self._color[1]
-        self._color_data[:, 2] = self._color[2]
-        self._color_data[:, 3] = self._alpha
+        return self.layer.shape[0]
 
     def set_coordinates(self, x_coord, y_coord, z_coord):
         self._x_coord = x_coord
@@ -98,7 +116,11 @@ class ScatterLayerArtist(LayerArtistBase):
         self._marker_data = np.array([x, y, z]).transpose()
         if self._color_data is None:
             self._update_color_data()
-        self._scat_visual.set_data(self._marker_data, edge_color=None, face_color=self._color_data)
+        if self._size_data is None:
+            self._update_size_data()
+        self._scat_visual.set_data(self._marker_data,
+                                   edge_color=None, face_color=self._color_data,
+                                   size=self._size_data)
         self.redraw()
 
     @property
@@ -110,9 +132,9 @@ class ScatterLayerArtist(LayerArtistBase):
         # TODO: the following can be optimized
         return tuple(np.array([dmin, dmax]).transpose().ravel())
 
-    # def _update_visibility(self):
-    #     if self.visible:
-    #         self._multivol.enable(self.layer.label)
-    #     else:
-    #         self._multivol.disable(self.layer.label)
-    #     self.redraw()
+    def _update_visibility(self):
+        if self.visible:
+            self._scat_visual.parent = self.vispy_viewer.view.scene
+        else:
+            self._scat_visual.parent = None
+        self.redraw()
