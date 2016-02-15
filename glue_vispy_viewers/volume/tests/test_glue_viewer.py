@@ -11,7 +11,7 @@ except:
 
 from glue.core.subset import InequalitySubsetState
 # from glue.core.tests.util import simple_session
-from ..vol_glue_viewer import GlueVispyViewer
+from ..vol_glue_viewer import VispyVolumeViewer
 
 
 def test_viewer():
@@ -19,7 +19,7 @@ def test_viewer():
     data = Data(x=np.arange(1000).reshape((10, 10, 10)) / 1000.)
     dc = DataCollection([data])
     app = GlueApplication(dc)
-    app.new_data_viewer(GlueVispyViewer, data=data)
+    app.new_data_viewer(VispyVolumeViewer, data=data)
     subset_state1 = InequalitySubsetState(data.find_component_id('x'), 2/3., operator.gt)
     dc.new_subset_group(label='test_subset1', subset_state=subset_state1)
     subset_state2 = InequalitySubsetState(data.find_component_id('x'), 1/3., operator.lt)

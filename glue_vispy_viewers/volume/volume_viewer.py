@@ -12,7 +12,7 @@ from .layer_artist import VolumeLayerArtist
 from .layer_style_widget import VolumeLayerStyleWidget
 
 
-class GlueVispyViewer(DataViewer):
+class VispyVolumeViewer(DataViewer):
 
     LABEL = "3D Volume Rendering"
 
@@ -20,7 +20,7 @@ class GlueVispyViewer(DataViewer):
 
     def __init__(self, session, parent=None):
 
-        super(GlueVispyViewer, self).__init__(session, parent=parent)
+        super(VispyVolumeViewer, self).__init__(session, parent=parent)
 
         self._vispy_widget = VispyWidget()
         self.setCentralWidget(self._vispy_widget)
@@ -29,7 +29,7 @@ class GlueVispyViewer(DataViewer):
 
     def register_to_hub(self, hub):
 
-        super(GlueVispyViewer, self).register_to_hub(hub)
+        super(VispyVolumeViewer, self).register_to_hub(hub)
 
         def subset_has_data(x):
             return x.sender.data in self._layer_artist_container.layers
