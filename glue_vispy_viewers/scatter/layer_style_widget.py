@@ -9,7 +9,6 @@ from glue.external.qt import QtGui
 from glue.utils.qt import load_ui, mpl_to_qt4_color, qt4_to_mpl_color, update_combobox
 from glue.utils.qt.widget_properties import ValueProperty, CurrentComboProperty, FloatLineProperty, connect_value
 from glue.external.echo import add_callback
-# from .colors import get_translucent_cmap
 
 
 class ScatterLayerStyleWidget(QtGui.QWidget):
@@ -35,16 +34,11 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         self._limits = {}
 
         # Set up connections
-        self.ui.value_min.returnPressed.connect(self._update_limits)
-        self.ui.value_max.returnPressed.connect(self._update_limits)
-        self.ui.combo_attribute.currentIndexChanged.connect(self._update_attribute)
         self.ui.slider_alpha.valueChanged.connect(self._update_alpha)
         add_callback(self.layer.style, 'color', self._update_color)
         connect_value(self.layer.style, 'alpha', self.ui.slider_alpha, scaling=1./100.)
 
         # Set initial values
-        self._update_limits()
-        self._update_attribute()
         self._update_color(self.layer.style.color)
         self._update_alpha()
         self.layer_artist.visible = True
@@ -85,25 +79,7 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
 
         # Update the colormap for the visualization
         rgb = colorConverter.to_rgb(value)
-        cmap = get_translucent_cmap(*rgb)
-        self.layer_artist.set_cmap(cmap)
-
-    def _update_attribute(self):
-        self.layer_artist.set_attribute(self.attribute)
-
-    def _update_limits(self):
-
-        if self.attribute.label not in self._limits:
-            
-            if isinstance(self.layer, Subset):
-                self._limits[self.attribute.label] = 0, 2
-            else:
-                values = self.layer[self.attribute.label]
-                self._limits[self.attribute.label] = values.min(), values.max()
-
-            self.vmin, self.vmax = self._limits[self.attribute.label]
-
-        self.layer_artist.set_clim((self.vmin, self.vmax))
+        self.layer_artist.set_color(rgb)
 
     def _update_alpha(self):
         # TODO: add scaling to ValueProperty

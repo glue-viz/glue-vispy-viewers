@@ -21,6 +21,10 @@ class ScatterLayerArtist(LayerArtistBase):
         self.vispy_viewer.add_data_visual(self._scat_visual)
         self._marker_data = None
 
+        self._color = (1, 1, 1)
+        self._alpha = 1.
+        self._color_data = None
+
     @property
     def visible(self):
         return self._visible
@@ -57,9 +61,28 @@ class ScatterLayerArtist(LayerArtistBase):
     #     self._multivol.set_clim(self.layer.label, clim)
     #     self.redraw()
     #
-    # def set_alpha(self, alpha):
-    #     self._multivol.set_weight(self.layer.label, alpha)
-    #     self.redraw()
+    def set_color(self, color):
+        self._color = color
+        self._update_color_data()
+        self._update_data()
+
+    def set_alpha(self, alpha):
+        self._alpha = alpha
+        self._update_color_data()
+        self._update_data()
+
+    @property
+    def n_points(self):
+        return self._marker_data.shape[0]
+
+    def _update_color_data(self):
+        if self._marker_data is None:
+            return
+        self._color_data = np.ones((self.n_points, 4), dtype=np.float32)
+        self._color_data[:, 0] = self._color[0]
+        self._color_data[:, 1] = self._color[1]
+        self._color_data[:, 2] = self._color[2]
+        self._color_data[:, 3] = self._alpha
 
     def set_coordinates(self, x_coord, y_coord, z_coord):
         self._x_coord = x_coord
@@ -73,7 +96,9 @@ class ScatterLayerArtist(LayerArtistBase):
         z = self.layer[self._z_coord]
         # TODO: avoid re-allocating an array every time
         self._marker_data = np.array([x, y, z]).transpose()
-        self._scat_visual.set_data(self._marker_data)
+        if self._color_data is None:
+            self._update_color_data()
+        self._scat_visual.set_data(self._marker_data, edge_color=None, face_color=self._color_data)
         self.redraw()
 
     @property
