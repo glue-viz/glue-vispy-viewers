@@ -27,7 +27,7 @@ class VispyOptionsWidget(QtGui.QWidget):
     z_max = FloatLineProperty('ui.value_z_max')
     z_stretch = FloatLineProperty('ui.value_z_stretch')
 
-    def __init__(self, parent=None, vispy_widget=None):
+    def __init__(self, parent=None, vispy_widget=None, data_viewer=None):
 
         super(VispyOptionsWidget, self).__init__(parent=parent)
 
@@ -36,6 +36,7 @@ class VispyOptionsWidget(QtGui.QWidget):
 
         self._vispy_widget = vispy_widget
         vispy_widget.options = self
+        self._data_viewer = data_viewer
 
         self.stretch_sliders = [self.ui.slider_x_stretch,
                                 self.ui.slider_y_stretch,
@@ -54,9 +55,9 @@ class VispyOptionsWidget(QtGui.QWidget):
             label.returnPressed.emit()
             slider.valueChanged.connect(self._update_stretch)
 
-        self.ui.combo_x_attribute.currentIndexChanged.connect(self._vispy_widget._update_attributes)
-        self.ui.combo_y_attribute.currentIndexChanged.connect(self._vispy_widget._update_attributes)
-        self.ui.combo_z_attribute.currentIndexChanged.connect(self._vispy_widget._update_attributes)
+        self.ui.combo_x_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)
+        self.ui.combo_y_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)
+        self.ui.combo_z_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)
 
         self.ui.value_x_min.returnPressed.connect(self._vispy_widget._update_limits)
         self.ui.value_y_min.returnPressed.connect(self._vispy_widget._update_limits)
@@ -70,6 +71,8 @@ class VispyOptionsWidget(QtGui.QWidget):
 
         self._set_attributes_enabled(False)
         self._set_limits_enabled(False)
+
+        self._first_attributes = True
 
     def set_limits(self, x_min, x_max, y_min, y_max, z_min, z_max):
 
@@ -101,6 +104,24 @@ class VispyOptionsWidget(QtGui.QWidget):
         self.ui.value_x_max.setEnabled(value)
         self.ui.value_y_max.setEnabled(value)
         self.ui.value_z_max.setEnabled(value)
+
+    def _update_attributes(self, components):
+
+        for component in components:
+            if self.ui.combo_x_attribute.findData(component) == -1:
+                self.ui.combo_x_attribute.addItem(component.label, userData=component)
+            if self.ui.combo_y_attribute.findData(component) == -1:
+                self.ui.combo_y_attribute.addItem(component.label, userData=component)
+            if self.ui.combo_z_attribute.findData(component) == -1:
+                self.ui.combo_z_attribute.addItem(component.label, userData=component)
+
+        if self._first_attributes:
+            n_max = len(components)
+            self.ui.combo_x_attribute.setCurrentIndex(0)
+            self.ui.combo_y_attribute.setCurrentIndex(min(1, n_max-1))
+            self.ui.combo_z_attribute.setCurrentIndex(min(2, n_max-1))
+            self._set_attributes_enabled(True)
+            self._first_attributes = False
 
     def _update_stretch(self):
         self._vispy_widget._update_stretch(self.x_stretch,

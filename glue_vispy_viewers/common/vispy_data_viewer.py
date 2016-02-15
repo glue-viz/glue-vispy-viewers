@@ -18,7 +18,7 @@ class BaseVispyViewer(DataViewer):
         self._vispy_widget = VispyWidget()
         self.setCentralWidget(self._vispy_widget)
 
-        self._options_widget = VispyOptionsWidget(vispy_widget=self._vispy_widget)
+        self._options_widget = VispyOptionsWidget(vispy_widget=self._vispy_widget, data_viewer=self)
 
     def register_to_hub(self, hub):
 
