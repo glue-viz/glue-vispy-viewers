@@ -47,7 +47,7 @@ class QColorBox(QtGui.QLabel):
 
     def on_color_change(self):
         self._qcolor = mpl_to_qt4_color(self.color())
-        image = QtGui.QImage(self.width(), self.height(), QtGui.QImage.Format_RGB32)
+        image = QtGui.QImage(70, 22, QtGui.QImage.Format_RGB32)
         image.fill(self._qcolor)
         pixmap = QtGui.QPixmap.fromImage(image)
         self.setPixmap(pixmap)
