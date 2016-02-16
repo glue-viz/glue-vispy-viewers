@@ -5,11 +5,14 @@ import sys
 import numpy as np
 from vispy import scene
 from vispy.geometry import create_cube
-from glue.external.qt import QtGui, get_qapp
 
-# TODO: Option to turn cube on/off
+from glue.external.echo import CallbackProperty, add_callback
+from glue.external.qt import QtGui, get_qapp
+from glue.utils import nonpartial
 
 class VispyWidget(QtGui.QWidget):
+
+    visible_axes = CallbackProperty()
 
     def __init__(self, parent=None):
 
@@ -30,9 +33,12 @@ class VispyWidget(QtGui.QWidget):
         self.scene_transform = scene.STTransform()
         self.limit_transforms = {}
 
-        # Add a 3D cube to show us the unit cube
+        # Add a 3D cube to show us the unit cube. The 1.001 factor is to make 
+        # sure that the grid lines are not 'hidden' by volume renderings on the 
+        # front side due to numerical precision.
         vertices, filled_indices, outline_indices = create_cube()
-        self.axis = scene.visuals.Mesh(vertices['position'], outline_indices,
+        self.axis = scene.visuals.Mesh(vertices['position'] * 1.01,
+                                       outline_indices,
                                        color=(1,1,1), mode='lines')
         self.axis.transform = self.scene_transform
         self.view.add(self.axis)
@@ -52,6 +58,16 @@ class VispyWidget(QtGui.QWidget):
         # We need to call render here otherwise we'll later encounter an OpenGL
         # program validation error.
         self.canvas.render()
+        
+        # Set up callbacks
+        add_callback(self, 'visible_axes', nonpartial(self._toggle_axes))
+
+    def _toggle_axes(self):
+        if self.visible_axes:
+            self.axis.parent = self.view.scene
+        else:
+            self.axis.parent = None
+        self.canvas.update()
 
     def add_data_visual(self, visual):
         self.limit_transforms[visual] = scene.STTransform()

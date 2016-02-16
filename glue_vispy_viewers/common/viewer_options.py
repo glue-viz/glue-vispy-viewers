@@ -5,7 +5,7 @@ from functools import partial
 import numpy as np
 from glue.external.qt import QtGui
 
-from glue.utils.qt.widget_properties import CurrentComboProperty, FloatLineProperty
+from glue.utils.qt.widget_properties import CurrentComboProperty, FloatLineProperty, connect_bool_button
 from glue.utils.qt import load_ui
 
 __all__ = ["VispyOptionsWidget"]
@@ -55,6 +55,8 @@ class VispyOptionsWidget(QtGui.QWidget):
             label.setText('1.0')
             label.returnPressed.emit()
             slider.valueChanged.connect(self._update_stretch)
+
+        connect_bool_button(self._vispy_widget, 'visible_axes', self.ui.checkbox_axes)
 
         self.ui.combo_x_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)
         self.ui.combo_y_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)
