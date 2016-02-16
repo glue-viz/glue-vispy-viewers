@@ -129,7 +129,10 @@ class MultiColorScatter(scene.visuals.Markers):
         if len(self.layers) == 0:
             return
         else:
-            super(MultiColorScatter, self).draw(*args, **kwargs)
+            try:
+                super(MultiColorScatter, self).draw(*args, **kwargs)
+            except:
+                pass
 
 
 if __name__ == "__main__":

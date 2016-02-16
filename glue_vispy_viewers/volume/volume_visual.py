@@ -216,7 +216,10 @@ class MultiVolumeVisual(VolumeVisual):
         if not any(self.enabled):
             return
         else:
-            super(MultiVolumeVisual, self).draw()
+            try:
+                super(MultiVolumeVisual, self).draw()
+            except:
+                pass
 
 
 MultiVolume = create_visual_node(MultiVolumeVisual)
