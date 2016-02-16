@@ -11,9 +11,10 @@ from glue.external.qt import QtGui
 from glue.utils.qt import load_ui, update_combobox
 from glue.utils.qt.widget_properties import (ValueProperty,
                                              CurrentComboProperty,
-                                             FloatLineProperty, connect_value,
+                                             FloatLineProperty,
                                              connect_float_edit,
-                                             connect_current_combo)
+                                             connect_current_combo,
+                                             connect_value)
 
 from ..common.color_box import connect_color
 
@@ -50,6 +51,7 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
 
         # Set initial values
         self.layer_artist.size = self.layer.style.markersize
+        self.layer_artist.size_scaling = 1
         self.layer_artist.size_mode = 'fixed'
         self.ui.radio_size_fixed.setChecked(True)
         self.layer_artist.color = self.layer.style.color
@@ -61,7 +63,7 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
     def _connect_global(self):
         connect_float_edit(self.layer.style, 'markersize', self.ui.value_fixed_size)
         connect_color(self.layer.style, 'color', self.ui.label_color)
-        connect_value(self.layer.style, 'alpha', self.ui.slider_alpha, scaling=1./100.)
+        connect_value(self.layer.style, 'alpha', self.ui.slider_alpha, value_range=(0, 1))
 
     def _disconnect_global(self):
         # FIXME: Requires the ability to disconnect connections
@@ -83,7 +85,7 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         connect_current_combo(self.layer_artist, 'size_attribute', self.ui.combo_size_attribute)
         connect_float_edit(self.layer_artist, 'size_vmin', self.ui.value_size_vmin)
         connect_float_edit(self.layer_artist, 'size_vmax', self.ui.value_size_vmax)
-        connect_value(self.layer_artist, 'size_scaling', self.ui.slider_size_scaling)
+        connect_value(self.layer_artist, 'size_scaling', self.ui.slider_size_scaling, value_range=(0.1, 10), log=True)
 
         # Set up internal connections
         self.ui.radio_size_fixed.toggled.connect(self._update_size_mode)
@@ -132,7 +134,7 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         connect_float_edit(self.layer_artist, 'cmap_vmin', self.ui.value_cmap_vmin)
         connect_float_edit(self.layer_artist, 'cmap_vmax', self.ui.value_cmap_vmax)
         connect_current_combo(self.layer_artist, 'cmap', self.ui.combo_cmap)
-        connect_value(self.layer_artist, 'alpha', self.ui.slider_alpha, scaling=1./100.)
+        connect_value(self.layer_artist, 'alpha', self.ui.slider_alpha, value_range=(0, 1))
 
         # Set up internal connections
         self.ui.radio_color_fixed.toggled.connect(self._update_color_mode)
