@@ -48,6 +48,7 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         # Set up size and color options
         self._setup_size_options()
         self._setup_color_options()
+        self._connect_global()
 
         # Set initial values
         self.layer_artist.size = self.layer.style.markersize

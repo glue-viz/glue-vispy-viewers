@@ -39,6 +39,7 @@ class VolumeLayerStyleWidget(QtGui.QWidget):
 
         # Set up attribute and visual options
         self._setup_options()
+        self._connect_global()
 
         # Set initial values
         self.layer_artist.color = self.layer.style.color
@@ -47,6 +48,10 @@ class VolumeLayerStyleWidget(QtGui.QWidget):
             self.attribute = self.visible_components[0]
             self._update_limits()
         self.layer_artist.visible = True
+
+    def _connect_global(self):
+        connect_color(self.layer.style, 'color', self.ui.label_color)
+        connect_value(self.layer.style, 'alpha', self.ui.slider_alpha, value_range=(0, 1))
 
     def _setup_options(self):
         """
