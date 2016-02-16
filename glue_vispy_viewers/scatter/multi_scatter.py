@@ -56,6 +56,8 @@ class MultiColorScatter(scene.visuals.Markers):
         self._update()
 
     def set_color(self, label, rgb):
+        if isinstance(rgb, six.string_types):
+            rgb = Color(rgb).rgb
         self.layers[label]['color'] = rgb
         self._update()
 

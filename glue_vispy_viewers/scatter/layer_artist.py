@@ -2,8 +2,11 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
+from glue.external.echo import CallbackProperty, add_callback
+
 from glue.core.data import Subset
 from glue.core.layer_artist import LayerArtistBase
+from glue.utils import nonpartial
 
 from .multi_scatter import MultiColorScatter
 
@@ -12,6 +15,21 @@ class ScatterLayerArtist(LayerArtistBase):
     """
     A layer artist to render 3d scatter plots.
     """
+
+    size_mode = CallbackProperty(None)
+    size = CallbackProperty()
+    size_attribute = CallbackProperty()
+    size_vmin = CallbackProperty()
+    size_vmax = CallbackProperty()
+    size_scaling = CallbackProperty()
+
+    color_mode = CallbackProperty(None)
+    color = CallbackProperty()
+    cmap_attribute = CallbackProperty()
+    cmap_vmin = CallbackProperty()
+    cmap_vmax = CallbackProperty()
+    cmap = CallbackProperty()
+    alpha = CallbackProperty()
 
     def __init__(self, layer, vispy_viewer):
 
@@ -32,10 +50,27 @@ class ScatterLayerArtist(LayerArtistBase):
         self._multiscat.allocate(self.layer.label)
         self._multiscat.set_zorder(self.layer.label, self.get_zorder)
 
+        # Set up connections so that when any of the size properties are
+        # modified, we update the marker sizes
+        add_callback(self, 'size_mode', nonpartial(self._update_sizes))
+        add_callback(self, 'size', nonpartial(self._update_sizes))
+        add_callback(self, 'size_attribute', nonpartial(self._update_sizes))
+        add_callback(self, 'size_vmin', nonpartial(self._update_sizes))
+        add_callback(self, 'size_vmax', nonpartial(self._update_sizes))
+        add_callback(self, 'size_scaling', nonpartial(self._update_sizes))
+
+        # Set up connections so that when any of the color properties are
+        # modified, we update the marker colors
+        add_callback(self, 'color_mode', nonpartial(self._update_colors))
+        add_callback(self, 'color', nonpartial(self._update_colors))
+        add_callback(self, 'cmap_attribute', nonpartial(self._update_colors))
+        add_callback(self, 'cmap_vmin', nonpartial(self._update_colors))
+        add_callback(self, 'cmap_vmax', nonpartial(self._update_colors))
+        add_callback(self, 'cmap', nonpartial(self._update_colors))
+        add_callback(self, 'alpha', nonpartial(self._update_alpha))
+
+        # Set data caches
         self._marker_data = None
-        self._size = 10
-        self._color = (1, 1, 1)
-        self._alpha = 1.
         self._color_data = None
         self._size_data = None
 
@@ -72,47 +107,29 @@ class ScatterLayerArtist(LayerArtistBase):
         self.redraw()
         self._changed = False
 
-    def set_size(self, size=None, attribute=None, vmin=None, vmax=None, scaling=None):
-        self._size = size
-        self._size_attribute = attribute
-        self._size_vmin = vmin
-        self._size_vmax = vmax
-        self._size_scaling = scaling
-        self._update_size_data()
-        self._update_data()
-
-    def _update_size_data(self):
-        if self._size is None:
-            data = self.layer[self._size_attribute]
+    def _update_sizes(self):
+        if self.size_mode is None:
+            pass
+        elif self.size_mode == 'fixed':
+            self._multiscat.set_size(self.layer.label, self.size * self.size_scaling)
+        else:
+            data = self.layer[self.size_attribute]
             size = np.abs(np.nan_to_num(data))
-            size = 20 * (size - self._size_vmin) / (self._size_vmax - self._size_vmin)
-            size_data = size * self._size_scaling
+            size = 20 * (size - self.size_vmin) / (self.size_vmax - self.size_vmin)
+            size_data = size * self.size_scaling
+            self._multiscat.set_size(self.layer.label, size_data)
+
+    def _update_colors(self):
+        if self.color_mode is None:
+            pass
+        elif self.color_mode == 'fixed':
+            self._multiscat.set_color(self.layer.label, self.color)
         else:
-            size_data = self._size
-        self._multiscat.set_size(self.layer.label, size_data)
-
-    def set_color(self, color=None, attribute=None, vmin=None, vmax=None, cmap=None):
-        self._color = color
-        self._color_attribute = attribute
-        self._color_vmin = vmin
-        self._color_vmax = vmax
-        self._color_cmap = cmap
-        self._update_color_data()
-        self._update_data()
-
-    def _update_color_data(self):
-        if self._color is None:
-            data = self.layer[self._size_attribute]
             # TODO: implement colormap support
-        else:
-            self._multiscat.set_color(self.layer.label, self._color)
+            raise NotImplementedError()
 
-    def set_alpha(self, alpha):
-        self._multiscat.set_alpha(self.layer.label, alpha)
-
-    @property
-    def n_points(self):
-        return self.layer.shape[0]
+    def _update_alpha(self):
+        self._multiscat.set_alpha(self.layer.label, self.alpha)
 
     def set_coordinates(self, x_coord, y_coord, z_coord):
         self._x_coord = x_coord

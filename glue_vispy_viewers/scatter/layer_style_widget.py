@@ -5,13 +5,17 @@ import os
 import numpy as np
 
 from glue.core.subset import Subset
-from matplotlib.colors import colorConverter
 
-from glue import config
 from glue.external.qt import QtGui
-from glue.utils.qt import load_ui, mpl_to_qt4_color, qt4_to_mpl_color, update_combobox
-from glue.utils.qt.widget_properties import ValueProperty, CurrentComboProperty, FloatLineProperty, connect_value
-from glue.external.echo import add_callback
+
+from glue.utils.qt import load_ui, update_combobox
+from glue.utils.qt.widget_properties import (ValueProperty,
+                                             CurrentComboProperty,
+                                             FloatLineProperty, connect_value,
+                                             connect_float_edit,
+                                             connect_current_combo)
+
+from ..common.color_box import connect_color
 
 
 class ScatterLayerStyleWidget(QtGui.QWidget):
@@ -20,7 +24,7 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
     size_attribute = CurrentComboProperty('ui.combo_size_attribute')
     size_vmin = FloatLineProperty('ui.value_size_vmin')
     size_vmax = FloatLineProperty('ui.value_size_vmax')
-    size = FloatLineProperty('ui.value_size')
+    size = FloatLineProperty('ui.value_fixed_size')
     size_scaling = ValueProperty('ui.slider_size_scaling')
 
     # Color-related GUI elements
@@ -40,41 +44,69 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         self.layer_artist = layer_artist
         self.layer = layer_artist.layer
 
+        # Set up size and color options
         self._setup_size_options()
         self._setup_color_options()
 
-        self._limits = {}
+        # Set initial values
+        self.layer_artist.size = self.layer.style.markersize
+        self.layer_artist.size_mode = 'fixed'
+        self.ui.radio_size_fixed.setChecked(True)
+        self.layer_artist.color = self.layer.style.color
+        self.layer_artist.alpha = self.layer.style.alpha
+        self.layer_artist.color_mode = 'fixed'
+        self.ui.radio_color_fixed.setChecked(True)
+        self.layer_artist.visible = True
 
-        # Set up connections
-        self.ui.slider_alpha.valueChanged.connect(self._update_alpha)
-        add_callback(self.layer.style, 'color', self._update_color)
+    def _connect_global(self):
+        connect_float_edit(self.layer.style, 'markersize', self.ui.value_fixed_size)
+        connect_color(self.layer.style, 'color', self.ui.label_color)
         connect_value(self.layer.style, 'alpha', self.ui.slider_alpha, scaling=1./100.)
 
-        # Set initial values
-        self._update_color(self.layer.style.color)
-        self._update_alpha()
-        self.layer_artist.visible = True
+    def _disconnect_global(self):
+        # FIXME: Requires the ability to disconnect connections
+        pass
 
     def _setup_size_options(self):
 
+        # Set up radio buttons for size mode selection
         self._radio_size = QtGui.QButtonGroup()
         self._radio_size.addButton(self.ui.radio_size_fixed)
         self._radio_size.addButton(self.ui.radio_size_linear)
 
+        # Set up attribute list
         label_data = [(comp.label, comp) for comp in self.visible_components]
         update_combobox(self.ui.combo_size_attribute, label_data)
 
-        self.ui.radio_size_fixed.setChecked(True)
+        # Set up connections with layer artist
+        connect_float_edit(self.layer_artist, 'size', self.ui.value_fixed_size)
+        connect_current_combo(self.layer_artist, 'size_attribute', self.ui.combo_size_attribute)
+        connect_float_edit(self.layer_artist, 'size_vmin', self.ui.value_size_vmin)
+        connect_float_edit(self.layer_artist, 'size_vmax', self.ui.value_size_vmax)
+        connect_value(self.layer_artist, 'size_scaling', self.ui.slider_size_scaling)
 
-        self.ui.radio_size_fixed.toggled.connect(self._update_fixed_size)
+        # Set up internal connections
+        self.ui.radio_size_fixed.toggled.connect(self._update_size_mode)
+        self.ui.radio_size_linear.toggled.connect(self._update_size_mode)
+        self.ui.combo_size_attribute.currentIndexChanged.connect(self._update_size_limits)
 
-        self.ui.radio_size_linear.toggled.connect(self._update_linear_size)
-        self.ui.combo_size_attribute.currentIndexChanged.connect(self._update_linear_size_combo)
-        self.ui.value_size_vmin.returnPressed.connect(self._update_linear_size)
-        self.ui.value_size_vmax.returnPressed.connect(self._update_linear_size)
-        self.ui.slider_size_scaling.valueChanged.connect(self._update_linear_size)
+    def _update_size_mode(self):
+        if self.ui.radio_size_fixed.isChecked():
+            self.layer_artist.size_mode = 'fixed'
+        else:
+            self.layer_artist.size_mode = 'linear'
 
-        self._size_limits = {}
+    def _update_size_limits(self):
+
+        if not hasattr(self, '_size_limits'):
+            self._size_limits = {}
+
+        if self.size_attribute in self._size_limits:
+            self.size_vmin, self.size_vmax = self._size_limits[self.size_attribute]
+        else:
+            self.size_vmin = np.nanmin(self.layer[self.size_attribute])
+            self.size_vmax = np.nanmax(self.layer[self.size_attribute])
+            self._size_limits[self.size_attribute] = self.size_vmin, self.size_vmax
 
     def _setup_color_options(self):
 
@@ -85,76 +117,45 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         self.ui.value_cmap_vmax.setEnabled(False)
         self.ui.combo_cmap.setEnabled(False)
 
+        # Set up radio buttons for color mode selection
         self._radio_color = QtGui.QButtonGroup()
         self._radio_color.addButton(self.ui.radio_color_fixed)
         self._radio_color.addButton(self.ui.radio_color_linear)
 
+        # Set up attribute list
         label_data = [(comp.label, comp) for comp in self.visible_components]
         update_combobox(self.ui.combo_size_attribute, label_data)
 
-        self.ui.radio_color_fixed.setChecked(True)
+        # Set up connections with layer artist
+        connect_color(self.layer_artist, 'color', self.ui.label_color)
+        connect_current_combo(self.layer_artist, 'cmap_attribute', self.ui.combo_cmap_attribute)
+        connect_float_edit(self.layer_artist, 'cmap_vmin', self.ui.value_cmap_vmin)
+        connect_float_edit(self.layer_artist, 'cmap_vmax', self.ui.value_cmap_vmax)
+        connect_current_combo(self.layer_artist, 'cmap', self.ui.combo_cmap)
+        connect_value(self.layer_artist, 'alpha', self.ui.slider_alpha, scaling=1./100.)
 
-        self.ui.radio_color_fixed.toggled.connect(self._update_color)
+        # Set up internal connections
+        self.ui.radio_color_fixed.toggled.connect(self._update_color_mode)
+        self.ui.radio_color_linear.toggled.connect(self._update_color_mode)
+        self.ui.combo_cmap_attribute.currentIndexChanged.connect(self._update_cmap_limits)
 
-        self.ui.radio_color_linear.toggled.connect(self._update_linear_color)
-        self.ui.combo_cmap_attribute.currentIndexChanged.connect(self._update_linear_color)
-        self.ui.value_cmap_vmin.returnPressed.connect(self._update_linear_color)
-        self.ui.value_cmap_vmax.returnPressed.connect(self._update_linear_color)
-        self.ui.combo_cmap.currentIndexChanged.connect(self._update_linear_color)
-
-        self._setup_color_label()
-
-    def _setup_color_label(self):
-        """
-        Set up the label used to display the selected color
-        """
-        self.label_color.mousePressed.connect(self.query_color)
-
-    def query_color(self, *args):
-        color = QtGui.QColorDialog.getColor(self._current_qcolor, self.label_color)
-        if color.isValid():
-            # The following should trigger the calling of _update_color,
-            # so we don't need to call it explicitly
-            self.layer.style.color = qt4_to_mpl_color(color)
-
-    def _update_fixed_size(self):
-        self.layer_artist.set_size(size=self.size)
-
-    def _update_linear_size_combo(self):
-        if self.size_attribute in self._size_limits:
-            self.size_vmin, self.size_vmax = self._size_limits[self.size_attribute]
+    def _update_color_mode(self):
+        if self.ui.radio_color_fixed.isChecked():
+            self.layer_artist.cmap_mode = 'fixed'
         else:
-            self.size_vmin = np.nanmin(self.layer[self.size_attribute])
-            self.size_vmax = np.nanmax(self.layer[self.size_attribute])
-            self._size_limits[self.size_attribute] = self.size_vmin, self.size_vmax
+            self.layer_artist.cmap_mode = 'linear'
 
-    def _update_linear_size(self):
-        self.layer_artist.set_size(attribute=self.size_attribute,
-                                    vmin=self.size_vmin, vmax=self.size_vmax,
-                                    scaling=self.size_scaling / 200)
+    def _update_cmap_limits(self):
 
-    def _update_linear_color(self):
-        self.layer_artist.set_color(attribute=self.cmap_attribute,
-                                    vmin=self.cmap_vmin, vmax=self.cmap_vmax,
-                                    cmap=self.cmap)
+        if not hasattr(self, '_cmap_limits'):
+            self._cmap_limits = {}
 
-    def _update_color(self, value=None):
-
-        # Update the color box
-        qcolor = mpl_to_qt4_color(self.layer.style.color)
-        im = QtGui.QImage(80, 20, QtGui.QImage.Format_RGB32)
-        im.fill(qcolor)
-        pm = QtGui.QPixmap.fromImage(im)
-        self.label_color.setPixmap(pm)
-        self._current_qcolor = qcolor
-
-        # Update the colormap for the visualization
-        rgb = colorConverter.to_rgb(self.layer.style.color)
-        self.layer_artist.set_color(color=rgb)
-
-    def _update_alpha(self):
-        # TODO: add scaling to ValueProperty
-        self.layer_artist.set_alpha(self.alpha / 100.)
+        if self.cmap_attribute in self._cmap_limits:
+            self.cmap_vmin, self.cmap_vmax = self._cmap_limits[self.cmap_attribute]
+        else:
+            self.cmap_vmin = np.nanmin(self.layer[self.cmap_attribute])
+            self.cmap_vmax = np.nanmax(self.layer[self.cmap_attribute])
+            self._cmap_limits[self.cmap_attribute] = self.cmap_vmin, self.cmap_vmax
 
     @property
     def visible_components(self):
