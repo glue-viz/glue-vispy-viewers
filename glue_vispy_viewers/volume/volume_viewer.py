@@ -33,3 +33,6 @@ class VispyVolumeViewer(BaseVispyViewer):
 
         layer_artist = VolumeLayerArtist(message.subset, vispy_viewer=self._vispy_widget)
         self._layer_artist_container.append(layer_artist)
+
+    def _update_attributes(self, index=None, layer_artist=None):
+        pass

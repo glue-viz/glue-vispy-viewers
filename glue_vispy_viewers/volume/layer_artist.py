@@ -2,12 +2,16 @@ from __future__ import absolute_import, division, print_function
 
 import sys
 
+from vispy.color import Color
+
+from glue.external.echo import CallbackProperty, add_callback
 from glue.core.data import Subset
 from glue.core.layer_artist import LayerArtistBase
+from glue.utils import nonpartial
 
 from .volume_visual import MultiVolume
 from .volume_visual_legacy import MultiVolume as MultiVolumeLegacy
-
+from .colors import get_translucent_cmap
 
 class VolumeLayerArtist(LayerArtistBase):
     """
@@ -17,6 +21,13 @@ class VolumeLayerArtist(LayerArtistBase):
     need to manage all the volumes via a single MultiVolume visual class for
     each data viewer.
     """
+
+    attribute = CallbackProperty()
+    vmin = CallbackProperty()
+    vmax = CallbackProperty()
+    color = CallbackProperty()
+    cmap = CallbackProperty()
+    alpha = CallbackProperty()
 
     def __init__(self, layer, vispy_viewer):
 
@@ -45,6 +56,16 @@ class VolumeLayerArtist(LayerArtistBase):
 
         self._multivol = vispy_viewer._multivol
         self._multivol.allocate(self.layer.label)
+
+        # Set up connections so that when any of the properties are
+        # modified, we update the appropriate part of the visualization
+        add_callback(self, 'attribute', nonpartial(self._update_data))
+        add_callback(self, 'vmin', nonpartial(self._update_limits))
+        add_callback(self, 'vmax', nonpartial(self._update_limits))
+        add_callback(self, 'color', nonpartial(self._update_cmap_from_color))
+        add_callback(self, 'cmap', nonpartial(self._update_cmap))
+        add_callback(self, 'alpha', nonpartial(self._update_alpha))
+
 
     @property
     def bbox(self):
@@ -80,27 +101,28 @@ class VolumeLayerArtist(LayerArtistBase):
         self.redraw()
         self._changed = False
 
-    def set_cmap(self, cmap):
+    def _update_cmap_from_color(self):
+        cmap = get_translucent_cmap(*Color(self.color).rgb)
         self._multivol.set_cmap(self.layer.label, cmap)
         self.redraw()
 
-    def set_clim(self, clim):
-        self._multivol.set_clim(self.layer.label, clim)
+    def _update_cmap(self):
+        self._multivol.set_cmap(self.layer.label, self.cmap)
         self.redraw()
 
-    def set_alpha(self, alpha):
-        self._multivol.set_weight(self.layer.label, alpha)
+    def _update_limits(self):
+        self._multivol.set_clim(self.layer.label, (self.vmin, self.vmax))
         self.redraw()
 
-    def set_attribute(self, attribute):
-        self._attribute = attribute
-        self._update_data()
+    def _update_alpha(self):
+        self._multivol.set_weight(self.layer.label, self.alpha)
+        self.redraw()
 
     def _update_data(self):
         if isinstance(self.layer, Subset):
             data = self.layer.to_mask().astype(float)
         else:
-            data = self.layer[self._attribute]
+            data = self.layer[self.attribute]
         self._multivol.set_data(self.layer.label, data)
         self.redraw()
 
