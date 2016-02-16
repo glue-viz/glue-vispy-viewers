@@ -106,8 +106,7 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         if self.size_attribute in self._size_limits:
             self.size_vmin, self.size_vmax = self._size_limits[self.size_attribute]
         else:
-            self.size_vmin = np.nanmin(self.layer[self.size_attribute])
-            self.size_vmax = np.nanmax(self.layer[self.size_attribute])
+            self.size_vmin, self.size_vmax = self.default_limits(self.size_attribute)
             self._size_limits[self.size_attribute] = self.size_vmin, self.size_vmax
 
     def _setup_color_options(self):
@@ -155,9 +154,19 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         if self.cmap_attribute in self._cmap_limits:
             self.cmap_vmin, self.cmap_vmax = self._cmap_limits[self.cmap_attribute]
         else:
-            self.cmap_vmin = np.nanmin(self.layer[self.cmap_attribute])
-            self.cmap_vmax = np.nanmax(self.layer[self.cmap_attribute])
+            self.cmap_vmin, self.cmap_vmax = self.default_limits(self.cmap_attribute)
             self._cmap_limits[self.cmap_attribute] = self.cmap_vmin, self.cmap_vmax
+
+    def default_limits(self, attribute):
+        # For subsets, we want to compute the limits based on the full
+        # dataset not just the subset.
+        if isinstance(self.layer, Subset):
+            vmin = np.nanmin(self.layer.data[attribute])
+            vmax = np.nanmax(self.layer.data[attribute])
+        else:
+            vmin = np.nanmin(self.layer[attribute])
+            vmax = np.nanmax(self.layer[attribute])
+        return vmin, vmax
 
     @property
     def visible_components(self):
