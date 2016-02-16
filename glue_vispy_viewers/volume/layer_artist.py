@@ -10,7 +10,7 @@ from glue.external.echo import CallbackProperty, add_callback
 from glue.core.data import Subset
 from glue.core.layer_artist import LayerArtistBase
 from glue.utils import nonpartial
-
+from glue.core.exceptions import IncompatibleAttribute
 from .volume_visual import MultiVolume
 from .volume_visual_legacy import MultiVolume as MultiVolumeLegacy
 from .colors import get_translucent_cmap
@@ -122,7 +122,10 @@ class VolumeLayerArtist(LayerArtistBase):
 
     def _update_data(self):
         if isinstance(self.layer, Subset):
-            data = self.layer.to_mask().astype(float)
+            try:    
+                data = self.layer.to_mask().astype(float)
+            except IncompatibleAttribute:
+                data = np.zeros(self.layer.data.shape)
         else:
             data = self.layer[self.attribute]
         self._multivol.set_data(self.layer.label, np.nan_to_num(data))

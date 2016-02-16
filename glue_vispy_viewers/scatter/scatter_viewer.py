@@ -28,15 +28,18 @@ class VispyScatterViewer(BaseVispyViewer):
 
         return True
 
-    def _add_subset(self, message):
+    def add_subset(self, subset):
 
-        if message.subset in self._layer_artist_container:
+        if subset in self._layer_artist_container:
             return
 
-        layer_artist = ScatterLayerArtist(message.subset, vispy_viewer=self._vispy_widget)
+        layer_artist = ScatterLayerArtist(subset, vispy_viewer=self._vispy_widget)
         self._update_attributes(layer_artist, layer_artist)
 
         self._layer_artist_container.append(layer_artist)
+
+    def _add_subset(self, message):
+        self.add_subset(message.subset)
 
     def _update_attributes(self, index=None, layer_artist=None):
 

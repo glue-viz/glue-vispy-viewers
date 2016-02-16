@@ -7,6 +7,7 @@ from glue.external.echo import CallbackProperty, add_callback
 from glue.core.data import Subset
 from glue.core.layer_artist import LayerArtistBase
 from glue.utils import nonpartial
+from glue.core.exceptions import IncompatibleAttribute
 
 from .multi_scatter import MultiColorScatter
 
@@ -138,9 +139,14 @@ class ScatterLayerArtist(LayerArtistBase):
         self._update_data()
 
     def _update_data(self):
-        x = self.layer[self._x_coord]
-        y = self.layer[self._y_coord]
-        z = self.layer[self._z_coord]
+        try:
+            x = self.layer[self._x_coord]
+            y = self.layer[self._y_coord]
+            z = self.layer[self._z_coord]
+        except IncompatibleAttribute:
+            x = np.array([])
+            y = np.array([])
+            z = np.array([])
         self._marker_data = np.array([x, y, z]).transpose()
         self._multiscat.set_data_values(self.layer.label, x, y, z)
         self.redraw()

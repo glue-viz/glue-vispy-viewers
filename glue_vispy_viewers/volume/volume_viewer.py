@@ -23,16 +23,18 @@ class VispyVolumeViewer(BaseVispyViewer):
 
         return True
 
-    def _add_subset(self, message):
-
-        if message.subset in self._layer_artist_container:
+    def add_subset(self, subset):
+        if subset in self._layer_artist_container:
             return
 
-        if message.subset.to_mask().ndim != 3:
+        if subset.to_mask().ndim != 3:
             return
 
         layer_artist = VolumeLayerArtist(message.subset, vispy_viewer=self._vispy_widget)
         self._layer_artist_container.append(layer_artist)
+
+    def _add_subset(self, message):
+        self.add_subset(message.subset)
 
     def _update_attributes(self, index=None, layer_artist=None):
         pass
