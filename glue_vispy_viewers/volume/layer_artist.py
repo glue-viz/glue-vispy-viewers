@@ -2,6 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 import sys
 
+import numpy as np
+
 from vispy.color import Color
 
 from glue.external.echo import CallbackProperty, add_callback
@@ -123,7 +125,7 @@ class VolumeLayerArtist(LayerArtistBase):
             data = self.layer.to_mask().astype(float)
         else:
             data = self.layer[self.attribute]
-        self._multivol.set_data(self.layer.label, data)
+        self._multivol.set_data(self.layer.label, np.nan_to_num(data))
         self.redraw()
 
     def _update_visibility(self):
