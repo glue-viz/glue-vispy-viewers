@@ -16,8 +16,7 @@ class VispyScatterViewer(BaseVispyViewer):
 
         first_layer_artist = len(self._layer_artist_container) == 0
 
-        # TODO: check for categorical components here
-        self._options_widget._update_attributes(data.visible_components)
+        self._options_widget._update_attributes_from_data(data)
 
         layer_artist = ScatterLayerArtist(data, vispy_viewer=self._vispy_widget)
         self._update_attributes(layer_artist=layer_artist)

@@ -2,6 +2,7 @@ import os
 import math
 from functools import partial
 
+import numpy as np
 from glue.external.qt import QtGui
 
 from glue.utils.qt.widget_properties import CurrentComboProperty, FloatLineProperty
@@ -59,15 +60,21 @@ class VispyOptionsWidget(QtGui.QWidget):
         self.ui.combo_y_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)
         self.ui.combo_z_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)
 
-        self.ui.value_x_min.returnPressed.connect(self._vispy_widget._update_limits)
-        self.ui.value_y_min.returnPressed.connect(self._vispy_widget._update_limits)
-        self.ui.value_z_min.returnPressed.connect(self._vispy_widget._update_limits)
+        self.ui.combo_x_attribute.currentIndexChanged.connect(self._update_attribute_limits)
+        self.ui.combo_y_attribute.currentIndexChanged.connect(self._update_attribute_limits)
+        self.ui.combo_z_attribute.currentIndexChanged.connect(self._update_attribute_limits)
 
-        self.ui.value_x_max.returnPressed.connect(self._vispy_widget._update_limits)
-        self.ui.value_y_max.returnPressed.connect(self._vispy_widget._update_limits)
-        self.ui.value_z_max.returnPressed.connect(self._vispy_widget._update_limits)
+        self.ui.value_x_min.returnPressed.connect(self._update_limits)
+        self.ui.value_y_min.returnPressed.connect(self._update_limits)
+        self.ui.value_z_min.returnPressed.connect(self._update_limits)
+
+        self.ui.value_x_max.returnPressed.connect(self._update_limits)
+        self.ui.value_y_max.returnPressed.connect(self._update_limits)
+        self.ui.value_z_max.returnPressed.connect(self._update_limits)
 
         self.ui.reset_button.clicked.connect(self._vispy_widget._reset_view)
+
+        self._components = {}
 
         self._set_attributes_enabled(False)
         self._set_limits_enabled(False)
@@ -105,15 +112,19 @@ class VispyOptionsWidget(QtGui.QWidget):
         self.ui.value_y_max.setEnabled(value)
         self.ui.value_z_max.setEnabled(value)
 
-    def _update_attributes(self, components):
+    def _update_attributes_from_data(self, data):
 
-        for component in components:
-            if self.ui.combo_x_attribute.findData(component) == -1:
-                self.ui.combo_x_attribute.addItem(component.label, userData=component)
-            if self.ui.combo_y_attribute.findData(component) == -1:
-                self.ui.combo_y_attribute.addItem(component.label, userData=component)
-            if self.ui.combo_z_attribute.findData(component) == -1:
-                self.ui.combo_z_attribute.addItem(component.label, userData=component)
+        # TODO: check for categorical components here
+        components = data.visible_components
+
+        for component_id in components:
+            if self.ui.combo_x_attribute.findData(component_id) == -1:
+                self.ui.combo_x_attribute.addItem(component_id.label, userData=component_id)
+            if self.ui.combo_y_attribute.findData(component_id) == -1:
+                self.ui.combo_y_attribute.addItem(component_id.label, userData=component_id)
+            if self.ui.combo_z_attribute.findData(component_id) == -1:
+                self.ui.combo_z_attribute.addItem(component_id.label, userData=component_id)
+            self._components[component_id] = data.get_component(component_id)
 
         if self._first_attributes:
             n_max = len(components)
@@ -122,6 +133,45 @@ class VispyOptionsWidget(QtGui.QWidget):
             self.ui.combo_z_attribute.setCurrentIndex(min(2, n_max-1))
             self._set_attributes_enabled(True)
             self._first_attributes = False
+
+        self._update_attribute_limits()
+
+    def _update_attribute_limits(self):
+
+        if not hasattr(self, '_limits'):
+            self._limits = {}
+
+        self._set_limits_enabled(False)
+
+        if self.x_att not in self._limits:
+            data = self._components[self.x_att].data
+            self._limits[self.x_att] = np.nanmin(data), np.nanmax(data)
+        self.x_min, self.x_max = self._limits[self.x_att]
+
+        if self.y_att not in self._limits:
+            data = self._components[self.y_att].data
+            self._limits[self.y_att] = np.nanmin(data), np.nanmax(data)
+        self.y_min, self.y_max = self._limits[self.y_att]
+
+        if self.z_att not in self._limits:
+            data = self._components[self.z_att].data
+            self._limits[self.z_att] = np.nanmin(data), np.nanmax(data)
+        self.z_min, self.z_max = self._limits[self.z_att]
+
+        self._set_limits_enabled(True)
+
+        self.ui.value_x_min.returnPressed.emit()
+
+    def _update_limits(self):
+
+        if not hasattr(self, '_limits'):
+            self._limits = {}
+
+        self._limits[self.x_att] = self.x_min, self.x_max
+        self._limits[self.y_att] = self.y_min, self.y_max
+        self._limits[self.z_att] = self.z_min, self.z_max
+
+        self._vispy_widget._update_limits()
 
     def _update_stretch(self):
         self._vispy_widget._update_stretch(self.x_stretch,
