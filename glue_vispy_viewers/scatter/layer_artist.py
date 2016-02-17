@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+import uuid
+
 import numpy as np
 
 from glue.external.echo import CallbackProperty, add_callback
@@ -39,6 +41,12 @@ class ScatterLayerArtist(LayerArtistBase):
         self.layer = layer
         self.vispy_viewer = vispy_viewer
 
+        # We create a unique ID for this layer artist, that will be used to
+        # refer to the layer artist in the MultiColorScatter. We have to do this
+        # rather than use self.id because we can't guarantee the latter is
+        # unique.
+        self.id = str(uuid.uuid4())
+
         # We need to use MultiColorScatter instance to store scatter plots, but
         # we should only have one per canvas. Therefore, we store the
         # MultiColorScatter instance in the vispy viewer instance.
@@ -48,8 +56,8 @@ class ScatterLayerArtist(LayerArtistBase):
             vispy_viewer._multiscat = multiscat
 
         self._multiscat = vispy_viewer._multiscat
-        self._multiscat.allocate(self.layer.label)
-        self._multiscat.set_zorder(self.layer.label, self.get_zorder)
+        self._multiscat.allocate(self.id)
+        self._multiscat.set_zorder(self.id, self.get_zorder)
 
         # Set up connections so that when any of the size properties are
         # modified, we update the marker sizes
@@ -82,7 +90,7 @@ class ScatterLayerArtist(LayerArtistBase):
     @visible.setter
     def visible(self, value):
         self._visible = value
-        self._multiscat.set_visible(self.layer.label, self.visible)
+        self._multiscat.set_visible(self.id, self.visible)
         self.redraw()
 
     def get_zorder(self):
@@ -112,25 +120,25 @@ class ScatterLayerArtist(LayerArtistBase):
         if self.size_mode is None:
             pass
         elif self.size_mode == 'fixed':
-            self._multiscat.set_size(self.layer.label, self.size * self.size_scaling)
+            self._multiscat.set_size(self.id, self.size * self.size_scaling)
         else:
             data = self.layer[self.size_attribute]
             size = np.abs(np.nan_to_num(data))
             size = 20 * (size - self.size_vmin) / (self.size_vmax - self.size_vmin)
             size_data = size * self.size_scaling
-            self._multiscat.set_size(self.layer.label, size_data)
+            self._multiscat.set_size(self.id, size_data)
 
     def _update_colors(self):
         if self.color_mode is None:
             pass
         elif self.color_mode == 'fixed':
-            self._multiscat.set_color(self.layer.label, self.color)
+            self._multiscat.set_color(self.id, self.color)
         else:
             # TODO: implement colormap support
             raise NotImplementedError()
 
     def _update_alpha(self):
-        self._multiscat.set_alpha(self.layer.label, self.alpha)
+        self._multiscat.set_alpha(self.id, self.alpha)
 
     def set_coordinates(self, x_coord, y_coord, z_coord):
         self._x_coord = x_coord
@@ -148,7 +156,7 @@ class ScatterLayerArtist(LayerArtistBase):
             y = np.array([])
             z = np.array([])
         self._marker_data = np.array([x, y, z]).transpose()
-        self._multiscat.set_data_values(self.layer.label, x, y, z)
+        self._multiscat.set_data_values(self.id, x, y, z)
         self.redraw()
 
     @property

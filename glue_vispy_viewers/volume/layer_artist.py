@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import sys
+import uuid
 
 import numpy as np
 
@@ -38,6 +39,12 @@ class VolumeLayerArtist(LayerArtistBase):
         self.layer = layer
         self.vispy_viewer = vispy_viewer
 
+        # We create a unique ID for this layer artist, that will be used to
+        # refer to the layer artist in the MultiVolume. We have to do this
+        # rather than use self.id because we can't guarantee the latter is
+        # unique.
+        self.id = str(uuid.uuid4())
+
         # We need to use MultiVolume instance to store volumes, but we should
         # only have one per canvas. Therefore, we store the MultiVolume
         # instance in the vispy viewer instance.
@@ -57,7 +64,7 @@ class VolumeLayerArtist(LayerArtistBase):
             vispy_viewer._multivol = multivol
 
         self._multivol = vispy_viewer._multivol
-        self._multivol.allocate(self.layer.label)
+        self._multivol.allocate(self.id)
 
         # Set up connections so that when any of the properties are
         # modified, we update the appropriate part of the visualization
@@ -94,7 +101,7 @@ class VolumeLayerArtist(LayerArtistBase):
         """
         Remove the layer artist from the visualization
         """
-        self._multivol.deallocate(self.layer.label)
+        self._multivol.deallocate(self.id)
 
     def update(self):
         """
@@ -105,19 +112,19 @@ class VolumeLayerArtist(LayerArtistBase):
 
     def _update_cmap_from_color(self):
         cmap = get_translucent_cmap(*Color(self.color).rgb)
-        self._multivol.set_cmap(self.layer.label, cmap)
+        self._multivol.set_cmap(self.id, cmap)
         self.redraw()
 
     def _update_cmap(self):
-        self._multivol.set_cmap(self.layer.label, self.cmap)
+        self._multivol.set_cmap(self.id, self.cmap)
         self.redraw()
 
     def _update_limits(self):
-        self._multivol.set_clim(self.layer.label, (self.vmin, self.vmax))
+        self._multivol.set_clim(self.id, (self.vmin, self.vmax))
         self.redraw()
 
     def _update_alpha(self):
-        self._multivol.set_weight(self.layer.label, self.alpha)
+        self._multivol.set_weight(self.id, self.alpha)
         self.redraw()
 
     def _update_data(self):
@@ -128,12 +135,12 @@ class VolumeLayerArtist(LayerArtistBase):
                 data = np.zeros(self.layer.data.shape)
         else:
             data = self.layer[self.attribute]
-        self._multivol.set_data(self.layer.label, np.nan_to_num(data))
+        self._multivol.set_data(self.id, np.nan_to_num(data))
         self.redraw()
 
     def _update_visibility(self):
         if self.visible:
-            self._multivol.enable(self.layer.label)
+            self._multivol.enable(self.id)
         else:
-            self._multivol.disable(self.layer.label)
+            self._multivol.disable(self.id)
         self.redraw()
