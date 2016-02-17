@@ -9,7 +9,8 @@ from glue.core.subset import Subset
 from glue.external.echo import delay_callback
 from glue.external.qt import QtGui
 from glue.utils.qt import load_ui, update_combobox
-from glue.utils.qt.widget_properties import (ValueProperty,
+from glue.utils.qt.widget_properties import (ButtonProperty,
+                                             ValueProperty,
                                              CurrentComboProperty,
                                              FloatLineProperty, connect_value,
                                              connect_float_edit,
@@ -26,6 +27,8 @@ class VolumeLayerStyleWidget(QtGui.QWidget):
     vmin = FloatLineProperty('ui.value_min')
     vmax = FloatLineProperty('ui.value_max')
     alpha = ValueProperty('ui.slider_alpha')
+    subset_outline = ButtonProperty('ui.radio_subset_outline')
+    subset_data = ButtonProperty('ui.radio_subset_data')
 
     def __init__(self, layer_artist):
 
@@ -47,6 +50,8 @@ class VolumeLayerStyleWidget(QtGui.QWidget):
         with delay_callback(self.layer_artist, 'attribute'):
             self.attribute = self.visible_components[0]
             self._update_limits()
+        if isinstance(self.layer, Subset):
+            self.ui.radio_subset_data.setChecked(True)
         self.layer_artist.visible = True
 
     def _connect_global(self):
@@ -57,6 +62,16 @@ class VolumeLayerStyleWidget(QtGui.QWidget):
         """
         Set up the combo box with the list of attributes
         """
+
+        # Set up radio buttons for subset mode selection if this is a subset
+        if isinstance(self.layer, Subset):
+            self._radio_size = QtGui.QButtonGroup()
+            self._radio_size.addButton(self.ui.radio_subset_outline)
+            self._radio_size.addButton(self.ui.radio_subset_data)
+        else:
+            self.ui.radio_subset_outline.hide()
+            self.ui.radio_subset_data.hide()
+            self.ui.label_subset_mode.hide()
 
         # Set up attribute list
         label_data = [(comp.label, comp) for comp in self.visible_components]
@@ -70,9 +85,30 @@ class VolumeLayerStyleWidget(QtGui.QWidget):
         connect_value(self.layer_artist, 'alpha', self.ui.slider_alpha, value_range=(0, 1))
 
         # Set up internal connections
+        self.ui.radio_subset_outline.toggled.connect(self._update_subset_mode)
+        self.ui.radio_subset_data.toggled.connect(self._update_subset_mode)
+        self.ui.value_min.editingFinished.connect(self._cache_limits)
+        self.ui.value_max.editingFinished.connect(self._cache_limits)
         self.ui.combo_attribute.currentIndexChanged.connect(self._update_limits)
 
+    def _update_subset_mode(self):
+        if self.ui.radio_subset_outline.isChecked():
+            self.layer_artist.subset_mode = 'outline'
+        else:
+            self.layer_artist.subset_mode = 'data'
+        self._update_limits()
+
     def _update_limits(self):
+
+        if isinstance(self.layer, Subset):
+            if self.layer_artist.subset_mode == 'outline':
+                self.ui.value_min.setEnabled(False)
+                self.ui.value_max.setEnabled(False)
+                self.vmin, self.vmax = 0, 2
+                return
+            else:
+                self.ui.value_min.setEnabled(False)
+                self.ui.value_max.setEnabled(True)
 
         if not hasattr(self, '_limits'):
             self._limits = {}
@@ -83,15 +119,20 @@ class VolumeLayerStyleWidget(QtGui.QWidget):
             self.vmin, self.vmax = self.default_limits(self.attribute)
             self._limits[self.attribute] = self.vmin, self.vmax
 
+    def _cache_limits(self):
+        if not isinstance(self.layer, Subset) or self.layer_artist.subset_mode == 'data':
+            self._limits[self.attribute] = self.vmin, self.vmax
+
     def default_limits(self, attribute):
         # For subsets, we want to compute the limits based on the full
         # dataset not just the subset.
         if isinstance(self.layer, Subset):
-            return 0, 2
+            vmin = 0
+            vmax = np.nanmax(self.layer.data[attribute])
         else:
             vmin = np.nanmin(self.layer[attribute])
             vmax = np.nanmax(self.layer[attribute])
-            return vmin, vmax
+        return vmin, vmax
 
     @property
     def visible_components(self):

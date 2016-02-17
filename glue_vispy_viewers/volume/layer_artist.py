@@ -31,6 +31,7 @@ class VolumeLayerArtist(LayerArtistBase):
     color = CallbackProperty()
     cmap = CallbackProperty()
     alpha = CallbackProperty()
+    subset_mode = CallbackProperty()
 
     def __init__(self, layer, vispy_viewer):
 
@@ -74,6 +75,8 @@ class VolumeLayerArtist(LayerArtistBase):
         add_callback(self, 'color', nonpartial(self._update_cmap_from_color))
         add_callback(self, 'cmap', nonpartial(self._update_cmap))
         add_callback(self, 'alpha', nonpartial(self._update_alpha))
+        if isinstance(self.layer, Subset):
+            add_callback(self, 'subset_mode', nonpartial(self._update_data))
 
 
     @property
@@ -130,9 +133,13 @@ class VolumeLayerArtist(LayerArtistBase):
     def _update_data(self):
         if isinstance(self.layer, Subset):
             try:    
-                data = self.layer.to_mask().astype(float)
+                mask = self.layer.to_mask()
             except IncompatibleAttribute:
-                data = np.zeros(self.layer.data.shape)
+                mask = np.zeros(self.layer.data.shape, dtype=bool)
+            if self.subset_mode == 'outline':
+                data = mask.astype(float)
+            else:
+                data = self.layer.data[self.attribute] * mask
         else:
             data = self.layer[self.attribute]
         self._multivol.set_data(self.id, np.nan_to_num(data))
