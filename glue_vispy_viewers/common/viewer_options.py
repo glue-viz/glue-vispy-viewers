@@ -105,6 +105,10 @@ class VispyOptionsWidget(QtGui.QWidget):
         self.ui.combo_y_attribute.setEnabled(value)
         self.ui.combo_z_attribute.setEnabled(value)
 
+        self.ui.combo_x_attribute.blockSignals(not value)
+        self.ui.combo_y_attribute.blockSignals(not value)
+        self.ui.combo_z_attribute.blockSignals(not value)
+
     def _set_limits_enabled(self, value):
 
         self.ui.value_x_min.setEnabled(value)
