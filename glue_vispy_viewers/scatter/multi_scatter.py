@@ -24,7 +24,7 @@ class MultiColorScatter(scene.visuals.Markers):
         else:
             self.layers[label] = {'data': None,
                                   'mask': None,
-                                  'color': (1,1,1),
+                                  'color': np.asarray((1,1,1)),
                                   'alpha': 1,
                                   'zorder':lambda: 0,
                                   'size': 10,
@@ -58,7 +58,7 @@ class MultiColorScatter(scene.visuals.Markers):
     def set_color(self, label, rgb):
         if isinstance(rgb, six.string_types):
             rgb = Color(rgb).rgb
-        self.layers[label]['color'] = rgb
+        self.layers[label]['color'] = np.asarray(rgb)
         self._update()
 
     def set_alpha(self, label, alpha):
@@ -98,8 +98,11 @@ class MultiColorScatter(scene.visuals.Markers):
 
                 # Colors
 
-                rgba = np.hstack([layer['color'], 0])
-                rgba = np.repeat(rgba, n_points).reshape(4, -1).transpose()
+                if layer['color'].ndim == 1:
+                    rgba = np.hstack([layer['color'], 0])
+                    rgba = np.repeat(rgba, n_points).reshape(4, -1).transpose()
+                else:
+                    rgba = layer['color']
                 rgba[:, 3] = layer['alpha']
 
                 colors.append(rgba)

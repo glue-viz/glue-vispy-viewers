@@ -3,9 +3,9 @@ from __future__ import absolute_import, division, print_function
 import os
 
 import numpy as np
+from matplotlib import cm
 
 from glue.core.subset import Subset
-
 from glue.external.qt import QtGui
 
 from glue.utils.qt import load_ui, update_combobox
@@ -59,6 +59,9 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         self.layer_artist.alpha = self.layer.style.alpha
         self.layer_artist.color_mode = 'fixed'
         self.ui.radio_color_fixed.setChecked(True)
+        self.ui.combo_size_attribute.setCurrentIndex(0)
+        self.ui.combo_cmap_attribute.setCurrentIndex(0)
+        self.ui.combo_cmap.setCurrentIndex(0)
         self.layer_artist.visible = True
 
     def _connect_global(self):
@@ -112,13 +115,6 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
 
     def _setup_color_options(self):
 
-        # For now, we disable colormap options for color
-        self.ui.radio_color_linear.setEnabled(False)
-        self.ui.combo_cmap_attribute.setEnabled(False)
-        self.ui.value_cmap_vmin.setEnabled(False)
-        self.ui.value_cmap_vmax.setEnabled(False)
-        self.ui.combo_cmap.setEnabled(False)
-
         # Set up radio buttons for color mode selection
         self._radio_color = QtGui.QButtonGroup()
         self._radio_color.addButton(self.ui.radio_color_fixed)
@@ -126,7 +122,14 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
 
         # Set up attribute list
         label_data = [(comp.label, comp) for comp in self.visible_components]
-        update_combobox(self.ui.combo_size_attribute, label_data)
+        update_combobox(self.ui.combo_cmap_attribute, label_data)
+
+        # Set up colormap combo
+        for name in sorted(cm.datad):
+            if name.endswith("_r"):
+                 continue
+            cmap = cm.get_cmap(name)
+            self.ui.combo_cmap.addItem(name, userData=cmap) 
 
         # Set up connections with layer artist
         connect_color(self.layer_artist, 'color', self.ui.label_color)
@@ -143,9 +146,9 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
 
     def _update_color_mode(self):
         if self.ui.radio_color_fixed.isChecked():
-            self.layer_artist.cmap_mode = 'fixed'
+            self.layer_artist.color_mode = 'fixed'
         else:
-            self.layer_artist.cmap_mode = 'linear'
+            self.layer_artist.color_mode = 'linear'
 
     def _update_cmap_limits(self):
 
