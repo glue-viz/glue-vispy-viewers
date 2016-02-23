@@ -1,10 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
-import sys
-import uuid
-
 import numpy as np
 
+from vispy import scene
 from vispy.color import Color
 
 from glue.external.echo import CallbackProperty, add_callback
@@ -12,9 +10,6 @@ from glue.core.data import Subset
 from glue.core.layer_artist import LayerArtistBase
 from glue.utils import nonpartial
 from glue.core.exceptions import IncompatibleAttribute
-from .Isosurface_visual import MultiIsosurface
-from .Isosurface_visual_legacy import MultiIsosurface as MultiIsosurfaceLegacy
-from .colors import get_translucent_cmap
 
 
 class IsosurfaceLayerArtist(LayerArtistBase):
@@ -37,7 +32,7 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         self.layer = layer
         self.vispy_viewer = vispy_viewer
 
-        self._iso_visual = IsosurfaceVisual()
+        self._iso_visual = scene.visuals.IsosurfaceVisual()
         self.vispy_viewer.add_data_visual(self._iso_visual)
         
         # Set up connections so that when any of the properties are

@@ -9,8 +9,7 @@ from glue.core.subset import Subset
 from glue.external.echo import delay_callback
 from glue.external.qt import QtGui
 from glue.utils.qt import load_ui, update_combobox, connect_color
-from glue.utils.qt.widget_properties import (ButtonProperty,
-                                             ValueProperty,
+from glue.utils.qt.widget_properties import (ValueProperty,
                                              CurrentComboProperty,
                                              FloatLineProperty, connect_value,
                                              connect_float_edit,
