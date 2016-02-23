@@ -8,16 +8,13 @@ from glue.core.subset import Subset
 
 from glue.external.echo import delay_callback
 from glue.external.qt import QtGui
-from glue.utils.qt import load_ui, update_combobox
+from glue.utils.qt import load_ui, update_combobox, connect_color
 from glue.utils.qt.widget_properties import (ButtonProperty,
                                              ValueProperty,
                                              CurrentComboProperty,
                                              FloatLineProperty, connect_value,
                                              connect_float_edit,
                                              connect_current_combo)
-
-from .colors import get_translucent_cmap
-from ..common.color_box import connect_color
 
 
 class VolumeLayerStyleWidget(QtGui.QWidget):

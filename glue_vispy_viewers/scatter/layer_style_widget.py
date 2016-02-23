@@ -8,7 +8,7 @@ from matplotlib import cm
 from glue.core.subset import Subset
 from glue.external.qt import QtGui
 
-from glue.utils.qt import load_ui, update_combobox
+from glue.utils.qt import load_ui, update_combobox, connect_color
 from glue.utils.qt.widget_properties import (ValueProperty,
                                              CurrentComboProperty,
                                              FloatLineProperty,
@@ -16,7 +16,6 @@ from glue.utils.qt.widget_properties import (ValueProperty,
                                              connect_current_combo,
                                              connect_value)
 
-from ..common.color_box import connect_color
 
 
 class ScatterLayerStyleWidget(QtGui.QWidget):

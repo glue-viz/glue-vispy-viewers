@@ -108,7 +108,7 @@
   <customwidget>
    <class>QColorBox</class>
    <extends>QLabel</extends>
-   <header>glue_vispy_viewers.common.color_box</header>
+   <header>glue.utils.qt.colors</header>
   </customwidget>
  </customwidgets>
  <resources/>
