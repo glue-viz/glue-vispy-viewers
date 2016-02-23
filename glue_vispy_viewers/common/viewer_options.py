@@ -51,28 +51,29 @@ class VispyOptionsWidget(QtGui.QWidget):
 
         for slider, label in zip(self.stretch_sliders, self.stretch_values):
             slider.valueChanged.connect(partial(self._update_labels_from_sliders, label, slider))
-            label.returnPressed.connect(partial(self._update_sliders_from_labels, slider, label))
+            label.editingFinished.connect(partial(self._update_sliders_from_labels, slider, label))
             label.setText('1.0')
-            label.returnPressed.emit()
+            label.editingFinished.emit()
             slider.valueChanged.connect(self._update_stretch)
 
         connect_bool_button(self._vispy_widget, 'visible_axes', self.ui.checkbox_axes)
 
-        self.ui.combo_x_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)
-        self.ui.combo_y_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)
-        self.ui.combo_z_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)
+        if self._data_viewer is not None:
+            self.ui.combo_x_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)
+            self.ui.combo_y_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)
+            self.ui.combo_z_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)
 
         self.ui.combo_x_attribute.currentIndexChanged.connect(self._update_attribute_limits)
         self.ui.combo_y_attribute.currentIndexChanged.connect(self._update_attribute_limits)
         self.ui.combo_z_attribute.currentIndexChanged.connect(self._update_attribute_limits)
 
-        self.ui.value_x_min.returnPressed.connect(self._update_limits)
-        self.ui.value_y_min.returnPressed.connect(self._update_limits)
-        self.ui.value_z_min.returnPressed.connect(self._update_limits)
+        self.ui.value_x_min.editingFinished.connect(self._update_limits)
+        self.ui.value_y_min.editingFinished.connect(self._update_limits)
+        self.ui.value_z_min.editingFinished.connect(self._update_limits)
 
-        self.ui.value_x_max.returnPressed.connect(self._update_limits)
-        self.ui.value_y_max.returnPressed.connect(self._update_limits)
-        self.ui.value_z_max.returnPressed.connect(self._update_limits)
+        self.ui.value_x_max.editingFinished.connect(self._update_limits)
+        self.ui.value_y_max.editingFinished.connect(self._update_limits)
+        self.ui.value_z_max.editingFinished.connect(self._update_limits)
 
         self.ui.reset_button.clicked.connect(self._vispy_widget._reset_view)
 
@@ -96,7 +97,7 @@ class VispyOptionsWidget(QtGui.QWidget):
 
         self._set_limits_enabled(True)
 
-        self.ui.value_x_min.returnPressed.emit()
+        self.ui.value_x_min.editingFinished.emit()
 
     def _set_attributes_enabled(self, value):
 
@@ -114,19 +115,29 @@ class VispyOptionsWidget(QtGui.QWidget):
         self.ui.value_y_max.setEnabled(value)
         self.ui.value_z_max.setEnabled(value)
 
+        self.ui.value_x_min.blockSignals(not value)
+        self.ui.value_y_min.blockSignals(not value)
+        self.ui.value_z_min.blockSignals(not value)
+
+        self.ui.value_x_max.blockSignals(not value)
+        self.ui.value_y_max.blockSignals(not value)
+        self.ui.value_z_max.blockSignals(not value)
+
     def _update_attributes_from_data(self, data):
 
-        # TODO: check for categorical components here
         components = data.visible_components
 
         for component_id in components:
+            component = data.get_component(component_id)
+            if component.categorical:
+                continue
             if self.ui.combo_x_attribute.findData(component_id) == -1:
                 self.ui.combo_x_attribute.addItem(component_id.label, userData=component_id)
             if self.ui.combo_y_attribute.findData(component_id) == -1:
                 self.ui.combo_y_attribute.addItem(component_id.label, userData=component_id)
             if self.ui.combo_z_attribute.findData(component_id) == -1:
                 self.ui.combo_z_attribute.addItem(component_id.label, userData=component_id)
-            self._components[component_id] = data.get_component(component_id)
+            self._components[component_id] = component
 
         if self._first_attributes:
             n_max = len(components)
@@ -162,7 +173,7 @@ class VispyOptionsWidget(QtGui.QWidget):
 
         self._set_limits_enabled(True)
 
-        self.ui.value_x_min.returnPressed.emit()
+        self.ui.value_x_min.editingFinished.emit()
 
     def _update_limits(self):
 
