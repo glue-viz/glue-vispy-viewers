@@ -39,7 +39,7 @@ class IsosurfaceLayerStyleWidget(QtGui.QWidget):
 
         # Set initial values
         self.layer_artist.color = self.layer.style.color
-        # self.layer_artist.alpha = self.layer.style.alpha
+        self.layer_artist.alpha = self.layer.style.alpha
         with delay_callback(self.layer_artist, 'attribute'):
             self.attribute = self.visible_components[0]
             self._update_levels()
@@ -62,7 +62,7 @@ class IsosurfaceLayerStyleWidget(QtGui.QWidget):
         connect_current_combo(self.layer_artist, 'attribute', self.ui.combo_attribute)
         connect_float_edit(self.layer_artist, 'level', self.ui.value_level)
         connect_color(self.layer_artist, 'color', self.ui.label_color)
-        # connect_value(self.layer_artist, 'alpha', self.ui.slider_alpha, value_range=(0, 1))
+        connect_value(self.layer_artist, 'alpha', self.ui.slider_alpha, value_range=(0, 1))
 
         # Set up internal connections
         self.ui.value_level.editingFinished.connect(self._cache_levels)

@@ -1,6 +1,4 @@
-__author__ = 'penny'
-
 def setup():
-    from .iso_glue_viewer import GlueIsoVispyViewer
+    from .isosurface_viewer import VispyIsosurfaceViewer
     from glue.config import qt_client
-    qt_client.add(GlueIsoVispyViewer)
+    qt_client.add(VispyIsosurfaceViewer)

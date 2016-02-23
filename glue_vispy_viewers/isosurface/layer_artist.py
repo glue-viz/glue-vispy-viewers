@@ -18,12 +18,9 @@ class IsosurfaceLayerArtist(LayerArtistBase):
     """
 
     attribute = CallbackProperty()
-    vmin = CallbackProperty()
-    vmax = CallbackProperty()
+    level = CallbackProperty()
     color = CallbackProperty()
-    cmap = CallbackProperty()
     alpha = CallbackProperty()
-    subset_mode = CallbackProperty()
 
     def __init__(self, layer, vispy_viewer):
 
@@ -32,18 +29,15 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         self.layer = layer
         self.vispy_viewer = vispy_viewer
 
-        self._iso_visual = scene.visuals.IsosurfaceVisual()
+        self._iso_visual = scene.visuals.Isosurface(np.ones((3, 3, 3)), level=0.5, shading='smooth')
         self.vispy_viewer.add_data_visual(self._iso_visual)
-        
+
         # Set up connections so that when any of the properties are
         # modified, we update the appropriate part of the visualization
         add_callback(self, 'attribute', nonpartial(self._update_data))
         add_callback(self, 'level', nonpartial(self._update_level))
         add_callback(self, 'color', nonpartial(self._update_color))
-        # add_callback(self, 'cmap', nonpartial(self._update_cmap))
-        # add_callback(self, 'alpha', nonpartial(self._update_alpha))
-        # if isinstance(self.layer, Subset):
-        #     add_callback(self, 'subset_mode', nonpartial(self._update_data))
+        add_callback(self, 'alpha', nonpartial(self._update_color))
 
     @property
     def bbox(self):
@@ -84,19 +78,24 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         self.redraw()
 
     def _update_color(self):
-        self._iso_visual.color = Color(self.color)
+        self._update_vispy_color()
+        self._iso_visual.color = self._vispy_color
         self.redraw()
+
+    def _update_vispy_color(self):
+        self._vispy_color = Color(self.color)
+        self._vispy_color.alpha = self.alpha
 
     def _update_data(self):
         if isinstance(self.layer, Subset):
-            try:    
+            try:
                 mask = self.layer.to_mask()
             except IncompatibleAttribute:
                 mask = np.zeros(self.layer.data.shape, dtype=bool)
             data = mask.astype(float)
         else:
             data = self.layer[self.attribute]
-        self._iso_visual.set_data(np.nan_to_num(data))
+        self._iso_visual.set_data(np.nan_to_num(data).transpose())
         self.redraw()
 
     def _update_visibility(self):
