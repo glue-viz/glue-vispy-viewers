@@ -37,7 +37,7 @@ class VispyWidget(QtGui.QWidget):
         # sure that the grid lines are not 'hidden' by volume renderings on the 
         # front side due to numerical precision.
         vertices, filled_indices, outline_indices = create_cube()
-        self.axis = scene.visuals.Mesh(vertices['position'] * 1.01,
+        self.axis = scene.visuals.Mesh(vertices['position'],
                                        outline_indices,
                                        color=(1,1,1), mode='lines')
         self.axis.transform = self.scene_transform

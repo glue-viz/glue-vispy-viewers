@@ -81,9 +81,9 @@ class VolumeLayerArtist(LayerArtistBase):
 
     @property
     def bbox(self):
-        return (0, self.layer.shape[2],
-                0, self.layer.shape[1],
-                0, self.layer.shape[0])
+        return (-0.5, self.layer.shape[2] - 0.5,
+                -0.5, self.layer.shape[1] - 0.5,
+                -0.5, self.layer.shape[0] - 0.5)
 
     @property
     def visible(self):

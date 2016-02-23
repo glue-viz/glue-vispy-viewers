@@ -22,12 +22,12 @@ def make_test_data():
 
     return data
 
-def test_widget():
+def test_scatter_viewer():
 
-    app = get_qapp()
-
+    # Create fake data
     data = make_test_data()
 
+    # Create fake session
     session = simple_session()
     session.data_collection.append(data)
 
