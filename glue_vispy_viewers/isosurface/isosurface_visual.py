@@ -1,9 +1,9 @@
-# This file implements a IsosurfaceVisual class that includes workarounds for 
+# This file implements a IsosurfaceVisual class that includes workarounds for
 # the following VisPy bugs:
-# 
+#
 # https://github.com/vispy/vispy/pull/1179
 # https://github.com/vispy/vispy/pull/1180
-# 
+#
 # It is derived from the original code for IsosurfaceVisual in
 # vispy.visuals.isosurface, which is released under a BSD license included here:
 #
@@ -42,10 +42,18 @@
 
 from __future__ import division
 
+import numpy as np
+
 from vispy.visuals.mesh import MeshVisual
 from vispy.geometry.isosurface import isosurface
 from vispy.color import Color
 from vispy.scene.visuals import create_visual_node
+
+
+# Find out if we are using the original or new drawing API
+from vispy.visuals.isosurface import IsosurfaceVisual as VispyIsosurfaceVisual
+HAS_PREPARE_DRAW = hasattr(VispyIsosurfaceVisual, '_prepare_draw')
+del VispyIsosurfaceVisual
 
 
 class IsosurfaceVisual(MeshVisual):
@@ -124,7 +132,7 @@ class IsosurfaceVisual(MeshVisual):
             self._update_meshvisual = True
         self.update()
 
-    def _prepare_draw(self, view):
+    def _update_mesh_visual(self):
 
         if self._data is None or self._level is None:
             return False
@@ -144,6 +152,14 @@ class IsosurfaceVisual(MeshVisual):
                                 color=self._color)
             self._update_meshvisual = False
 
-        return MeshVisual._prepare_draw(self, view)
+    if HAS_PREPARE_DRAW:
+        def _prepare_draw(self, view):
+            self._update_mesh_visual()
+            return MeshVisual._prepare_draw(self, view)
+    else:
+        def draw(self, transforms):
+            self._update_mesh_visual()
+            return MeshVisual.draw(self, transforms)
+
 
 Isosurface = create_visual_node(IsosurfaceVisual)
