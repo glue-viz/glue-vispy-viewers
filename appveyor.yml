@@ -18,6 +18,9 @@ environment:
       # will require a conda package for vispy to be present)
       CONDA_DEPENDENCIES: "glueviz pytest mock vispy pyqt=4.10"
 
+      # Temporarily install glue dev version
+      PIP_DEPENDENCIES: "https://github.com/glue-viz/glue/archive/master.zip"
+
   matrix:
       # - PYTHON_VERSION: "2.7"
       - PYTHON_VERSION: "3.4"

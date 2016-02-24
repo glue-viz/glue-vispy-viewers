@@ -2,6 +2,6 @@ __author__ = 'penny'
 
 
 def setup():
-    from .scat_vispy_viewer import ScatVispyViewer
+    from .scatter_viewer import VispyScatterViewer
     from glue.config import qt_client
-    qt_client.add(ScatVispyViewer)
+    qt_client.add(VispyScatterViewer)
