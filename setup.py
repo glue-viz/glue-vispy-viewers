@@ -8,6 +8,7 @@ entry_points = """
 [glue.plugins]
 vispy_volume=glue_vispy_viewers.volume:setup
 vispy_scatter=glue_vispy_viewers.scatter:setup
+vispy_isosurface=glue_vispy_viewers.isosurface:setup
 """
 
 # Add the following to the above entry points to enable the isosurface viewer
