@@ -11,6 +11,7 @@ from glue.core.layer_artist import LayerArtistBase
 from glue.utils import nonpartial
 from glue.core.exceptions import IncompatibleAttribute
 
+from .isosurface_visual import Isosurface
 
 class IsosurfaceLayerArtist(LayerArtistBase):
     """
@@ -29,7 +30,7 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         self.layer = layer
         self.vispy_viewer = vispy_viewer
 
-        self._iso_visual = scene.visuals.Isosurface(np.ones((3, 3, 3)), level=0.5, shading='smooth')
+        self._iso_visual = Isosurface(np.ones((3, 3, 3)), level=0.5, shading='smooth')
         self.vispy_viewer.add_data_visual(self._iso_visual)
 
         # Set up connections so that when any of the properties are
