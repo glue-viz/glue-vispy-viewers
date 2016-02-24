@@ -18,8 +18,10 @@ class VispyWidget(QtGui.QWidget):
 
         super(VispyWidget, self).__init__(parent=parent)
 
-        # Prepare Vispy canvas
-        self.canvas = scene.SceneCanvas(keys='interactive', show=False)
+        # Prepare Vispy canvas. We set the depth_size to 24 to avoid issues
+        # with isosurfaces on MacOS X
+        self.canvas = scene.SceneCanvas(keys='interactive', show=False,
+                                        config={'depth_size': 24})
 
         # Set up a viewbox
         self.view = self.canvas.central_widget.add_view()
