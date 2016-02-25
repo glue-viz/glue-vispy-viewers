@@ -5,7 +5,7 @@ from functools import partial
 import numpy as np
 from glue.external.qt import QtGui
 
-from glue.utils.qt.widget_properties import CurrentComboProperty, FloatLineProperty, connect_bool_button
+from glue.utils.qt.widget_properties import CurrentComboProperty, FloatLineProperty, connect_bool_button, ButtonProperty
 from glue.utils.qt import load_ui
 
 __all__ = ["VispyOptionsWidget"]
@@ -75,6 +75,10 @@ class VispyOptionsWidget(QtGui.QWidget):
         self.ui.value_y_max.editingFinished.connect(self._update_limits)
         self.ui.value_z_max.editingFinished.connect(self._update_limits)
 
+        self.ui.button_flip_x.clicked.connect(self._flip_x)
+        self.ui.button_flip_y.clicked.connect(self._flip_y)
+        self.ui.button_flip_z.clicked.connect(self._flip_z)
+
         self.ui.reset_button.clicked.connect(self._vispy_widget._reset_view)
 
         self._components = {}
@@ -98,6 +102,24 @@ class VispyOptionsWidget(QtGui.QWidget):
         self._set_limits_enabled(True)
 
         self.ui.value_x_min.editingFinished.emit()
+
+    def _flip_x(self):
+        self._set_limits_enabled(False)
+        self.x_min, self.x_max = self.x_max, self.x_min
+        self._set_limits_enabled(True)
+        self.ui.value_x_min.editingFinished.emit()
+
+    def _flip_y(self):
+        self._set_limits_enabled(False)
+        self.y_min, self.y_max = self.y_max, self.y_min
+        self._set_limits_enabled(True)
+        self.ui.value_y_min.editingFinished.emit()
+
+    def _flip_z(self):
+        self._set_limits_enabled(False)
+        self.z_min, self.z_max = self.z_max, self.z_min
+        self._set_limits_enabled(True)
+        self.ui.value_z_min.editingFinished.emit()
 
     def _set_attributes_enabled(self, value):
 
