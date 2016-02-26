@@ -94,6 +94,7 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         self.ui.radio_size_fixed.toggled.connect(self._update_size_mode)
         self.ui.radio_size_linear.toggled.connect(self._update_size_mode)
         self.ui.combo_size_attribute.currentIndexChanged.connect(self._update_size_limits)
+        self.ui.button_flip_size.clicked.connect(self._flip_size)
 
     def _update_size_mode(self):
         if self.ui.radio_size_fixed.isChecked():
@@ -111,6 +112,9 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         else:
             self.size_vmin, self.size_vmax = self.default_limits(self.size_attribute)
             self._size_limits[self.size_attribute] = self.size_vmin, self.size_vmax
+
+    def _flip_size(self):
+        self.size_vmin, self.size_vmax = self.size_vmax, self.size_vmin
 
     def _setup_color_options(self):
 
@@ -135,6 +139,7 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         self.ui.radio_color_fixed.toggled.connect(self._update_color_mode)
         self.ui.radio_color_linear.toggled.connect(self._update_color_mode)
         self.ui.combo_cmap_attribute.currentIndexChanged.connect(self._update_cmap_limits)
+        self.ui.button_flip_cmap.clicked.connect(self._flip_cmap)
 
     def _update_color_mode(self):
         if self.ui.radio_color_fixed.isChecked():
@@ -152,6 +157,9 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         else:
             self.cmap_vmin, self.cmap_vmax = self.default_limits(self.cmap_attribute)
             self._cmap_limits[self.cmap_attribute] = self.cmap_vmin, self.cmap_vmax
+
+    def _flip_cmap(self):
+        self.cmap_vmin, self.cmap_vmax = self.cmap_vmax, self.cmap_vmin
 
     def default_limits(self, attribute):
         # For subsets, we want to compute the limits based on the full
