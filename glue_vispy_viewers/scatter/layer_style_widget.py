@@ -123,13 +123,6 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         label_data = [(comp.label, comp) for comp in self.visible_components]
         update_combobox(self.ui.combo_cmap_attribute, label_data)
 
-        # Set up colormap combo
-        for name in sorted(cm.datad):
-            if name.endswith("_r"):
-                 continue
-            cmap = cm.get_cmap(name)
-            self.ui.combo_cmap.addItem(name, userData=cmap) 
-
         # Set up connections with layer artist
         connect_color(self.layer_artist, 'color', self.ui.label_color)
         connect_current_combo(self.layer_artist, 'cmap_attribute', self.ui.combo_cmap_attribute)
