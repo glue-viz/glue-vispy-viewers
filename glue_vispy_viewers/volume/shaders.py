@@ -107,12 +107,9 @@ void main() {{
     vec3 step = ((v_position - front) / u_shape) / nsteps;
     vec3 start_loc = front / u_shape;
 
-    // For testing: show the number of steps. This helps to establish
-    // whether the rays are correctly oriented
-    //gl_FragColor = vec4(0.0, nsteps / 3.0 / u_shape.x, 1.0, 1.0);
-    //return;
+    float val;
 
-    vec4 integrated_color = vec4(0., 0., 0., 0.);
+    {before_loop}
 
     // This outer loop seems necessary on some systems for large
     // datasets. Ugly, but it works ...
@@ -121,20 +118,24 @@ void main() {{
     while (iter < nsteps) {{
         for (iter=iter; iter<nsteps; iter++)
         {{
-            // Get sample color
-            vec4 color = vec4(0, 0, 0, 0);
-            float n_tex = 0;
 
-{color_calculation}
-
-            integrated_color = 1.0 - (1.0 - integrated_color) * (1.0 - color);
+            {in_loop}
 
             // Advance location deeper into the volume
             loc += step;
         }}
     }}
 
-    gl_FragColor = integrated_color;
+    float count = 0;
+    vec4 color = vec4(0., 0., 0., 0.);
+    vec4 total_color = vec4(0., 0., 0., 0.);
+    float max_alpha = 0;
+
+    {after_loop}
+
+    total_color /= count;
+    total_color.a = max_alpha;
+    gl_FragColor = total_color;
 
     /* Set depth value - from visvis TODO
     int iter_depth = int(maxi);
@@ -157,22 +158,43 @@ def get_shaders(n_volume_max):
     """
 
     declarations = ""
-    color_calculation = ""
+    before_loop = ""
+    in_loop = ""
+    after_loop = ""
 
     for i in range(n_volume_max):
+
+        # Global declarations
         declarations += "uniform $sampler_type u_volumetex_{0:d};\n".format(i)
         declarations += "uniform int u_enabled_{0:d};\n".format(i)
         declarations += "uniform float u_weight_{0:d};\n".format(i)
-        color_calculation += ("if (u_enabled_{0:d} == 1) {{\n"
-                              "  color += u_weight_{0:d} * $cmap{0:d}($sample(u_volumetex_{0:d}, loc).g);\n"
-                              "  n_tex += 1;\n}}\n").format(i)
 
-    color_calculation += "\ncolor /= n_tex;".format(1. / n_volume_max)
+        # Declarations before the raytracing loop
+        before_loop += "float max_val_{0:d} = 0;\n".format(i)
 
-    color_calculation = indent(color_calculation, " " * 12)
+        # Calculation inside the main raytracing loop
+        in_loop += ("if (u_enabled_{0:d} == 1) {{\n"
+                              "  val = $sample(u_volumetex_{0:d}, loc).g;\n"
+                              "  max_val_{0:d} = max(val, max_val_{0:d});\n}}\n").format(i)
+
+        # Calculation after the main loop
+
+        after_loop += ("if (u_enabled_{0:d} == 1) {{\n"
+                              "  color = $cmap{0:d}(max_val_{0:d});\n"
+                              "  color.a *= u_weight_{0:d};\n"
+                              "  total_color += color.a * color;\n"
+                              "  max_alpha = max(color.a, max_alpha);\n"
+                              "  count += color.a;\n}}\n").format(i)
+
+    # Code esthetics
+    before_loop = indent(before_loop, " " * 4).strip()
+    in_loop = indent(in_loop, " " * 12).strip()
+    after_loop = indent(after_loop, " " * 4).strip()
 
     return VERT_SHADER, FRAG_SHADER.format(declarations=declarations,
-                                           color_calculation=color_calculation)
+                                           before_loop=before_loop,
+                                           in_loop=in_loop,
+                                           after_loop=after_loop)
 
 if __name__ == "__main__":
     print(get_shaders(6)[1])
