@@ -123,8 +123,9 @@ class ScatterLayerArtist(LayerArtistBase):
             self._multiscat.set_size(self.id, self.size * self.size_scaling)
         else:
             data = self.layer[self.size_attribute]
-            size = np.abs(np.nan_to_num(data))
+            size = np.nan_to_num(data)
             size = 20 * (size - self.size_vmin) / (self.size_vmax - self.size_vmin)
+            size = np.clip(size, 0, 20)
             size_data = size * self.size_scaling
             self._multiscat.set_size(self.id, size_data)
 
@@ -135,8 +136,9 @@ class ScatterLayerArtist(LayerArtistBase):
             self._multiscat.set_color(self.id, self.color)
         else:
             data = self.layer[self.cmap_attribute]
-            cmap_data = np.abs(np.nan_to_num(data))
+            cmap_data = np.nan_to_num(data)
             cmap_data = (cmap_data - self.cmap_vmin) / (self.cmap_vmax - self.cmap_vmin)
+            cmap_data = np.clip(cmap_data, 0, 1)
             cmap_data = self.cmap(cmap_data)
             self._multiscat.set_color(self.id, cmap_data)
 
