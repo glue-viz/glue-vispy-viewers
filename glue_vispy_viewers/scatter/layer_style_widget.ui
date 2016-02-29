@@ -204,6 +204,13 @@
    <item row="4" column="3">
     <widget class="QLineEdit" name="value_size_vmax"/>
    </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_5">
+     <property name="text">
+      <string>Levels:</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <customwidgets>
