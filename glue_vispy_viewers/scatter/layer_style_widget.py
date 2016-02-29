@@ -15,7 +15,7 @@ from glue.utils.qt.widget_properties import (ValueProperty,
                                              connect_float_edit,
                                              connect_current_combo,
                                              connect_value)
-
+from glue.viewers.common.qt.attribute_limits_helper import AttributeLimitsHelper
 
 
 class ScatterLayerStyleWidget(QtGui.QWidget):
@@ -38,8 +38,23 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
 
         super(ScatterLayerStyleWidget, self).__init__()
 
+        # Load ui file
         self.ui = load_ui('layer_style_widget.ui', self,
                           directory=os.path.dirname(__file__))
+
+        # Set up helpers to connect widgets
+
+        self.size_limits = AttributeLimitsHelper(attribute_combo=self.ui.combo_size_attribute,
+                                                 lower_value=self.ui.value_size_vmin,
+                                                 upper_value=self.ui.value_size_vmax,
+                                                 flip_button=self.ui.button_flip_size,
+                                                 mode_combo=self.ui.combo_size_scale_mode)
+
+        self.cmap_limits = AttributeLimitsHelper(attribute_combo=self.ui.combo_cmap_attribute,
+                                                 lower_value=self.ui.value_cmap_vmin,
+                                                 upper_value=self.ui.value_cmap_vmax,
+                                                 flip_button=self.ui.button_flip_cmap,
+                                                 mode_combo=self.ui.combo_cmap_scale_mode)
 
         self.layer_artist = layer_artist
         self.layer = layer_artist.layer
@@ -58,8 +73,8 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         self.layer_artist.alpha = self.layer.style.alpha
         self.layer_artist.color_mode = 'fixed'
         self.ui.radio_color_fixed.setChecked(True)
-        self.ui.combo_size_attribute.setCurrentIndex(0)
-        self.ui.combo_cmap_attribute.setCurrentIndex(0)
+        self.size_limits.data = self.layer
+        self.cmap_limits.data = self.layer
         self.ui.combo_cmap.setCurrentIndex(0)
         self.layer_artist.visible = True
 
@@ -79,10 +94,6 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         self._radio_size.addButton(self.ui.radio_size_fixed)
         self._radio_size.addButton(self.ui.radio_size_linear)
 
-        # Set up attribute list
-        label_data = [(comp.label, comp) for comp in self.visible_components]
-        update_combobox(self.ui.combo_size_attribute, label_data)
-
         # Set up connections with layer artist
         connect_float_edit(self.layer_artist, 'size', self.ui.value_fixed_size)
         connect_current_combo(self.layer_artist, 'size_attribute', self.ui.combo_size_attribute)
@@ -93,8 +104,6 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         # Set up internal connections
         self.ui.radio_size_fixed.toggled.connect(self._update_size_mode)
         self.ui.radio_size_linear.toggled.connect(self._update_size_mode)
-        self.ui.combo_size_attribute.currentIndexChanged.connect(self._update_size_limits)
-        self.ui.button_flip_size.clicked.connect(self._flip_size)
 
     def _update_size_mode(self):
         if self.ui.radio_size_fixed.isChecked():
@@ -102,30 +111,12 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         else:
             self.layer_artist.size_mode = 'linear'
 
-    def _update_size_limits(self):
-
-        if not hasattr(self, '_size_limits'):
-            self._size_limits = {}
-
-        if self.size_attribute in self._size_limits:
-            self.size_vmin, self.size_vmax = self._size_limits[self.size_attribute]
-        else:
-            self.size_vmin, self.size_vmax = self.default_limits(self.size_attribute)
-            self._size_limits[self.size_attribute] = self.size_vmin, self.size_vmax
-
-    def _flip_size(self):
-        self.size_vmin, self.size_vmax = self.size_vmax, self.size_vmin
-
     def _setup_color_options(self):
 
         # Set up radio buttons for color mode selection
         self._radio_color = QtGui.QButtonGroup()
         self._radio_color.addButton(self.ui.radio_color_fixed)
         self._radio_color.addButton(self.ui.radio_color_linear)
-
-        # Set up attribute list
-        label_data = [(comp.label, comp) for comp in self.visible_components]
-        update_combobox(self.ui.combo_cmap_attribute, label_data)
 
         # Set up connections with layer artist
         connect_color(self.layer_artist, 'color', self.ui.label_color)
@@ -138,43 +129,9 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         # Set up internal connections
         self.ui.radio_color_fixed.toggled.connect(self._update_color_mode)
         self.ui.radio_color_linear.toggled.connect(self._update_color_mode)
-        self.ui.combo_cmap_attribute.currentIndexChanged.connect(self._update_cmap_limits)
-        self.ui.button_flip_cmap.clicked.connect(self._flip_cmap)
 
     def _update_color_mode(self):
         if self.ui.radio_color_fixed.isChecked():
             self.layer_artist.color_mode = 'fixed'
         else:
             self.layer_artist.color_mode = 'linear'
-
-    def _update_cmap_limits(self):
-
-        if not hasattr(self, '_cmap_limits'):
-            self._cmap_limits = {}
-
-        if self.cmap_attribute in self._cmap_limits:
-            self.cmap_vmin, self.cmap_vmax = self._cmap_limits[self.cmap_attribute]
-        else:
-            self.cmap_vmin, self.cmap_vmax = self.default_limits(self.cmap_attribute)
-            self._cmap_limits[self.cmap_attribute] = self.cmap_vmin, self.cmap_vmax
-
-    def _flip_cmap(self):
-        self.cmap_vmin, self.cmap_vmax = self.cmap_vmax, self.cmap_vmin
-
-    def default_limits(self, attribute):
-        # For subsets, we want to compute the limits based on the full
-        # dataset not just the subset.
-        if isinstance(self.layer, Subset):
-            vmin = np.nanmin(self.layer.data[attribute])
-            vmax = np.nanmax(self.layer.data[attribute])
-        else:
-            vmin = np.nanmin(self.layer[attribute])
-            vmax = np.nanmax(self.layer[attribute])
-        return vmin, vmax
-
-    @property
-    def visible_components(self):
-        if isinstance(self.layer, Subset):
-            return self.layer.data.visible_components
-        else:
-            return self.layer.visible_components
