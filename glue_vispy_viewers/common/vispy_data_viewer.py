@@ -7,6 +7,7 @@ from glue.core import message as msg
 
 from .vispy_widget import VispyWidget
 from .viewer_options import VispyOptionsWidget
+from .toolbar import VispyDataViewerToolbar
 
 
 class BaseVispyViewer(DataViewer):
@@ -19,6 +20,12 @@ class BaseVispyViewer(DataViewer):
         self.setCentralWidget(self._vispy_widget)
 
         self._options_widget = VispyOptionsWidget(vispy_widget=self._vispy_widget, data_viewer=self)
+
+        # TODO: uncomment the following lines once the selection is
+        # correctly implemented.
+        # toolbar = VispyDataViewerToolbar(vispy_widget=self._vispy_widget,
+        #                                  parent=self)
+        # self.addToolBar(toolbar)
 
     def register_to_hub(self, hub):
 
