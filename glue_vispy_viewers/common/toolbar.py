@@ -186,7 +186,6 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         if event.button == 1 and self.mode is not None and self.mode is not 'point':
             # self.facecolor[self.facecolor[:, 1] != 1.0] = self.white
             data = tr.map(layer_data)[:, :2]
-            data = np.array(data)/2.
 
             selection_path = path.Path(self.line_pos, closed=True)
 
