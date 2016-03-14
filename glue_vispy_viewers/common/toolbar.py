@@ -45,14 +45,6 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         self.white = (1.0, 1.0, 1.0, 1.0)
         self.black = (0.0, 0.0, 0.0, 0.0)
 
-        print('---------------')
-        for layer in self._vispy_data_viewer._layer_artist_container:
-            print('layer', layer)
-        print('layer_artist', self._vispy_data_viewer._layer_artist_container)
-        print('---------------')
-        # TODO: I need to set the 'tr' but how can I get the current visual?
-        # also the data_collection should be related with the x, y, z attributes selected by the user
-
         # Set up selection actions
         a = QtGui.QAction(get_icon('glue_lasso'), 'Lasso Selection', parent)
         a.triggered.connect(nonpartial(self.toggle_lasso))
@@ -67,6 +59,13 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         parent.addAction(a)
         self.addAction(a)
         self.rectangle_action = a
+
+        a = QtGui.QAction(get_icon('glue_circle'), 'Ellipse Selection', parent)
+        a.triggered.connect(nonpartial(self.toggle_ellipse))
+        a.setCheckable(True)
+        parent.addAction(a)
+        self.addAction(a)
+        self.ellipse_action = a
 
         # TODO: change path to icon once it's in a released version of glue
         a = QtGui.QAction(QtGui.QIcon(POINT_ICON), 'Point Selection', parent)
@@ -86,6 +85,7 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
             self.mode = 'lasso'
             self.rectangle_action.setChecked(False)
             self.point_action.setChecked(False)
+            self.ellipse_action.setChecked(False)
         else:
             self.mode = None
 
@@ -94,6 +94,16 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
             self.mode = 'rectangle'
             self.lasso_action.setChecked(False)
             self.point_action.setChecked(False)
+            self.ellipse_action.setChecked(False)
+        else:
+            self.mode = None
+
+    def toggle_ellipse(self):
+        if self.ellipse_action.isChecked():
+            self.mode = 'ellipse'
+            self.lasso_action.setChecked(False)
+            self.point_action.setChecked(False)
+            self.rectangle_action.setChecked(False)
         else:
             self.mode = None
 
@@ -102,6 +112,7 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
             self.mode = 'point'
             self.lasso_action.setChecked(False)
             self.rectangle_action.setChecked(False)
+            self.ellipse_action.setChecked(False)
         else:
             self.mode = None
 
@@ -156,10 +167,10 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
                     self.line_pos = self.rectangle_vertice(center, height, width)
                     self.line.set_data(np.array(self.line_pos))
                 # TODO: add draw ellipse here
-                # if self.mode is 'ellipse':
-                #     self.line_pos = self.ellipse_vertice(center, radius=(np.abs(width / 2.), np.abs(height / 2.)),
-                #                                          start_angle=0., span_angle=360., num_segments=500)
-                #     self.line.set_data(pos=np.array(self.line_pos), connect='strip')
+                if self.mode is 'ellipse':
+                    self.line_pos = self.ellipse_vertice(center, radius=(np.abs(width / 2.), np.abs(height / 2.)),
+                                                         start_angle=0., span_angle=360., num_segments=500)
+                    self.line.set_data(pos=np.array(self.line_pos), connect='strip')
             self._vispy_widget.canvas.update()
 
     def on_mouse_release(self, event):
@@ -173,12 +184,17 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
 
         # Get the visible datasets
         visible_data, visual = self.get_visible_data()
-        if len(visible_data) == 1:
-            layer = visible_data[0]
+
+        layer = visible_data[0]
         layer_data = np.array([layer[x_att], layer[y_att], layer[z_att]]).transpose()
-        print('layer data', layer_data, layer_data.shape)  #(1064, 3)
+        # TODO: test multiple data for this
+        if len(visible_data) > 1:
+            n = len(visible_data)
+            for id in range(1, n):
+                layer = visible_data[id]
+                np.append(layer_data, np.array([layer[x_att], layer[y_att], layer[z_att]]).transpose(), axis=0)
+
         tr = visual.node_transform(self._vispy_widget.view)
-        print('tr', tr)
 
         self._scatter = visual
         self.scatter_data = layer_data
@@ -193,9 +209,6 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
 
             self.selected = mask
             self.mark_selected()
-            print('data', data)
-            print('selection path', selection_path)
-            print('mask is', mask, np.sum(mask))
 
             # TODO: this part doesn't work well
             # the mask is correct when the view is not changed
@@ -213,9 +226,9 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
             # focus = visible_data[0] if len(visible_data) > 0 else None
             # mode.update(self._data_collection, subset_state, focus_data=focus)
 
-            print('---')
             # print('selection done', focus)
             # Reset lasso
+
             self.line_pos = []  # TODO: Empty pos input is not allowed for line_visual
             self.line.set_data(np.array(self.line_pos))
             self.line.update()
@@ -230,17 +243,12 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         Returns all the visible data objects in the viewer
         """
         visible = []
-        # visual = []
         # Loop over visible layer artists
         for layer_artist in self._vispy_data_viewer._layer_artist_container:
             # Only extract Data objects, not subsets
             if isinstance(layer_artist.layer, Data):
                 visible.append(layer_artist.layer)
-        visual = layer_artist.visual
-        print('-----')
-        print('data and visual', visible, visual)
-        print('self._vispy_data_viewer.visual', ) #Data (label: cloud_catalog_july14_2015[HDU1])], <MultiColorScatter at 0x10e1da2d0>
-        print('----------')
+        visual = layer_artist.visual  # we only have one visual for each canvas
         return visible, visual
 
     def mark_selected(self):
@@ -300,8 +308,7 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         # vertices = np.array(output, dtype=np.float32)
         return vertices[1:, ..., :2]
 
-    '''
-    def ellipse_vertice(center, radius, start_angle, span_angle, num_segments):
+    def ellipse_vertice(self, center, radius, start_angle, span_angle, num_segments):
         # Borrow from _generate_vertices in vispy/visual/ellipse.py
 
         if isinstance(radius, (list, tuple)):
@@ -331,4 +338,4 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         vertices[num_segments + 1] = np.float32([center[0], center[1]])
 
         return vertices[:-1]
-    '''
+
