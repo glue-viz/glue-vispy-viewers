@@ -1,7 +1,7 @@
 from ..common.vispy_data_viewer import BaseVispyViewer
 from .layer_artist import ScatterLayerArtist
 from .layer_style_widget import ScatterLayerStyleWidget
-
+from .scatter_toolbar import ScatterSelectionToolbar
 
 class VispyScatterViewer(BaseVispyViewer):
 
@@ -26,6 +26,9 @@ class VispyScatterViewer(BaseVispyViewer):
         if first_layer_artist:
             self._options_widget.set_limits(*layer_artist.default_limits)
 
+        # TODO: add toolbar here
+        scatter_toolbar = ScatterSelectionToolbar(vispy_widget=self._vispy_widget, parent=self)
+        self.addToolBar(scatter_toolbar)
         return True
 
     def add_subset(self, subset):

@@ -10,6 +10,8 @@ from glue.external.echo import CallbackProperty, add_callback
 from glue.external.qt import QtGui, get_qapp
 from glue.utils import nonpartial
 
+from .axis import CornerXYZAxis
+
 class VispyWidget(QtGui.QWidget):
 
     visible_axes = CallbackProperty()
@@ -48,8 +50,12 @@ class VispyWidget(QtGui.QWidget):
         # Create a turntable camera. For now, this is the only camerate type
         # we support, but if we support more in future, we should implement
         # that here
-        self.view.camera = scene.cameras.TurntableCamera(parent=self.view.scene,
-                                                         fov=60, distance=2)
+        # Remove the fov=60 here to solve the mismatch of selection problem
+        # self.view.camera = scene.cameras.TurntableCamera(parent=self.view.scene, distance=2)
+        self.view.camera = scene.cameras.TurntableCamera(parent=self.view.scene, distance = 2.0)
+
+        # Add the corner axis here
+        corner_axis = CornerXYZAxis(vispy_widget=self, parent=self.view)
 
         # Add the native canvas widget to this widget
         layout = QtGui.QVBoxLayout()
