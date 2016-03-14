@@ -84,6 +84,10 @@ class ScatterLayerArtist(LayerArtistBase):
         self._size_data = None
 
     @property
+    def visual(self):
+        return self._multiscat
+
+    @property
     def visible(self):
         return self._visible
 

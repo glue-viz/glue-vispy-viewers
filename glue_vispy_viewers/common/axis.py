@@ -6,6 +6,8 @@ from vispy import app, scene, io
 from vispy.visuals.transforms import STTransform
 
 
+# TODO: ticks and labels will be implemented here
+
 class CornerXYZAxis(scene.visuals.XYZAxis):
     def __init__(self, vispy_widget=None, *args, **kwargs):
 

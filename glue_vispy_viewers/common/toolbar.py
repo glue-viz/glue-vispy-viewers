@@ -13,6 +13,10 @@ from glue.core import Data
 
 POINT_ICON = os.path.join(os.path.dirname(__file__), 'glue_point.png')
 
+"""
+This class is for showing the toolbar UI and drawing selection line on canvas
+"""
+
 
 class VispyDataViewerToolbar(QtGui.QToolBar):
 
@@ -33,24 +37,23 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         self.line = scene.visuals.Line(color='white', method='gl', parent=self._vispy_widget.canvas.scene)
 
         # Selection defaults
+        self._scatter = None
         self.selection_origin = (0, 0)
         self.selected = []
+        self.scatter_data = None
+        self.facecolor = np.ones((1064,4), dtype=np.float)
+        self.white = (1.0, 1.0, 1.0, 1.0)
+        self.black = (0.0, 0.0, 0.0, 0.0)
 
-
+        print('---------------')
+        for layer in self._vispy_data_viewer._layer_artist_container:
+            print('layer', layer)
+        print('layer_artist', self._vispy_data_viewer._layer_artist_container)
+        print('---------------')
         # TODO: I need to set the 'tr' but how can I get the current visual?
         # also the data_collection should be related with the x, y, z attributes selected by the user
 
-        # self.white = (1.0, 1.0, 1.0, 1.0)
-        # self.black = (0.0, 0.0, 0.0, 0.0)
-        # self.facecolor = facecolor
-
-        # Scatter plot data, visual and projection
-        #  = self._data_collection
-        # self._scatter = scatter
-        # self.tr = self._scatter.node_transform(self._view)
-
         # Set up selection actions
-
         a = QtGui.QAction(get_icon('glue_lasso'), 'Lasso Selection', parent)
         a.triggered.connect(nonpartial(self.toggle_lasso))
         a.setCheckable(True)
@@ -112,6 +115,8 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         if value is None:
             self.enable_camera_events()
         else:
+            # when the selection icon is clicked, the view should be updated and the tr should also be updated
+            self._vispy_widget.canvas.update()
             self.disable_camera_events()
 
     @property
@@ -131,23 +136,7 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         self.camera._viewbox.events.mouse_wheel.disconnect(self.camera.viewbox_mouse_event)
 
     def on_mouse_press(self, event):
-        """
-        Realize picking functionality and set origin mouse pos
-        """
-        if event.button == 1 and self.mode is not None:
-            tr = self._vispy_widget.get_tr()
-            if self.mode is 'point':
-                # Ray intersection on the CPU to highlight the selected point(s)
-                data = tr.map(self._data_collection)[:, :2]
-                m1 = data > (event.pos - 4)
-                m2 = data < (event.pos + 4)
-
-                self.selected = np.argwhere(m1[:, 0] & m1[:, 1] & m2[:, 0] & m2[:, 1])
-
-                # self.mark_selected()
-                print('point get', self.selected)
-            else:
-                self.selection_origin = event.pos
+        self.selection_origin = event.pos
 
     def on_mouse_move(self, event):
         # TODO: here we need to update the selection shape based on the mode
@@ -158,22 +147,20 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
             if self.mode is 'lasso':
                 self.line_pos.append(event.pos)
                 self.line.set_data(np.array(self.line_pos))
-
-            if self.mode is 'rectangle':
+            else:
                 width = event.pos[0] - self.selection_origin[0]
                 height = event.pos[1] - self.selection_origin[1]
                 center = (width / 2. + self.selection_origin[0], height / 2. + self.selection_origin[1], 0)
-                self.line_pos = self.rectangle_vertice(center, height, width)
-                self.line.set_data(np.array(self.line_pos))
 
-                # if self.selection_id == '2':
-                self.line_pos = self.rectangle_vertice(center, height, width)
-                self.line.set_data(np.array(self.line_pos))
-                #
-                # if self.selection_id == '3':
+                if self.mode is 'rectangle':
+                    self.line_pos = self.rectangle_vertice(center, height, width)
+                    self.line.set_data(np.array(self.line_pos))
+                # TODO: add draw ellipse here
+                # if self.mode is 'ellipse':
                 #     self.line_pos = self.ellipse_vertice(center, radius=(np.abs(width / 2.), np.abs(height / 2.)),
                 #                                          start_angle=0., span_angle=360., num_segments=500)
                 #     self.line.set_data(pos=np.array(self.line_pos), connect='strip')
+            self._vispy_widget.canvas.update()
 
     def on_mouse_release(self, event):
 
@@ -185,35 +172,58 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         z_att = self._vispy_widget.options.z_att
 
         # Get the visible datasets
-        visible_data = self.get_visible_data()
-        print('whats visible_data', visible_data)
+        visible_data, visual = self.get_visible_data()
+        if len(visible_data) == 1:
+            layer = visible_data[0]
+        layer_data = np.array([layer[x_att], layer[y_att], layer[z_att]]).transpose()
+        print('layer data', layer_data, layer_data.shape)  #(1064, 3)
+        tr = visual.node_transform(self._vispy_widget.view)
+        print('tr', tr)
+
+        self._scatter = visual
+        self.scatter_data = layer_data
 
         if event.button == 1 and self.mode is not None and self.mode is not 'point':
             # self.facecolor[self.facecolor[:, 1] != 1.0] = self.white
-            tr = self._vispy_widget.get_tr()
-
-            data = tr.map(self._data_collection)[:, :2]
+            data = tr.map(layer_data)[:, :2]
+            data = np.array(data)/2.
 
             selection_path = path.Path(self.line_pos, closed=True)
+
             mask = [selection_path.contains_points(data)]
 
-            # self.selected = mask
-            # self.mark_selected()
+            self.selected = mask
+            self.mark_selected()
+            print('data', data)
+            print('selection path', selection_path)
+            print('mask is', mask, np.sum(mask))
 
-            # TODO: here we need to get a mask for the selection, which we assume
-            # will be called ``mask``. For now, we set the mask to a random mask.
-            # mask = np.random.random(visible_data[0].shape) > 0.5
+            # TODO: this part doesn't work well
+            # the mask is correct when the view is not changed
+            # but with this subset code it still can't be correctly displayed on the screen
+            # maybe should add view.update somewhere
 
             # We now make a subset state. For scatter plots we'll want to use an
             # ElementSubsetState, while for cubes, we'll need to change to a
             # MaskSubsetState.
-            subset_state = ElementSubsetState(np.where(mask)[0])
+            # subset_state = ElementSubsetState(np.where(mask)[0])
 
             # We now check what the selection mode is, and update the selection as
             # needed (this is delegated to the correct subset mode).
-            mode = EditSubsetMode()
-            focus = visible_data[0] if len(visible_data) > 0 else None
-            mode.update(self._data_collection, subset_state, focus_data=focus)
+            # mode = EditSubsetMode()
+            # focus = visible_data[0] if len(visible_data) > 0 else None
+            # mode.update(self._data_collection, subset_state, focus_data=focus)
+
+            print('---')
+            # print('selection done', focus)
+            # Reset lasso
+            self.line_pos = []  # TODO: Empty pos input is not allowed for line_visual
+            self.line.set_data(np.array(self.line_pos))
+            self.line.update()
+
+            self.selection_origin = (0, 0)
+
+            self._vispy_widget.canvas.update()
 
 
     def get_visible_data(self):
@@ -221,21 +231,27 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         Returns all the visible data objects in the viewer
         """
         visible = []
+        # visual = []
         # Loop over visible layer artists
         for layer_artist in self._vispy_data_viewer._layer_artist_container:
             # Only extract Data objects, not subsets
             if isinstance(layer_artist.layer, Data):
                 visible.append(layer_artist.layer)
-        return visible
+        visual = layer_artist.visual
+        print('-----')
+        print('data and visual', visible, visual)
+        print('self._vispy_data_viewer.visual', ) #Data (label: cloud_catalog_july14_2015[HDU1])], <MultiColorScatter at 0x10e1da2d0>
+        print('----------')
+        return visible, visual
 
     def mark_selected(self):
-        # self.facecolor[self.facecolor[:, 1] != 1.0] = self.white
-        # self._scatter.set_data(, face_color=self.facecolor)
-        # for i in self.selected:
-        #     self.facecolor[i] = [1.0, 0.0, 0.0, 1]
-        #
-        # self._scatter.set_data(, face_color=self.facecolor)
-        # self._scatter.update()
+        self.facecolor[self.facecolor[:, 1] != 1.0] = self.white
+        self._scatter.set_data(self.scatter_data, face_color=self.facecolor)
+        for i in self.selected:
+            self.facecolor[i] = [1.0, 0.0, 0.0, 1]
+
+        self._scatter.set_data(self.scatter_data, face_color=self.facecolor)
+        self._scatter.update()
         # TODO: add points picking action here
         pass
 
@@ -284,3 +300,36 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
 
         # vertices = np.array(output, dtype=np.float32)
         return vertices[1:, ..., :2]
+
+    '''
+    def ellipse_vertice(center, radius, start_angle, span_angle, num_segments):
+        # Borrow from _generate_vertices in vispy/visual/ellipse.py
+
+        if isinstance(radius, (list, tuple)):
+            if len(radius) == 2:
+                xr, yr = radius
+            else:
+                raise ValueError("radius must be float or 2 value tuple/list"
+                                 " (got %s of length %d)" % (type(radius),
+                                                             len(radius)))
+        else:
+            xr = yr = radius
+
+        start_angle = np.deg2rad(start_angle)
+
+        vertices = np.empty([num_segments + 2, 2], dtype=np.float32) # Segment as 1000
+
+        # split the total angle into num_segments intances
+        theta = np.linspace(start_angle,
+                            start_angle + np.deg2rad(span_angle),
+                            num_segments + 1)
+
+        # PolarProjection
+        vertices[:-1, 0] = center[0] + xr * np.cos(theta)
+        vertices[:-1, 1] = center[1] + yr * np.sin(theta)
+
+        # close the curve
+        vertices[num_segments + 1] = np.float32([center[0], center[1]])
+
+        return vertices[:-1]
+    '''
