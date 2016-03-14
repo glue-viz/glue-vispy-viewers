@@ -40,10 +40,6 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         self._scatter = None
         self.selection_origin = (0, 0)
         self.selected = []
-        self.scatter_data = None
-        self.facecolor = np.ones((1064,4), dtype=np.float)
-        self.white = (1.0, 1.0, 1.0, 1.0)
-        self.black = (0.0, 0.0, 0.0, 0.0)
 
         # Set up selection actions
         a = QtGui.QAction(get_icon('glue_lasso'), 'Lasso Selection', parent)
@@ -174,92 +170,17 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
             self._vispy_widget.canvas.update()
 
     def on_mouse_release(self, event):
-
-        # TODO: here we need to finalize the selection shape based on the mode
-
-        # Get the component IDs
-        x_att = self._vispy_widget.options.x_att
-        y_att = self._vispy_widget.options.y_att
-        z_att = self._vispy_widget.options.z_att
-
-        # Get the visible datasets
-        visible_data, visual = self.get_visible_data()
-
-        layer = visible_data[0]
-        layer_data = np.array([layer[x_att], layer[y_att], layer[z_att]]).transpose()
-        # TODO: test multiple data for this
-        if len(visible_data) > 1:
-            n = len(visible_data)
-            for id in range(1, n):
-                layer = visible_data[id]
-                np.append(layer_data, np.array([layer[x_att], layer[y_att], layer[z_att]]).transpose(), axis=0)
-
-        tr = visual.node_transform(self._vispy_widget.view)
-
-        self._scatter = visual
-        self.scatter_data = layer_data
-
-        if event.button == 1 and self.mode is not None and self.mode is not 'point':
-            # self.facecolor[self.facecolor[:, 1] != 1.0] = self.white
-            data = tr.map(layer_data)[:, :2]
-
-            selection_path = path.Path(self.line_pos, closed=True)
-
-            mask = [selection_path.contains_points(data)]
-
-            self.selected = mask
-            self.mark_selected()
-
-            # TODO: this part doesn't work well
-            # the mask is correct when the view is not changed
-            # but with this subset code it still can't be correctly displayed on the screen
-            # maybe should add view.update somewhere
-
-            # We now make a subset state. For scatter plots we'll want to use an
-            # ElementSubsetState, while for cubes, we'll need to change to a
-            # MaskSubsetState.
-            # subset_state = ElementSubsetState(np.where(mask)[0])
-
-            # We now check what the selection mode is, and update the selection as
-            # needed (this is delegated to the correct subset mode).
-            # mode = EditSubsetMode()
-            # focus = visible_data[0] if len(visible_data) > 0 else None
-            # mode.update(self._data_collection, subset_state, focus_data=focus)
-
-            # print('selection done', focus)
-            # Reset lasso
-
-            self.line_pos = []  # TODO: Empty pos input is not allowed for line_visual
-            self.line.set_data(np.array(self.line_pos))
-            self.line.update()
-
-            self.selection_origin = (0, 0)
-
-            self._vispy_widget.canvas.update()
-
+        pass
 
     def get_visible_data(self):
         """
         Returns all the visible data objects in the viewer
         """
-        visible = []
-        # Loop over visible layer artists
-        for layer_artist in self._vispy_data_viewer._layer_artist_container:
-            # Only extract Data objects, not subsets
-            if isinstance(layer_artist.layer, Data):
-                visible.append(layer_artist.layer)
-        visual = layer_artist.visual  # we only have one visual for each canvas
-        return visible, visual
+        pass
+
+    '''this function should be abstract'''
 
     def mark_selected(self):
-        self.facecolor[self.facecolor[:, 1] != 1.0] = self.white
-        self._scatter.set_data(self.scatter_data, face_color=self.facecolor)
-        for i in self.selected:
-            self.facecolor[i] = [1.0, 0.0, 0.0, 1]
-
-        self._scatter.set_data(self.scatter_data, face_color=self.facecolor)
-        self._scatter.update()
-        # TODO: add points picking action here
         pass
 
     def rectangle_vertice(self, center, height, width):
