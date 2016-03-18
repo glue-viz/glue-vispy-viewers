@@ -23,9 +23,9 @@ class BaseVispyViewer(DataViewer):
 
         # TODO: uncomment the following lines once the selection is
         # correctly implemented.
-        # toolbar = VispyDataViewerToolbar(vispy_widget=self._vispy_widget,
-        #                                  parent=self)
-        # self.addToolBar(toolbar)
+        toolbar = VispyDataViewerToolbar(vispy_widget=self._vispy_widget,
+                                         parent=self)
+        self.addToolBar(toolbar)
 
     def register_to_hub(self, hub):
 
