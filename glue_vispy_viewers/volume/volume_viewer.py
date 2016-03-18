@@ -1,6 +1,7 @@
 from ..common.vispy_data_viewer import BaseVispyViewer
 from .layer_artist import VolumeLayerArtist
 from .layer_style_widget import VolumeLayerStyleWidget
+from .volume_toolbar import VolumeSelectionToolbar
 
 
 class VispyVolumeViewer(BaseVispyViewer):
@@ -8,6 +9,7 @@ class VispyVolumeViewer(BaseVispyViewer):
     LABEL = "3D Volume Rendering"
 
     _layer_style_widget_cls = VolumeLayerStyleWidget
+    _toolbar_cls = VolumeSelectionToolbar
 
     def add_data(self, data):
 

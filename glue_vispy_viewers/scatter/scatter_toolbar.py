@@ -12,26 +12,12 @@ from matplotlib import path
 
 from glue.core import Data
 
+
 class ScatterSelectionToolbar(VispyDataViewerToolbar):
 
     def __init__(self, vispy_widget=None, parent=None):
         super(ScatterSelectionToolbar, self).__init__(vispy_widget=vispy_widget, parent=parent)
-
         self.scatter_data = None
-        self.facecolor = np.ones((1064,4), dtype=np.float)
-        self.white = (1.0, 1.0, 1.0, 1.0)
-        self.black = (0.0, 0.0, 0.0, 0.0)
-
-    @property
-    def layer(self):
-        return self._layer
-
-    @layer.setter
-    def layer(self, value):
-        if value is not None:
-            self._layer = value[0]
-        else:
-            self._layer = None
 
     def get_visible_data(self):
         visible = []
@@ -72,7 +58,8 @@ class ScatterSelectionToolbar(VispyDataViewerToolbar):
         layer = visible_data[0]
         layer_data = np.array([layer[x_att], layer[y_att], layer[z_att]]).transpose()
 
-        # TODO: test multiple data for this
+        # TODO: multiple data here not work well
+        # A possible solution for multiple data would be combine them into a whole data set, like the np.append here
         if len(visible_data) > 1:
             n = len(visible_data)
             for id in range(1, n):
