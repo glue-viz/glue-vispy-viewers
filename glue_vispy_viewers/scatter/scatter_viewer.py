@@ -8,6 +8,7 @@ class VispyScatterViewer(BaseVispyViewer):
     LABEL = "3D Scatter Plot"
 
     _layer_style_widget_cls = ScatterLayerStyleWidget
+    _toolbar_cls = ScatterSelectionToolbar
 
     def add_data(self, data):
 
@@ -25,10 +26,6 @@ class VispyScatterViewer(BaseVispyViewer):
 
         if first_layer_artist:
             self._options_widget.set_limits(*layer_artist.default_limits)
-
-        # TODO: add toolbar here
-        scatter_toolbar = ScatterSelectionToolbar(vispy_widget=self._vispy_widget, parent=self)
-        self.addToolBar(scatter_toolbar)
 
         return True
 
