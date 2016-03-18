@@ -12,17 +12,30 @@ class CornerXYZAxis(scene.visuals.XYZAxis):
     def __init__(self, vispy_widget=None, *args, **kwargs):
 
         super(CornerXYZAxis, self).__init__(*args, **kwargs)
-        self.unfreeze()
+        
+        try:
+            self.unfreeze()
+        except AttributeError:  # VisPy <= 0.4
+            pass
 
         # Initiate a transform
         s = STTransform(translate=(50, 50), scale=(50, 50, 50, 1))
-        affine = s.as_matrix()
+
+        try:
+            affine = s.as_matrix()
+        except AttributeError:  # Vispy <= 0.4
+            affine = s.as_affine()
+
         self.transform = affine
         self._vispy_widget = vispy_widget
 
         # Connect callback functions to VisPy Canvas
         self._vispy_widget.canvas.events.mouse_move.connect(self.on_mouse_move)
-        self.freeze()
+        
+        try:
+            self.freeze()
+        except AttributeError:  # VisPy <= 0.4
+            pass
 
     @property
     def camera(self):
