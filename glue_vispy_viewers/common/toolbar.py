@@ -5,11 +5,8 @@ from vispy import app, scene
 from matplotlib import path
 
 from glue.external.qt import QtCore, QtGui
-from glue.core.edit_subset_mode import EditSubsetMode
-from glue.core.subset import ElementSubsetState
 from glue.icons.qt import get_icon
 from glue.utils import nonpartial
-from glue.core import Data
 
 POINT_ICON = os.path.join(os.path.dirname(__file__), 'glue_point.png')
 
@@ -176,11 +173,6 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         """
         Returns all the visible data objects in the viewer
         """
-        pass
-
-    '''this function should be abstract'''
-
-    def mark_selected(self):
         pass
 
     def rectangle_vertice(self, center, height, width):

@@ -5,7 +5,8 @@ This is for getting the selection part and highlight it
 """
 from ..common.toolbar import VispyDataViewerToolbar
 from .layer_artist import ScatterLayerArtist
-
+from glue.core.edit_subset_mode import EditSubsetMode
+from glue.core.subset import ElementSubsetState
 import numpy as np
 from matplotlib import path
 
@@ -41,15 +42,6 @@ class ScatterSelectionToolbar(VispyDataViewerToolbar):
                 visible.append(layer_artist.layer)
         visual = layer_artist.visual  # we only have one visual for each canvas
         return visible, visual
-
-    def mark_selected(self):
-        self.facecolor[self.facecolor[:, 1] != 1.0] = self.white
-        self._scatter.set_data(self.scatter_data, face_color=self.facecolor)
-        for i in self.selected:
-            self.facecolor[i] = [1.0, 0.0, 0.0, 1]
-
-        self._scatter.set_data(self.scatter_data, face_color=self.facecolor)
-        self._scatter.update()
 
     # TODO: implement advanced point selection here
     def on_mouse_press(self, event):
@@ -93,35 +85,22 @@ class ScatterSelectionToolbar(VispyDataViewerToolbar):
         self.scatter_data = layer_data
 
         if event.button == 1 and self.mode is not None and self.mode is not 'point':
-            # self.facecolor[self.facecolor[:, 1] != 1.0] = self.white
             data = tr.map(layer_data)[:, :2]
-
             selection_path = path.Path(self.line_pos, closed=True)
-
-            mask = [selection_path.contains_points(data)]
-
-            self.selected = mask
-            self.mark_selected()
-
-            # TODO: this part doesn't work well
-            # the mask is correct when the view is not changed
-            # but with this subset code it still can't be correctly displayed on the screen
-            # maybe should add view.update somewhere
+            mask = selection_path.contains_points(data)
 
             # We now make a subset state. For scatter plots we'll want to use an
             # ElementSubsetState, while for cubes, we'll need to change to a
             # MaskSubsetState.
-            # subset_state = ElementSubsetState(np.where(mask)[0])
+            subset_state = ElementSubsetState(np.where(mask)[0])
 
             # We now check what the selection mode is, and update the selection as
             # needed (this is delegated to the correct subset mode).
-            # mode = EditSubsetMode()
-            # focus = visible_data[0] if len(visible_data) > 0 else None
-            # mode.update(self._data_collection, subset_state, focus_data=focus)
+            mode = EditSubsetMode()
+            focus = visible_data[0] if len(visible_data) > 0 else None
+            mode.update(self._data_collection, subset_state, focus_data=focus)
 
-            # print('selection done', focus)
             # Reset lasso
-
             self.line_pos = []  # TODO: Empty pos input is not allowed for line_visual
             self.line.set_data(np.array(self.line_pos))
             self.line.update()
