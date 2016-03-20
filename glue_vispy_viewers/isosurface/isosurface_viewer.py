@@ -1,6 +1,7 @@
 from ..common.vispy_data_viewer import BaseVispyViewer
 from .layer_artist import IsosurfaceLayerArtist
 from .layer_style_widget import IsosurfaceLayerStyleWidget
+from .isosurface_toolbar import IsosurfaceSelectionToolbar
 
 
 class VispyIsosurfaceViewer(BaseVispyViewer):
@@ -8,6 +9,7 @@ class VispyIsosurfaceViewer(BaseVispyViewer):
     LABEL = "3D Isosurface Rendering"
 
     _layer_style_widget_cls = IsosurfaceLayerStyleWidget
+    _toolbar_cls = IsosurfaceSelectionToolbar
 
     def add_data(self, data):
 

@@ -78,6 +78,9 @@ class VolumeLayerArtist(LayerArtistBase):
         if isinstance(self.layer, Subset):
             add_callback(self, 'subset_mode', nonpartial(self._update_data))
 
+    @property
+    def visual(self):
+        return self._multivol
 
     @property
     def bbox(self):

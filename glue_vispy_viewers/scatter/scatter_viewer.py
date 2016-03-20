@@ -1,13 +1,14 @@
 from ..common.vispy_data_viewer import BaseVispyViewer
 from .layer_artist import ScatterLayerArtist
 from .layer_style_widget import ScatterLayerStyleWidget
-
+from .scatter_toolbar import ScatterSelectionToolbar
 
 class VispyScatterViewer(BaseVispyViewer):
 
     LABEL = "3D Scatter Plot"
 
     _layer_style_widget_cls = ScatterLayerStyleWidget
+    _toolbar_cls = ScatterSelectionToolbar
 
     def add_data(self, data):
 
