@@ -140,14 +140,13 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         self.camera._viewbox.events.mouse_wheel.disconnect(self.camera.viewbox_mouse_event)
 
     def on_mouse_press(self, event):
-        self.selection_origin = event.pos
+        pass
 
     def on_mouse_move(self, event):
-        # TODO: here we need to update the selection shape based on the mode
         """
         Draw selection line along dragging mouse
         """
-        if event.button == 1 and event.is_dragging and self.mode is not None:
+        if event.button == 1 and event.is_dragging and self.mode is not 'point':
             if self.mode is 'lasso':
                 self.line_pos.append(event.pos)
                 self.line.set_data(np.array(self.line_pos))
@@ -159,7 +158,7 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
                 if self.mode is 'rectangle':
                     self.line_pos = self.rectangle_vertice(center, height, width)
                     self.line.set_data(np.array(self.line_pos))
-                # TODO: add draw ellipse here
+
                 if self.mode is 'ellipse':
                     self.line_pos = self.ellipse_vertice(center, radius=(np.abs(width / 2.), np.abs(height / 2.)),
                                                          start_angle=0., span_angle=360., num_segments=500)
@@ -170,9 +169,6 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         pass
 
     def get_visible_data(self):
-        """
-        Returns all the visible data objects in the viewer
-        """
         pass
 
     def rectangle_vertice(self, center, height, width):
