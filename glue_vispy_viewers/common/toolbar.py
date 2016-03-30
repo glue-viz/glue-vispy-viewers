@@ -35,6 +35,7 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
 
         # Selection defaults
         self._scatter = None
+        self.mode = None
         self.selection_origin = (0, 0)
         self.selected = []
 
