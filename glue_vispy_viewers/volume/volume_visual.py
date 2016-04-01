@@ -44,6 +44,8 @@ from vispy.visuals.shaders import Function, ModularProgram
 from vispy.color import get_colormap
 from vispy.scene.visuals import create_visual_node
 
+from astropy.nddata.utils import block_reduce
+
 import numpy as np
 
 from collections import defaultdict
@@ -202,9 +204,8 @@ class MultiVolumeVisual(VolumeVisual):
 
         if np.any(shape > 2048):
             if self._initial_shape:
-                from astropy.nddata.utils import block_reduce
                 self._block_size = np.ceil(shape / 2048).astype(int)
-                data = block_reduce(data, self._block_size)
+                data = block_reduce(data, self._block_size, func=np.mean)
 
         self.volumes[label]['data'] = data
         self._update_scaled_data(label)

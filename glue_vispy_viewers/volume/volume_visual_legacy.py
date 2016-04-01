@@ -208,9 +208,8 @@ class MultiVolumeVisual(VolumeVisual):
 
         if np.any(shape > 2048):
             if self._initial_shape:
-                from astropy.nddata.utils import block_reduce
                 self._block_size = np.ceil(shape / 2048).astype(int)
-                data = block_reduce(data, self._block_size)
+                data = block_reduce(data, self._block_size, func=np.mean)
 
         self.volumes[label]['data'] = data
         self._update_scaled_data(label)
