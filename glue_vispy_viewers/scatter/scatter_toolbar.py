@@ -4,13 +4,13 @@ __author__ = 'penny'
 This is for getting the selection part and highlight it
 """
 from ..common.toolbar import VispyDataViewerToolbar
-from .layer_artist import ScatterLayerArtist
-from glue.core.edit_subset_mode import EditSubsetMode
-from glue.core.subset import ElementSubsetState
+
 import numpy as np
 from matplotlib import path
 
 from glue.core import Data
+from glue.core.edit_subset_mode import EditSubsetMode
+from glue.core.subset import ElementSubsetState
 
 
 class ScatterSelectionToolbar(VispyDataViewerToolbar):
