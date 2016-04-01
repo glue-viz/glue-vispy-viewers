@@ -1,32 +1,18 @@
 __author__ = 'penny'
 
 """
-This is for getting the selection part and highlight it
+This is for 3D selection in Glue 3d scatter plot viewer.
 """
 from ..common.toolbar import VispyDataViewerToolbar
-
+from glue.core.roi import RectangularROI, CircularROI, PolygonalROI
 import numpy as np
 from matplotlib import path
-
-from glue.core import Data
-from glue.core.edit_subset_mode import EditSubsetMode
-from glue.core.subset import ElementSubsetState
 
 
 class ScatterSelectionToolbar(VispyDataViewerToolbar):
 
     def __init__(self, vispy_widget=None, parent=None):
         super(ScatterSelectionToolbar, self).__init__(vispy_widget=vispy_widget, parent=parent)
-
-    def get_visible_data(self):
-        visible = []
-        # Loop over visible layer artists
-        for layer_artist in self._vispy_data_viewer._layer_artist_container:
-            # Only extract Data objects, not subsets
-            if isinstance(layer_artist.layer, Data):
-                visible.append(layer_artist.layer)
-        visual = layer_artist.visual  # we only have one visual for each canvas
-        return visible, visual
 
     # TODO: implement advanced point selection here
     def on_mouse_press(self, event):
@@ -54,34 +40,29 @@ class ScatterSelectionToolbar(VispyDataViewerToolbar):
     def on_mouse_release(self, event):
 
         # Get the visible datasets
-        visible_data, visual = self.get_visible_data()
-
-        if event.button == 1 and self.mode is not None and self.mode is not 'point':
+        if event.button == 1 and self.mode is not None:
+            visible_data, visual = self.get_visible_data()
             data = self.get_map_data()
-            selection_path = path.Path(self.line_pos, closed=True)
-            mask = selection_path.contains_points(data)
+
+            if self.mode is 'lasso':
+                selection_path = path.Path(self.line_pos, closed=True)
+                mask = selection_path.contains_points(data)
+
+            if self.mode is 'ellipse':
+                xmin, ymin = np.min(self.line_pos[:, 0]), np.min(self.line_pos[:, 1])
+                xmax, ymax = np.max(self.line_pos[:, 0]), np.max(self.line_pos[:, 1])
+                c = CircularROI((xmax+xmin)/2., (ymax+ymin)/2., (xmax-xmin)/2.)  # (xc, yc, radius)
+                mask = c.contains(data[:, 0], data[:, 1])
+
+            if self.mode is 'rectangle':
+                xmin, ymin = np.min(self.line_pos[:, 0]), np.min(self.line_pos[:, 1])
+                xmax, ymax = np.max(self.line_pos[:, 0]), np.max(self.line_pos[:, 1])
+                r = RectangularROI(xmin, xmax, ymin, ymax)
+                mask = r.contains(data[:, 0], data[:, 1])
+
             self.mark_selected(mask, visible_data)
 
-            # Reset lasso
-            self.line_pos = []  # TODO: Empty pos input is not allowed for line_visual
-            self.line.set_data(np.array(self.line_pos))
-            self.line.update()
-
-            self.selection_origin = (0, 0)
-
-            self._vispy_widget.canvas.update()
-
-    def mark_selected(self, mask, visible_data):
-        # We now make a subset state. For scatter plots we'll want to use an
-        # ElementSubsetState, while for cubes, we'll need to change to a
-        # MaskSubsetState.
-        subset_state = ElementSubsetState(np.where(mask)[0])
-
-        # We now check what the selection mode is, and update the selection as
-        # needed (this is delegated to the correct subset mode).
-        mode = EditSubsetMode()
-        focus = visible_data[0] if len(visible_data) > 0 else None
-        mode.update(self._data_collection, subset_state, focus_data=focus)
+            self.lasso_reset()
 
     def get_map_data(self):
         # Get the component IDs
