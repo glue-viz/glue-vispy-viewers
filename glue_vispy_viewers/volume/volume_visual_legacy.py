@@ -229,7 +229,7 @@ class MultiVolumeVisual(VolumeVisual):
         if self._initial_shape:
             self._data_shape = np.asarray(data.shape, dtype=int)
             self._vol_shape = self._data_shape * self._block_size
-            self.shared_program['u_shape'] = self._vol_shape[::-1]
+            self._program['u_shape'] = self._vol_shape[::-1]
             self._create_vertex_data()
             self._initial_shape = False
         elif np.any(data.shape != self._data_shape):
