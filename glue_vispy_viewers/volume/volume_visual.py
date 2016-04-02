@@ -44,7 +44,7 @@ from vispy.visuals.shaders import Function, ModularProgram
 from vispy.color import get_colormap
 from vispy.scene.visuals import create_visual_node
 
-from astropy.nddata.utils import block_reduce
+from .backports import block_reduce
 
 import numpy as np
 
