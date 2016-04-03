@@ -1,7 +1,8 @@
 0.3 (unreleased)
 ----------------
 
-- No changes yet
+- Workaround OpenGL issue that caused cubes with size > 2048 along any
+  dimension to not display.
 
 0.2 (2015-03-11)
 ----------------

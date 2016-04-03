@@ -145,7 +145,7 @@ class VolumeLayerArtist(LayerArtistBase):
                 data = self.layer.data[self.attribute] * mask
         else:
             data = self.layer[self.attribute]
-        self._multivol.set_data(self.id, np.nan_to_num(data))
+        self._multivol.set_data(self.id, data)
         self.redraw()
 
     def _update_visibility(self):
