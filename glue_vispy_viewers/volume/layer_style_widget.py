@@ -43,7 +43,7 @@ class VolumeLayerStyleWidget(QtGui.QWidget):
 
         # Set initial values
         self.layer_artist.color = self.layer.style.color
-        self.layer_artist.alpha = self.layer.style.alpha
+        self.layer_artist.alpha = self.layer.style.alpha = 1.0
         with delay_callback(self.layer_artist, 'attribute'):
             self.attribute = self.visible_components[0]
             self._update_limits()
