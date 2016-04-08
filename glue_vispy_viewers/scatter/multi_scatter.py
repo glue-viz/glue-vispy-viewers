@@ -151,20 +151,19 @@ if __name__ == "__main__":
     z = np.random.random(20)
 
     multi_scat = MultiColorScatter(parent=view.scene)
-    multi_scat.set_data_values(x, y, z)
-
     multi_scat.allocate('data')
-    multi_scat.set_zorder('data', 0)
+    multi_scat.set_zorder('data', lambda: 0)
+    multi_scat.set_data_values('data', x, y, z)
 
     multi_scat.allocate('subset1')
     multi_scat.set_mask('subset1', np.random.random(20) > 0.5)
     multi_scat.set_color('subset1', 'red')
-    multi_scat.set_zorder('subset1', 1)
+    multi_scat.set_zorder('subset1', lambda: 1)
 
     multi_scat.allocate('subset2')
     multi_scat.set_mask('subset2', np.random.random(20) > 0.5)
     multi_scat.set_color('subset2', 'green')
-    multi_scat.set_zorder('subset2', 2)
+    multi_scat.set_zorder('subset2', lambda: 2)
     multi_scat.set_alpha('subset2', 0.5)
     multi_scat.set_size('subset2', 20)
 
@@ -172,3 +171,4 @@ if __name__ == "__main__":
 
     canvas.show()
     app.run()
+
