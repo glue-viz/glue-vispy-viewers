@@ -8,6 +8,8 @@ from ..common.toolbar import VispyDataViewerToolbar
 
 import numpy as np
 from matplotlib import path
+from glue.core.roi import RectangularROI, CircularROI, PolygonalROI
+
 
 
 class VolumeSelectionToolbar(VispyDataViewerToolbar):
@@ -26,10 +28,26 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
 
         visible_data, visual = self.get_visible_data()
 
-        if event.button == 1 and self.mode is not None and self.mode is not 'point':
+        # Get the visible datasets
+        if event.button == 1 and self.mode is not None:
+            visible_data, visual = self.get_visible_data()
             data = self.get_map_data()
-            selection_path = path.Path(self.line_pos, closed=True)
-            mask = selection_path.contains_points(data)  # ndarray
+
+            if self.mode is 'lasso':
+                selection_path = path.Path(self.line_pos, closed=True)
+                mask = selection_path.contains_points(data)
+
+            if self.mode is 'ellipse':
+                xmin, ymin = np.min(self.line_pos[:, 0]), np.min(self.line_pos[:, 1])
+                xmax, ymax = np.max(self.line_pos[:, 0]), np.max(self.line_pos[:, 1])
+                c = CircularROI((xmax+xmin)/2., (ymax+ymin)/2., (xmax-xmin)/2.)  # (xc, yc, radius)
+                mask = c.contains(data[:, 0], data[:, 1])
+
+            if self.mode is 'rectangle':
+                xmin, ymin = np.min(self.line_pos[:, 0]), np.min(self.line_pos[:, 1])
+                xmax, ymax = np.max(self.line_pos[:, 0]), np.max(self.line_pos[:, 1])
+                r = RectangularROI(xmin, xmax, ymin, ymax)
+                mask = r.contains(data[:, 0], data[:, 1])
 
             # Mask matches transposed volume data set rather than the original one.
             # The ravel here is to make mask compatible with ElementSubsetState input.
