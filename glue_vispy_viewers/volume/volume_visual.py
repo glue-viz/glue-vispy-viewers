@@ -44,6 +44,8 @@ from vispy.visuals.shaders import Function, ModularProgram
 from vispy.color import get_colormap
 from vispy.scene.visuals import create_visual_node
 
+from .backports import block_reduce
+
 import numpy as np
 
 from collections import defaultdict
@@ -84,7 +86,7 @@ class MultiVolumeVisual(VolumeVisual):
 
         # Create OpenGL program
         vert_shader, frag_shader = get_shaders(n_volume_max)
-        
+
         # We deliberately don't use super here because we don't want to call
         # VolumeVisual.__init__
         Visual.__init__(self, vcode=vert_shader, fcode=frag_shader)
@@ -136,6 +138,9 @@ class MultiVolumeVisual(VolumeVisual):
 
         self.volumes = defaultdict(dict)
 
+        self._data_shape = None
+        self._block_size = np.array([1,1,1])
+
         try:
             self.freeze()
         except AttributeError:  # Older versions of VisPy
@@ -185,8 +190,23 @@ class MultiVolumeVisual(VolumeVisual):
         self.shared_program['u_weight_{0:d}'.format(index)] = weight
 
     def set_data(self, label, data):
+
         if not 'clim' in self.volumes[label]:
             raise ValueError("set_clim should be called before set_data")
+
+        # Get rid of NaN values
+        data = np.nan_to_num(data)
+
+        # VisPy can't handle dimensions larger than 2048 so we need to reduce
+        # the array on-the-fly if needed
+
+        shape = np.asarray(data.shape)
+
+        if np.any(shape > 2048):
+            if self._initial_shape:
+                self._block_size = np.ceil(shape / 2048).astype(int)
+                data = block_reduce(data, self._block_size, func=np.mean)
+
         self.volumes[label]['data'] = data
         self._update_scaled_data(label)
 
@@ -202,10 +222,11 @@ class MultiVolumeVisual(VolumeVisual):
         self.shared_program['u_volumetex_{0:d}'.format(index)].set_data(data)
 
         if self._initial_shape:
-            self._vol_shape = data.shape
-            self.shared_program['u_shape'] = data.shape[::-1]
+            self._data_shape = np.asarray(data.shape, dtype=int)
+            self._vol_shape = self._data_shape * self._block_size
+            self.shared_program['u_shape'] = self._vol_shape[::-1]
             self._initial_shape = False
-        elif data.shape != self._vol_shape:
+        elif np.any(data.shape != self._data_shape):
             raise ValueError("Shape of arrays should be {0} instead of {1}".format(self._vol_shape, data.shape))
 
     @property
