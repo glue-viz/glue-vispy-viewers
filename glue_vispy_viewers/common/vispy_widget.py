@@ -3,8 +3,9 @@ from __future__ import absolute_import, division, print_function
 import sys
 
 import numpy as np
-from vispy import scene
+from vispy import scene, app
 from vispy.geometry import create_cube
+from vispy.visuals.transforms import MatrixTransform
 
 from glue.external.echo import CallbackProperty, add_callback
 from glue.external.qt import QtGui, get_qapp
@@ -13,6 +14,7 @@ from glue.utils import nonpartial
 class VispyWidget(QtGui.QWidget):
 
     visible_axes = CallbackProperty()
+    rotate_view = CallbackProperty()
 
     def __init__(self, parent=None):
 
@@ -32,7 +34,7 @@ class VispyWidget(QtGui.QWidget):
         self.emulate_texture = (sys.platform == 'win32' and
                                 sys.version_info[0] < 3)
 
-        self.scene_transform = scene.STTransform()
+        self.axis_transform = MatrixTransform()
         self.limit_transforms = {}
 
         # Add a 3D cube to show us the unit cube. The 1.001 factor is to make 
@@ -42,7 +44,7 @@ class VispyWidget(QtGui.QWidget):
         self.axis = scene.visuals.Mesh(vertices['position'],
                                        outline_indices,
                                        color=(1,1,1), mode='lines')
-        self.axis.transform = self.scene_transform
+        self.axis.transform = self.axis_transform
         self.view.add(self.axis)
 
         # Create a turntable camera. For now, this is the only camerate type
@@ -62,9 +64,16 @@ class VispyWidget(QtGui.QWidget):
         # We need to call render here otherwise we'll later encounter an OpenGL
         # program validation error.
         self.canvas.render()
+
+        # Add a timer to control the view rotate
+        self.timer = app.Timer(connect=self.rotate)
+        self.stretch_value = None # add a temperary variable to store stretch here, remove later
+        self.rotate_slider_val = 0.0
+        self.rotate_speed = 0.0
         
         # Set up callbacks
         add_callback(self, 'visible_axes', nonpartial(self._toggle_axes))
+        add_callback(self, 'rotate_view', nonpartial(self._toggle_rotate))
 
     def _toggle_axes(self):
         if self.visible_axes:
@@ -73,15 +82,29 @@ class VispyWidget(QtGui.QWidget):
             self.axis.parent = None
         self.canvas.update()
 
+    def _toggle_rotate(self):
+        if self.rotate_view:
+            self.timer.start(0.1)
+        else:
+            self.timer.stop()
+
     def add_data_visual(self, visual):
-        self.limit_transforms[visual] = scene.STTransform()
+        # self.limit_transforms[visual] = scene.STTransform()
+        self.limit_transforms[visual] = MatrixTransform()
+
         visual.transform = self.limit_transforms[visual]
         self.view.add(visual)
 
     def _update_stretch(self, *stretch):
-        self.scene_transform.scale = stretch
+        self.axis_transform.reset()
+        self.axis_transform.scale(stretch)
+        self.stretch_value = stretch
         self._update_limits()
 
+    def _update_rotate(self, rotate):
+        self.rotate_slider_val = rotate
+
+    # For update transform for visuals
     def _update_limits(self):
 
         if len(self.limit_transforms) == 0:
@@ -102,12 +125,31 @@ class VispyWidget(QtGui.QWidget):
                      -0.5 * (self.options.z_min + self.options.z_max) * scale[2]]
 
         for visual in self.limit_transforms:
-            self.limit_transforms[visual].scale = scale
-            self.limit_transforms[visual].translate = translate
+            # MaxtrixTransform.scale/rotate/translate with be accumulated upon previous settings, so we need reset
+
+            self.limit_transforms[visual].reset()
+            self.limit_transforms[visual].scale(scale)
+            self.limit_transforms[visual].translate(translate)
 
     def _reset_view(self):
         self.view.camera.reset()
 
+    def rotate(self, event):
+        self.rotate_speed += self.rotate_slider_val
+
+        # elf.stretch_value is None means the _update_stretch hasen't been called
+        # we store the stretch scale here to ensure the stretch & rotate works at the same time
+        if self.stretch_value is not None:
+            self._update_stretch(self.stretch_value)
+        else:
+            self.axis_transform.reset()
+            self.axis_transform.rotate(self.rotate_speed, (0, 0, 1))
+            self._update_limits()
+
+        if len(self.limit_transforms) == 0:
+            return
+        for visual in self.limit_transforms:
+            self.limit_transforms[visual].rotate(self.rotate_speed, (0, 0, 1))
 
 if __name__ == "__main__":
 
