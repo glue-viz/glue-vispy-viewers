@@ -1,6 +1,9 @@
 0.3 (unreleased)
 ----------------
 
+- Make sure an error is raised if data is not 3-dimensional and shape doesn’t
+  agree with existing data in volume viewer.
+
 - Workaround OpenGL issue that caused cubes with size > 2048 along any
   dimension to not display.
 
