@@ -89,6 +89,10 @@ class VolumeLayerArtist(LayerArtistBase):
                 -0.5, self.layer.shape[0] - 0.5)
 
     @property
+    def shape(self):
+        return self.layer.shape
+
+    @property
     def visible(self):
         return self._visible
 
