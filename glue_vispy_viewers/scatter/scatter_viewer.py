@@ -35,7 +35,7 @@ class VispyScatterViewer(BaseVispyViewer):
             return
 
         layer_artist = ScatterLayerArtist(subset, vispy_viewer=self._vispy_widget)
-        self._update_attributes(layer_artist, layer_artist)
+        self._update_attributes(layer_artist=layer_artist)
 
         self._layer_artist_container.append(layer_artist)
 
