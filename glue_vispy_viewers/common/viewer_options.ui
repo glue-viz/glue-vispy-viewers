@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>327</width>
+    <width>254</width>
     <height>279</height>
    </rect>
   </property>
@@ -45,27 +45,6 @@
       <enum>Qt::Horizontal</enum>
      </property>
     </widget>
-   </item>
-   <item row="10" column="3" colspan="3">
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QPushButton" name="reset_button">
-       <property name="text">
-        <string>Reset View</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="checkbox_axes">
-       <property name="text">
-        <string>Coordinate axes</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
    </item>
    <item row="7" column="3" colspan="3">
     <widget class="QComboBox" name="combo_z_attribute"/>
@@ -262,6 +241,27 @@
       <string>stretch:</string>
      </property>
     </widget>
+   </item>
+   <item row="10" column="2" colspan="4">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QPushButton" name="reset_button">
+       <property name="text">
+        <string>Reset View</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="checkbox_axes">
+       <property name="text">
+        <string>Coordinate axes</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>
