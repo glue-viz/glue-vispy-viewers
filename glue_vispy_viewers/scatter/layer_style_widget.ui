@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>275</width>
-    <height>157</height>
+    <width>259</width>
+    <height>146</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -30,8 +30,17 @@
        <property name="spacing">
         <number>2</number>
        </property>
+       <property name="leftMargin">
+        <number>12</number>
+       </property>
+       <property name="topMargin">
+        <number>3</number>
+       </property>
+       <property name="rightMargin">
+        <number>12</number>
+       </property>
        <property name="bottomMargin">
-        <number>5</number>
+        <number>3</number>
        </property>
        <item>
         <widget class="QWidget" name="size_row_1" native="true">
@@ -158,8 +167,17 @@
        <property name="spacing">
         <number>2</number>
        </property>
+       <property name="leftMargin">
+        <number>12</number>
+       </property>
+       <property name="topMargin">
+        <number>3</number>
+       </property>
+       <property name="rightMargin">
+        <number>12</number>
+       </property>
        <property name="bottomMargin">
-        <number>5</number>
+        <number>3</number>
        </property>
        <item>
         <widget class="QWidget" name="color_row_1" native="true">
