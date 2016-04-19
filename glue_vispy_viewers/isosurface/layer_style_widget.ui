@@ -6,14 +6,27 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>405</width>
-    <height>187</height>
+    <width>212</width>
+    <height>83</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <property name="verticalSpacing">
+    <number>5</number>
+   </property>
+   <property name="margin">
+    <number>5</number>
+   </property>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Attribute:</string>
+     </property>
+    </widget>
+   </item>
    <item row="2" column="1">
     <widget class="QColorBox" name="label_color">
      <property name="sizePolicy">
@@ -27,15 +40,8 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="1" colspan="2">
-    <widget class="QComboBox" name="combo_attribute"/>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Attribute:</string>
-     </property>
-    </widget>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="value_min"/>
    </item>
    <item row="2" column="0">
     <widget class="QLabel" name="label_2">
@@ -47,11 +53,11 @@
    <item row="1" column="0">
     <widget class="QLabel" name="label_3">
      <property name="text">
-      <string>Level:</string>
+      <string>Limits:</string>
      </property>
     </widget>
    </item>
-   <item row="3" column="1" colspan="2">
+   <item row="2" column="2">
     <widget class="QSlider" name="slider_alpha">
      <property name="maximum">
       <number>100</number>
@@ -61,15 +67,11 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_4">
-     <property name="text">
-      <string>Alpha:</string>
-     </property>
-    </widget>
+   <item row="1" column="2">
+    <widget class="QLineEdit" name="value_max"/>
    </item>
-   <item row="1" column="1">
-    <widget class="QLineEdit" name="value_level"/>
+   <item row="0" column="1" colspan="2">
+    <widget class="QComboBox" name="combo_attribute"/>
    </item>
   </layout>
  </widget>
