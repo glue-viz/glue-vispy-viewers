@@ -90,3 +90,29 @@ class BaseVispyViewer(DataViewer):
     @property
     def window_title(self):
         return self.LABEL
+
+    def __gluestate__(self, context):
+
+        state = super(BaseVispyViewer, self).__gluestate__(context)
+
+        state['options'] = dict(x_att=context.id(self._options_widget.x_att), x_min=self._options_widget.x_min, x_max=self._options_widget.x_max, x_stretch=self._options_widget.x_stretch,
+                                y_att=context.id(self._options_widget.y_att), y_min=self._options_widget.y_min, y_max=self._options_widget.y_max, y_stretch=self._options_widget.y_stretch,
+                                z_att=context.id(self._options_widget.z_att), z_min=self._options_widget.z_min, z_max=self._options_widget.z_max, z_stretch=self._options_widget.z_stretch)
+
+        return state
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+
+        viewer = super(BaseVispyViewer, cls).__setgluestate__(rec, context)
+
+        for layer_artist in viewer.layers:
+            viewer._options_widget._update_attributes_from_data(layer_artist.layer)
+
+        for attr in rec['options']:
+            value = rec['options'][attr]
+            if attr in ['x_att', 'y_att', 'z_att']:
+                value = context.object(value)
+            setattr(viewer._options_widget, attr, value)
+
+        return viewer
