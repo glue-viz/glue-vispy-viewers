@@ -9,6 +9,8 @@
 
 - Fix issue with _update_data on base VisPy viewer.
 
+- Optimize the layout of options for the layer style editors to save space.
+
 0.2 (2015-03-11)
 ----------------
 
