@@ -65,7 +65,7 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         """
         Remove the layer artist from the visualization
         """
-        self._iso_visual.parent = []
+        self._iso_visual.parent = None
 
     def update(self):
         """
