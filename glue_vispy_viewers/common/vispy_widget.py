@@ -127,8 +127,7 @@ class VispyWidget(QtGui.QWidget):
         self.view.camera.reset()
 
     def rotate(self, event):
-        self.rotate_speed += self.rotate_slider_val
-        self.view.camera.azimuth = self.rotate_speed
+        self.view.camera.azimuth += self.rotate_slider_val
 
 if __name__ == "__main__":
 
