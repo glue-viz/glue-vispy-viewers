@@ -1,7 +1,7 @@
 import os
 
 import numpy as np
-from vispy import app, scene
+from vispy import app, scene, io
 from matplotlib import path
 
 from glue.external.qt import QtCore, QtGui
@@ -39,6 +39,14 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         self.selection_origin = (0, 0)
         self.selected = []
 
+        a = QtGui.QAction(get_icon('glue_filesave'), 'Save', parent)
+        a.triggered.connect(nonpartial(self.save_figure))
+        a.setToolTip('Save the figure')
+        a.setShortcut('Ctrl+Shift+S')
+        parent.addAction(a)
+        self.addAction(a)
+        self.save_action = a
+
         # Set up selection actions
         a = QtGui.QAction(get_icon('glue_lasso'), 'Lasso Selection', parent)
         a.triggered.connect(nonpartial(self.toggle_lasso))
@@ -73,6 +81,26 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         self._vispy_widget.canvas.events.mouse_press.connect(self.on_mouse_press)
         self._vispy_widget.canvas.events.mouse_release.connect(self.on_mouse_release)
         self._vispy_widget.canvas.events.mouse_move.connect(self.on_mouse_move)
+
+    def save_figure(self):
+        # fname, fltr = QtGui.QFileDialog.getSaveFileName(caption="Select an output name",
+        #                                         filter='FITS mask (*.fits);; Fits mask (*.fits)')
+        outfile, file_filter = QtGui.QFileDialog.getSaveFileName()
+
+        # This indicates that the user cancelled
+        if not outfile:
+            return
+        img = self._vispy_widget.canvas.render()
+
+        try:
+            # requires imageio or PIL
+            io.imsave(outfile, img, format='png')
+        except ImportError:
+            # Add extension if not specified
+            if not '.' in outfile:
+                outfile += '.png'
+            io.write_png(outfile, img)
+
 
     def toggle_lasso(self):
         if self.lasso_action.isChecked():
