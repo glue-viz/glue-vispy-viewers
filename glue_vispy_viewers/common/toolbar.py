@@ -8,6 +8,10 @@ from glue.external.qt import QtCore, QtGui
 from glue.icons.qt import get_icon
 from glue.utils import nonpartial
 
+from glue.core import Data
+from glue.core.edit_subset_mode import EditSubsetMode
+from glue.core.subset import ElementSubsetState
+
 POINT_ICON = os.path.join(os.path.dirname(__file__), 'glue_point.png')
 
 """
@@ -143,6 +147,9 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
     def on_mouse_press(self, event):
         pass
 
+    def on_mouse_release(self, event):
+        pass
+
     def on_mouse_move(self, event):
         """
         Draw selection line along dragging mouse
@@ -161,16 +168,41 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
                     self.line.set_data(np.array(self.line_pos))
 
                 if self.mode is 'ellipse':
-                    self.line_pos = self.ellipse_vertice(center, radius=(np.abs(width / 2.), np.abs(height / 2.)),
+                    # create a circle instead of ellipse here
+                    self.line_pos = self.ellipse_vertice(center, radius=(np.abs((width+height) / 4.), np.abs((width+height) / 4.)),
                                                          start_angle=0., span_angle=360., num_segments=500)
                     self.line.set_data(pos=np.array(self.line_pos), connect='strip')
             self._vispy_widget.canvas.update()
 
-    def on_mouse_release(self, event):
-        pass
-
     def get_visible_data(self):
-        pass
+        visible = []
+        # Loop over visible layer artists
+        for layer_artist in self._vispy_data_viewer._layer_artist_container:
+            # Only extract Data objects, not subsets
+            if isinstance(layer_artist.layer, Data):
+                visible.append(layer_artist.layer)
+        visual = layer_artist.visual  # we only have one visual for each canvas
+        return visible, visual
+
+    def mark_selected(self, mask, visible_data):
+        # We now make a subset state. For scatter plots we'll want to use an
+        # ElementSubsetState, while for cubes, we'll need to change to a
+        # MaskSubsetState.
+        subset_state = ElementSubsetState(np.where(mask)[0])
+
+        # We now check what the selection mode is, and update the selection as
+        # needed (this is delegated to the correct subset mode).
+        mode = EditSubsetMode()
+        focus = visible_data[0] if len(visible_data) > 0 else None
+        mode.update(self._data_collection, subset_state, focus_data=focus)
+
+    def lasso_reset(self):
+        # Reset lasso
+        self.line_pos = []  # TODO: Empty pos input is not allowed for line_visual
+        self.line.set_data(np.array(self.line_pos))
+        self.line.update()
+        self.selection_origin = (0, 0)
+        self._vispy_widget.canvas.update()
 
     def rectangle_vertice(self, center, height, width):
         """
