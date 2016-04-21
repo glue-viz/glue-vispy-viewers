@@ -101,7 +101,7 @@ class ScatterSelectionToolbar(VispyDataViewerToolbar):
         #     for id in range(1, n):
         #         layer = visible_data[id]
         #         np.append(layer_data, np.array([layer[x_att], layer[y_att], layer[z_att]]).transpose(), axis=0)
-
-        tr = visual.node_transform(self._vispy_widget.view)
-        data = tr.map(layer_data)[:, :2]
-        return data
+        tr = visual.get_transform(map_from='visual', map_to='canvas')
+        data = tr.map(layer_data)
+        data /= data[:, 3:]
+        return data[:, :2]  
