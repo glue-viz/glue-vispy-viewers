@@ -16,7 +16,7 @@ environment:
       # https://github.com/ContinuumIO/anaconda-issues/issues/654
       # We can remove the pinned version once we build on Python 3.5 (which
       # will require a conda package for vispy to be present)
-      CONDA_DEPENDENCIES: "glueviz pytest mock vispy pyqt=4.10"
+      CONDA_DEPENDENCIES: "glueviz scikit-image pytest mock vispy pyqt=4.10"
 
       # Temporarily install glue dev version
       PIP_DEPENDENCIES: "https://github.com/glue-viz/glue/archive/master.zip"

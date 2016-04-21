@@ -73,10 +73,10 @@ class BaseVispyViewer(DataViewer):
             self._layer_artist_container.pop(message.subset)
             self._vispy_widget.canvas.update()
 
-    def _update_data(self):
-        self._vispy_widget.data = self.data
-        self._vispy_widget.add_volume_visual()
-        self._redraw()
+    def _update_data(self, message):
+        if message.data in self._layer_artist_container:
+            for layer_artist in self._layer_artist_container[message.data]:
+                layer_artist._update_data()
 
     def _redraw(self):
         self._vispy_widget.canvas.render()

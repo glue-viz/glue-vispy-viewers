@@ -1,7 +1,17 @@
 0.3 (unreleased)
 ----------------
 
-- No changes yet
+- Make sure an error is raised if data is not 3-dimensional and shape doesn’t
+  agree with existing data in volume viewer.
+
+- Fix a bug that caused exceptions when clearing/removing layer artists. [#117]
+
+- Workaround OpenGL issue that caused cubes with size > 2048 along any
+  dimension to not display.
+
+- Fix issue with _update_data on base VisPy viewer.
+
+- Optimize the layout of options for the layer style editors to save space.
 
 0.2 (2015-03-11)
 ----------------

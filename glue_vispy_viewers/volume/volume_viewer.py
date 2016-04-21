@@ -1,3 +1,5 @@
+from glue.external.qt.QtGui import QMessageBox
+
 from ..common.vispy_data_viewer import BaseVispyViewer
 from .layer_artist import VolumeLayerArtist
 from .layer_style_widget import VolumeLayerStyleWidget
@@ -15,6 +17,22 @@ class VispyVolumeViewer(BaseVispyViewer):
 
         if data in self._layer_artist_container:
             return True
+
+        if data.ndim != 3:
+            QMessageBox.critical(self, "Error",
+                                 "Data should be 3-dimensional ({0} dimensions found)".format(data.ndim),
+                                 buttons=QMessageBox.Ok)
+            return False
+
+        if len(self._layer_artist_container) > 0:
+            required_shape = self._layer_artist_container[0].shape
+            if data.shape != required_shape:
+                QMessageBox.critical(self, "Error",
+                                     "Shape of dataset ({0}) does not agree "
+                                     "with shape of existing datasets in volume "
+                                     "rendering ({1})".format(data.shape, required_shape),
+                                     buttons=QMessageBox.Ok)
+                return False
 
         layer_artist = VolumeLayerArtist(data, vispy_viewer=self._vispy_widget)
 

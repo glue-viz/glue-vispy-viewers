@@ -89,6 +89,10 @@ class VolumeLayerArtist(LayerArtistBase):
                 -0.5, self.layer.shape[0] - 0.5)
 
     @property
+    def shape(self):
+        return self.layer.shape
+
+    @property
     def visible(self):
         return self._visible
 
@@ -145,7 +149,7 @@ class VolumeLayerArtist(LayerArtistBase):
                 data = self.layer.data[self.attribute] * mask
         else:
             data = self.layer[self.attribute]
-        self._multivol.set_data(self.id, np.nan_to_num(data))
+        self._multivol.set_data(self.id, data)
         self.redraw()
 
     def _update_visibility(self):
