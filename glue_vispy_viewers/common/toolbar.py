@@ -87,24 +87,21 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         self._vispy_widget.canvas.events.mouse_move.connect(self.on_mouse_move)
 
     def save_figure(self):
-        # fname, fltr = QtGui.QFileDialog.getSaveFileName(caption="Select an output name",
-        #                                         filter='FITS mask (*.fits);; Fits mask (*.fits)')
-        outfile, file_filter = QtGui.QFileDialog.getSaveFileName()
-
+        outfile, file_filter = QtGui.QFileDialog.getSaveFileName(caption='Save File', filter='PNG Files (*.png);;'
+                                                                                             'JPEG Files (*.jpeg);;'
+                                                                                             'TIFF Files (*.tiff);;')
+                                                                                             # 'PDF Files (*.pdf)')
         # This indicates that the user cancelled
         if not outfile:
-            return
+            pass
         img = self._vispy_widget.canvas.render()
-
         try:
-            # requires imageio or PIL
-            io.imsave(outfile, img, format='png')
+            file_filter = str(file_filter).split()[0]
+            io.imsave(outfile, img, format=file_filter)
         except ImportError:
-            # Add extension if not specified
-            if not '.' in outfile:
-                outfile += '.png'
+            # TODO: give out a window to notify that only .png file format is supported
+            outfile += '.png'
             io.write_png(outfile, img)
-
 
     def toggle_lasso(self):
         if self.lasso_action.isChecked():
