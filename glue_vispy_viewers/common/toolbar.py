@@ -93,14 +93,15 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
                                                                                              # 'PDF Files (*.pdf)')
         # This indicates that the user cancelled
         if not outfile:
-            pass
+            return
         img = self._vispy_widget.canvas.render()
         try:
             file_filter = str(file_filter).split()[0]
             io.imsave(outfile, img, format=file_filter)
         except ImportError:
             # TODO: give out a window to notify that only .png file format is supported
-            outfile += '.png'
+            if not '.' in outfile:
+                outfile += '.png'
             io.write_png(outfile, img)
 
     def toggle_lasso(self):
