@@ -15,6 +15,8 @@
 
 - Added the ability to save static images of the 3D viewers. [#125]
 
+- Implemented 3D selection.
+
 0.2 (2015-03-11)
 ----------------
 
