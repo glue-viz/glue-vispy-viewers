@@ -13,6 +13,8 @@
 
 - Optimize the layout of options for the layer style editors to save space.
 
+- Added the ability to save static images of the 3D viewers. [#125]
+
 0.2 (2015-03-11)
 ----------------
 
