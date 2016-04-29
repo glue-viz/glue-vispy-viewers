@@ -12,6 +12,9 @@ from ..utils import as_matrix_transform
 from ..extern.vispy import scene
 
 from .floodfill_scipy import floodfill_scipy
+from matplotlib import path
+from glue.core.roi import RectangularROI, CircularROI, PolygonalROI
+from astrodendro import Dendrogram
 
 
 class VolumeSelectionToolbar(VispyDataViewerToolbar):
