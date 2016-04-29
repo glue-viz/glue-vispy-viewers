@@ -65,9 +65,11 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
 
         # TODO: add support for multiple data here, layer should cover all visible_data array
 
-        tr = visual.node_transform(self._vispy_widget.view)
+        tr = visual.get_transform(map_from='visual', map_to='canvas')
+
         self.trans_ones_data = np.transpose(np.ones(layer.data.shape))
 
         pos_data = np.argwhere(self.trans_ones_data)
-        data = tr.map(pos_data)[:, :2]
-        return data
+        data = tr.map(pos_data)
+        data /= data[:, 3:]   # normalize with homogeneous coordinates
+        return data[:, :2]

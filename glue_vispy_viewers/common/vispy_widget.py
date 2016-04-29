@@ -50,8 +50,7 @@ class VispyWidget(QtGui.QWidget):
         # that here
 
         # Remove the fov=60 here to solve the mismatch of selection problem
-        # self.view.camera = scene.cameras.TurntableCamera(parent=self.view.scene, distance=2)
-        self.view.camera = scene.cameras.TurntableCamera(parent=self.view.scene, distance=2.0)
+        self.view.camera = scene.cameras.TurntableCamera(parent=self.view.scene, fov=60, distance=2.0)
 
         # Add the native canvas widget to this widget
         layout = QtGui.QVBoxLayout()
