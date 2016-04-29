@@ -47,6 +47,9 @@ class VispyOptionsWidget(QtGui.QWidget):
                                self.ui.value_y_stretch,
                                self.ui.value_z_stretch]
 
+        self.rotate_slider = self.ui.slider_rotate
+        self.rotate_slider.valueChanged.connect(self._update_rotate)
+
         self._event_lock = False
 
         for slider, label in zip(self.stretch_sliders, self.stretch_values):
@@ -57,6 +60,7 @@ class VispyOptionsWidget(QtGui.QWidget):
             slider.valueChanged.connect(self._update_stretch)
 
         connect_bool_button(self._vispy_widget, 'visible_axes', self.ui.checkbox_axes)
+        connect_bool_button(self._vispy_widget, 'rotate_view', self.ui.checkbox_rotate)
 
         if self._data_viewer is not None:
             self.ui.combo_x_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)
@@ -216,6 +220,10 @@ class VispyOptionsWidget(QtGui.QWidget):
         self._vispy_widget._update_stretch(self.x_stretch,
                                            self.y_stretch,
                                            self.z_stretch)
+
+    def _update_rotate(self):
+        rotate_value = 10** (self.rotate_slider.value() / 1e4)
+        self._vispy_widget._update_rotate(rotate_value)
 
     def _update_labels_from_sliders(self, label, slider):
         if self._event_lock:
