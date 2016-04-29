@@ -1,7 +1,7 @@
 import os
 
 import numpy as np
-from vispy import app, scene, io
+from vispy import app, scene, io, app
 from matplotlib import path
 
 from glue.external.qt import QtCore, QtGui
@@ -13,6 +13,7 @@ from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.subset import ElementSubsetState
 
 POINT_ICON = os.path.join(os.path.dirname(__file__), 'glue_point.png')
+ROTATE_ICON = os.path.join(os.path.dirname(__file__), 'glue_rotate.png')
 
 """
 This class is for showing the toolbar UI and drawing selection line on canvas
@@ -43,6 +44,9 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         self.selection_origin = (0, 0)
         self.selected = []
 
+        # Add a timer to control the view rotate
+        self.timer = app.Timer(connect=self.rotate)
+
         a = QtGui.QAction(get_icon('glue_filesave'), 'Save', parent)
         a.triggered.connect(nonpartial(self.save_figure))
         a.setToolTip('Save the figure')
@@ -50,6 +54,13 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         parent.addAction(a)
         self.addAction(a)
         self.save_action = a
+
+        a = QtGui.QAction(QtGui.QIcon(ROTATE_ICON), 'Rotate View', parent)
+        a.triggered.connect(nonpartial(self.toggle_rotate))
+        a.setCheckable(True)
+        parent.addAction(a)
+        self.addAction(a)
+        self.rotate_action = a
 
         # Set up selection actions
         a = QtGui.QAction(get_icon('glue_lasso'), 'Lasso Selection', parent)
@@ -110,6 +121,7 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
             self.rectangle_action.setChecked(False)
             self.point_action.setChecked(False)
             self.ellipse_action.setChecked(False)
+            self.rotate_action.setChecked(False)
         else:
             self.mode = None
 
@@ -119,6 +131,7 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
             self.lasso_action.setChecked(False)
             self.point_action.setChecked(False)
             self.ellipse_action.setChecked(False)
+            self.rotate_action.setChecked(False)
         else:
             self.mode = None
 
@@ -128,6 +141,7 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
             self.lasso_action.setChecked(False)
             self.point_action.setChecked(False)
             self.rectangle_action.setChecked(False)
+            self.rotate_action.setChecked(False)
         else:
             self.mode = None
 
@@ -137,8 +151,19 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
             self.lasso_action.setChecked(False)
             self.rectangle_action.setChecked(False)
             self.ellipse_action.setChecked(False)
+            self.rotate_action.setChecked(False)
         else:
             self.mode = None
+
+    def toggle_rotate(self):
+        if self.rotate_action.isChecked():
+            # Start the rotation
+            self.timer.start(0.1)
+        else:
+            self.timer.stop()
+
+    def rotate(self, event):
+        self._vispy_widget.view.camera.azimuth += 0.5  # set speed as constant first
 
     @property
     def mode(self):
