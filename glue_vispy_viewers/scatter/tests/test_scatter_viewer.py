@@ -65,13 +65,13 @@ def test_scatter_viewer(tmpdir):
     layer_artist = scatter.layers[0]
     style_widget = scatter._view.layout_style_widgets[layer_artist]
 
-    style_widget._set_size_mode('linear')
+    style_widget.size_mode = 'Linear'
     style_widget.size_attribute = data.id['c']
     style_widget.size_scaling = 2
     style_widget.size_vmin = 0.2
     style_widget.size_vmax = 0.8
 
-    style_widget._set_color_mode('linear')
+    style_widget.color_mode = 'Linear'
     style_widget.cmap_attribute = data.id['y']
     style_widget.cmap_vmin = 0.1
     style_widget.cmap_vmax = 0.9
