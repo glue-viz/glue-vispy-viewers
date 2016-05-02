@@ -24,6 +24,9 @@
 
 - Add selection toolbar and icons for 3D viewers. [#88] [#92] 
 
+- Fix bug that caused all layers in the 3D scatter viewer to disappear when
+  one layer was removed.
+
 0.2 (2015-03-11)
 ----------------
 
