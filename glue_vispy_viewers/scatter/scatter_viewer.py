@@ -60,7 +60,6 @@ class VispyScatterViewer(BaseVispyViewer):
     def __setgluestate__(cls, rec, context):
         viewer = super(VispyScatterViewer, cls).__setgluestate__(rec, context)
         viewer._update_attributes()
-
         return viewer
 
     def restore_layers(self, layers, context):

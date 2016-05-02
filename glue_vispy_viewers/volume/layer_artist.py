@@ -33,12 +33,13 @@ class VolumeLayerArtist(LayerArtistBase):
     alpha = CallbackProperty()
     subset_mode = CallbackProperty()
 
-    def __init__(self, layer, vispy_viewer):
+    def __init__(self, layer, vispy_viewer=None):
 
         super(VolumeLayerArtist, self).__init__(layer)
 
         self.layer = layer
         self.vispy_viewer = vispy_viewer
+        self.vispy_widget = vispy_viewer._vispy_widget
 
         # We create a unique ID for this layer artist, that will be used to
         # refer to the layer artist in the MultiVolume. We have to do this
@@ -49,7 +50,7 @@ class VolumeLayerArtist(LayerArtistBase):
         # We need to use MultiVolume instance to store volumes, but we should
         # only have one per canvas. Therefore, we store the MultiVolume
         # instance in the vispy viewer instance.
-        if not hasattr(vispy_viewer, '_multivol'):
+        if not hasattr(self.vispy_widget, '_multivol'):
 
             # Set whether we are emulating a 3D texture. This needs to be
             # enabled as a workaround on Windows otherwise VisPy crashes.
@@ -61,10 +62,10 @@ class VolumeLayerArtist(LayerArtistBase):
             except:
                 multivol = MultiVolumeLegacy(threshold=0.1, emulate_texture=emulate_texture)
 
-            self.vispy_viewer.add_data_visual(multivol)
-            vispy_viewer._multivol = multivol
+            self.vispy_widget.add_data_visual(multivol)
+            self.vispy_widget._multivol = multivol
 
-        self._multivol = vispy_viewer._multivol
+        self._multivol = self.vispy_widget._multivol
         self._multivol.allocate(self.id)
 
         # Set up connections so that when any of the properties are
@@ -105,7 +106,7 @@ class VolumeLayerArtist(LayerArtistBase):
         """
         Redraw the Vispy canvas
         """
-        self.vispy_viewer.canvas.update()
+        self.vispy_widget.canvas.update()
 
     def clear(self):
         """
@@ -139,7 +140,7 @@ class VolumeLayerArtist(LayerArtistBase):
 
     def _update_data(self):
         if isinstance(self.layer, Subset):
-            try:    
+            try:
                 mask = self.layer.to_mask()
             except IncompatibleAttribute:
                 mask = np.zeros(self.layer.data.shape, dtype=bool)
@@ -158,3 +159,19 @@ class VolumeLayerArtist(LayerArtistBase):
         else:
             self._multivol.disable(self.id)
         self.redraw()
+
+    def set(self, **kwargs):
+
+        # This method can be used to set many properties in one go, and will
+        # make sure that the order is correct.
+
+        def priorities(value):
+            if 'attribute' in value:
+                return 0
+            elif 'mode' in value:
+                return 1
+            else:
+                return 2
+
+        for attr in sorted(kwargs, key=priorities):
+            setattr(self, attr, kwargs[attr])

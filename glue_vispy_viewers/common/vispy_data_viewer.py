@@ -92,23 +92,8 @@ class BaseVispyViewer(DataViewer):
         return self.LABEL
 
     def __gluestate__(self, context):
-
         state = super(BaseVispyViewer, self).__gluestate__(context)
-
-        state['options'] = dict(x_att=context.id(self._options_widget.x_att),
-                                x_min=self._options_widget.x_min,
-                                x_max=self._options_widget.x_max,
-                                x_stretch=self._options_widget.x_stretch,
-                                y_att=context.id(self._options_widget.y_att),
-                                y_min=self._options_widget.y_min,
-                                y_max=self._options_widget.y_max,
-                                y_stretch=self._options_widget.y_stretch,
-                                z_att=context.id(self._options_widget.z_att),
-                                z_min=self._options_widget.z_min,
-                                z_max=self._options_widget.z_max,
-                                z_stretch=self._options_widget.z_stretch,
-                                visible_box=self._options_widget.visible_box)
-
+        state['options'] = self._options_widget.__gluestate__(context)
         return state
 
     @classmethod
@@ -116,8 +101,10 @@ class BaseVispyViewer(DataViewer):
 
         viewer = super(BaseVispyViewer, cls).__setgluestate__(rec, context)
 
+        from ..scatter.layer_artist import ScatterLayerArtist
+
         for layer_artist in viewer.layers:
-            if isinstance(layer_artist.layer, Data):
+            if isinstance(layer_artist, ScatterLayerArtist) and isinstance(layer_artist.layer, Data):
                 viewer._options_widget._update_attributes_from_data(layer_artist.layer)
 
         for attr in sorted(rec['options'], key=lambda x: 0 if 'att' in x else 1):

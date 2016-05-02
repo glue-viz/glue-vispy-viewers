@@ -1,3 +1,4 @@
+from glue.core.state import lookup_class_with_patches
 from glue.external.qt.QtGui import QMessageBox
 
 from ..common.vispy_data_viewer import BaseVispyViewer
@@ -50,7 +51,7 @@ class VispyVolumeViewer(BaseVispyViewer):
                                      buttons=QMessageBox.Ok)
                 return False
 
-        layer_artist = VolumeLayerArtist(data, vispy_viewer=self._vispy_widget)
+        layer_artist = VolumeLayerArtist(data, vispy_viewer=self)
 
         if len(self._layer_artist_container) == 0:
             self._options_widget.set_limits(*layer_artist.bbox)
@@ -66,7 +67,7 @@ class VispyVolumeViewer(BaseVispyViewer):
         if subset.to_mask().ndim != 3:
             return
 
-        layer_artist = VolumeLayerArtist(subset, vispy_viewer=self._vispy_widget)
+        layer_artist = VolumeLayerArtist(subset, vispy_viewer=self)
         self._layer_artist_container.append(layer_artist)
 
     def _add_subset(self, message):
@@ -74,3 +75,19 @@ class VispyVolumeViewer(BaseVispyViewer):
 
     def _update_attributes(self, index=None, layer_artist=None):
         pass
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        viewer = super(VispyVolumeViewer, cls).__setgluestate__(rec, context)
+        viewer._update_attributes()
+        return viewer
+
+    def restore_layers(self, layers, context):
+        for l in layers:
+            cls = lookup_class_with_patches(l.pop('_type'))
+            props = dict((k, context.object(v)) for k, v in l.items())
+            layer_artist = cls(props['layer'], vispy_viewer=self)
+            if len(self._layer_artist_container) == 0:
+                self._options_widget.set_limits(*layer_artist.bbox)
+            self._layer_artist_container.append(layer_artist)
+            layer_artist.set(**props)

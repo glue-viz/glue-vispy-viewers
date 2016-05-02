@@ -236,3 +236,15 @@ class VispyOptionsWidget(QtGui.QWidget):
             slider.setValue(1e4 * math.log10(float(label.text())))
         finally:
             self._event_lock = False
+
+    def __gluestate__(self, context):
+        return dict(x_att=context.id(self.x_att),
+                    x_min=self.x_min, x_max=self.x_max,
+                    x_stretch=self.x_stretch,
+                    y_att=context.id(self.y_att),
+                    y_min=self.y_min, y_max=self.y_max,
+                    y_stretch=self.y_stretch,
+                    z_att=context.id(self.z_att),
+                    z_min=self.z_min, z_max=self.z_max,
+                    z_stretch=self.z_stretch,
+                    visible_box=self.visible_box)
