@@ -1,5 +1,8 @@
+from distutils.version import LooseVersion
+
 import numpy as np
 
+import glue
 from glue.core import DataCollection, Data
 from glue.app.qt.application import GlueApplication
 from glue.core.component import Component
@@ -7,6 +10,9 @@ from glue.core.component import Component
 from matplotlib import cm
 
 from ..scatter_viewer import VispyScatterViewer
+
+GLUE_LT_08 = LooseVersion(glue.__version__) < LooseVersion('0.8')
+
 
 def make_test_data():
 
@@ -71,7 +77,12 @@ def test_scatter_viewer(tmpdir):
     style_widget.cmap_vmax = 0.9
     style_widget.cmap = cm.BuGn
 
-    # Check that writing a session works as expected
+    # Check that writing a session works as expected. However, this only
+    # works with Glue 0.8 and above, so we skip this test if we are using an
+    # older version.
+
+    if GLUE_LT_08:
+        return
 
     session_file = tmpdir.join('test_scatter_viewer.glu').strpath
     ga.save_session(session_file)

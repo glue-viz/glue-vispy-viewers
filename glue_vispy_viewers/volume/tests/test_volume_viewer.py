@@ -1,5 +1,9 @@
+from distutils.version import LooseVersion
+
+import pytest
 import numpy as np
 
+import glue
 from glue.core import DataCollection, Data
 from glue.app.qt.application import GlueApplication
 from glue.core.component import Component
@@ -7,6 +11,9 @@ from glue.core.component import Component
 from matplotlib import cm
 
 from ..volume_viewer import VispyVolumeViewer
+
+GLUE_LT_08 = LooseVersion(glue.__version__) < LooseVersion('0.8')
+
 
 def make_test_data():
 
@@ -60,7 +67,7 @@ def test_volume_viewer(tmpdir):
     style_widget.vmax = 0.9
     style_widget.alpha = 0.8
 
-    # Check that writing a session works as expected
+    # Check that writing a session works as expected.
 
     session_file = tmpdir.join('test_volume_viewer.glu').strpath
     ga.save_session(session_file)
@@ -96,5 +103,5 @@ def test_volume_viewer(tmpdir):
     assert style_widget.vmin == 0.1
     assert style_widget.vmax == 0.9
     assert style_widget.alpha == 0.8
-    
+
     ga2.close()

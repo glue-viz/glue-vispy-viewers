@@ -28,7 +28,11 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
     size_vmin = FloatLineProperty('ui.value_size_vmin')
     size_vmax = FloatLineProperty('ui.value_size_vmax')
     size = FloatLineProperty('ui.value_fixed_size')
-    size_scaling = ValueProperty('ui.slider_size_scaling', value_range=(0.1, 10), log=True)
+
+    try:
+        size_scaling = ValueProperty('ui.slider_size_scaling', value_range=(0.1, 10), log=True)
+    except TypeError:  # Glue < 0.8
+        size_scaling = ValueProperty('ui.slider_size_scaling')
 
     # Color-related GUI elements
     color_mode = CurrentComboTextProperty('ui.combo_color_mode')
