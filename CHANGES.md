@@ -14,6 +14,8 @@
 
 - Fix issue with _update_data on base VisPy viewer. [#106]
 
+- Implement support for saving 3D viewers in session files. [#130]
+
 - Optimize the layout of options for the layer style editors to save space. [#120]
 
 - Added the ability to save static images of the 3D viewers. [#125]

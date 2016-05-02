@@ -7,6 +7,7 @@ from matplotlib import cm
 
 from glue.core.subset import Subset
 from glue.external.qt import QtGui
+from glue.external.echo import add_callback
 
 from glue.utils.qt import load_ui, update_combobox, connect_color
 from glue.utils.qt.widget_properties import (ValueProperty,
@@ -27,7 +28,11 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
     size_vmin = FloatLineProperty('ui.value_size_vmin')
     size_vmax = FloatLineProperty('ui.value_size_vmax')
     size = FloatLineProperty('ui.value_fixed_size')
-    size_scaling = ValueProperty('ui.slider_size_scaling')
+
+    try:
+        size_scaling = ValueProperty('ui.slider_size_scaling', value_range=(0.1, 10), log=True)
+    except TypeError:  # Glue < 0.8
+        size_scaling = ValueProperty('ui.slider_size_scaling')
 
     # Color-related GUI elements
     color_mode = CurrentComboTextProperty('ui.combo_color_mode')

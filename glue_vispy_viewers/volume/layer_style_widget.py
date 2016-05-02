@@ -23,7 +23,7 @@ class VolumeLayerStyleWidget(QtGui.QWidget):
     attribute = CurrentComboProperty('ui.combo_attribute')
     vmin = FloatLineProperty('ui.value_min')
     vmax = FloatLineProperty('ui.value_max')
-    alpha = ValueProperty('ui.slider_alpha')
+    alpha = ValueProperty('ui.slider_alpha', value_range=(0, 1))
     subset_outline = ButtonProperty('ui.radio_subset_outline')
     subset_data = ButtonProperty('ui.radio_subset_data')
 

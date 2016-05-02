@@ -1,3 +1,5 @@
+from contextlib import contextmanager
+
 import numpy as np
 
 from vispy import scene
@@ -16,7 +18,14 @@ class MultiColorScatter(scene.visuals.Markers):
     def __init__(self, *args, **kwargs):
         self.layers = {}
         self._combined_data = None
+        self._skip_update = False
         super(MultiColorScatter, self).__init__(*args, **kwargs)
+
+    @contextmanager
+    def delay_update(self):
+        self._skip_update = True
+        yield
+        self._skip_update = False
 
     def allocate(self, label):
         if label in self.layers:
@@ -70,6 +79,9 @@ class MultiColorScatter(scene.visuals.Markers):
         self._update()
 
     def _update(self):
+
+        if self._skip_update:
+            return
 
         data = []
         colors = []
@@ -171,4 +183,3 @@ if __name__ == "__main__":
 
     canvas.show()
     app.run()
-
