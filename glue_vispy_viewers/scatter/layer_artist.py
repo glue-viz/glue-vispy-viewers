@@ -169,6 +169,7 @@ class ScatterLayerArtist(LayerArtistBase):
         self._update_data()
 
     def _update_data(self):
+
         try:
             x = self.layer[self._x_coord]
             y = self.layer[self._y_coord]
@@ -177,8 +178,18 @@ class ScatterLayerArtist(LayerArtistBase):
             x = np.array([])
             y = np.array([])
             z = np.array([])
+
         self._marker_data = np.array([x, y, z]).transpose()
-        self._multiscat.set_data_values(self.id, x, y, z)
+
+        # We need to make sure we update the sizes and colors in case
+        # these were set as arrays, since the size of the data might have
+        # changed (in the case of subsets)
+
+        with self._multiscat.delay_update():
+            self._multiscat.set_data_values(self.id, x, y, z)
+            self._update_sizes()
+            self._update_colors()
+
         self.redraw()
 
     @property
