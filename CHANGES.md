@@ -1,5 +1,7 @@
 0.3 (unreleased)
 ----------------
+- Add icon for rotate view. [#128]
+
 - Add back the fov=60. [#124]
 
 - Make sure an error is raised if data is not 3-dimensional and shape doesn’t
@@ -16,8 +18,6 @@
 
 - Implement support for saving 3D viewers in session files. [#130]
 
-- Fix issue with _update_data on base VisPy viewer. [#106]
-
 - Optimize the layout of options for the layer style editors to save space. [#120]
 
 - Added the ability to save static images of the 3D viewers. [#125]
@@ -30,8 +30,6 @@
 
 - Fix bug that caused all layers in the 3D scatter viewer to disappear when
   one layer was removed.
-
-- Add selection toolbar and icons for 3D viewers. [#88] [#92] 
 
 0.2 (2015-03-11)
 ----------------
