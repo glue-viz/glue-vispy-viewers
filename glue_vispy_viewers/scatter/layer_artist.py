@@ -100,6 +100,15 @@ class ScatterLayerArtist(LayerArtistBase):
     def get_zorder(self):
         return self.zorder
 
+    @property
+    def zorder(self):
+        return self._zorder
+
+    @zorder.setter
+    def zorder(self, value):
+        self._zorder = value
+        self.redraw()
+
     def redraw(self):
         """
         Redraw the Vispy canvas
