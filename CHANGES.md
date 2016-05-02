@@ -18,6 +18,8 @@
 
 - Implemented 3D selection. [#103]
 
+- Make sure the 3D viewer is updated if the zorder is set manually. [#132]
+
 - Add selection toolbar and icons for 3D viewers. [#88] [#92] 
 
 0.2 (2015-03-11)
