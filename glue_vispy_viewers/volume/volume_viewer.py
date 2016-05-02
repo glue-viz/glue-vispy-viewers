@@ -5,6 +5,13 @@ from .layer_artist import VolumeLayerArtist
 from .layer_style_widget import VolumeLayerStyleWidget
 from .volume_toolbar import VolumeSelectionToolbar
 
+try:
+    import OpenGL
+except ImportError:
+    OPENGL_INSTALLED = False
+else:
+    OPENGL_INSTALLED = True
+
 
 class VispyVolumeViewer(BaseVispyViewer):
 
@@ -12,6 +19,15 @@ class VispyVolumeViewer(BaseVispyViewer):
 
     _layer_style_widget_cls = VolumeLayerStyleWidget
     _toolbar_cls = VolumeSelectionToolbar
+
+    def __init__(self, *args, **kwargs):
+        super(VispyVolumeViewer, self).__init__(*args, **kwargs)
+        if not OPENGL_INSTALLED:
+            self.close()
+            QMessageBox.critical(self, "Error",
+                                 "The PyOpenGL package is required for the "
+                                 "3D volume rendering viewer",
+                                 buttons=QMessageBox.Ok)
 
     def add_data(self, data):
 

@@ -5,6 +5,8 @@
 - Make sure an error is raised if data is not 3-dimensional and shape doesn’t
   agree with existing data in volume viewer. [#112]
 
+- Raise an explicit error if PyOpenGL is not installed. [#129]
+
 - Fix a bug that caused exceptions when clearing/removing layer artists. [#117]
 
 - Workaround OpenGL issue that caused cubes with size > 2048 along any
