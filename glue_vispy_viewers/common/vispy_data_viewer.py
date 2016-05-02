@@ -95,9 +95,19 @@ class BaseVispyViewer(DataViewer):
 
         state = super(BaseVispyViewer, self).__gluestate__(context)
 
-        state['options'] = dict(x_att=context.id(self._options_widget.x_att), x_min=self._options_widget.x_min, x_max=self._options_widget.x_max, x_stretch=self._options_widget.x_stretch,
-                                y_att=context.id(self._options_widget.y_att), y_min=self._options_widget.y_min, y_max=self._options_widget.y_max, y_stretch=self._options_widget.y_stretch,
-                                z_att=context.id(self._options_widget.z_att), z_min=self._options_widget.z_min, z_max=self._options_widget.z_max, z_stretch=self._options_widget.z_stretch)
+        state['options'] = dict(x_att=context.id(self._options_widget.x_att),
+                                x_min=self._options_widget.x_min,
+                                x_max=self._options_widget.x_max,
+                                x_stretch=self._options_widget.x_stretch,
+                                y_att=context.id(self._options_widget.y_att),
+                                y_min=self._options_widget.y_min,
+                                y_max=self._options_widget.y_max,
+                                y_stretch=self._options_widget.y_stretch,
+                                z_att=context.id(self._options_widget.z_att),
+                                z_min=self._options_widget.z_min,
+                                z_max=self._options_widget.z_max,
+                                z_stretch=self._options_widget.z_stretch,
+                                visible_box=self._options_widget.visible_box)
 
         return state
 
@@ -110,10 +120,8 @@ class BaseVispyViewer(DataViewer):
             if isinstance(layer_artist.layer, Data):
                 viewer._options_widget._update_attributes_from_data(layer_artist.layer)
 
-        for attr in rec['options']:
+        for attr in sorted(rec['options'], key=lambda x: 0 if 'att' in x else 1):
             value = rec['options'][attr]
-            if attr in ['x_att', 'y_att', 'z_att']:
-                value = context.object(value)
-            setattr(viewer._options_widget, attr, value)
+            setattr(viewer._options_widget, attr, context.object(value))
 
         return viewer

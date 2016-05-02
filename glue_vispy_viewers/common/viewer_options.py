@@ -28,6 +28,8 @@ class VispyOptionsWidget(QtGui.QWidget):
     z_max = FloatLineProperty('ui.value_z_max')
     z_stretch = FloatLineProperty('ui.value_z_stretch')
 
+    visible_box = ButtonProperty('ui.checkbox_axes')
+
     def __init__(self, parent=None, vispy_widget=None, data_viewer=None):
 
         super(VispyOptionsWidget, self).__init__(parent=parent)
