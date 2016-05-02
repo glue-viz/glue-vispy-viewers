@@ -120,7 +120,7 @@ class ScatterLayerArtist(LayerArtistBase):
         """
         Remove the layer artist from the visualization
         """
-        self._multiscat.parent = None
+        self._multiscat.deallocate(self.id)
 
     def update(self):
         """
