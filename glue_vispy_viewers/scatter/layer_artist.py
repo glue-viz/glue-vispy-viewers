@@ -19,6 +19,11 @@ class ScatterLayerArtist(LayerArtistBase):
     A layer artist to render 3d scatter plots.
     """
 
+    _properties = ["size_mode", "size", "size_attribute", "size_vmin",
+                   "size_vmax", "size_scaling", "color_mode", "color",
+                   "cmap_attribute", "cmap_vmin", "cmap_vmax", "cmap",
+                   "alpha", "layer"]
+
     size_mode = CallbackProperty(None)
     size = CallbackProperty()
     size_attribute = CallbackProperty()
@@ -40,6 +45,7 @@ class ScatterLayerArtist(LayerArtistBase):
 
         self.layer = layer
         self.vispy_viewer = vispy_viewer
+        self.vispy_widget = vispy_viewer._vispy_widget
 
         # We create a unique ID for this layer artist, that will be used to
         # refer to the layer artist in the MultiColorScatter. We have to do this
@@ -50,12 +56,12 @@ class ScatterLayerArtist(LayerArtistBase):
         # We need to use MultiColorScatter instance to store scatter plots, but
         # we should only have one per canvas. Therefore, we store the
         # MultiColorScatter instance in the vispy viewer instance.
-        if not hasattr(vispy_viewer, '_multiscat'):
+        if not hasattr(self.vispy_widget, '_multiscat'):
             multiscat = MultiColorScatter()
-            self.vispy_viewer.add_data_visual(multiscat)
-            vispy_viewer._multiscat = multiscat
+            self.vispy_widget.add_data_visual(multiscat)
+            self.vispy_widget._multiscat = multiscat
 
-        self._multiscat = vispy_viewer._multiscat
+        self._multiscat = self.vispy_widget._multiscat
         self._multiscat.allocate(self.id)
         self._multiscat.set_zorder(self.id, self.get_zorder)
 
@@ -114,7 +120,7 @@ class ScatterLayerArtist(LayerArtistBase):
         Redraw the Vispy canvas
         """
         self._multiscat._update()
-        self.vispy_viewer.canvas.update()
+        self.vispy_widget.canvas.update()
 
     def clear(self):
         """
@@ -183,3 +189,22 @@ class ScatterLayerArtist(LayerArtistBase):
         dmax = np.nanmax(self._marker_data,axis=0)
         # TODO: the following can be optimized
         return tuple(np.array([dmin, dmax]).transpose().ravel())
+
+    def __gluestate__(self, context):
+        return dict((attr, context.id(getattr(self, attr))) for attr in self._properties)
+
+    def set(self, **kwargs):
+
+        # This method can be used to set many properties in one go, and will
+        # make sure that the order is correct.
+
+        def priorities(value):
+            if 'mode' in value:
+                return 0
+            elif 'attribute' in value:
+                return 1
+            else:
+                return 2
+
+        for attr in sorted(kwargs, key=priorities):
+            setattr(self, attr, kwargs[attr])

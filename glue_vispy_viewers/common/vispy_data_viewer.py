@@ -4,10 +4,10 @@ except ImportError:
     from glue.qt.widgets.data_viewer import DataViewer
 
 from glue.core import message as msg
+from glue.core import Data
 
 from .vispy_widget import VispyWidget
 from .viewer_options import VispyOptionsWidget
-from .toolbar import VispyDataViewerToolbar
 
 
 class BaseVispyViewer(DataViewer):
@@ -107,7 +107,8 @@ class BaseVispyViewer(DataViewer):
         viewer = super(BaseVispyViewer, cls).__setgluestate__(rec, context)
 
         for layer_artist in viewer.layers:
-            viewer._options_widget._update_attributes_from_data(layer_artist.layer)
+            if isinstance(layer_artist.layer, Data):
+                viewer._options_widget._update_attributes_from_data(layer_artist.layer)
 
         for attr in rec['options']:
             value = rec['options'][attr]

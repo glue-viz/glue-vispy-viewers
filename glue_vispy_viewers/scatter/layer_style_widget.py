@@ -7,6 +7,7 @@ from matplotlib import cm
 
 from glue.core.subset import Subset
 from glue.external.qt import QtGui
+from glue.external.echo import add_callback
 
 from glue.utils.qt import load_ui, update_combobox, connect_color
 from glue.utils.qt.widget_properties import (ValueProperty,
@@ -85,6 +86,7 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         update_combobox(self.ui.combo_size_attribute, label_data)
 
         # Set up connections with layer artist
+        add_callback(self.layer_artist, 'size_mode', self._set_size_mode)
         connect_float_edit(self.layer_artist, 'size', self.ui.value_fixed_size)
         connect_current_combo(self.layer_artist, 'size_attribute', self.ui.combo_size_attribute)
         connect_float_edit(self.layer_artist, 'size_vmin', self.ui.value_size_vmin)
@@ -95,6 +97,12 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         self.ui.combo_size_mode.currentIndexChanged.connect(self._update_size_mode)
         self.ui.combo_size_attribute.currentIndexChanged.connect(self._update_size_limits)
         self.ui.button_flip_size.clicked.connect(self._flip_size)
+
+    def _set_size_mode(self, size_mode):
+        if size_mode == 'linear':
+            self.ui.radio_size_linear.setChecked(True)
+        else:
+            self.ui.radio_size_fixed.setChecked(True)
 
     def _update_size_mode(self):
 
@@ -131,6 +139,7 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         update_combobox(self.ui.combo_cmap_attribute, label_data)
 
         # Set up connections with layer artist
+        add_callback(self.layer_artist, 'color_mode', self._set_color_mode)
         connect_color(self.layer_artist, 'color', self.ui.label_color)
         connect_current_combo(self.layer_artist, 'cmap_attribute', self.ui.combo_cmap_attribute)
         connect_float_edit(self.layer_artist, 'cmap_vmin', self.ui.value_cmap_vmin)
@@ -142,6 +151,12 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         self.ui.combo_color_mode.currentIndexChanged.connect(self._update_color_mode)
         self.ui.combo_cmap_attribute.currentIndexChanged.connect(self._update_cmap_limits)
         self.ui.button_flip_cmap.clicked.connect(self._flip_cmap)
+
+    def _set_color_mode(self, color_mode):
+        if color_mode == 'linear':
+            self.ui.radio_color_linear.setChecked(True)
+        else:
+            self.ui.radio_color_fixed.setChecked(True)
 
     def _update_color_mode(self):
 
