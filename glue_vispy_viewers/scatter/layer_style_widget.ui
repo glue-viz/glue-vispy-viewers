@@ -78,7 +78,11 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="combo_size_attribute"/>
+           <widget class="QComboBox" name="combo_size_attribute">
+            <property name="sizeAdjustPolicy">
+             <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QLineEdit" name="value_fixed_size"/>
@@ -209,7 +213,11 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="combo_cmap_attribute"/>
+           <widget class="QComboBox" name="combo_cmap_attribute">
+            <property name="sizeAdjustPolicy">
+             <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QColorBox" name="label_color">
@@ -273,7 +281,11 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QColormapCombo" name="combo_cmap"/>
+           <widget class="QColormapCombo" name="combo_cmap">
+            <property name="sizeAdjustPolicy">
+             <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>

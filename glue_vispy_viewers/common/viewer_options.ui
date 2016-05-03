@@ -47,7 +47,11 @@
     </widget>
    </item>
    <item row="7" column="3" colspan="3">
-    <widget class="QComboBox" name="combo_z_attribute"/>
+    <widget class="QComboBox" name="combo_z_attribute">
+     <property name="sizeAdjustPolicy">
+      <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+     </property>
+    </widget>
    </item>
    <item row="6" column="2">
     <widget class="QLabel" name="label">
@@ -124,7 +128,11 @@
     </widget>
    </item>
    <item row="0" column="3" colspan="3">
-    <widget class="QComboBox" name="combo_x_attribute"/>
+    <widget class="QComboBox" name="combo_x_attribute">
+     <property name="sizeAdjustPolicy">
+      <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+     </property>
+    </widget>
    </item>
    <item row="7" column="2">
     <widget class="QLabel" name="x_lab">
@@ -188,7 +196,11 @@
     <widget class="QLineEdit" name="value_x_max"/>
    </item>
    <item row="4" column="3" colspan="3">
-    <widget class="QComboBox" name="combo_y_attribute"/>
+    <widget class="QComboBox" name="combo_y_attribute">
+     <property name="sizeAdjustPolicy">
+      <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+     </property>
+    </widget>
    </item>
    <item row="0" column="2">
     <widget class="QLabel" name="x_lab">
