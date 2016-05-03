@@ -1,5 +1,8 @@
 0.3 (unreleased)
 ----------------
+
+- Make sure combo boxes don't expand if component names are long. [#135]
+
 - Add icon for rotate view. [#128]
 
 - Add back the fov=60. [#124]

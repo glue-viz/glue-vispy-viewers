@@ -85,7 +85,11 @@
     <widget class="QLineEdit" name="value_max"/>
    </item>
    <item row="0" column="1" colspan="2">
-    <widget class="QComboBox" name="combo_attribute"/>
+    <widget class="QComboBox" name="combo_attribute">
+     <property name="sizeAdjustPolicy">
+      <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+     </property>
+    </widget>
    </item>
    <item row="3" column="2">
     <widget class="QRadioButton" name="radio_subset_outline">

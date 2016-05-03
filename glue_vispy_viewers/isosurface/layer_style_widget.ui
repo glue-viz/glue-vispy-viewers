@@ -71,7 +71,11 @@
     <widget class="QLineEdit" name="value_max"/>
    </item>
    <item row="0" column="1" colspan="2">
-    <widget class="QComboBox" name="combo_attribute"/>
+    <widget class="QComboBox" name="combo_attribute">
+     <property name="sizeAdjustPolicy">
+      <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
