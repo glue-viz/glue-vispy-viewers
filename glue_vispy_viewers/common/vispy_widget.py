@@ -10,6 +10,8 @@ from glue.external.echo import CallbackProperty, add_callback
 from glue.external.qt import QtGui, get_qapp
 from glue.utils import nonpartial
 
+from glue_vispy_viewers import BACKGROUND_COLOR, FOREGROUND_COLOR
+
 class VispyWidget(QtGui.QWidget):
 
     visible_axes = CallbackProperty()
@@ -21,7 +23,7 @@ class VispyWidget(QtGui.QWidget):
         # Prepare Vispy canvas. We set the depth_size to 24 to avoid issues
         # with isosurfaces on MacOS X
         self.canvas = scene.SceneCanvas(keys='interactive', show=False,
-                                        config={'depth_size': 24})
+                                        config={'depth_size': 24}, bgcolor=BACKGROUND_COLOR)
 
         # Set up a viewbox
         self.view = self.canvas.central_widget.add_view()
@@ -41,7 +43,7 @@ class VispyWidget(QtGui.QWidget):
         vertices, filled_indices, outline_indices = create_cube()
         self.axis = scene.visuals.Mesh(vertices['position'],
                                        outline_indices,
-                                       color=(1,1,1), mode='lines')
+                                       color=FOREGROUND_COLOR, mode='lines')
         self.axis.transform = self.scene_transform
         self.view.add(self.axis)
 
