@@ -1,5 +1,7 @@
 0.3 (unreleased)
 ----------------
+- Add icon for rotate view. [#128]
+
 - Add back the fov=60. [#124]
 
 - Make sure an error is raised if data is not 3-dimensional and shape doesn’t
