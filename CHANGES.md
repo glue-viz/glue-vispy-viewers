@@ -24,7 +24,7 @@
 
 - Added the ability to save static images of the 3D viewers. [#125]
 
-- Add toolbar icon to continuously rotate the view. [#128]
+- Add toolbar icon to continuously rotate the view. [#128][#137]
 
 - Raise an explicit error if PyOpenGL is not installed. [#129]
 
