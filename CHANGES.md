@@ -1,6 +1,8 @@
 0.3 (unreleased)
 ----------------
 
+- Added ``BACKGROUND_COLOR`` and ``FOREGROUND_COLOR`` settings at root of package. [#134]
+
 - Make sure combo boxes don't expand if component names are long. [#135]
 
 - Add icon for rotate view. [#128]
