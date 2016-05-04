@@ -10,13 +10,10 @@ env:
     - SETUP_XVFB=True
     - CONDA_DEPENDENCIES="glueviz pytest mock vispy"
   matrix:
-    # Temporarily disable testing against stable glue
-    # - PYTHON_VERSION=2.7
-    # - PYTHON_VERSION=3.4
+    - PYTHON_VERSION=2.7
+    - PYTHON_VERSION=3.5
     - PYTHON_VERSION=2.7 PIP_DEPENDENCIES="https://github.com/glue-viz/glue/archive/master.zip https://github.com/vispy/vispy/archive/master.zip" PIP_DEPENDENCIES_FLAGS="--upgrade --no-deps"
     - PYTHON_VERSION=3.5 PIP_DEPENDENCIES="https://github.com/glue-viz/glue/archive/master.zip https://github.com/vispy/vispy/archive/master.zip" PIP_DEPENDENCIES_FLAGS="--upgrade --no-deps"
-    - PYTHON_VERSION=2.7 PIP_DEPENDENCIES="https://github.com/glue-viz/glue/archive/master.zip" PIP_DEPENDENCIES_FLAGS="--upgrade --no-deps"
-    - PYTHON_VERSION=3.5 PIP_DEPENDENCIES="https://github.com/glue-viz/glue/archive/master.zip" PIP_DEPENDENCIES_FLAGS="--upgrade --no-deps"
 
 install:
   - git clone git://github.com/astropy/ci-helpers.git
