@@ -1,4 +1,4 @@
-0.3 (unreleased)
+0.3 (2016-05-04)
 ----------------
 
 - Add selection toolbar and icons for 3D viewers. [#88, #92] 
