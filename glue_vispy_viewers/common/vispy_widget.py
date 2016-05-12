@@ -15,6 +15,8 @@ from glue_vispy_viewers import BACKGROUND_COLOR, FOREGROUND_COLOR
 class VispyWidget(QtGui.QWidget):
 
     visible_axes = CallbackProperty()
+    perspective_view = CallbackProperty()
+
 
     def __init__(self, parent=None):
 
@@ -66,6 +68,7 @@ class VispyWidget(QtGui.QWidget):
         
         # Set up callbacks
         add_callback(self, 'visible_axes', nonpartial(self._toggle_axes))
+        add_callback(self, 'perspective_view', nonpartial(self._toggle_perspective))
 
     def _toggle_axes(self):
         if self.visible_axes:
@@ -73,6 +76,12 @@ class VispyWidget(QtGui.QWidget):
         else:
             self.axis.parent = None
         self.canvas.update()
+
+    def _toggle_perspective(self):
+        if self.perspective_view:
+            self.view.camera.fov = 60
+        else:
+            self.view.camera.fov = 0
 
     def add_data_visual(self, visual):
         self.limit_transforms[visual] = scene.STTransform()
