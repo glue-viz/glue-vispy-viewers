@@ -14,6 +14,7 @@ from glue.core.subset import ElementSubsetState
 
 POINT_ICON = os.path.join(os.path.dirname(__file__), 'glue_point.png')
 ROTATE_ICON = os.path.join(os.path.dirname(__file__), 'glue_rotate.png')
+RECORD_ICON = os.path.join(os.path.dirname(__file__), 'glue_record.png')
 
 """
 This class is for showing the toolbar UI and drawing selection line on canvas
@@ -44,8 +45,16 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         self.selection_origin = (0, 0)
         self.selected = []
 
+        # Add the record writer
+        try:
+            import imageio
+            self.writer = imageio.get_writer('animation.gif')
+        except ImportError:
+            self.writer = None
+
         # Add a timer to control the view rotate
         self.timer = app.Timer(connect=self.rotate)
+        self.record_timer = app.Timer(connect=self.record)
 
         a = QtGui.QAction(get_icon('glue_filesave'), 'Save', parent)
         a.triggered.connect(nonpartial(self.save_figure))
@@ -54,6 +63,14 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         parent.addAction(a)
         self.addAction(a)
         self.save_action = a
+
+        a = QtGui.QAction(QtGui.QIcon(RECORD_ICON), 'Record', parent)
+        a.triggered.connect(nonpartial(self.toggle_record))
+        a.setCheckable(True)
+        a.setToolTip('Start/Stop the record')
+        parent.addAction(a)
+        self.addAction(a)
+        self.record_action = a
 
         a = QtGui.QAction(QtGui.QIcon(ROTATE_ICON), 'Rotate View', parent)
         a.triggered.connect(nonpartial(self.toggle_rotate))
@@ -114,6 +131,21 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
             if not '.' in outfile:
                 outfile += '.png'
             io.write_png(outfile, img)
+
+    def toggle_record(self):
+        if self.record_action.isChecked():
+            self.record_timer.start(0.1)
+        else:
+            self.record_timer.stop()
+            self.writer.close()
+
+    def record(self, event):
+        if self.writer is not None:
+            im = self._vispy_widget.canvas.render()
+            self.writer.append_data(im)
+        else:
+            # maybe better give an option to let user install the package
+            print('imageio module needed!')
 
     def toggle_lasso(self):
         if self.lasso_action.isChecked():
