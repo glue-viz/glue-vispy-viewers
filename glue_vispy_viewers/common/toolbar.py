@@ -12,6 +12,13 @@ from glue.core import Data
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.subset import ElementSubsetState
 
+try:
+    import imageio
+except ImportError:
+    IMAGEIO_INSTALLED = False
+else:
+    IMAGEIO_INSTALLED = True
+
 POINT_ICON = os.path.join(os.path.dirname(__file__), 'glue_point.png')
 ROTATE_ICON = os.path.join(os.path.dirname(__file__), 'glue_rotate.png')
 RECORD_START_ICON = os.path.join(os.path.dirname(__file__), 'glue_record_start.png')
@@ -50,11 +57,6 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         self.timer = app.Timer(connect=self.rotate)
         self.record_timer = app.Timer(connect=self.record)
 
-        try:
-            import imageio
-            self.save_animation_flag = True
-        except ImportError:
-            self.save_animation_flag = False
         self.writer = None
 
         a = QtGui.QAction(get_icon('glue_filesave'), 'Save', parent)
@@ -65,7 +67,7 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         self.addAction(a)
         self.save_action = a
 
-        if self.save_animation_flag:
+        if IMAGEIO_INSTALLED:
             a = QtGui.QAction(QtGui.QIcon(RECORD_START_ICON), 'Record', parent)
             a.triggered.connect(nonpartial(self.toggle_record))
             a.setToolTip('Start/Stop the record')
@@ -143,7 +145,6 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
             # This indicates that the user cancelled
             if not outfile:
                 return
-            import imageio
             self.writer = imageio.get_writer(outfile)
             self.record_timer.start(0.1)
         else:
