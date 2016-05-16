@@ -15,7 +15,8 @@ from ..extern.vispy import scene
 class VolumeSelectionToolbar(VispyDataViewerToolbar):
 
     def __init__(self, vispy_widget=None, parent=None):
-        super(VolumeSelectionToolbar, self).__init__(vispy_widget=vispy_widget, parent=parent)
+        super(VolumeSelectionToolbar, self).__init__(vispy_widget=vispy_widget,
+                                                     parent=parent)
         self.trans_ones_data = None
         # add some markers
         self.markers = scene.visuals.Markers(parent=self._vispy_widget.view.scene)
@@ -23,24 +24,27 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
                                            parent=self._vispy_widget.view.scene)
 
         self.visual_tr = None
+        self.visible_data = None
+        self.visual = None
 
-# todo: add global variable of visual, vol_data, vol_shape
+
+# todo: add global variable of self.visual, vol_data, vol_shape
 
     def on_mouse_press(self, event):
         """
         Assign mouse position and do point selection.
         :param event:
         """
-        self.selection_origin = event.pos
+        if self.mode:
+            # do the initiation here
+            self.selection_origin = event.pos
+            self.visible_data, self.visual = self.get_visible_data()
+            data_array = self.visible_data[0]['PRIMARY']
+            self.visual_tr = self._vispy_widget.limit_transforms[self.visual]
+
         if self.mode is 'point':
-
-            visible_data, visual = self.get_visible_data()
-            data_object = visible_data[0]
-            data_array = data_object['PRIMARY']
-
-            trans = self._vispy_widget.limit_transforms[visual].translate
-            scale = self._vispy_widget.limit_transforms[visual].scale
-            self.visual_tr = self._vispy_widget.limit_transforms[visual]
+            trans = self.visual_tr.translate
+            scale = self.visual_tr.scale
 
             # get start and end point of ray line
             pos = self.get_ray_line()
@@ -82,6 +86,9 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
             if len(inter_value) != 0:
                 self.markers.set_data(pos=np.array([inter_pos[np.argmax(inter_value)]]),
                                       face_color='yellow')
+                status_text = 'pos '+str(inter_pos[np.argmax(inter_value)]) \
+                              + ' value '+str(inter_value.max())
+                self._vispy_data_viewer.show_status(status_text)
 
             self._vispy_widget.canvas.update()
 
@@ -90,7 +97,6 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
         Get the mask of selected data and get them highlighted.
         :param event:
         """
-
         # Get the visible datasets
         if event.button == 1 and self.mode and self.mode is not 'point':
             visible_data, visual = self.get_visible_data()
@@ -108,16 +114,20 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
                 mask = points_inside_poly(x, y, vx, vy)
 
             elif self.mode is 'ellipse':
-                xmin, ymin = np.min(self.line_pos[:, 0]), np.min(self.line_pos[:, 1])
-                xmax, ymax = np.max(self.line_pos[:, 0]), np.max(self.line_pos[:, 1])
+                xmin, ymin = np.min(self.line_pos[:, 0]), \
+                             np.min(self.line_pos[:, 1])
+                xmax, ymax = np.max(self.line_pos[:, 0]), \
+                             np.max(self.line_pos[:, 1])
 
                 # (xc, yc, radius)
                 c = CircularROI((xmax+xmin)/2., (ymax+ymin)/2., (xmax-xmin)/2.)
                 mask = c.contains(data[:, 0], data[:, 1])
 
             elif self.mode is 'rectangle':
-                xmin, ymin = np.min(self.line_pos[:, 0]), np.min(self.line_pos[:, 1])
-                xmax, ymax = np.max(self.line_pos[:, 0]), np.max(self.line_pos[:, 1])
+                xmin, ymin = np.min(self.line_pos[:, 0]), \
+                             np.min(self.line_pos[:, 1])
+                xmax, ymax = np.max(self.line_pos[:, 0]), \
+                             np.max(self.line_pos[:, 1])
                 r = RectangularROI(xmin, xmax, ymin, ymax)
                 mask = r.contains(data[:, 0], data[:, 1])
 
@@ -128,22 +138,22 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
             # The ravel here is to make mask compatible with ElementSubsetState input.
             new_mask = np.reshape(mask, self.trans_ones_data.shape)
             new_mask = np.ravel(np.transpose(new_mask))
-            self.mark_selected(new_mask, visible_data)
+            self.mark_selected(new_mask, self.visible_data)
 
             self.lasso_reset()
 
     def get_map_data(self):
         """
-        Get the mapped buffer from visual to canvas.
+        Get the mapped buffer from self.visual to canvas.
 
         :return: Mapped data position on canvas.
         """
 
         # Get the visible datasets
-        visible_data, visual = self.get_visible_data()
-        data_object = visible_data[0]
+        data_object = self.visible_data[0]
 
-        # TODO: add support for multiple data here, data_array should cover all visible_data array
+        # TODO: add support for multiple data here, data_array should
+        # cover all self.visible_data array
 
         tr = as_matrix_transform(visual.get_transform(map_from='visual', map_to='canvas'))
 
@@ -160,15 +170,15 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
 
         :return: Start point and end point position.
         """
-        visible_data, visual = self.get_visible_data()
-        tr_back = visual.get_transform(map_from='canvas', map_to='visual')
+        tr_back = self.visual.get_transform(map_from='canvas', map_to='visual')
 
         _cam = self._vispy_widget.view.camera
         start_point = _cam.transform.map(_cam.center)
 
         end_point = np.insert(self.selection_origin, 2, 1)
         end_point = tr_back.map(end_point)
-        # add the visual local transform
+
+        # add the self.visual local transform
         end_point = self.visual_tr.map(end_point)
         end_point = end_point[:3] / end_point[3]
 
