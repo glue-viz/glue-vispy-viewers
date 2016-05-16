@@ -5,6 +5,7 @@ except ImportError:
 
 from glue.core import message as msg
 from glue.core import Data
+from glue.external.qt import QtGui, get_qapp
 
 from .vispy_widget import VispyWidget
 from .viewer_options import VispyOptionsWidget
@@ -23,6 +24,8 @@ class BaseVispyViewer(DataViewer):
 
         toolbar = self._toolbar_cls(vispy_widget=self._vispy_widget, parent=self)
         self.addToolBar(toolbar)
+
+        self.status_label = None
 
     def register_to_hub(self, hub):
 
@@ -127,3 +130,10 @@ class BaseVispyViewer(DataViewer):
             setattr(viewer._options_widget, attr, context.object(value))
 
         return viewer
+
+    def show_status(self, text):
+        if not self.status_label:
+            statusbar = self.statusBar()
+            self.status_label = QtGui.QLabel()
+            statusbar.addWidget(self.status_label)
+        self.status_label.setText(text)
