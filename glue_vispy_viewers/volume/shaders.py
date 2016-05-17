@@ -41,7 +41,7 @@ except ImportError:  # Python < 3.5
     def indent(text, prefix):
         return '\n'.join(prefix + line for line in text.splitlines())
 
-from vispy.visuals.volume import VERT_SHADER
+from ..extern.vispy.visuals.volume import VERT_SHADER
 
 # Fragment shader
 FRAG_SHADER = """

@@ -3,8 +3,8 @@ from __future__ import absolute_import, division, print_function
 import sys
 
 import numpy as np
-from vispy import scene
-from vispy.geometry import create_cube
+from ..extern.vispy import scene
+from ..extern.vispy.geometry import create_cube
 
 from glue.external.echo import CallbackProperty, add_callback
 from glue.external.qt import QtGui, get_qapp

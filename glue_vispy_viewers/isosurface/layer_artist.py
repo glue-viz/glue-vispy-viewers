@@ -2,8 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from vispy import scene
-from vispy.color import Color
+from ..extern.vispy import scene
+from ..extern.vispy.color import Color
 
 from glue.external.echo import CallbackProperty, add_callback
 from glue.core.data import Subset

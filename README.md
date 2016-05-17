@@ -9,9 +9,14 @@ Requirements
 ------------
 
 Note that this plugin requires [Glue](http://glueviz.org/) and
-[VisPy](http://vispy.org/) to be installed. Both can be installed with conda:
+[PyOpenGL](http://pyopengl.sourceforge.net/) to be installed - see [this
+page](http://glueviz.org/en/latest/installation.html) for instructions on
+installing Glue. PyOpenGL should get installed automatically when you install
+the plugin (see below).
 
-    conda install glueviz vispy
+While this plugin uses VisPy, for now we bundle our own version of VisPy since
+we rely on some recently added features, so you do not need to install VisPy
+separately.
 
 Installing
 ----------
@@ -34,4 +39,5 @@ To run the tests, do:
 
     py.test glue_vispy_viewers
 
-at the root of the repository. This requires the [pytest](http://pytest.org) module to be installed.
+at the root of the repository. This requires the [pytest](http://pytest.org)
+module to be installed.

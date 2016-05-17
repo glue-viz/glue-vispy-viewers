@@ -44,14 +44,13 @@ from __future__ import division
 
 import numpy as np
 
-from vispy.visuals.mesh import MeshVisual
-from vispy.geometry.isosurface import isosurface
-from vispy.color import Color
-from vispy.scene.visuals import create_visual_node
-
+from ..extern.vispy.visuals.mesh import MeshVisual
+from ..extern.vispy.geometry.isosurface import isosurface
+from ..extern.vispy.color import Color
+from ..extern.vispy.scene.visuals import create_visual_node
 
 # Find out if we are using the original or new drawing API
-from vispy.visuals.isosurface import IsosurfaceVisual as VispyIsosurfaceVisual
+from ..extern.vispy.visuals.isosurface import IsosurfaceVisual as VispyIsosurfaceVisual
 HAS_PREPARE_DRAW = hasattr(VispyIsosurfaceVisual, '_prepare_draw')
 del VispyIsosurfaceVisual
 

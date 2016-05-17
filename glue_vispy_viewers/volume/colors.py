@@ -1,4 +1,4 @@
-from vispy.color import BaseColormap
+from ..extern.vispy.color import BaseColormap
 
 def get_translucent_cmap(r, g, b):
     

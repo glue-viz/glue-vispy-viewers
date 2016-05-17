@@ -14,9 +14,8 @@ environment:
       # When using Python 3.4, we need to fix the PyQt4 version, because PyQt
       # 4.11 on Python 3.4 has issues in Anaconda:
       # https://github.com/ContinuumIO/anaconda-issues/issues/654
-      # We can remove the pinned version once we build on Python 3.5 (which
-      # will require a conda package for vispy to be present)
-      CONDA_DEPENDENCIES: "glueviz scikit-image pytest mock vispy pyqt=4.10"
+      # We can remove the pinned version once we build on Python 3.5
+      CONDA_DEPENDENCIES: "glueviz scikit-image pytest mock pyqt=4.10 pyopengl"
 
       # Temporarily install glue dev version
       PIP_DEPENDENCIES: "https://github.com/glue-viz/glue/archive/master.zip"

@@ -1,6 +1,6 @@
 import numpy as np
 
-from vispy import scene
+from ...extern.vispy import scene
 
 from ..viewer_options import VispyOptionsWidget
 from ..vispy_widget import VispyWidget
