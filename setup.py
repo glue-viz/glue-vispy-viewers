@@ -49,5 +49,6 @@ setup(name='glue-vispy-viewers',
       author_email='glueviz@gmail.com',
       packages = find_packages(),
       package_data=package_data,
-      entry_points=entry_points
+      entry_points=entry_points,
+      install_requires=['pyopengl']
     )
