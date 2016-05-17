@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+import os
 from setuptools import setup, find_packages
 
 entry_points = """
@@ -21,6 +22,24 @@ except (IOError, ImportError):
     with open('README.md') as infile:
         LONG_DESCRIPTION = infile.read()
 
+# Define package data for our plugin
+
+package_data = {'glue_vispy_viewers.volume': ['*.ui'],
+                'glue_vispy_viewers.common': ['*.ui'],
+                'glue_vispy_viewers.isosurface': ['*.ui'],
+                'glue_vispy_viewers.scatter': ['*.ui']}
+
+# Include data for bundled version of VisPy.
+
+package_data['glue_vispy_viewers.extern.vispy'] = [os.path.join('io', '_data', '*'),
+                                                   os.path.join('html', 'static', 'js', '*'),
+                                                   os.path.join('app', 'tests', 'qt-designer.ui')]
+
+for subpackage in ['antialias', 'arrowheads', 'arrows', 'collections',
+                   'colormaps', 'lines', 'markers', 'math', 'misc',
+                   'transforms']:
+    package_data['vispy.glsl.' + subpackage] = ['*.vert','*.frag', "*.glsl"]
+
 setup(name='glue-vispy-viewers',
       version=__version__,
       description='Vispy-based viewers for Glue',
@@ -29,9 +48,6 @@ setup(name='glue-vispy-viewers',
       author='Penny Qian, Maxwell Tsai, and Thomas Robitaille',
       author_email='glueviz@gmail.com',
       packages = find_packages(),
-      package_data={'glue_vispy_viewers.volume': ['*.ui'],
-                    'glue_vispy_viewers.common': ['*.ui'],
-                    'glue_vispy_viewers.isosurface': ['*.ui'],
-                    'glue_vispy_viewers.scatter': ['*.ui']},
+      package_data=package_data,
       entry_points=entry_points
     )
