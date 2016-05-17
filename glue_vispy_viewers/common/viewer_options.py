@@ -29,6 +29,7 @@ class VispyOptionsWidget(QtGui.QWidget):
     z_stretch = FloatLineProperty('ui.value_z_stretch')
 
     visible_box = ButtonProperty('ui.checkbox_axes')
+    perspective_view = ButtonProperty('ui.checkbox_perspective')
 
     def __init__(self, parent=None, vispy_widget=None, data_viewer=None):
 
@@ -59,6 +60,8 @@ class VispyOptionsWidget(QtGui.QWidget):
             slider.valueChanged.connect(self._update_stretch)
 
         connect_bool_button(self._vispy_widget, 'visible_axes', self.ui.checkbox_axes)
+        connect_bool_button(self._vispy_widget, 'perspective_view', self.ui.checkbox_perspective)
+
 
         if self._data_viewer is not None:
             self.ui.combo_x_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)
@@ -247,4 +250,5 @@ class VispyOptionsWidget(QtGui.QWidget):
                     z_att=context.id(self.z_att),
                     z_min=self.z_min, z_max=self.z_max,
                     z_stretch=self.z_stretch,
-                    visible_box=self.visible_box)
+                    visible_box=self.visible_box,
+                    perspective_view=self.perspective_view)
