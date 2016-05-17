@@ -38,11 +38,11 @@
 
 from glue.external import six
 
-from vispy.gloo import Texture3D, TextureEmulated3D, VertexBuffer, IndexBuffer
-from vispy.visuals import VolumeVisual, Visual
-from vispy.visuals.shaders import Function, ModularProgram
-from vispy.color import get_colormap
-from vispy.scene.visuals import create_visual_node
+from ..extern.vispy.gloo import Texture3D, TextureEmulated3D, VertexBuffer, IndexBuffer
+from ..extern.vispy.visuals import VolumeVisual, Visual
+from ..extern.vispy.visuals.shaders import Function, ModularProgram
+from ..extern.vispy.color import get_colormap
+from ..extern.vispy.scene.visuals import create_visual_node
 
 from .backports import block_reduce
 

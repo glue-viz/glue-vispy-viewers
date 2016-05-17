@@ -5,7 +5,7 @@ import uuid
 
 import numpy as np
 
-from vispy.color import Color
+from ..extern.vispy.color import Color
 
 from glue.external.echo import CallbackProperty, add_callback
 from glue.core.data import Subset

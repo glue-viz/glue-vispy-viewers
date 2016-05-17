@@ -2,8 +2,8 @@ from contextlib import contextmanager
 
 import numpy as np
 
-from vispy import scene
-from vispy.color import Color
+from ..extern.vispy import scene
+from ..extern.vispy.color import Color
 
 from glue.external import six
 
@@ -152,7 +152,7 @@ class MultiColorScatter(scene.visuals.Markers):
 
 if __name__ == "__main__":
 
-    from vispy import app, scene
+    from ..extern.vispy import app, scene
 
     canvas = scene.SceneCanvas(keys='interactive')
     view = canvas.central_widget.add_view()

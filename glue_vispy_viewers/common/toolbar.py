@@ -1,7 +1,7 @@
 import os
 
 import numpy as np
-from vispy import app, scene, io, app
+from ..extern.vispy import app, scene, io, app
 from matplotlib import path
 
 from glue.external.qt import QtCore, QtGui
