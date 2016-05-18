@@ -39,6 +39,16 @@
 
 - Make sure combo boxes don't expand if component names are long. [#135]
 
+- Travis: add back testing against stable glue [#136]
+
+- Save animation with imageio. [#139]
+
+- Add toggle for perspective view. [#140]
+
+- Bundle latest developer version of Vispy. [#143] [#144]
+
+
+
 0.2 (2015-03-11)
 ----------------
 
