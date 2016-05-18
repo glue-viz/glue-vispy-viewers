@@ -4,6 +4,7 @@ import sys
 import uuid
 
 import numpy as np
+from matplotlib.colors import ColorConverter
 
 from ..extern.vispy.color import Color
 
@@ -118,7 +119,7 @@ class VolumeLayerArtist(LayerArtistBase):
         self._changed = False
 
     def _update_cmap_from_color(self):
-        cmap = get_translucent_cmap(*Color(self.color).rgb)
+        cmap = get_translucent_cmap(*ColorConverter().to_rgb(self.color))
         self._multivol.set_cmap(self.id, cmap)
         self.redraw()
 
