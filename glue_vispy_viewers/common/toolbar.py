@@ -12,8 +12,17 @@ from glue.core import Data
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.subset import ElementSubsetState
 
+try:
+    import imageio
+except ImportError:
+    IMAGEIO_INSTALLED = False
+else:
+    IMAGEIO_INSTALLED = True
+
 POINT_ICON = os.path.join(os.path.dirname(__file__), 'glue_point.png')
 ROTATE_ICON = os.path.join(os.path.dirname(__file__), 'glue_rotate.png')
+RECORD_START_ICON = os.path.join(os.path.dirname(__file__), 'glue_record_start.png')
+RECORD_STOP_ICON = os.path.join(os.path.dirname(__file__), 'glue_record_stop.png')
 
 """
 This class is for showing the toolbar UI and drawing selection line on canvas
@@ -46,6 +55,9 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
 
         # Add a timer to control the view rotate
         self.timer = app.Timer(connect=self.rotate)
+        self.record_timer = app.Timer(connect=self.record)
+
+        self.writer = None
 
         a = QtGui.QAction(get_icon('glue_filesave'), 'Save', parent)
         a.triggered.connect(nonpartial(self.save_figure))
@@ -54,6 +66,15 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         parent.addAction(a)
         self.addAction(a)
         self.save_action = a
+
+        if IMAGEIO_INSTALLED:
+            a = QtGui.QAction(QtGui.QIcon(RECORD_START_ICON), 'Record', parent)
+            a.triggered.connect(nonpartial(self.toggle_record))
+            a.setToolTip('Start/Stop the record')
+            a.setCheckable(True)
+            parent.addAction(a)
+            self.addAction(a)
+            self.record_action = a
 
         a = QtGui.QAction(QtGui.QIcon(ROTATE_ICON), 'Rotate View', parent)
         a.triggered.connect(nonpartial(self.toggle_rotate))
@@ -114,6 +135,30 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
             if not '.' in outfile:
                 outfile += '.png'
             io.write_png(outfile, img)
+
+    def toggle_record(self):
+        if self.record_action.isChecked():
+            self.record_action.setIcon(QtGui.QIcon(RECORD_STOP_ICON))
+            # pop up a window for file saving
+            outfile, file_filter = QtGui.QFileDialog.getSaveFileName(caption='Save Animation',
+                                                                     filter='GIF Files (*.gif);;')
+            # This indicates that the user cancelled
+            if not outfile:
+                return
+            self.writer = imageio.get_writer(outfile)
+            self.record_timer.start(0.1)
+        else:
+            self.record_timer.stop()
+            self.record_action.setIcon(QtGui.QIcon(RECORD_START_ICON))
+            self.writer.close()
+
+    def record(self, event):
+        if self.writer is not None:
+            im = self._vispy_widget.canvas.render()
+            self.writer.append_data(im)
+        else:
+            # maybe better give an option to let user install the package
+            print('imageio module needed!')
 
     def toggle_lasso(self):
         if self.lasso_action.isChecked():
