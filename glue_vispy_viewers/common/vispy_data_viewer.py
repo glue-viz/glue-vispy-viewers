@@ -54,6 +54,17 @@ class BaseVispyViewer(DataViewer):
                       handler=self._update_data,
                       filter=has_data)
 
+        def is_appearance_settings(msg):
+            return ('BACKGROUND_COLOR' in msg.settings
+                    or 'FOREGROUND_COLOR' in msg.settings)
+
+        hub.subscribe(self, msg.SettingsChangeMessage,
+                      handler=self._update_appearance_from_settings,
+                      filter=is_appearance_settings)
+
+    def _update_appearance_from_settings(self, message):
+        self._vispy_widget._update_appearance_from_settings()
+
     @property
     def data(self):
         return self._data

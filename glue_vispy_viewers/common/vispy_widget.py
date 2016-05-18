@@ -6,17 +6,24 @@ import numpy as np
 from ..extern.vispy import scene
 from ..extern.vispy.geometry import create_cube
 
+from glue.config import settings
 from glue.external.echo import CallbackProperty, add_callback
 from glue.external.qt import QtGui, get_qapp
 from glue.utils import nonpartial
 
-from glue_vispy_viewers import BACKGROUND_COLOR, FOREGROUND_COLOR
+from matplotlib.colors import ColorConverter
+
+rgb = ColorConverter().to_rgb
+
 
 class VispyWidget(QtGui.QWidget):
 
     visible_axes = CallbackProperty()
     perspective_view = CallbackProperty()
 
+    def _update_appearance_from_settings(self):
+        self.canvas.bgcolor = rgb(settings.BACKGROUND_COLOR)
+        self.axis.color = rgb(settings.FOREGROUND_COLOR)
 
     def __init__(self, parent=None):
 
@@ -25,7 +32,7 @@ class VispyWidget(QtGui.QWidget):
         # Prepare Vispy canvas. We set the depth_size to 24 to avoid issues
         # with isosurfaces on MacOS X
         self.canvas = scene.SceneCanvas(keys='interactive', show=False,
-                                        config={'depth_size': 24}, bgcolor=BACKGROUND_COLOR)
+                                        config={'depth_size': 24}, bgcolor=rgb(settings.BACKGROUND_COLOR))
 
         # Set up a viewbox
         self.view = self.canvas.central_widget.add_view()
@@ -39,13 +46,13 @@ class VispyWidget(QtGui.QWidget):
         self.scene_transform = scene.STTransform()
         self.limit_transforms = {}
 
-        # Add a 3D cube to show us the unit cube. The 1.001 factor is to make 
-        # sure that the grid lines are not 'hidden' by volume renderings on the 
+        # Add a 3D cube to show us the unit cube. The 1.001 factor is to make
+        # sure that the grid lines are not 'hidden' by volume renderings on the
         # front side due to numerical precision.
         vertices, filled_indices, outline_indices = create_cube()
         self.axis = scene.visuals.Mesh(vertices['position'],
                                        outline_indices,
-                                       color=FOREGROUND_COLOR, mode='lines')
+                                       color=rgb(settings.FOREGROUND_COLOR), mode='lines')
         self.axis.transform = self.scene_transform
         self.view.add(self.axis)
 
@@ -65,7 +72,7 @@ class VispyWidget(QtGui.QWidget):
         # We need to call render here otherwise we'll later encounter an OpenGL
         # program validation error.
         self.canvas.render()
-        
+
         # Set up callbacks
         add_callback(self, 'visible_axes', nonpartial(self._toggle_axes))
         add_callback(self, 'perspective_view', nonpartial(self._toggle_perspective))
