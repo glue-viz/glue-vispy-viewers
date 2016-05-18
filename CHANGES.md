@@ -1,7 +1,9 @@
 0.4 (unreleased)
 ----------------
 
-- No changes yet
+- Bundle the latest developer version of VisPy. [#143, #144]
+
+- Add a checkbox to toggle between near and far-field view. [#140]
 
 0.3 (2016-05-04)
 ----------------
