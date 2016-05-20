@@ -90,8 +90,8 @@ def use(app=None, gl=None):
         config['gl_backend'] = gl
         gloo.gl.use_gl(gl)
     if app:
-        from .. import app
-        app.use_app(app)
+        from ..app import use_app
+        use_app(app)
 
 
 def run_subprocess(command, return_code=False, **kwargs):
