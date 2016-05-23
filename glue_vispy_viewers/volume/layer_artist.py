@@ -6,8 +6,6 @@ import uuid
 import numpy as np
 from matplotlib.colors import ColorConverter
 
-from ..extern.vispy.color import Color
-
 from glue.external.echo import CallbackProperty, add_callback
 from glue.core.data import Subset
 from glue.core.layer_artist import LayerArtistBase
@@ -15,6 +13,7 @@ from glue.utils import nonpartial
 from glue.core.exceptions import IncompatibleAttribute
 from .volume_visual import MultiVolume
 from .colors import get_translucent_cmap
+
 
 class VolumeLayerArtist(LayerArtistBase):
     """

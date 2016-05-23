@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import numpy as np
+from matplotlib.colors import ColorConverter
 
 from ..extern.vispy import scene
 from ..extern.vispy.color import Color
@@ -11,7 +12,6 @@ from glue.core.layer_artist import LayerArtistBase
 from glue.utils import nonpartial
 from glue.core.exceptions import IncompatibleAttribute
 
-from .isosurface_visual import Isosurface
 
 class IsosurfaceLayerArtist(LayerArtistBase):
     """
@@ -30,7 +30,7 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         self.layer = layer
         self.vispy_viewer = vispy_viewer
 
-        self._iso_visual = Isosurface(np.ones((3, 3, 3)), level=0.5, shading='smooth')
+        self._iso_visual = scene.Isosurface(np.ones((3, 3, 3)), level=0.5, shading='smooth')
         self.vispy_viewer.add_data_visual(self._iso_visual)
 
         # Set up connections so that when any of the properties are
@@ -84,7 +84,7 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         self.redraw()
 
     def _update_vispy_color(self):
-        self._vispy_color = Color(self.color)
+        self._vispy_color = Color(ColorConverter().to_rgb(self.color))
         self._vispy_color.alpha = self.alpha
 
     def _update_data(self):
