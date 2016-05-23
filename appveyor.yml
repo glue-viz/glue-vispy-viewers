@@ -15,6 +15,7 @@ environment:
       # 4.11 on Python 3.4 has issues in Anaconda:
       # https://github.com/ContinuumIO/anaconda-issues/issues/654
       # We can remove the pinned version once we build on Python 3.5
+      CONDA_CHANNELS: "conda-forge"
       CONDA_DEPENDENCIES: "glueviz scikit-image pytest mock pyqt=4.10 pyopengl"
 
       # Temporarily install glue dev version

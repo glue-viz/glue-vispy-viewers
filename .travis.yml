@@ -8,6 +8,7 @@ notifications:
 env:
   global:
     - SETUP_XVFB=True
+    - CONDA_CHANNELS="conda-forge"
     - CONDA_DEPENDENCIES="glueviz pytest mock pyopengl"
   matrix:
     - PYTHON_VERSION=2.7
