@@ -84,6 +84,8 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         self.redraw()
 
     def _update_vispy_color(self):
+        if self.color is None:
+            return
         self._vispy_color = Color(ColorConverter().to_rgb(self.color))
         self._vispy_color.alpha = self.alpha
 
