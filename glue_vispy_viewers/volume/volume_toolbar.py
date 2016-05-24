@@ -6,7 +6,6 @@ from ..common.toolbar import VispyDataViewerToolbar
 
 import numpy as np
 from matplotlib import path
-
 from glue.core.roi import RectangularROI, CircularROI
 from ..extern.vispy import scene
 
@@ -18,9 +17,10 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
         self.trans_ones_data = None
         # add some markers
         self.markers = scene.visuals.Markers(parent=self._vispy_widget.view.scene)
-        self.trans = None
-        self.scale = None
-        self.visual_transform = None
+        self.ray_line = scene.visuals.Line(color='green', width=5,
+                                           parent=self._vispy_widget.view.scene)
+
+        self.visual_tr = None
 
 # todo: add global variable of visual, vol_data, vol_shape
 
@@ -30,39 +30,35 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
         :param event:
         """
         self.selection_origin = event.pos
-        print('event.pos', self.selection_origin)
         if self.mode is 'point':
 
             visible_data, visual = self.get_visible_data()
             data_object = visible_data[0]
             data_array = data_object['PRIMARY']
 
-            self.trans = self._vispy_widget.limit_transforms[visual].translate
-            self.scale = self._vispy_widget.limit_transforms[visual].scale
-            self.visual_transform = self._vispy_widget.limit_transforms[visual]
-            print('visual transform', self.visual_transform)
+            trans = self._vispy_widget.limit_transforms[visual].translate
+            scale = self._vispy_widget.limit_transforms[visual].scale
+            self.visual_tr = self._vispy_widget.limit_transforms[visual]
 
+            # get start and end point of ray line
             pos = self.get_ray_line()
 
-            # find the intersected points position in visual coordinate through z axis
             inter_pos = []
-
             for z in range(0, data_array.shape[0]):
                 #   3D line defined with two points (x0, y0, z0) and (x1, y1, z1) as
                 #   (x - x1)/(x2 - x1) = (y - y1)/(y2 - y1) = (z - z1)/(z2 - z1) = t
-                z = z * self.scale[2] + self.trans[2]
+                z = z * scale[2] + trans[2]
                 t = (z - pos[0][2])/(pos[1][2] - pos[0][2])
                 x = t * (pos[1][0] - pos[0][0]) + pos[0][0]
                 y = t * (pos[1][1] - pos[0][1]) + pos[0][1]
                 inter_pos.append([x, y, z])
             inter_pos = np.array(inter_pos)
-            # not correct here
 
             # cut the line within the cube
-            m1 = inter_pos[:, 0] > self.trans[0] # or =?  for x
-            m2 = inter_pos[:, 0] < (data_array.shape[2] * self.scale[0] + self.trans[0])
-            m3 = inter_pos[:, 1] > self.trans[1]  # for y
-            m4 = inter_pos[:, 1] < (data_array.shape[1]*self.scale[1] + self.trans[1])
+            m1 = inter_pos[:, 0] > trans[0]  # for x
+            m2 = inter_pos[:, 0] < (data_array.shape[2] * scale[0] + trans[0])
+            m3 = inter_pos[:, 1] > trans[1]  # for y
+            m4 = inter_pos[:, 1] < (data_array.shape[1]*scale[1] + trans[1])
             inter_pos = inter_pos[m1 & m2 & m3 & m4]
 
             # set colors for markers
@@ -72,21 +68,19 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
             # value of intersected points
             inter_value = []
             for each_point in inter_pos:
-                x = (each_point[0] - self.trans[0])/self.scale[0]
-                y = (each_point[1] - self.trans[1])/self.scale[1]
-                z = (each_point[2] - self.trans[2])/self.scale[2]
+                x = (each_point[0] - trans[0])/scale[0]
+                y = (each_point[1] - trans[1])/scale[1]
+                z = (each_point[2] - trans[2])/scale[2]
                 inter_value.append(data_array[(z, y, x)])
             inter_value = np.array(inter_value)
-            print('inter value, pos', inter_value.shape, inter_pos.shape)
-            assert inter_value.shape[0] == inter_pos.shape[0]
-            if len(inter_value) != 0:
-                colors[np.argmax(inter_value)] = (1, 1, 0.5, 1)  # change the color of max value marker
 
-            self.markers.set_data(pos=inter_pos, face_color=colors)
-            # print('interpos is', inter_points_index, data_array)
-            # update limit to make transform sync with the stretch  :)
-            # self._vispy_widget.add_data_visual(self.markers)
-            # self._vispy_widget._update_limits()
+            assert inter_value.shape[0] == inter_pos.shape[0]
+
+            # change the color of max value marker
+            if len(inter_value) != 0:
+                self.markers.set_data(pos=np.array([inter_pos[np.argmax(inter_value)]]),
+                                      face_color='yellow')
+
             self._vispy_widget.canvas.update()
 
     def on_mouse_release(self, event):
@@ -94,8 +88,7 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
         Get the mask of selected data and get them highlighted.
         :param event:
         """
-
-        # Get the visible datasets
+        # Get the visible data set
         if event.button == 1 and self.mode and self.mode is not 'point':
             visible_data, visual = self.get_visible_data()
             data = self.get_map_data()
@@ -111,7 +104,9 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
             elif self.mode is 'ellipse':
                 xmin, ymin = np.min(self.line_pos[:, 0]), np.min(self.line_pos[:, 1])
                 xmax, ymax = np.max(self.line_pos[:, 0]), np.max(self.line_pos[:, 1])
-                c = CircularROI((xmax + xmin) / 2., (ymax + ymin) / 2., (xmax - xmin) / 2.)  # (xc, yc, radius)
+
+                # (xc, yc, radius)
+                c = CircularROI((xmax+xmin)/2., (ymax+ymin)/2., (xmax-xmin)/2.)
                 mask = c.contains(data[:, 0], data[:, 1])
 
             elif self.mode is 'rectangle':
@@ -160,24 +155,17 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
         :return: Start point and end point position.
         """
         visible_data, visual = self.get_visible_data()
-        tr_back = visual.get_transform(map_from='canvas', map_to='visual') # TODO: put visual to self.visual
-        print('=======================')
-        print('chain transform', tr_back)
-        print('=======================')
-
-        # try add the visual's transform
-        # tr_back = tr_back * self.visual_transform
-        print('chain transform after visual', tr_back)
-        print('=======================')
+        tr_back = visual.get_transform(map_from='canvas', map_to='visual')
 
         _cam = self._vispy_widget.view.camera
-        _cam_point = _cam.transform.map(_cam.center)  #TODO: this is not correct
+        start_point = _cam.transform.map(_cam.center)
 
-        trpos_start = np.insert(self.selection_origin, 2, 1)
-        trpos_start = tr_back.map(trpos_start)
-        trpos_start = self.visual_transform.map(trpos_start)
-        print('trpos_start after visual transform', trpos_start)
+        end_point = np.insert(self.selection_origin, 2, 1)
+        end_point = tr_back.map(end_point)
+        # add the visual local transform
+        end_point = self.visual_tr.map(end_point)
+        end_point = end_point[:3] / end_point[3]
 
-        trpos_start = trpos_start[:3] / trpos_start[3]
+        self.ray_line.set_data(np.array([end_point, start_point[:3]]))
 
-        return np.array([trpos_start, _cam_point[:3]])
+        return np.array([end_point, start_point[:3]])
