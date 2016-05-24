@@ -7,6 +7,9 @@
 
 - Support the options in Glue v0.8 for foreground and background colors in viewers. [#149]
 
+- Fix a bug that caused subsets selected in the 3D viewers to be applied to
+  datasets for which they aren't relevant. [#151]
+
 0.3 (2016-05-04)
 ----------------
 
