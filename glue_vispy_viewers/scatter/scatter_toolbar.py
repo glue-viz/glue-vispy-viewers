@@ -43,7 +43,8 @@ class ScatterSelectionToolbar(VispyDataViewerToolbar):
             data = self.get_map_data()
 
             if len(self.line_pos) == 0:
-                mask = np.zeros(data.shape[0], dtype=bool)
+                self.lasso_reset()
+                return
 
             elif self.mode is 'lasso':
                 selection_path = path.Path(self.line_pos, closed=True)
