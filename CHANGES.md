@@ -1,7 +1,11 @@
 0.4 (unreleased)
 ----------------
 
-- No changes yet
+- Bundle the latest developer version of VisPy. [#143, #144]
+
+- Add a checkbox to toggle between near and far-field view. [#140]
+
+- Support the options in Glue v0.8 for foreground and background colors in viewers. [#149]
 
 0.3 (2016-05-04)
 ----------------

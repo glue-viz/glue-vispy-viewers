@@ -4,8 +4,7 @@ import sys
 import uuid
 
 import numpy as np
-
-from ..extern.vispy.color import Color
+from matplotlib.colors import ColorConverter
 
 from glue.external.echo import CallbackProperty, add_callback
 from glue.core.data import Subset
@@ -14,6 +13,7 @@ from glue.utils import nonpartial
 from glue.core.exceptions import IncompatibleAttribute
 from .volume_visual import MultiVolume
 from .colors import get_translucent_cmap
+
 
 class VolumeLayerArtist(LayerArtistBase):
     """
@@ -118,7 +118,7 @@ class VolumeLayerArtist(LayerArtistBase):
         self._changed = False
 
     def _update_cmap_from_color(self):
-        cmap = get_translucent_cmap(*Color(self.color).rgb)
+        cmap = get_translucent_cmap(*ColorConverter().to_rgb(self.color))
         self._multivol.set_cmap(self.id, cmap)
         self.redraw()
 

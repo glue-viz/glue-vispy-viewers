@@ -2,6 +2,8 @@ from contextlib import contextmanager
 
 import numpy as np
 
+from matplotlib.colors import ColorConverter
+
 from ..extern.vispy import scene
 from ..extern.vispy.color import Color
 
@@ -66,7 +68,7 @@ class MultiColorScatter(scene.visuals.Markers):
 
     def set_color(self, label, rgb):
         if isinstance(rgb, six.string_types):
-            rgb = Color(rgb).rgb
+            rgb = ColorConverter().to_rgb(rgb)
         self.layers[label]['color'] = np.asarray(rgb)
         self._update()
 

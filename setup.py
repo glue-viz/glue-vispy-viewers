@@ -38,7 +38,7 @@ package_data['glue_vispy_viewers.extern.vispy'] = [os.path.join('io', '_data', '
 for subpackage in ['antialias', 'arrowheads', 'arrows', 'collections',
                    'colormaps', 'lines', 'markers', 'math', 'misc',
                    'transforms']:
-    package_data['vispy.glsl.' + subpackage] = ['*.vert','*.frag', "*.glsl"]
+    package_data['glue_vispy_viewers.extern.vispy.glsl.' + subpackage] = ['*.vert','*.frag', "*.glsl"]
 
 setup(name='glue-vispy-viewers',
       version=__version__,
