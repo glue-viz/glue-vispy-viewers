@@ -25,7 +25,7 @@ except (IOError, ImportError):
 # Define package data for our plugin
 
 package_data = {'glue_vispy_viewers.volume': ['*.ui'],
-                'glue_vispy_viewers.common': ['*.ui'],
+                'glue_vispy_viewers.common': ['*.ui', '*.png'],
                 'glue_vispy_viewers.isosurface': ['*.ui'],
                 'glue_vispy_viewers.scatter': ['*.ui']}
 
