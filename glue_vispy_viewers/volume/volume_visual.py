@@ -110,7 +110,7 @@ class MultiVolumeVisual(VolumeVisual):
 
             # Set up texture object
             self.textures.append(tex_cls(self._vol_shape, interpolation='linear',
-                                          wrapping='clamp_to_edge'))
+                                         wrapping='clamp_to_edge'))
 
             # Pass texture object and default colormap to shader program
             self.shared_program['u_volumetex_{0}'.format(i)] = self.textures[i]
@@ -139,7 +139,7 @@ class MultiVolumeVisual(VolumeVisual):
         self.volumes = defaultdict(dict)
 
         self._data_shape = None
-        self._block_size = np.array([1,1,1])
+        self._block_size = np.array([1, 1, 1])
 
         try:
             self.freeze()

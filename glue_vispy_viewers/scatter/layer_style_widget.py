@@ -19,7 +19,6 @@ from glue.utils.qt.widget_properties import (ValueProperty,
                                              connect_value)
 
 
-
 class ScatterLayerStyleWidget(QtGui.QWidget):
 
     # Size-related GUI elements
@@ -113,7 +112,6 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
             self.ui.value_fixed_size.hide()
             self.ui.combo_size_attribute.show()
             self.ui.size_row_2.show()
-
 
     def _update_size_limits(self):
 

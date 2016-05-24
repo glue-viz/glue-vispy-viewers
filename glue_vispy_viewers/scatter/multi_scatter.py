@@ -35,11 +35,11 @@ class MultiColorScatter(scene.visuals.Markers):
         else:
             self.layers[label] = {'data': None,
                                   'mask': None,
-                                  'color': np.asarray((1,1,1)),
+                                  'color': np.asarray((1, 1, 1)),
                                   'alpha': 1,
-                                  'zorder':lambda: 0,
+                                  'zorder': lambda: 0,
                                   'size': 10,
-                                  'visible':True}
+                                  'visible': True}
 
     def deallocate(self, label):
         self.layers.pop(label)

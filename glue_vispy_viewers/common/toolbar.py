@@ -286,7 +286,7 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
 
                 if self.mode is 'ellipse':
                     # create a circle instead of ellipse here
-                    self.line_pos = self.ellipse_vertice(center, radius=(np.abs((width+height) / 4.), np.abs((width+height) / 4.)),
+                    self.line_pos = self.ellipse_vertice(center, radius=(np.abs((width + height) / 4.), np.abs((width + height) / 4.)),
                                                          start_angle=0., span_angle=360., num_segments=500)
                     self.line.set_data(pos=np.array(self.line_pos), connect='strip')
             self._vispy_widget.canvas.update()
@@ -316,7 +316,7 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
     def lasso_reset(self):
         # Reset lasso
         self.line_pos = []
-        self.line.set_data(np.zeros((0,2)))
+        self.line.set_data(np.zeros((0, 2)))
         self.line.update()
         self.selection_origin = (0, 0)
         self._vispy_widget.canvas.update()
@@ -382,7 +382,7 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
 
         start_angle = np.deg2rad(start_angle)
 
-        vertices = np.empty([num_segments + 2, 2], dtype=np.float32) # Segment as 1000
+        vertices = np.empty([num_segments + 2, 2], dtype=np.float32)  # Segment as 1000
 
         # split the total angle into num_segments intances
         theta = np.linspace(start_angle,

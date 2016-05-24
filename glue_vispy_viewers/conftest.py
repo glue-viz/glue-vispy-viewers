@@ -6,6 +6,7 @@ from glue.external.qt import get_qapp
 # keep a reference to it here
 app = None
 
+
 def pytest_configure(config):
     global app
     app = get_qapp()

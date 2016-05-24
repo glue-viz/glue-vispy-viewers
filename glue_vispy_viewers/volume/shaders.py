@@ -174,17 +174,17 @@ def get_shaders(n_volume_max):
 
         # Calculation inside the main raytracing loop
         in_loop += ("if (u_enabled_{0:d} == 1) {{\n"
-                              "  val = $sample(u_volumetex_{0:d}, loc).g;\n"
-                              "  max_val_{0:d} = max(val, max_val_{0:d});\n}}\n").format(i)
+                    "  val = $sample(u_volumetex_{0:d}, loc).g;\n"
+                    "  max_val_{0:d} = max(val, max_val_{0:d});\n}}\n").format(i)
 
         # Calculation after the main loop
 
         after_loop += ("if (u_enabled_{0:d} == 1) {{\n"
-                              "  color = $cmap{0:d}(max_val_{0:d});\n"
-                              "  color.a *= u_weight_{0:d};\n"
-                              "  total_color += color.a * color;\n"
-                              "  max_alpha = max(color.a, max_alpha);\n"
-                              "  count += color.a;\n}}\n").format(i)
+                       "  color = $cmap{0:d}(max_val_{0:d});\n"
+                       "  color.a *= u_weight_{0:d};\n"
+                       "  total_color += color.a * color;\n"
+                       "  max_alpha = max(color.a, max_alpha);\n"
+                       "  count += color.a;\n}}\n").format(i)
 
     # Code esthetics
     before_loop = indent(before_loop, " " * 4).strip()

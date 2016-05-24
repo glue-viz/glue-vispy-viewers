@@ -2,8 +2,8 @@ import numpy as np
 
 
 def block_reduce(data, block_size, func=np.sum):
-    
-    # Backported from Astropy 1.1 for compatibility 
+
+    # Backported from Astropy 1.1 for compatibility
 
     from skimage.measure import block_reduce
 

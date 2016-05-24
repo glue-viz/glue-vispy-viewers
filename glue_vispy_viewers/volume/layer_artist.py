@@ -149,7 +149,6 @@ class VolumeLayerArtist(LayerArtistBase):
             else:
                 self._enabled = True
 
-
             if self.subset_mode == 'outline':
                 data = mask.astype(float)
             else:

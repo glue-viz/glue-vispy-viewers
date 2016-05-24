@@ -22,7 +22,7 @@ def make_test_data():
     np.random.seed(12345)
 
     for letter in 'abc':
-        comp = Component(np.random.random((10,10,10)))
+        comp = Component(np.random.random((10, 10, 10)))
         data.add_component(comp, letter)
 
     return data

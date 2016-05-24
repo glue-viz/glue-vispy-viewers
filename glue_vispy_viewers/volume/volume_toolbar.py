@@ -11,7 +11,6 @@ from matplotlib import path
 from glue.core.roi import RectangularROI, CircularROI, PolygonalROI
 
 
-
 class VolumeSelectionToolbar(VispyDataViewerToolbar):
 
     def __init__(self, vispy_widget=None, parent=None):
@@ -43,7 +42,7 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
             elif self.mode is 'ellipse':
                 xmin, ymin = np.min(self.line_pos[:, 0]), np.min(self.line_pos[:, 1])
                 xmax, ymax = np.max(self.line_pos[:, 0]), np.max(self.line_pos[:, 1])
-                c = CircularROI((xmax+xmin)/2., (ymax+ymin)/2., (xmax-xmin)/2.)  # (xc, yc, radius)
+                c = CircularROI((xmax + xmin) / 2., (ymax + ymin) / 2., (xmax - xmin) / 2.)  # (xc, yc, radius)
                 mask = c.contains(data[:, 0], data[:, 1])
 
             elif self.mode is 'rectangle':
