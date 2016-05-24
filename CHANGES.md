@@ -1,4 +1,4 @@
-0.4 (unreleased)
+0.4 (2016-05-24)
 ----------------
 
 - Bundle the latest developer version of VisPy. [#143, #144]
