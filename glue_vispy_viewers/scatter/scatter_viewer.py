@@ -5,6 +5,7 @@ from .layer_artist import ScatterLayerArtist
 from .layer_style_widget import ScatterLayerStyleWidget
 from .scatter_toolbar import ScatterSelectionToolbar
 
+
 class VispyScatterViewer(BaseVispyViewer):
 
     LABEL = "3D Scatter Plot"

@@ -5,7 +5,6 @@ import numpy as np
 from matplotlib.colors import ColorConverter
 
 from ..extern.vispy import scene
-from ..extern.vispy.color import Color
 
 from glue.external import six
 
@@ -35,11 +34,11 @@ class MultiColorScatter(scene.visuals.Markers):
         else:
             self.layers[label] = {'data': None,
                                   'mask': None,
-                                  'color': np.asarray((1,1,1)),
+                                  'color': np.asarray((1, 1, 1)),
                                   'alpha': 1,
-                                  'zorder':lambda: 0,
+                                  'zorder': lambda: 0,
                                   'size': 10,
-                                  'visible':True}
+                                  'visible': True}
 
     def deallocate(self, label):
         self.layers.pop(label)

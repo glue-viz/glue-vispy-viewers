@@ -3,11 +3,9 @@ from __future__ import absolute_import, division, print_function
 import os
 
 import numpy as np
-from matplotlib import cm
 
 from glue.core.subset import Subset
 from glue.external.qt import QtGui
-from glue.external.echo import add_callback
 
 from glue.utils.qt import load_ui, update_combobox, connect_color
 from glue.utils.qt.widget_properties import (ValueProperty,
@@ -17,7 +15,6 @@ from glue.utils.qt.widget_properties import (ValueProperty,
                                              connect_float_edit,
                                              connect_current_combo,
                                              connect_value)
-
 
 
 class ScatterLayerStyleWidget(QtGui.QWidget):
@@ -113,7 +110,6 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
             self.ui.value_fixed_size.hide()
             self.ui.combo_size_attribute.show()
             self.ui.size_row_2.show()
-
 
     def _update_size_limits(self):
 

@@ -1,5 +1,3 @@
-__author__ = 'penny'
-
 """
 This is for 3D selection in Glue 3d volume rendering viewer, with shape selection and advanced
 selection (not available now).
@@ -8,8 +6,7 @@ from ..common.toolbar import VispyDataViewerToolbar
 
 import numpy as np
 from matplotlib import path
-from glue.core.roi import RectangularROI, CircularROI, PolygonalROI
-
+from glue.core.roi import RectangularROI, CircularROI
 
 
 class VolumeSelectionToolbar(VispyDataViewerToolbar):
@@ -43,7 +40,7 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
             elif self.mode is 'ellipse':
                 xmin, ymin = np.min(self.line_pos[:, 0]), np.min(self.line_pos[:, 1])
                 xmax, ymax = np.max(self.line_pos[:, 0]), np.max(self.line_pos[:, 1])
-                c = CircularROI((xmax+xmin)/2., (ymax+ymin)/2., (xmax-xmin)/2.)  # (xc, yc, radius)
+                c = CircularROI((xmax + xmin) / 2., (ymax + ymin) / 2., (xmax - xmin) / 2.)  # (xc, yc, radius)
                 mask = c.contains(data[:, 0], data[:, 1])
 
             elif self.mode is 'rectangle':

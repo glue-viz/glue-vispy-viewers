@@ -1,14 +1,11 @@
 from distutils.version import LooseVersion
 
-import pytest
 import numpy as np
 
 import glue
 from glue.core import DataCollection, Data
 from glue.app.qt.application import GlueApplication
 from glue.core.component import Component
-
-from matplotlib import cm
 
 from ..volume_viewer import VispyVolumeViewer
 
@@ -22,7 +19,7 @@ def make_test_data():
     np.random.seed(12345)
 
     for letter in 'abc':
-        comp = Component(np.random.random((10,10,10)))
+        comp = Component(np.random.random((10, 10, 10)))
         data.add_component(comp, letter)
 
     return data

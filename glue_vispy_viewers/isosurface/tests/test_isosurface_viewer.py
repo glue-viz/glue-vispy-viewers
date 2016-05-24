@@ -9,7 +9,7 @@ from ..isosurface_viewer import VispyIsosurfaceViewer
 def test_Isosurface_viewer():
 
     # Create fake data
-    data = Data(primary=np.arange(1000).reshape((10,10,10)))
+    data = Data(primary=np.arange(1000).reshape((10, 10, 10)))
 
     # Create fake session
     session = simple_session()

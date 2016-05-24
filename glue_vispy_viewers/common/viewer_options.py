@@ -62,7 +62,6 @@ class VispyOptionsWidget(QtGui.QWidget):
         connect_bool_button(self._vispy_widget, 'visible_axes', self.ui.checkbox_axes)
         connect_bool_button(self._vispy_widget, 'perspective_view', self.ui.checkbox_perspective)
 
-
         if self._data_viewer is not None:
             self.ui.combo_x_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)
             self.ui.combo_y_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)
@@ -173,8 +172,8 @@ class VispyOptionsWidget(QtGui.QWidget):
         if self._first_attributes:
             n_max = len(components)
             self.ui.combo_x_attribute.setCurrentIndex(0)
-            self.ui.combo_y_attribute.setCurrentIndex(min(1, n_max-1))
-            self.ui.combo_z_attribute.setCurrentIndex(min(2, n_max-1))
+            self.ui.combo_y_attribute.setCurrentIndex(min(1, n_max - 1))
+            self.ui.combo_z_attribute.setCurrentIndex(min(2, n_max - 1))
             self._set_attributes_enabled(True)
             self._first_attributes = False
 
@@ -227,7 +226,7 @@ class VispyOptionsWidget(QtGui.QWidget):
             return  # prevent infinite event loop
         self._event_lock = True
         try:
-            label.setText("{0:6.2f}".format(10** (slider.value() / 1e4)))
+            label.setText("{0:6.2f}".format(10 ** (slider.value() / 1e4)))
         finally:
             self._event_lock = False
 
