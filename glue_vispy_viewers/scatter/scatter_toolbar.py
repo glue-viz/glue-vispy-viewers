@@ -1,10 +1,8 @@
-__author__ = 'penny'
-
 """
 This is for 3D selection in Glue 3d scatter plot viewer.
 """
 from ..common.toolbar import VispyDataViewerToolbar
-from glue.core.roi import RectangularROI, CircularROI, PolygonalROI
+from glue.core.roi import RectangularROI, CircularROI
 import numpy as np
 from matplotlib import path
 
@@ -24,7 +22,7 @@ class ScatterSelectionToolbar(VispyDataViewerToolbar):
             m1 = data > (event.pos - 2)
             m2 = data < (event.pos + 2)
 
-            array_mark = np.argwhere(m1[:,0] & m1[:,1] & m2[:,0] & m2[:,1])
+            array_mark = np.argwhere(m1[:, 0] & m1[:, 1] & m2[:, 0] & m2[:, 1])
             mask = np.zeros(len(data), dtype=bool)
             for i in array_mark:
                 index = int(i[0])
@@ -44,21 +42,27 @@ class ScatterSelectionToolbar(VispyDataViewerToolbar):
             visible_data, visual = self.get_visible_data()
             data = self.get_map_data()
 
-            if self.mode is 'lasso':
+            if len(self.line_pos) == 0:
+                mask = np.zeros(data.shape[0], dtype=bool)
+
+            elif self.mode is 'lasso':
                 selection_path = path.Path(self.line_pos, closed=True)
                 mask = selection_path.contains_points(data)
 
-            if self.mode is 'ellipse':
+            elif self.mode is 'ellipse':
                 xmin, ymin = np.min(self.line_pos[:, 0]), np.min(self.line_pos[:, 1])
                 xmax, ymax = np.max(self.line_pos[:, 0]), np.max(self.line_pos[:, 1])
-                c = CircularROI((xmax+xmin)/2., (ymax+ymin)/2., (xmax-xmin)/2.)  # (xc, yc, radius)
+                c = CircularROI((xmax + xmin) / 2., (ymax + ymin) / 2., (xmax - xmin) / 2.)  # (xc, yc, radius)
                 mask = c.contains(data[:, 0], data[:, 1])
 
-            if self.mode is 'rectangle':
+            elif self.mode is 'rectangle':
                 xmin, ymin = np.min(self.line_pos[:, 0]), np.min(self.line_pos[:, 1])
                 xmax, ymax = np.max(self.line_pos[:, 0]), np.max(self.line_pos[:, 1])
                 r = RectangularROI(xmin, xmax, ymin, ymax)
                 mask = r.contains(data[:, 0], data[:, 1])
+
+            else:
+                raise ValueError("Unknown mode: {0}".format(self.mode))
 
             self.mark_selected(mask, visible_data)
 
@@ -84,5 +88,5 @@ class ScatterSelectionToolbar(VispyDataViewerToolbar):
         #         np.append(layer_data, np.array([layer[x_att], layer[y_att], layer[z_att]]).transpose(), axis=0)
         tr = visual.get_transform(map_from='visual', map_to='canvas')
         data = tr.map(layer_data)
-        data /= data[:, 3:]  # normalize with homogeneous coordinates 
+        data /= data[:, 3:]  # normalize with homogeneous coordinates
         return data[:, :2]

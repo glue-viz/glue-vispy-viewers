@@ -33,21 +33,27 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
             visible_data, visual = self.get_visible_data()
             data = self.get_map_data()
 
-            if self.mode is 'lasso':
+            if len(self.line_pos) == 0:
+                mask = np.zeros(data.shape[0], dtype=bool)
+
+            elif self.mode is 'lasso':
                 selection_path = path.Path(self.line_pos, closed=True)
                 mask = selection_path.contains_points(data)
 
-            if self.mode is 'ellipse':
+            elif self.mode is 'ellipse':
                 xmin, ymin = np.min(self.line_pos[:, 0]), np.min(self.line_pos[:, 1])
                 xmax, ymax = np.max(self.line_pos[:, 0]), np.max(self.line_pos[:, 1])
                 c = CircularROI((xmax+xmin)/2., (ymax+ymin)/2., (xmax-xmin)/2.)  # (xc, yc, radius)
                 mask = c.contains(data[:, 0], data[:, 1])
 
-            if self.mode is 'rectangle':
+            elif self.mode is 'rectangle':
                 xmin, ymin = np.min(self.line_pos[:, 0]), np.min(self.line_pos[:, 1])
                 xmax, ymax = np.max(self.line_pos[:, 0]), np.max(self.line_pos[:, 1])
                 r = RectangularROI(xmin, xmax, ymin, ymax)
                 mask = r.contains(data[:, 0], data[:, 1])
+
+            else:
+                raise ValueError("Unknown mode: {0}".format(self.mode))
 
             # Mask matches transposed volume data set rather than the original one.
             # The ravel here is to make mask compatible with ElementSubsetState input.
