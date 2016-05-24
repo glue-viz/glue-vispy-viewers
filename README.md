@@ -21,6 +21,10 @@ separately.
 Installing
 ----------
 
+If you use the Anaconda Python Distribution, you can install this plugin with:
+
+    conda install -c conda-forge glue-vispy-viewers
+
 To install the latest stable version of the plugin, you can do:
 
     pip install glue-vispy-viewers
