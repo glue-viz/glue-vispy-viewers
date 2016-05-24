@@ -295,8 +295,8 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
 
     def lasso_reset(self):
         # Reset lasso
-        self.line_pos = []  # TODO: Empty pos input is not allowed for line_visual
-        self.line.set_data(np.array(self.line_pos))
+        self.line_pos = []
+        self.line.set_data(np.zeros((0,2)))
         self.line.update()
         self.selection_origin = (0, 0)
         self._vispy_widget.canvas.update()
