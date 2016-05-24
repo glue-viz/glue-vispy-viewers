@@ -58,6 +58,10 @@ class ScatterLayerArtist(LayerArtistBase):
         # MultiColorScatter instance in the vispy viewer instance.
         if not hasattr(self.vispy_widget, '_multiscat'):
             multiscat = MultiColorScatter()
+            multiscat.set_gl_state(depth_test=False,
+                                   blend=True,
+                                   blend_func=('src_alpha', 'one_minus_src_alpha'))
+
             self.vispy_widget.add_data_visual(multiscat)
             self.vispy_widget._multiscat = multiscat
 
