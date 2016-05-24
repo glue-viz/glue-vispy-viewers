@@ -9,6 +9,7 @@ from glue.icons.qt import get_icon
 from glue.utils import nonpartial
 
 from glue.core import Data
+from glue.core.exceptions import IncompatibleAttribute
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.subset import ElementSubsetState
 from glue.config import settings
@@ -25,12 +26,31 @@ ROTATE_ICON = os.path.join(os.path.dirname(__file__), 'glue_rotate.png')
 RECORD_START_ICON = os.path.join(os.path.dirname(__file__), 'glue_record_start.png')
 RECORD_STOP_ICON = os.path.join(os.path.dirname(__file__), 'glue_record_stop.png')
 
-"""
-This class is for showing the toolbar UI and drawing selection line on canvas
-"""
+
+class PatchedElementSubsetState(ElementSubsetState):
+
+    # TODO: apply this patch to the core glue code
+
+    def __init__(self, data, indices):
+        super(PatchedElementSubsetState, self).__init__(indices=indices)
+        self._data = data
+
+    def to_mask(self, data, view=None):
+        if data in self._data:
+            return super(PatchedElementSubsetState, self).to_mask(data, view=view)
+        else:
+            # TODO: should really be IncompatibleDataException but many other
+            # viewers don't recognize this.
+            raise IncompatibleAttribute()
+
+    def copy(self):
+        return PatchedElementSubsetState(self._data, self._indices)
 
 
 class VispyDataViewerToolbar(QtGui.QToolBar):
+    """
+    This class is for showing the toolbar UI and drawing selection line on canvas
+    """
 
     def __init__(self, vispy_widget=None, parent=None):
 
@@ -285,7 +305,7 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         # We now make a subset state. For scatter plots we'll want to use an
         # ElementSubsetState, while for cubes, we'll need to change to a
         # MaskSubsetState.
-        subset_state = ElementSubsetState(np.where(mask)[0])
+        subset_state = PatchedElementSubsetState(visible_data, np.where(mask)[0])
 
         # We now check what the selection mode is, and update the selection as
         # needed (this is delegated to the correct subset mode).
@@ -377,4 +397,3 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         vertices[num_segments + 1] = np.float32([center[0], center[1]])
 
         return vertices[:-1]
-

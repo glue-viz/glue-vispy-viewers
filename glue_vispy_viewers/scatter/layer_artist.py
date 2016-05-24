@@ -6,7 +6,6 @@ import numpy as np
 
 from glue.external.echo import CallbackProperty, add_callback
 
-from glue.core.data import Subset
 from glue.core.layer_artist import LayerArtistBase
 from glue.utils import nonpartial
 from glue.core.exceptions import IncompatibleAttribute
@@ -130,7 +129,7 @@ class ScatterLayerArtist(LayerArtistBase):
         """
         Remove the layer artist from the visualization
         """
-        self._multiscat.deallocate(self.id)
+        self._multiscat.set_data_values(self.id, [], [], [])
 
     def update(self):
         """
@@ -178,10 +177,12 @@ class ScatterLayerArtist(LayerArtistBase):
             x = self.layer[self._x_coord]
             y = self.layer[self._y_coord]
             z = self.layer[self._z_coord]
-        except IncompatibleAttribute:
-            x = np.array([])
-            y = np.array([])
-            z = np.array([])
+        except (IncompatibleAttribute, IndexError):
+            # The following includes a call to self.clear()
+            self.disable_invalid_attributes(self._x_coord, self._y_coord, self._z_coord)
+            return
+        else:
+            self._enabled = True
 
         self._marker_data = np.array([x, y, z]).transpose()
 
@@ -200,8 +201,8 @@ class ScatterLayerArtist(LayerArtistBase):
     def default_limits(self):
         if self._marker_data is None:
             raise ValueError("Data not yet set")
-        dmin = np.nanmin(self._marker_data,axis=0)
-        dmax = np.nanmax(self._marker_data,axis=0)
+        dmin = np.nanmin(self._marker_data, axis=0)
+        dmax = np.nanmax(self._marker_data, axis=0)
         # TODO: the following can be optimized
         return tuple(np.array([dmin, dmax]).transpose().ravel())
 

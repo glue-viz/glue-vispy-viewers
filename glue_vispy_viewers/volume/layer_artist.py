@@ -108,7 +108,9 @@ class VolumeLayerArtist(LayerArtistBase):
         """
         Remove the layer artist from the visualization
         """
-        self._multivol.deallocate(self.id)
+        # We don't want to deallocate here because this can be called if we
+        # disable the layer due to incompatible attributes
+        self._multivol.set_data(self.id, np.zeros(self._multivol._data_shape))
 
     def update(self):
         """
@@ -135,17 +137,27 @@ class VolumeLayerArtist(LayerArtistBase):
         self.redraw()
 
     def _update_data(self):
+
         if isinstance(self.layer, Subset):
+
             try:
                 mask = self.layer.to_mask()
             except IncompatibleAttribute:
-                mask = np.zeros(self.layer.data.shape, dtype=bool)
+                # The following includes a call to self.clear()
+                self.disable("Subset cannot be applied to this data")
+                return
+            else:
+                self._enabled = True
+
+
             if self.subset_mode == 'outline':
                 data = mask.astype(float)
             else:
                 data = self.layer.data[self.attribute] * mask
         else:
+
             data = self.layer[self.attribute]
+
         self._multivol.set_data(self.id, data)
         self.redraw()
 
