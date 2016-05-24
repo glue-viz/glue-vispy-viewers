@@ -40,7 +40,7 @@ from glue.external import six
 
 from ..extern.vispy.gloo import Texture3D, TextureEmulated3D, VertexBuffer, IndexBuffer
 from ..extern.vispy.visuals import VolumeVisual, Visual
-from ..extern.vispy.visuals.shaders import Function, ModularProgram
+from ..extern.vispy.visuals.shaders import Function
 from ..extern.vispy.color import get_colormap
 from ..extern.vispy.scene.visuals import create_visual_node
 

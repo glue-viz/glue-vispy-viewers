@@ -3,11 +3,9 @@ from __future__ import absolute_import, division, print_function
 import os
 
 import numpy as np
-from matplotlib import cm
 
 from glue.core.subset import Subset
 from glue.external.qt import QtGui
-from glue.external.echo import add_callback
 
 from glue.utils.qt import load_ui, update_combobox, connect_color
 from glue.utils.qt.widget_properties import (ValueProperty,

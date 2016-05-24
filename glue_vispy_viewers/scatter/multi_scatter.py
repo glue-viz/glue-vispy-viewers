@@ -5,7 +5,6 @@ import numpy as np
 from matplotlib.colors import ColorConverter
 
 from ..extern.vispy import scene
-from ..extern.vispy.color import Color
 
 from glue.external import six
 

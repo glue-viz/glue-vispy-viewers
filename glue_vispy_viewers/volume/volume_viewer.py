@@ -7,7 +7,7 @@ from .layer_style_widget import VolumeLayerStyleWidget
 from .volume_toolbar import VolumeSelectionToolbar
 
 try:
-    import OpenGL
+    import OpenGL  # flake8: noqa
 except ImportError:
     OPENGL_INSTALLED = False
 else:

@@ -1,5 +1,3 @@
-__author__ = 'penny'
-
 """
 This is for 3D selection in Glue 3d volume rendering viewer, with shape selection and advanced
 selection (not available now).
@@ -8,7 +6,7 @@ from ..common.toolbar import VispyDataViewerToolbar
 
 import numpy as np
 from matplotlib import path
-from glue.core.roi import RectangularROI, CircularROI, PolygonalROI
+from glue.core.roi import RectangularROI, CircularROI
 
 
 class VolumeSelectionToolbar(VispyDataViewerToolbar):
