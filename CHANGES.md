@@ -1,7 +1,7 @@
 0.5 (unreleased)
 ----------------
 
-- No changes yet.
+- Add support for n-dimensional components in 3D scatter plot viewer. [#158]
 
 0.4 (2016-05-24)
 ----------------

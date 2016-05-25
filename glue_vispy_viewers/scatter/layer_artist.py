@@ -144,7 +144,7 @@ class ScatterLayerArtist(LayerArtistBase):
         elif self.size_mode == 'fixed':
             self._multiscat.set_size(self.id, self.size * self.size_scaling)
         else:
-            data = self.layer[self.size_attribute]
+            data = self.layer[self.size_attribute].ravel()
             size = np.abs(np.nan_to_num(data))
             size = 20 * (size - self.size_vmin) / (self.size_vmax - self.size_vmin)
             size_data = size * self.size_scaling
@@ -156,7 +156,7 @@ class ScatterLayerArtist(LayerArtistBase):
         elif self.color_mode == 'fixed':
             self._multiscat.set_color(self.id, self.color)
         else:
-            data = self.layer[self.cmap_attribute]
+            data = self.layer[self.cmap_attribute].ravel()
             cmap_data = np.abs(np.nan_to_num(data))
             cmap_data = (cmap_data - self.cmap_vmin) / (self.cmap_vmax - self.cmap_vmin)
             cmap_data = self.cmap(cmap_data)
@@ -174,9 +174,9 @@ class ScatterLayerArtist(LayerArtistBase):
     def _update_data(self):
 
         try:
-            x = self.layer[self._x_coord]
-            y = self.layer[self._y_coord]
-            z = self.layer[self._z_coord]
+            x = self.layer[self._x_coord].ravel()
+            y = self.layer[self._y_coord].ravel()
+            z = self.layer[self._z_coord].ravel()
         except (IncompatibleAttribute, IndexError):
             # The following includes a call to self.clear()
             self.disable_invalid_attributes(self._x_coord, self._y_coord, self._z_coord)
