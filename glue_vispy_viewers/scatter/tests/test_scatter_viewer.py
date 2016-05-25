@@ -129,3 +129,31 @@ def test_scatter_viewer(tmpdir):
     assert layer_artist.cmap_vmin == 0.1
     assert layer_artist.cmap_vmax == 0.9
     assert layer_artist.cmap is cm.BuGn
+
+
+def test_n_dimensional_data():
+
+    # Create fake data
+    data = Data(x=np.random.random((2,3,4,5)),
+                y=np.random.random((2,3,4,5)),
+                z=np.random.random((2,3,4,5)))
+
+    # Create fake session
+
+    dc = DataCollection([data])
+    ga = GlueApplication(dc)
+    ga.show()
+
+    scatter = ga.new_data_viewer(VispyScatterViewer)
+    scatter.add_data(data)
+
+    layer_artist = scatter.layers[0]
+    style_widget = scatter._view.layout_style_widgets[layer_artist]
+
+    style_widget.size_mode = 'Linear'
+    style_widget.size_attribute = data.id['x']
+
+    style_widget.color_mode = 'Linear'
+    style_widget.cmap_attribute = data.id['y']
+    style_widget.cmap = cm.BuGn
+
