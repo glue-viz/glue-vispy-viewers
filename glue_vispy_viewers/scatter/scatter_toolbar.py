@@ -16,15 +16,18 @@ except ImportError:
 class ScatterSelectionToolbar(VispyDataViewerToolbar):
 
     def __init__(self, vispy_widget=None, parent=None):
-        super(ScatterSelectionToolbar, self).__init__(vispy_widget=vispy_widget, parent=parent)
+        super(ScatterSelectionToolbar, self).__init__(vispy_widget=vispy_widget,
+                                                      parent=parent)
 
     # TODO: implement advanced point selection here
     def on_mouse_press(self, event):
+        self.selection_origin = event.pos
         if self.mode is 'point':
             # Ray intersection on the CPU to highlight the selected point(s)
             data = self.get_map_data()
 
-            # TODO: the threshold 2 here could replaced with a slider bar to control the selection region in the future
+            # TODO: the threshold 2 here could replaced with a slider bar to
+            # control the selection region in the future
             m1 = data > (event.pos - 2)
             m2 = data < (event.pos + 2)
 
@@ -38,10 +41,8 @@ class ScatterSelectionToolbar(VispyDataViewerToolbar):
             self.mark_selected(mask, visible_data)
             self._vispy_widget.canvas.update()
 
-        else:
-            self.selection_origin = event.pos
-
     def on_mouse_move(self, event):
+        # add the knn scheme to decide selected region when moving mouse
         super(ScatterSelectionToolbar, self).on_mouse_move(event=event)
 
         if SKLEARN_INSTALLED:
@@ -57,14 +58,15 @@ class ScatterSelectionToolbar(VispyDataViewerToolbar):
                 drag_distance = math.sqrt(width**2+height**2)
                 canvas_diag = math.sqrt(self._vispy_widget.canvas.size[0]**2
                                         + self._vispy_widget.canvas.size[1]**2)
+
+                # neighbor num proportioned to mouse moving distance
                 n_neighbors = drag_distance / canvas_diag * visible_data[0].data.shape[0]
                 neigh = NearestNeighbors(n_neighbors=n_neighbors)
                 neigh.fit(data)
-                selec_index = neigh.kneighbors([self.selection_origin])[1]
+                select_index = neigh.kneighbors([self.selection_origin])[1]
+
                 mask = np.zeros(visible_data[0].data.shape)
-                print('mask is', mask, mask.shape)
-                print('selec_index', selec_index)
-                mask[selec_index] = 1
+                mask[select_index] = 1
                 self.mark_selected(mask, visible_data)
 
     def on_mouse_release(self, event):
