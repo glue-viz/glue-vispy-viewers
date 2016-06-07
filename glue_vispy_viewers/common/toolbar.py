@@ -228,7 +228,7 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
             self.timer.stop()
 
     def rotate(self, event):
-        self._vispy_widget.view.camera.azimuth -= 0.5  # set speed as constant first
+        self._vispy_widget.view.camera.azimuth -= 1.  # set speed as constant first
 
     @property
     def mode(self):

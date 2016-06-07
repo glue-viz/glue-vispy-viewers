@@ -60,8 +60,8 @@ class VispyWidget(QtGui.QWidget):
         # we support, but if we support more in future, we should implement
         # that here
 
-        # Remove the fov=60 here to solve the mismatch of selection problem
-        self.view.camera = scene.cameras.TurntableCamera(parent=self.view.scene, fov=60, distance=2.0)
+        # Orthographic perspective view as default
+        self.view.camera = scene.cameras.TurntableCamera(parent=self.view.scene, fov=0., distance=4.0)
 
         # Add the native canvas widget to this widget
         layout = QtGui.QVBoxLayout()
@@ -124,6 +124,8 @@ class VispyWidget(QtGui.QWidget):
 
     def _reset_view(self):
         self.view.camera.reset()
+        # update the cam.fov with checkbox
+        self._toggle_perspective()
 
 
 if __name__ == "__main__":
