@@ -65,7 +65,9 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
 
         # Initialize drawing visual
         self.line_pos = []
-        self.line = scene.visuals.Line(color=settings.FOREGROUND_COLOR, method='gl', parent=self._vispy_widget.canvas.scene)
+        self.line = scene.visuals.Line(color=settings.FOREGROUND_COLOR,
+                                       width=2, method='agg',
+                                       parent=self._vispy_widget.canvas.scene)
 
         # Selection defaults
         self._scatter = None
