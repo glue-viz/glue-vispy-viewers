@@ -5,8 +5,9 @@ selection (not available now).
 from ..common.toolbar import VispyDataViewerToolbar
 
 import numpy as np
-from matplotlib import path
 from glue.core.roi import RectangularROI, CircularROI
+from glue.utils.geometry import points_inside_poly
+from ..utils import as_matrix_transform
 
 
 class VolumeSelectionToolbar(VispyDataViewerToolbar):
@@ -27,16 +28,20 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
 
         # Get the visible datasets
         if event.button == 1 and self.mode is not None:
+
             visible_data, visual = self.get_visible_data()
             data = self.get_map_data()
-
             if len(self.line_pos) == 0:
                 self.lasso_reset()
                 return
 
             elif self.mode is 'lasso':
-                selection_path = path.Path(self.line_pos, closed=True)
-                mask = selection_path.contains_points(data)
+                # Note, we use points_inside_poly here instead of calling e.g.
+                # matplotlib directly, because we include some optimizations
+                # in points_inside_poly
+                vx, vy = np.array(self.line_pos).transpose()
+                x, y = data.transpose()
+                mask = points_inside_poly(x, y, vx, vy)
 
             elif self.mode is 'ellipse':
                 xmin, ymin = np.min(self.line_pos[:, 0]), np.min(self.line_pos[:, 1])
@@ -69,11 +74,11 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
 
         # TODO: add support for multiple data here, layer should cover all visible_data array
 
-        tr = visual.get_transform(map_from='visual', map_to='canvas')
+        tr = as_matrix_transform(visual.get_transform(map_from='visual', map_to='canvas'))
 
         self.trans_ones_data = np.transpose(np.ones(layer.data.shape))
 
-        pos_data = np.argwhere(self.trans_ones_data)
+        pos_data = np.indices(layer.data.shape[::-1], dtype=float).reshape(3, -1).transpose()
         data = tr.map(pos_data)
         data /= data[:, 3:]   # normalize with homogeneous coordinates
         return data[:, :2]

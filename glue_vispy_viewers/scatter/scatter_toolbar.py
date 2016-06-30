@@ -3,6 +3,7 @@ This is for 3D selection in Glue 3d scatter plot viewer.
 """
 from ..common.toolbar import VispyDataViewerToolbar
 from glue.core.roi import RectangularROI, CircularROI
+from ..utils import as_matrix_transform
 import numpy as np
 from matplotlib import path
 
@@ -87,7 +88,7 @@ class ScatterSelectionToolbar(VispyDataViewerToolbar):
         #     for id in range(1, n):
         #         layer = visible_data[id]
         #         np.append(layer_data, np.array([layer[x_att], layer[y_att], layer[z_att]]).transpose(), axis=0)
-        tr = visual.get_transform(map_from='visual', map_to='canvas')
+        tr = as_matrix_transform(visual.get_transform(map_from='visual', map_to='canvas'))
         data = tr.map(layer_data)
         data /= data[:, 3:]  # normalize with homogeneous coordinates
         return data[:, :2]
