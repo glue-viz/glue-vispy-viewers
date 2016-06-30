@@ -3,6 +3,9 @@
 
 - Add support for n-dimensional components in 3D scatter plot viewer. [#158]
 
+- Factor of ~10 improvement in performance when selecting data in the scatter
+  or volume viewers.
+
 0.4 (2016-05-24)
 ----------------
 
