@@ -1,8 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
-import numpy as np
+from glue.config import colormaps
 from glue.external.echo import CallbackProperty
-from glue.core.state_objects import StateAttributeSingleValueHelper
+from glue.core.state_objects import StateAttributeLimitsHelper
 
 from ..common.layer_state import VispyLayerState
 
@@ -16,7 +16,12 @@ class IsosurfaceLayerState(VispyLayerState):
     """
 
     attribute = CallbackProperty()
-    level = CallbackProperty()
+
+    level_low = CallbackProperty()
+    level_high = CallbackProperty()
+    cmap = CallbackProperty()
+    step = CallbackProperty()
+    step_value = CallbackProperty()
 
     level_cache = CallbackProperty({})
 
@@ -24,14 +29,11 @@ class IsosurfaceLayerState(VispyLayerState):
 
         super(IsosurfaceLayerState, self).__init__(**kwargs)
 
-        def default_level(values):
-            percentile = max((1 - 1e3 / values.size) * 100, 99)
-            return np.percentile(values, percentile)
+        self.level_helper = StateAttributeLimitsHelper(self, attribute='attribute',
+                                                       lower='level_low', upper='level_high')
 
-        self.level_helper = StateAttributeSingleValueHelper(self, 'attribute',
-                                                            default_level,
-                                                            value='level',
-                                                            cache=self.level_cache)
+        if self.cmap is None:
+            self.cmap = colormaps.members[0][1]
 
     def update_priority(self, name):
         return 0 if name == 'level' else 1

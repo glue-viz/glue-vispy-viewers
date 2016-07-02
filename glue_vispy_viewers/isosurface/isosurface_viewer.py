@@ -4,6 +4,9 @@ from ..common.vispy_data_viewer import BaseVispyViewer
 from .layer_artist import IsosurfaceLayerArtist
 from .layer_style_widget import IsosurfaceLayerStyleWidget
 
+from ..common import tools  # noqa
+from ..common import selection_tools  # noqa
+
 
 class VispyIsosurfaceViewer(BaseVispyViewer):
 

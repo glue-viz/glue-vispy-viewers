@@ -2,6 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 from matplotlib.colors import ColorConverter
+from scipy.ndimage import gaussian_filter
+
 
 from ..extern.vispy import scene
 from ..extern.vispy.color import Color
@@ -12,6 +14,49 @@ from glue.core.exceptions import IncompatibleAttribute
 from .layer_state import IsosurfaceLayerState
 from ..common.layer_artist import VispyLayerArtist
 
+from ..extern.vispy.color import BaseColormap, get_colormaps
+from ..extern.vispy.visuals.volume import frag_dict, FRAG_SHADER
+
+from itertools import cycle
+from .multi_iso_visual import MultiIsoVisual
+
+# TODO: create colormaps that is prettier
+class TransFire(BaseColormap):
+    glsl_map = """
+    vec4 translucent_grays(int l){
+    if (l==1)
+        {return $color_0;}
+    if (l==2)
+        {return $color_1;}
+    if (l==3)
+        {return $color_2;}
+    if (l==4)
+        {return $color_3;}
+    if (l==5)
+        {return $color_4;}
+    if (l==6)
+        {return $color_5;}
+    if (l==7)
+        {return $color_6;}
+    if (l==8)
+        {return $color_7;}
+    if (l==9)
+        {return $color_8;}
+    if (l==10)
+        {return $color_9;}
+
+    }
+    """
+# class AutoCmap(BaseColormap):
+#     colors =
+#     glsl_map = """
+#     vec4 translucent_grays(int l){
+#
+#     }
+#     """
+# vec4 translucent_fire(float t) {
+#         return vec4(pow(t, 0.5), t, t*t, max(0, t*1.05 - 0.05));
+#     }
 
 class IsosurfaceLayerArtist(VispyLayerArtist):
     """
@@ -34,9 +79,14 @@ class IsosurfaceLayerArtist(VispyLayerArtist):
         if self.state not in self._viewer_state.layers:
             self._viewer_state.layers.append(self.state)
 
-        self._iso_visual = scene.Isosurface(np.ones((3, 3, 3)), level=0.5, shading='smooth')
+        # self._iso_visual = scene.Isosurface(np.ones((3, 3, 3)), level=0.5, shading='smooth')
+        # Create isosurface visual
+        self._iso_visual = MultiIsoVisual(np.ones((3, 3, 3)), step=4, relative_step_size=0.5)
+        # relative_step_size: ray casting performance, recommond 0.5~1.5)
         self.vispy_widget.add_data_visual(self._iso_visual)
-        self._vispy_color = None
+
+        # Set up connections so that when any of the properties are
+        # modified, we update the appropriate part of the visualization
 
         # TODO: Maybe should reintroduce global callbacks since they behave differently...
         self.state.add_callback('*', self._update_from_state, as_kwargs=True)
@@ -70,28 +120,32 @@ class IsosurfaceLayerArtist(VispyLayerArtist):
         self._changed = False
 
     def _update_from_state(self, **props):
-        if 'attribute' in props:
+        if any(prop in props for prop in ('attribute', 'level_low', 'level_high')):
             self._update_data()
-        if 'level' in props:
+        if 'step_value' in props:
             self._update_level()
-        if any(prop in props for prop in ('color', 'alpha')):
+        if any(prop in props for prop in ('color', 'alpha', 'cmap')):
             self._update_color()
+        if 'step' in props:
+            self._update_step()
 
     def _update_level(self):
-        self._iso_visual.level = self.state.level
+        # TODO: set iso clim
+        # self._iso_visual.set_data()
+        pass
+
+    def _update_step(self):
+        # TODO: generate a new color and transparancy scheme based on step num
+        self._iso_visual.step = self.state.step
         self.redraw()
+        # self._update_color()
 
     def _update_color(self):
-        self._update_vispy_color()
-        if self._vispy_color is not None:
-            self._iso_visual.color = self._vispy_color
+        cmap_data = self.state.cmap(np.linspace(0, 1, 10).tolist())  # self.cmap returns 10 colors
+        cmap_data = cmap_data.tolist()
+        t = TransFire(colors=cmap_data)
+        self._iso_visual.cmap = t
         self.redraw()
-
-    def _update_vispy_color(self):
-        if self.state.color is None:
-            return
-        self._vispy_color = Color(ColorConverter().to_rgb(self.state.color))
-        self._vispy_color.alpha = self.state.alpha
 
     def _update_data(self):
 
@@ -121,7 +175,14 @@ class IsosurfaceLayerArtist(VispyLayerArtist):
             data[:kmin] = invalid
             data[kmax:] = invalid
 
-        self._iso_visual.set_data(np.nan_to_num(data).transpose())
+        # self._iso_visual.set_data(np.nan_to_num(data).transpose())
+        gaussian_data = gaussian_filter(data/4, 1)
+
+        # TODO: the clim here conflict with set levels
+        # self._iso_visual.set_data(np.nan_to_num(gaussian_data), clim=(self.level_low, self.level_high))
+        # self._iso_visual.step = self.step
+
+        self._iso_visual.set_data(np.nan_to_num(gaussian_data))
         self.redraw()
 
     def _update_visibility(self):
