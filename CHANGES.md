@@ -4,7 +4,11 @@
 - Add support for n-dimensional components in 3D scatter plot viewer. [#158]
 
 - Factor of ~10 improvement in performance when selecting data in the scatter
-  or volume viewers.
+  or volume viewers. [#165]
+
+- Make selection frame wider. [#161]
+- Small fix of the camera initial settings & rotate speed . [#154] 
+
 
 0.4 (2016-05-24)
 ----------------
