@@ -15,6 +15,8 @@ from matplotlib.colors import ColorConverter
 
 rgb = ColorConverter().to_rgb
 
+from ..extern.vispy.visuals.transforms import STTransform
+
 
 class VispyWidget(QtGui.QWidget):
 
@@ -46,29 +48,32 @@ class VispyWidget(QtGui.QWidget):
         self.scene_transform = scene.STTransform()
         self.limit_transforms = {}
 
+        fc = rgb(settings.FOREGROUND_COLOR)
+
         # Add a 3D cube to show us the unit cube. The 1.001 factor is to make
         # sure that the grid lines are not 'hidden' by volume renderings on the
         # front side due to numerical precision.
         vertices, filled_indices, outline_indices = create_cube()
         self.axis = scene.visuals.Mesh(vertices['position'],
                                        outline_indices,
-                                       color=rgb(settings.FOREGROUND_COLOR), mode='lines')
+                                       color=fc, mode='lines')
         self.axis.transform = self.scene_transform
         self.view.add(self.axis)
 
         # add the axis visual from Vispy library, with 2D ticks and labels, more refer to:
         # https://github.com/vispy/vispy/blob/959fe5643ec9d717f9f01ba97552ec1c1668ec04/vispy/visuals/axis.py
         # TODO: move this 3d axis into a subclass, set domain as data shape, add coordinate labels
+        # TODO: tick text color as foreground color
         self.xax = scene.visuals.Axis(pos=[[-1.0, -1.0], [1.0, -1.0]], domain=(5., 10.), tick_direction=(0, -1),
-                         font_size=10, axis_color='w', tick_color='w', text_color='w',
+                         font_size=10, axis_color=fc, tick_color=fc, text_color=fc,
                          parent=self.view.scene)
 
         self.yax = scene.visuals.Axis(pos=[[-1.0, -1.0], [-1.0, 1.0]], tick_direction=(-1, 0),
-                         font_size=10, axis_color='w', tick_color='w', text_color='w',
+                         font_size=10, axis_color=fc, tick_color=fc, text_color=fc,
                          parent=self.view.scene)
 
         self.zax = scene.visuals.Axis(pos=[[-1.0, -1.0], [-1.0, 1.0]], tick_direction=(-1, 0),
-                         font_size=10, axis_color='w', tick_color='w', text_color='w',
+                         font_size=10, axis_color=fc, tick_color=fc, text_color=fc,
                          parent=self.view.scene)
 
         self.xytr = STTransform()
@@ -108,6 +113,20 @@ class VispyWidget(QtGui.QWidget):
         # Set up callbacks
         add_callback(self, 'visible_axes', nonpartial(self._toggle_axes))
         add_callback(self, 'perspective_view', nonpartial(self._toggle_perspective))
+
+    # TODO: how to get data here?
+    def update_axis_label(self, data):
+        # data object
+        label = []
+        tick_value = []
+        if data.coords:
+            # TODO: think about 4th dim
+            for i in range(data.ndim):
+                label.append(data.coords.axis_label(i))  # ['Vopt', 'Declination', 'Right Ascension']
+                tick_value.append(data._world_component_ids[label[i]])
+            self.xax.domain = tick_value[0]
+            self.yax.domain = tick_value[1]
+            self.zax.domain = tick_value[2]
 
     def _toggle_axes(self):
         if self.visible_axes:
