@@ -114,20 +114,6 @@ class VispyWidget(QtGui.QWidget):
         add_callback(self, 'visible_axes', nonpartial(self._toggle_axes))
         add_callback(self, 'perspective_view', nonpartial(self._toggle_perspective))
 
-    # TODO: how to get data here?
-    def update_axis_label(self, data):
-        # data object
-        label = []
-        tick_value = []
-        if data.coords:
-            # TODO: think about 4th dim
-            for i in range(data.ndim):
-                label.append(data.coords.axis_label(i))  # ['Vopt', 'Declination', 'Right Ascension']
-                tick_value.append(data._world_component_ids[label[i]])
-            self.xax.domain = tick_value[0]
-            self.yax.domain = tick_value[1]
-            self.zax.domain = tick_value[2]
-
     def _toggle_axes(self):
         if self.visible_axes:
             self.axis.parent = self.view.scene
@@ -182,6 +168,10 @@ class VispyWidget(QtGui.QWidget):
         for visual in self.limit_transforms:
             self.limit_transforms[visual].scale = scale
             self.limit_transforms[visual].translate = translate
+
+        self.xax.domain = (self.options.x_min, self.options.x_max)
+        self.yax.domain = (self.options.y_min, self.options.y_max)
+        self.zax.domain = (self.options.z_min, self.options.z_max)
 
     def _reset_view(self):
         self.view.camera.reset()
