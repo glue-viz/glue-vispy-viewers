@@ -78,7 +78,7 @@ class VispyWidget(QtWidgets.QWidget):
                          font_size=10, axis_color=fc, tick_color=fc, text_color=fc,
                          parent=self.view.scene)
 
-        self.zax = scene.visuals.Axis(pos=[[-1.0, -1.0], [-1.0, 1.0]], tick_direction=(-1, 0),
+        self.zax = scene.visuals.Axis(pos=[[-1.0, -1.0], [-1.0, 1.0]], tick_direction=(1, 0),
                          font_size=10, axis_color=fc, tick_color=fc, text_color=fc,
                          parent=self.view.scene)
 
