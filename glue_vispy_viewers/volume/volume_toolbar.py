@@ -155,10 +155,13 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
         x = (max_value_pos[0] - trans[0])/scale[0]
         y = (max_value_pos[1] - trans[1])/scale[1]
         z = (max_value_pos[2] - trans[2])/scale[2]
+        print('floodfill start point', z, y, x)
+
+        # or still (z y x)
 
         if self.max_value_pos:
-            selec_mask = floodfill_scipy(formate_data, (z, y, x),
-                                         threshold).astype(float) * 5
+            selec_mask = floodfill_scipy(formate_data, (max_value_pos[2], max_value_pos[1], max_value_pos[0]),
+                                         threshold)
             return selec_mask
         else:
             return None
@@ -248,6 +251,6 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
         end_point = self.visual_tr.map(end_point)
         end_point = end_point[:3] / end_point[3]
 
-        self.ray_line.set_data(np.array([end_point, start_point[:3]]))
+        # self.ray_line.set_data(np.array([end_point, start_point[:3]]))
 
         return np.array([end_point, start_point[:3]])
