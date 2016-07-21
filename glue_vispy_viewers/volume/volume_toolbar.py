@@ -176,11 +176,11 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
         # TODO: add support for multiple data here, data_array should
         # cover all self.visible_data array
 
-        tr = as_matrix_transform(visual.get_transform(map_from='visual', map_to='canvas'))
+        tr = as_matrix_transform(self.visual.get_transform(map_from='visual', map_to='canvas'))
 
         self.trans_ones_data = np.transpose(np.ones(data_object.data.shape))
 
-        pos_data = np.indices(layer.data.shape[::-1], dtype=float).reshape(3, -1).transpose()
+        pos_data = np.indices(data_object.data.shape[::-1], dtype=float).reshape(3, -1).transpose()
 
         data = tr.map(pos_data)
         data /= data[:, 3:]   # normalize with homogeneous coordinates
