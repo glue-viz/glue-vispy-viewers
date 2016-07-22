@@ -12,7 +12,7 @@ from ..utils import as_matrix_transform
 from matplotlib import path
 from ..extern.vispy import scene
 
-from floodfill_scipy import floodfill_scipy
+from .floodfill_scipy import floodfill_scipy
 
 
 class VolumeSelectionToolbar(VispyDataViewerToolbar):
