@@ -220,20 +220,31 @@ class VispyOptionsWidget(QtGui.QWidget):
             self._limits = {}
 
         if self.use_world:
-            # if I got data here
+            # TODO: if I got data here
             for i, s in enumerate(self.data.shape):
-                if type(self.data.coords) != Coordinates:
+                if type(self.data.coords) != Coordinates: # what's this for?
                     world = self.data.coords.world_axis(self.data, i) # i is the axis index
                     world_warning = len(self.data.coords.dependent_axes(i)) > 1
                 else:
                     world = None
                     world_warning = False
-                # text = self._components[??].data
+
+                # i of 0, 1, 2 -> z, y, x
+                if i == 0:
+                    self._limits[self.z_att] = min(world), max(world)
+                if i == 1:
+                    self._limits[self.y_att] = min(world), max(world)
+                if i == 2:
+                    self._limits[self.x_att] = min(world), max(world)
+
+                # TODO: value is for settting limits on vispy_widget, self.xyz _ min/max still
+                # represent channel value so we later don't need to transform wcs back to pixel
+                # coor for user setting limits
+                    
                 # value = np.argmin(np.abs(self._world - float(text)))
                 # self._limits[??] = value_min, value_max
 
         else:
-            # self.xyz _ min/max still stands for channel value
             self._limits[self.x_att] = self.x_min, self.x_max
             self._limits[self.y_att] = self.y_min, self.y_max
             self._limits[self.z_att] = self.z_min, self.z_max
