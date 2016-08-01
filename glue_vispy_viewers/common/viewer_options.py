@@ -31,6 +31,8 @@ class VispyOptionsWidget(QtGui.QWidget):
     visible_box = ButtonProperty('ui.checkbox_axes')
     perspective_view = ButtonProperty('ui.checkbox_perspective')
 
+    use_world = ButtonProperty('ui.checkbox_world')
+
     def __init__(self, parent=None, vispy_widget=None, data_viewer=None):
 
         super(VispyOptionsWidget, self).__init__(parent=parent)
@@ -84,6 +86,7 @@ class VispyOptionsWidget(QtGui.QWidget):
         self.ui.button_flip_z.clicked.connect(self._flip_z)
 
         self.ui.reset_button.clicked.connect(self._vispy_widget._reset_view)
+        self.ui.checkbox_world.toggled.connect(self._update_limits)
 
         self._components = {}
 
@@ -106,6 +109,9 @@ class VispyOptionsWidget(QtGui.QWidget):
         self._set_limits_enabled(True)
 
         self.ui.value_x_min.editingFinished.emit()
+        print('call set_limits?')
+        print('what is xyz min max', x_max, x_min, y_max, y_min)
+
 
     def _flip_x(self):
         self._set_limits_enabled(False)
@@ -154,7 +160,7 @@ class VispyOptionsWidget(QtGui.QWidget):
         self.ui.value_z_max.blockSignals(not value)
 
     def _update_attributes_from_data(self, data):
-
+        # init attributes
         components = data.visible_components
 
         for component_id in components:
@@ -180,6 +186,7 @@ class VispyOptionsWidget(QtGui.QWidget):
         self._update_attribute_limits()
 
     def _update_attribute_limits(self):
+        # called by update_attributes_from_data
 
         if not hasattr(self, '_limits'):
             self._limits = {}
@@ -206,6 +213,11 @@ class VispyOptionsWidget(QtGui.QWidget):
         self.ui.value_x_min.editingFinished.emit()
 
     def _update_limits(self):
+        if self.use_world:
+            print('transform xyz to world coor here')
+            # if I have world here
+            # xyz -> world coor xyz
+
 
         if not hasattr(self, '_limits'):
             self._limits = {}
@@ -250,4 +262,5 @@ class VispyOptionsWidget(QtGui.QWidget):
                     z_min=self.z_min, z_max=self.z_max,
                     z_stretch=self.z_stretch,
                     visible_box=self.visible_box,
-                    perspective_view=self.perspective_view)
+                    perspective_view=self.perspective_view,
+                    use_world=self.use_world)
