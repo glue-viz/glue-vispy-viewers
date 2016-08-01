@@ -5,6 +5,7 @@ from functools import partial
 import numpy as np
 from glue.external.qt import QtGui
 
+from glue.core import Coordinates
 from glue.utils.qt.widget_properties import CurrentComboProperty, FloatLineProperty, connect_bool_button, ButtonProperty
 from glue.utils.qt import load_ui
 
@@ -43,6 +44,8 @@ class VispyOptionsWidget(QtGui.QWidget):
         self._vispy_widget = vispy_widget
         vispy_widget.options = self
         self._data_viewer = data_viewer
+
+        self.data = None
 
         self.stretch_sliders = [self.ui.slider_x_stretch,
                                 self.ui.slider_y_stretch,
@@ -213,18 +216,27 @@ class VispyOptionsWidget(QtGui.QWidget):
         self.ui.value_x_min.editingFinished.emit()
 
     def _update_limits(self):
-        if self.use_world:
-            print('transform xyz to world coor here')
-            # if I have world here
-            # xyz -> world coor xyz
-
-
         if not hasattr(self, '_limits'):
             self._limits = {}
 
-        self._limits[self.x_att] = self.x_min, self.x_max
-        self._limits[self.y_att] = self.y_min, self.y_max
-        self._limits[self.z_att] = self.z_min, self.z_max
+        if self.use_world:
+            # if I got data here
+            for i, s in enumerate(self.data.shape):
+                if type(self.data.coords) != Coordinates:
+                    world = self.data.coords.world_axis(self.data, i) # i is the axis index
+                    world_warning = len(self.data.coords.dependent_axes(i)) > 1
+                else:
+                    world = None
+                    world_warning = False
+                # text = self._components[??].data
+                # value = np.argmin(np.abs(self._world - float(text)))
+                # self._limits[??] = value_min, value_max
+
+        else:
+            # self.xyz _ min/max still stands for channel value
+            self._limits[self.x_att] = self.x_min, self.x_max
+            self._limits[self.y_att] = self.y_min, self.y_max
+            self._limits[self.z_att] = self.z_min, self.z_max
 
         self._vispy_widget._update_limits()
 
