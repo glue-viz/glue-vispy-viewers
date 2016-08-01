@@ -8,6 +8,7 @@
 
 - Make selection frame wider. [#161]
 - Small fix of the camera initial settings & rotate speed . [#154] 
+- Advanced point-mode selection for scatter points. [#160]
 
 
 0.4 (2016-05-24)
