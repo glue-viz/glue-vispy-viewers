@@ -40,6 +40,7 @@ class CornerXYZAxis(scene.visuals.XYZAxis):
 
     @property
     def camera(self):
+        # TurntableCamera
         return self._vispy_widget.view.camera
 
     # Implement axis connection with self.camera
