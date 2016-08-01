@@ -2,13 +2,14 @@ __author__ = 'penny'
 
 import numpy as np
 
-from vispy import app, scene, io
-from vispy.visuals.transforms import STTransform
+from ..extern.vispy import app, scene, io
+from ..extern.vispy.visuals.transforms import STTransform
 
 
 # TODO: ticks and labels will be implemented here
 
 class CornerXYZAxis(scene.visuals.XYZAxis):
+    # Axes are x=red, y=green, z=blue.
     def __init__(self, vispy_widget=None, *args, **kwargs):
 
         super(CornerXYZAxis, self).__init__(*args, **kwargs)
@@ -46,9 +47,9 @@ class CornerXYZAxis(scene.visuals.XYZAxis):
         if event.button == 1 and event.is_dragging:
             self.transform.reset()
 
-            self.transform.rotate(self.camera.roll, (0, 0, 1))
-            self.transform.rotate(self.camera.elevation, (1, 0, 0))
-            self.transform.rotate(self.camera.azimuth, (0, 1, 0))
+            self.transform.rotate(-self.camera.roll, (0, 0, 1))
+            self.transform.rotate(-self.camera.elevation, (1, 0, 0))
+            self.transform.rotate(-self.camera.azimuth, (0, 1, 0))
 
             self.transform.scale((50, 50, 0.001))
             self.transform.translate((50., 50.))
