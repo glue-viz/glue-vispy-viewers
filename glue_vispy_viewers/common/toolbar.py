@@ -26,6 +26,7 @@ POINT_ICON = os.path.join(os.path.dirname(__file__), 'glue_point.png')
 ROTATE_ICON = os.path.join(os.path.dirname(__file__), 'glue_rotate.png')
 RECORD_START_ICON = os.path.join(os.path.dirname(__file__), 'glue_record_start.png')
 RECORD_STOP_ICON = os.path.join(os.path.dirname(__file__), 'glue_record_stop.png')
+DENDROGRAM_ICON = os.path.join(os.path.dirname(__file__), 'glue_dendrogram.png')
 
 
 class VispyDataViewerToolbar(QtWidgets.QToolBar):
@@ -117,6 +118,14 @@ class VispyDataViewerToolbar(QtWidgets.QToolBar):
         self.addAction(a)
         self.point_action = a
 
+        # TODO: show if there is dendrogram file or not shown
+        a = QtGui.QAction(QtGui.QIcon(DENDROGRAM_ICON), 'Dendrogram Selection', parent)
+        a.triggered.connect(nonpartial(self.toggle_dendrogram))
+        a.setCheckable(True)
+        parent.addAction(a)
+        self.addAction(a)
+        self.dendrogram_action = a
+
         # Connect callback functions to VisPy Canvas
         self._vispy_widget.canvas.events.mouse_press.connect(self.on_mouse_press)
         self._vispy_widget.canvas.events.mouse_release.connect(self.on_mouse_release)
@@ -171,42 +180,50 @@ class VispyDataViewerToolbar(QtWidgets.QToolBar):
     def toggle_lasso(self):
         if self.lasso_action.isChecked():
             self.mode = 'lasso'
-            self.rectangle_action.setChecked(False)
-            self.point_action.setChecked(False)
-            self.ellipse_action.setChecked(False)
-            self.rotate_action.setChecked(False)
+            self.set_all_false()
+            self.lasso_action.setChecked(True)
         else:
             self.mode = None
 
     def toggle_rectangle(self):
         if self.rectangle_action.isChecked():
             self.mode = 'rectangle'
-            self.lasso_action.setChecked(False)
-            self.point_action.setChecked(False)
-            self.ellipse_action.setChecked(False)
-            self.rotate_action.setChecked(False)
+            self.set_all_false()
+            self.rectangle_action.setChecked(True)
         else:
             self.mode = None
 
     def toggle_ellipse(self):
         if self.ellipse_action.isChecked():
             self.mode = 'ellipse'
-            self.lasso_action.setChecked(False)
-            self.point_action.setChecked(False)
-            self.rectangle_action.setChecked(False)
-            self.rotate_action.setChecked(False)
+            self.set_all_false()
+            self.ellipse_action.setChecked(True)
         else:
             self.mode = None
 
     def toggle_point(self):
         if self.point_action.isChecked():
             self.mode = 'point'
-            self.lasso_action.setChecked(False)
-            self.rectangle_action.setChecked(False)
-            self.ellipse_action.setChecked(False)
-            self.rotate_action.setChecked(False)
+            self.set_all_false()
+            self.point_action.setChecked(True)
         else:
             self.mode = None
+
+    def toggle_dendrogram(self):
+        if self.dendrogram_action.isChecked():
+            self.mode = 'dendrogram'
+            self.set_all_false()
+            self.dendrogram_action.setChecked(True)
+        else:
+            self.mode = None
+
+    def set_all_false(self):
+        self.lasso_action.setChecked(False)
+        self.rectangle_action.setChecked(False)
+        self.ellipse_action.setChecked(False)
+        self.point_action.setChecked(False)
+        self.dendrogram_action.setChecked(False)
+        self.rotate_action.setChecked(False)
 
     def toggle_rotate(self):
         if self.rotate_action.isChecked():

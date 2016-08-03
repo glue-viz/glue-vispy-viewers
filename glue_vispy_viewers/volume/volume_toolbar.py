@@ -15,6 +15,7 @@ from .floodfill_scipy import floodfill_scipy
 from matplotlib import path
 from glue.core.roi import RectangularROI, CircularROI, PolygonalROI
 from astrodendro import Dendrogram
+from ..extern.vispy import scene
 
 
 class VolumeSelectionToolbar(VispyDataViewerToolbar):
@@ -23,6 +24,11 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
         super(VolumeSelectionToolbar, self).__init__(vispy_widget=vispy_widget,
                                                      parent=parent)
         self.markers = scene.visuals.Markers(parent=self._vispy_widget.view.scene)
+        # for getting transposed vol_data shape and getting pos array
+        self.trans_ones_data = None
+        # add some markers
+        self.ray_line = scene.visuals.Line(color='green', width=5,
+                                           parent=self._vispy_widget.view.scene)
 
         self.visual_tr = None
         self.visible_data = None
@@ -33,6 +39,7 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
 
 
 # todo: add global variable of self.visual, vol_data, vol_shape
+        self.vol_data = None
 
     def on_mouse_press(self, event):
         """
@@ -54,6 +61,74 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
             max_value_pos, max_value = self.get_inter_value(pos)
             self.max_value_pos = max_value_pos
             self.max_value = max_value
+            # do the initiation here
+            self.selection_origin = event.pos
+            self.visible_data, self.visual = self.get_visible_data()
+
+            # for dendrogram cube the two attributes are intensity and structure, no ['PRIMARY']
+            data_array = self.visible_data[0]['intensity']
+
+            self.trans_ones_data = np.transpose(np.ones(data_array.shape))
+
+            self.vol_data = data_array # current_layer
+            self.visual_tr = self._vispy_widget.limit_transforms[self.visual]
+
+        if self.mode is 'dendrogram':
+
+            # get start and end point of ray line
+            pos = self.get_ray_line()
+            max_value_pos, max_value = self.get_inter_value(pos)
+            self.max_value_pos = max_value_pos
+
+            # change the color of max value marker
+            if max_value:
+                self.markers.set_data(pos=np.array(max_value_pos),
+                                      face_color='yellow')
+                status_text = 'pos '+str(max_value_pos[0]) \
+                              + ' value '+str(max_value)
+                # TODO: AttributeError: 'VispyVolumeViewer' object has no attribute 'show_status'
+                # self._vispy_data_viewer.show_status(status_text)
+
+                # TODO: vispy_viewer doesn't have client, how to get dendrogram data?
+                print('visible_data, client.data', self.visible_data, self._vispy_widget.client.data)
+                for each_data in self._vispy_widget.client.data:
+                    if each_data.label == 'Dendrogram':
+                        d = each_data
+
+                try:
+                    branch_label = self.visible_data[0]['structure'][max_value_pos]
+                    print('branch_label', branch_label)
+                except IndexError:
+                    branch_label = -1
+
+                # no structure found
+                if branch_label == -1:
+                    return None
+
+                # similar to DFS to find children
+                def get_all_branch(d, branch_label, ini_mask):
+                    mask = np.logical_or(ini_mask, self.visible_data['structure'] == branch_label)
+                    child_label = np.where(d['parent'] == branch_label)
+
+                    if len(child_label[0]) != 0:
+                        for each_child in child_label[0]:
+                            mask = get_all_branch(d, each_child, mask)
+                    return mask
+
+                ini_mask = np.zeros(self.visible_data['structure'].shape, dtype=bool)
+                mask = get_all_branch(d, branch_label, ini_mask)
+                print('sum mask', sum(mask))
+
+                # dendro_mask = substructure.get_mask(shape=np.transpose(self.trans_ones_data).shape)
+                # dendro_mask = np.ravel(dendro_mask) # confused by the transpose here
+                self.mark_selected(mask, self.vol_data)
+
+                self._vispy_widget.canvas.update()
+
+                # visible_data, visual = self.get_visible_data()
+                # self.vol_data = visible_data
+                # current_layer = visible_data[0]
+                # max_pos = self.get_max_pos()
 
             # set marker and status text
             if max_value:
@@ -182,16 +257,41 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
         pos_data = np.indices(data_object.data.shape[::-1], dtype=float)
         pos_data = pos_data.reshape(3, -1).transpose()
 
+        # TODO: add support for multiple data here, data_array should
+        # cover all self.visible_data array
+
+
+        self.trans_ones_data = np.transpose(np.ones(data_object.data.shape))
+
         data = tr.map(pos_data)
         data /= data[:, 3:]   # normalize with homogeneous coordinates
         return data[:, :2]
+
+    def get_max_pos(self):
+        # Ray intersection on the CPU to highlight the selected point(s)
+        data = self.get_map_data()  # Map coordinates
+        m1 = data > (self.selection_origin - 4)
+        m2 = data < (self.selection_origin + 4)
+        max_value = 0.
+        max_pos = None
+        pick_selected = np.argwhere(m1[:,0] & m1[:,1] & m2[:,0] & m2[:,1])
+        for item in pick_selected:
+            index = np.unravel_index(item, self.trans_ones_data.shape)
+            if self.vol_data[index] > max_value:
+                max_value = self.vol_data[index]
+                max_pos = np.array(index).flatten()
+        print('maxpos, maxvalue', max_pos, max_value)
+        # return max_pos[0], max_pos[1], max_pos[2]
+        return max_pos # regarding to the transposed volume data
 
     def get_inter_value(self, pos):
         trans = self.visual_tr.translate
         scale = self.visual_tr.scale
 
         inter_pos = []
+
         for z in range(0, self.current_visible_array.shape[0]):
+        # for z in range(0, self.vol_data.shape[0]):
             #   3D line defined with two points (x0, y0, z0) and (x1, y1, z1) as
             #   (x - x1)/(x2 - x1) = (y - y1)/(y2 - y1) = (z - z1)/(z2 - z1) = t
             z = z * scale[2] + trans[2]
@@ -206,6 +306,9 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
         m2 = inter_pos[:, 0] < (self.current_visible_array.shape[2] * scale[0] + trans[0])
         m3 = inter_pos[:, 1] > trans[1]  # for y
         m4 = inter_pos[:, 1] < (self.current_visible_array.shape[1]*scale[1] + trans[1])
+        # m2 = inter_pos[:, 0] < (self.vol_data.shape[2] * scale[0] + trans[0])
+        # m3 = inter_pos[:, 1] > trans[1]  # for y
+        # m4 = inter_pos[:, 1] < (self.vol_data.shape[1]*scale[1] + trans[1])
         inter_pos = inter_pos[m1 & m2 & m3 & m4]
 
         # set colors for markers
@@ -218,7 +321,10 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
             x = (each_point[0] - trans[0])/scale[0]
             y = (each_point[1] - trans[1])/scale[1]
             z = (each_point[2] - trans[2])/scale[2]
+
             inter_value.append(self.current_visible_array[(z, y, x)])
+
+            # inter_value.append(self.vol_data[(z, y, x)])
         inter_value = np.array(inter_value)
 
         assert inter_value.shape[0] == inter_pos.shape[0]
@@ -247,5 +353,8 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
         # add the self.visual local transform
         end_point = self.visual_tr.map(end_point)
         end_point = end_point[:3] / end_point[3]
+
+
+        # self.ray_line.set_data(np.array([end_point, start_point[:3]]))
 
         return np.array([end_point, start_point[:3]])
