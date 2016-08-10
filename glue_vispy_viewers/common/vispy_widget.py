@@ -6,9 +6,14 @@ import numpy as np
 from ..extern.vispy import scene
 from ..extern.vispy.geometry import create_cube
 
+try:
+    from glue.external.qt import QtGui as QtWidgets
+except ImportError:
+    from qtpy import QtWidgets
+
 from glue.config import settings
 from glue.external.echo import CallbackProperty, add_callback
-from glue.external.qt import QtGui, get_qapp
+from glue.utils.qt import get_qapp
 from glue.utils import nonpartial
 
 from matplotlib.colors import ColorConverter
@@ -16,7 +21,7 @@ from matplotlib.colors import ColorConverter
 rgb = ColorConverter().to_rgb
 
 
-class VispyWidget(QtGui.QWidget):
+class VispyWidget(QtWidgets.QWidget):
 
     visible_axes = CallbackProperty()
     perspective_view = CallbackProperty()
@@ -64,7 +69,7 @@ class VispyWidget(QtGui.QWidget):
         self.view.camera = scene.cameras.TurntableCamera(parent=self.view.scene, fov=0., distance=4.0)
 
         # Add the native canvas widget to this widget
-        layout = QtGui.QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.canvas.native)
         self.setLayout(layout)

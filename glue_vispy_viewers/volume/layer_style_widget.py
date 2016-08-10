@@ -6,8 +6,12 @@ import numpy as np
 
 from glue.core.subset import Subset
 
+try:
+    from glue.external.qt import QtGui as QtWidgets
+except ImportError:
+    from qtpy import QtWidgets
+
 from glue.external.echo import delay_callback
-from glue.external.qt import QtGui
 from glue.utils.qt import load_ui, update_combobox, connect_color
 from glue.utils.qt.widget_properties import (ButtonProperty,
                                              ValueProperty,
@@ -17,7 +21,7 @@ from glue.utils.qt.widget_properties import (ButtonProperty,
                                              connect_current_combo)
 
 
-class VolumeLayerStyleWidget(QtGui.QWidget):
+class VolumeLayerStyleWidget(QtWidgets.QWidget):
 
     # GUI elements
     attribute = CurrentComboProperty('ui.combo_attribute')

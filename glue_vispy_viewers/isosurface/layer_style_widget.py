@@ -7,7 +7,12 @@ import numpy as np
 from glue.core.subset import Subset
 
 from glue.external.echo import delay_callback
-from glue.external.qt import QtGui
+
+try:
+    from glue.external.qt import QtGui as QtWidgets
+except ImportError:
+    from qtpy import QtWidgets
+
 from glue.utils.qt import load_ui, update_combobox, connect_color
 from glue.utils.qt.widget_properties import (ValueProperty,
                                              CurrentComboProperty,
@@ -16,7 +21,7 @@ from glue.utils.qt.widget_properties import (ValueProperty,
                                              connect_current_combo)
 
 
-class IsosurfaceLayerStyleWidget(QtGui.QWidget):
+class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
 
     # GUI elements
     attribute = CurrentComboProperty('ui.combo_attribute')

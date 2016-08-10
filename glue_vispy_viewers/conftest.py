@@ -1,6 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt import get_qapp
+try:
+    from glue.external.qt import get_qapp
+except ImportError:
+    from glue.utils.qt import get_qapp
 
 # The application has to always be referenced to avoid being shut down, so we
 # keep a reference to it here

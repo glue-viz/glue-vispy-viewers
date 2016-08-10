@@ -3,7 +3,11 @@ import math
 from functools import partial
 
 import numpy as np
-from glue.external.qt import QtGui
+
+try:
+    from glue.external.qt import QtGui as QtWidgets
+except ImportError:
+    from qtpy import QtWidgets
 
 from glue.utils.qt.widget_properties import CurrentComboProperty, FloatLineProperty, connect_bool_button, ButtonProperty
 from glue.utils.qt import load_ui
@@ -11,7 +15,7 @@ from glue.utils.qt import load_ui
 __all__ = ["VispyOptionsWidget"]
 
 
-class VispyOptionsWidget(QtGui.QWidget):
+class VispyOptionsWidget(QtWidgets.QWidget):
 
     x_att = CurrentComboProperty('ui.combo_x_attribute')
     x_min = FloatLineProperty('ui.value_x_min')
