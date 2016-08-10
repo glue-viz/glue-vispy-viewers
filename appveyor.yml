@@ -13,6 +13,7 @@ environment:
 
       CONDA_CHANNELS: "conda-forge"
       CONDA_DEPENDENCIES: "glueviz scikit-image pytest mock pyqt pyopengl"
+      CONDA_CHANNEL_PRIORITY: "True"
 
   matrix:
       - PYTHON_VERSION: "3.5"
