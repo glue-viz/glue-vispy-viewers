@@ -32,6 +32,7 @@ class IsosurfaceLayerArtist(LayerArtistBase):
 
         self._iso_visual = scene.Isosurface(np.ones((3, 3, 3)), level=0.5, shading='smooth')
         self.vispy_viewer.add_data_visual(self._iso_visual)
+        self._vispy_color = None
 
         # Set up connections so that when any of the properties are
         # modified, we update the appropriate part of the visualization
@@ -80,7 +81,8 @@ class IsosurfaceLayerArtist(LayerArtistBase):
 
     def _update_color(self):
         self._update_vispy_color()
-        self._iso_visual.color = self._vispy_color
+        if self._vispy_color is not None:
+            self._iso_visual.color = self._vispy_color
         self.redraw()
 
     def _update_vispy_color(self):
