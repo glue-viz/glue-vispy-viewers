@@ -3,7 +3,11 @@ import os
 import numpy as np
 from ..extern.vispy import app, scene, io
 
-from glue.external.qt import QtCore, QtGui
+try:
+    from glue.external.qt import QtCore, QtGui as QtWidgets, QtGui
+except ImportError:
+    from qtpy import QtCore, QtWidgets, QtGui
+
 from glue.icons.qt import get_icon
 from glue.utils import nonpartial
 
@@ -46,7 +50,7 @@ class PatchedElementSubsetState(ElementSubsetState):
         return PatchedElementSubsetState(self._data, self._indices)
 
 
-class VispyDataViewerToolbar(QtGui.QToolBar):
+class VispyDataViewerToolbar(QtWidgets.QToolBar):
     """
     This class is for showing the toolbar UI and drawing selection line on canvas
     """
@@ -81,7 +85,7 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
 
         self.writer = None
 
-        a = QtGui.QAction(get_icon('glue_filesave'), 'Save', parent)
+        a = QtWidgets.QAction(get_icon('glue_filesave'), 'Save', parent)
         a.triggered.connect(nonpartial(self.save_figure))
         a.setToolTip('Save the figure')
         a.setShortcut('Ctrl+Shift+S')
@@ -90,7 +94,7 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         self.save_action = a
 
         if IMAGEIO_INSTALLED:
-            a = QtGui.QAction(QtGui.QIcon(RECORD_START_ICON), 'Record', parent)
+            a = QtWidgets.QAction(QtGui.QIcon(RECORD_START_ICON), 'Record', parent)
             a.triggered.connect(nonpartial(self.toggle_record))
             a.setToolTip('Start/Stop the record')
             a.setCheckable(True)
@@ -98,7 +102,7 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
             self.addAction(a)
             self.record_action = a
 
-        a = QtGui.QAction(QtGui.QIcon(ROTATE_ICON), 'Rotate View', parent)
+        a = QtWidgets.QAction(QtGui.QIcon(ROTATE_ICON), 'Rotate View', parent)
         a.triggered.connect(nonpartial(self.toggle_rotate))
         a.setCheckable(True)
         parent.addAction(a)
@@ -106,21 +110,21 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         self.rotate_action = a
 
         # Set up selection actions
-        a = QtGui.QAction(get_icon('glue_lasso'), 'Lasso Selection', parent)
+        a = QtWidgets.QAction(get_icon('glue_lasso'), 'Lasso Selection', parent)
         a.triggered.connect(nonpartial(self.toggle_lasso))
         a.setCheckable(True)
         parent.addAction(a)
         self.addAction(a)
         self.lasso_action = a
 
-        a = QtGui.QAction(get_icon('glue_square'), 'Rectangle Selection', parent)
+        a = QtWidgets.QAction(get_icon('glue_square'), 'Rectangle Selection', parent)
         a.triggered.connect(nonpartial(self.toggle_rectangle))
         a.setCheckable(True)
         parent.addAction(a)
         self.addAction(a)
         self.rectangle_action = a
 
-        a = QtGui.QAction(get_icon('glue_circle'), 'Ellipse Selection', parent)
+        a = QtWidgets.QAction(get_icon('glue_circle'), 'Ellipse Selection', parent)
         a.triggered.connect(nonpartial(self.toggle_ellipse))
         a.setCheckable(True)
         parent.addAction(a)
@@ -128,7 +132,7 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         self.ellipse_action = a
 
         # TODO: change path to icon once it's in a released version of glue
-        a = QtGui.QAction(QtGui.QIcon(POINT_ICON), 'Point Selection', parent)
+        a = QtWidgets.QAction(QtGui.QIcon(POINT_ICON), 'Point Selection', parent)
         a.triggered.connect(nonpartial(self.toggle_point))
         a.setCheckable(True)
         parent.addAction(a)
@@ -141,7 +145,7 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         self._vispy_widget.canvas.events.mouse_move.connect(self.on_mouse_move)
 
     def save_figure(self):
-        outfile, file_filter = QtGui.QFileDialog.getSaveFileName(caption='Save File', filter='PNG Files (*.png);;'
+        outfile, file_filter = QtWidgets.QFileDialog.getSaveFileName(caption='Save File', filter='PNG Files (*.png);;'
                                                                                              'JPEG Files (*.jpeg);;'
                                                                                              'TIFF Files (*.tiff);;')
                                                                                              # 'PDF Files (*.pdf)')
@@ -162,7 +166,7 @@ class VispyDataViewerToolbar(QtGui.QToolBar):
         if self.record_action.isChecked():
             self.record_action.setIcon(QtGui.QIcon(RECORD_STOP_ICON))
             # pop up a window for file saving
-            outfile, file_filter = QtGui.QFileDialog.getSaveFileName(caption='Save Animation',
+            outfile, file_filter = QtWidgets.QFileDialog.getSaveFileName(caption='Save Animation',
                                                                      filter='GIF Files (*.gif);;')
             # This indicates that the user cancelled
             if not outfile:

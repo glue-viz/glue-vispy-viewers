@@ -5,7 +5,11 @@ import os
 import numpy as np
 
 from glue.core.subset import Subset
-from glue.external.qt import QtGui
+
+try:
+    from glue.external.qt import QtGui as QtWidgets
+except ImportError:
+    from qtpy import QtWidgets
 
 from glue.utils.qt import load_ui, update_combobox, connect_color
 from glue.utils.qt.widget_properties import (ValueProperty,
@@ -17,7 +21,7 @@ from glue.utils.qt.widget_properties import (ValueProperty,
                                              connect_value)
 
 
-class ScatterLayerStyleWidget(QtGui.QWidget):
+class ScatterLayerStyleWidget(QtWidgets.QWidget):
 
     # Size-related GUI elements
     size_mode = CurrentComboTextProperty('ui.combo_size_mode')
@@ -196,7 +200,7 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
 
 if __name__ == "__main__":
 
-    from glue.external.qt import get_qapp
+    from glue.utils.qt import get_qapp
     from glue.external.echo import CallbackProperty
 
     app = get_qapp()

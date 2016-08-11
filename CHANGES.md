@@ -7,9 +7,12 @@
   or volume viewers. [#165]
 
 - Make selection frame wider. [#161]
+
 - Small fix of the camera initial settings & rotate speed . [#154] 
+
 - Advanced point-mode selection for scatter points. [#160]
 
+- Fix Qt imports to use QtPy for new versions of glue. [#173]
 
 0.4 (2016-05-24)
 ----------------
