@@ -10,6 +10,7 @@ env:
     - SETUP_XVFB=True
     - CONDA_CHANNELS="conda-forge"
     - CONDA_DEPENDENCIES="glueviz pytest mock pyopengl"
+    - CONDA_CHANNEL_PRIORITY=True
   matrix:
     - PYTHON_VERSION=2.7
     - PYTHON_VERSION=3.5
