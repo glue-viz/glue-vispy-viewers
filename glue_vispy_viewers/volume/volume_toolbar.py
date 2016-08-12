@@ -9,7 +9,6 @@ import numpy as np
 from glue.core.roi import RectangularROI, CircularROI
 from glue.utils.geometry import points_inside_poly
 from ..utils import as_matrix_transform
-from matplotlib import path
 from ..extern.vispy import scene
 
 from .floodfill_scipy import floodfill_scipy
