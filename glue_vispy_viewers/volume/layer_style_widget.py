@@ -66,7 +66,7 @@ class VolumeLayerStyleWidget(QtWidgets.QWidget):
 
         # Set up radio buttons for subset mode selection if this is a subset
         if isinstance(self.layer, Subset):
-            self._radio_size = QtGui.QButtonGroup()
+            self._radio_size = QtWidgets.QButtonGroup()
             self._radio_size.addButton(self.ui.radio_subset_outline)
             self._radio_size.addButton(self.ui.radio_subset_data)
         else:
