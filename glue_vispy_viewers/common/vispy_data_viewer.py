@@ -7,10 +7,9 @@ from glue.core import message as msg
 from glue.core import Data
 
 try:
-    from glue.external.qt import QtGui as QtWidgets, get_qapp
+    from glue.external.qt import QtGui as QtWidgets
 except ImportError:
     from qtpy import QtWidgets
-    from glue.utils.qt import get_qapp
 
 from .vispy_widget import VispyWidget
 from .viewer_options import VispyOptionsWidget
