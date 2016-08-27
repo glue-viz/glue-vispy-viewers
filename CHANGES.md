@@ -3,8 +3,8 @@
 
 - Watch for ``NumericalDataChangedMessage`` messages. [#183, #184]
 
-- Fixed a bug that caused color-coding of points in 3D viewer to not work for
-  negative values. [#182, #185]
+- Fixed a bug that caused color-coding and size-scaling of points in 3D viewer
+  to not work for negative values. [#182, #185]
 
 - Add support for n-dimensional components in 3D scatter plot viewer. [#158]
 

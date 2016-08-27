@@ -145,9 +145,9 @@ class ScatterLayerArtist(LayerArtistBase):
             self._multiscat.set_size(self.id, self.size * self.size_scaling)
         else:
             data = self.layer[self.size_attribute].ravel()
-            size = np.abs(np.nan_to_num(data))
-            size = 20 * (size - self.size_vmin) / (self.size_vmax - self.size_vmin)
+            size = 20 * (data - self.size_vmin) / (self.size_vmax - self.size_vmin)
             size_data = size * self.size_scaling
+            size_data[np.isnan(data)] = 0.
             self._multiscat.set_size(self.id, size_data)
 
     def _update_colors(self):
