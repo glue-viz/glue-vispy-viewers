@@ -34,8 +34,8 @@ class MultiColorScatter(scene.visuals.Markers):
         else:
             self.layers[label] = {'data': None,
                                   'mask': None,
-                                  'color': np.asarray((1, 1, 1)),
-                                  'alpha': 1,
+                                  'color': np.asarray((1., 1., 1.)),
+                                  'alpha': 1.,
                                   'zorder': lambda: 0,
                                   'size': 10,
                                   'visible': True}
@@ -112,11 +112,12 @@ class MultiColorScatter(scene.visuals.Markers):
                 # Colors
 
                 if layer['color'].ndim == 1:
-                    rgba = np.hstack([layer['color'], 0])
+                    rgba = np.hstack([layer['color'], 1])
                     rgba = np.repeat(rgba, n_points).reshape(4, -1).transpose()
                 else:
                     rgba = layer['color']
-                rgba[:, 3] = layer['alpha']
+
+                rgba[:, 3] *= layer['alpha']
 
                 colors.append(rgba)
 
