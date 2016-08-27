@@ -5,8 +5,13 @@ from ..extern.vispy import app, scene, io
 
 try:
     from glue.external.qt import QtCore, QtGui as QtWidgets, QtGui
+    def getsavefilename(*args, **kwargs):
+        if 'filters' in kwargs:
+            kwargs['filter'] = kwargs.pop('filters')
+        return QtWidgets.QFileDialog.getSaveFileName(*args, **kwargs)
 except ImportError:
     from qtpy import QtCore, QtWidgets, QtGui
+    from qtpy.compat import getsavefilename
 
 from glue.icons.qt import get_icon
 from glue.utils import nonpartial
@@ -145,10 +150,11 @@ class VispyDataViewerToolbar(QtWidgets.QToolBar):
         self._vispy_widget.canvas.events.mouse_move.connect(self.on_mouse_move)
 
     def save_figure(self):
-        outfile, file_filter = QtWidgets.QFileDialog.getSaveFileName(caption='Save File', filter='PNG Files (*.png);;'
-                                                                                             'JPEG Files (*.jpeg);;'
-                                                                                             'TIFF Files (*.tiff);;')
-                                                                                             # 'PDF Files (*.pdf)')
+        outfile, file_filter = getsavefilename(caption='Save File',
+                                               filters='PNG Files (*.png);;'
+                                                       'JPEG Files (*.jpeg);;'
+                                                       'TIFF Files (*.tiff);;')
+
         # This indicates that the user cancelled
         if not outfile:
             return
@@ -164,13 +170,16 @@ class VispyDataViewerToolbar(QtWidgets.QToolBar):
 
     def toggle_record(self):
         if self.record_action.isChecked():
-            self.record_action.setIcon(QtGui.QIcon(RECORD_STOP_ICON))
             # pop up a window for file saving
-            outfile, file_filter = QtWidgets.QFileDialog.getSaveFileName(caption='Save Animation',
-                                                                     filter='GIF Files (*.gif);;')
+            outfile, file_filter = getsavefilename(caption='Save Animation',
+                                                   filters='GIF Files (*.gif);;')
             # This indicates that the user cancelled
             if not outfile:
+                self.record_action.blockSignals(True)
+                self.record_action.setChecked(False)
+                self.record_action.blockSignals(False)
                 return
+            self.record_action.setIcon(QtGui.QIcon(RECORD_STOP_ICON))
             self.writer = imageio.get_writer(outfile)
             self.record_timer.start(0.1)
         else:
