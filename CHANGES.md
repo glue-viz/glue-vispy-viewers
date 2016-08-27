@@ -14,7 +14,10 @@
 
 - Advanced point-mode selection for scatter points. [#160]
 
-- Fix Qt imports to use QtPy for new versions of glue. [#173]
+- Fix button to record animations when the user cancels the file save dialog.
+  [#186]
+
+- Fix Qt imports to use QtPy for new versions of glue. [#173, #186]
 
 0.4 (2016-05-24)
 ----------------
