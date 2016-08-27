@@ -157,9 +157,9 @@ class ScatterLayerArtist(LayerArtistBase):
             self._multiscat.set_color(self.id, self.color)
         else:
             data = self.layer[self.cmap_attribute].ravel()
-            cmap_data = np.abs(np.nan_to_num(data))
-            cmap_data = (cmap_data - self.cmap_vmin) / (self.cmap_vmax - self.cmap_vmin)
+            cmap_data = (data - self.cmap_vmin) / (self.cmap_vmax - self.cmap_vmin)
             cmap_data = self.cmap(cmap_data)
+            cmap_data[:,3][np.isnan(data)] = 0.
             self._multiscat.set_color(self.id, cmap_data)
 
     def _update_alpha(self):

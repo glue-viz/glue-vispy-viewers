@@ -3,6 +3,9 @@
 
 - Watch for ``NumericalDataChangedMessage`` messages. [#183, #184]
 
+- Fixed a bug that caused color-coding of points in 3D viewer to not work for
+  negative values. [#182, #185]
+
 - Add support for n-dimensional components in 3D scatter plot viewer. [#158]
 
 - Factor of ~10 improvement in performance when selecting data in the scatter
