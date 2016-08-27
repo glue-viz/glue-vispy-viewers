@@ -57,6 +57,10 @@ class BaseVispyViewer(DataViewer):
                       handler=self.update_window_title,
                       filter=has_data)
 
+        hub.subscribe(self, msg.NumericalDataChangedMessage,
+                      handler=self._numerical_data_changed,
+                      filter=has_data)
+
         hub.subscribe(self, msg.ComponentsChangedMessage,
                       handler=self._update_data,
                       filter=has_data)
@@ -99,6 +103,9 @@ class BaseVispyViewer(DataViewer):
         if message.data in self._layer_artist_container:
             for layer_artist in self._layer_artist_container[message.data]:
                 layer_artist._update_data()
+
+    def _numerical_data_changed(self, message):
+        return self._update_data(message)
 
     def _redraw(self):
         self._vispy_widget.canvas.render()
