@@ -1,6 +1,8 @@
 0.5 (unreleased)
 ----------------
 
+- Watch for ``NumericalDataChangedMessage`` messages. [#183, #184]
+
 - Add support for n-dimensional components in 3D scatter plot viewer. [#158]
 
 - Factor of ~10 improvement in performance when selecting data in the scatter
