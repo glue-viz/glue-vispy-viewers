@@ -19,17 +19,12 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
     def __init__(self, vispy_widget=None, parent=None):
         super(VolumeSelectionToolbar, self).__init__(vispy_widget=vispy_widget,
                                                      parent=parent)
-        # for getting transposed vol_data shape and getting pos array
-        self.trans_ones_data = None
-        # add some markers
         self.markers = scene.visuals.Markers(parent=self._vispy_widget.view.scene)
-        self.ray_line = scene.visuals.Line(color='green', width=5,
-                                           parent=self._vispy_widget.view.scene)
 
         self.visual_tr = None
         self.visible_data = None
         self.visual = None
-        self.vol_data = None
+        self.current_visible_array = None
         self.max_value_pos = None
 
 
@@ -41,14 +36,11 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
         :param event:
         """
         if self.mode:
-            # do the initiation here
             self.selection_origin = event.pos
+
+            # Get all data sets visible in current viewer
             self.visible_data, self.visual = self.get_visible_data()
-
-            data_array = self.visible_data[0]['PRIMARY']
-            self.trans_ones_data = np.transpose(np.ones(data_array.shape))
-
-            self.vol_data = np.nan_to_num(data_array)
+            self.current_visible_array = np.nan_to_num(self.visible_data[0]['PRIMARY'])
             self.visual_tr = self._vispy_widget.limit_transforms[self.visual]
 
         if self.mode is 'point':
@@ -58,7 +50,7 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
             max_value_pos, max_value = self.get_inter_value(pos)
             self.max_value_pos = max_value_pos
 
-            # change the color of max value marker
+            # set marker and status text
             if max_value:
                 self.markers.set_data(pos=np.array(max_value_pos),
                                       face_color='yellow')
@@ -75,7 +67,7 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
         """
         # Get the visible datasets
         if event.button == 1 and self.mode and self.mode is not 'point':
-            visible_data, visual = self.get_visible_data()
+            # visible_data, visual = self.get_visible_data()
             data = self.get_map_data()
             if len(self.line_pos) == 0:
                 self.lasso_reset()
@@ -112,8 +104,8 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
 
             # Mask matches transposed volume data set rather than the original one.
             # The ravel here is to make mask compatible with ElementSubsetState input.
-            new_mask = np.reshape(mask, self.trans_ones_data.shape)
-            new_mask = np.ravel(np.transpose(new_mask))
+            new_mask = np.reshape(mask, self.current_visible_array.shape)
+            new_mask = np.ravel(new_mask)
             self.mark_selected(new_mask, self.visible_data)
 
             self.lasso_reset()
@@ -135,12 +127,12 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
                 mask = self.draw_floodfill_visual(drag_distance / canvas_diag)
 
                 if mask is not None:
-                    new_mask = np.reshape(mask, self.visible_data[0]['PRIMARY'].shape)
+                    new_mask = np.reshape(mask, self.current_visible_array.shape)
                     new_mask = np.ravel(new_mask)
                     self.mark_selected(new_mask, self.visible_data)
 
     def draw_floodfill_visual(self, threshold):
-        formate_data = np.asarray(self.vol_data, np.float64)
+        formate_data = np.asarray(self.current_visible_array, np.float64)
 
         # Normalize the threshold so that it returns values in the range 1.01
         # to 101 (since it can currently be between 0 and 1)
@@ -151,14 +143,15 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
         scale = self.visual_tr.scale
 
         max_value_pos = self.max_value_pos[0]
+
         # xyz index in volume array
         x = (max_value_pos[0] - trans[0])/scale[0]
         y = (max_value_pos[1] - trans[1])/scale[1]
         z = (max_value_pos[2] - trans[2])/scale[2]
 
         if self.max_value_pos:
-            selec_mask = floodfill_scipy(formate_data, (z, y, x), threshold)
-            return selec_mask
+            select_mask = floodfill_scipy(formate_data, (z, y, x), threshold)
+            return select_mask
         else:
             return None
 
@@ -175,9 +168,11 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
         # TODO: add support for multiple data here, data_array should
         # cover all self.visible_data array
 
-        tr = as_matrix_transform(self.visual.get_transform(map_from='visual', map_to='canvas'))
+        tr = as_matrix_transform(self.visual.get_transform(map_from='visual',
+                                                           map_to='canvas'))
 
-        pos_data = np.indices(data_object.data.shape[::-1], dtype=float).reshape(3, -1).transpose()
+        pos_data = np.indices(data_object.data.shape[::-1], dtype=float)
+        pos_data = pos_data.reshape(3, -1).transpose()
 
         data = tr.map(pos_data)
         data /= data[:, 3:]   # normalize with homogeneous coordinates
@@ -188,7 +183,7 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
         scale = self.visual_tr.scale
 
         inter_pos = []
-        for z in range(0, self.vol_data.shape[0]):
+        for z in range(0, self.current_visible_array.shape[0]):
             #   3D line defined with two points (x0, y0, z0) and (x1, y1, z1) as
             #   (x - x1)/(x2 - x1) = (y - y1)/(y2 - y1) = (z - z1)/(z2 - z1) = t
             z = z * scale[2] + trans[2]
@@ -200,9 +195,9 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
 
         # cut the line within the cube
         m1 = inter_pos[:, 0] > trans[0]  # for x
-        m2 = inter_pos[:, 0] < (self.vol_data.shape[2] * scale[0] + trans[0])
+        m2 = inter_pos[:, 0] < (self.current_visible_array.shape[2] * scale[0] + trans[0])
         m3 = inter_pos[:, 1] > trans[1]  # for y
-        m4 = inter_pos[:, 1] < (self.vol_data.shape[1]*scale[1] + trans[1])
+        m4 = inter_pos[:, 1] < (self.current_visible_array.shape[1]*scale[1] + trans[1])
         inter_pos = inter_pos[m1 & m2 & m3 & m4]
 
         # set colors for markers
@@ -215,7 +210,7 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
             x = (each_point[0] - trans[0])/scale[0]
             y = (each_point[1] - trans[1])/scale[1]
             z = (each_point[2] - trans[2])/scale[2]
-            inter_value.append(self.vol_data[(z, y, x)])
+            inter_value.append(self.current_visible_array[(z, y, x)])
         inter_value = np.array(inter_value)
 
         assert inter_value.shape[0] == inter_pos.shape[0]
@@ -244,7 +239,5 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
         # add the self.visual local transform
         end_point = self.visual_tr.map(end_point)
         end_point = end_point[:3] / end_point[3]
-
-        # self.ray_line.set_data(np.array([end_point, start_point[:3]]))
 
         return np.array([end_point, start_point[:3]])
