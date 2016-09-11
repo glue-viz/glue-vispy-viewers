@@ -48,7 +48,7 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
             data_array = self.visible_data[0]['PRIMARY']
             self.trans_ones_data = np.transpose(np.ones(data_array.shape))
 
-            self.vol_data = data_array
+            self.vol_data = np.nan_to_num(data_array)
             self.visual_tr = self._vispy_widget.limit_transforms[self.visual]
 
         if self.mode is 'point':
@@ -135,8 +135,8 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
                 mask = self.draw_floodfill_visual(drag_distance / canvas_diag)
 
                 if mask is not None:
-                    new_mask = np.reshape(mask, self.trans_ones_data.shape)
-                    new_mask = np.ravel(np.transpose(new_mask))
+                    new_mask = np.reshape(mask, self.visible_data[0]['PRIMARY'].shape)
+                    new_mask = np.ravel(new_mask)
                     self.mark_selected(new_mask, self.visible_data)
 
     def draw_floodfill_visual(self, threshold):
@@ -151,16 +151,13 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
         scale = self.visual_tr.scale
 
         max_value_pos = self.max_value_pos[0]
+        # xyz index in volume array
         x = (max_value_pos[0] - trans[0])/scale[0]
         y = (max_value_pos[1] - trans[1])/scale[1]
         z = (max_value_pos[2] - trans[2])/scale[2]
-        print('floodfill start point', z, y, x)
-
-        # or still (z y x)
 
         if self.max_value_pos:
-            selec_mask = floodfill_scipy(formate_data, (max_value_pos[2], max_value_pos[1], max_value_pos[0]),
-                                         threshold)
+            selec_mask = floodfill_scipy(formate_data, (z, y, x), threshold)
             return selec_mask
         else:
             return None
@@ -179,8 +176,6 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
         # cover all self.visible_data array
 
         tr = as_matrix_transform(self.visual.get_transform(map_from='visual', map_to='canvas'))
-
-        self.trans_ones_data = np.transpose(np.ones(data_object.data.shape))
 
         pos_data = np.indices(data_object.data.shape[::-1], dtype=float).reshape(3, -1).transpose()
 
