@@ -102,11 +102,11 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
             else:
                 raise ValueError("Unknown mode: {0}".format(self.mode))
 
-            # Mask matches transposed volume data set rather than the original one.
+            # Shape selection mask is generated from mapped data, so it has the same shape as transposed data array.
             # The ravel here is to make mask compatible with ElementSubsetState input.
-            new_mask = np.reshape(mask, self.current_visible_array.shape)
-            new_mask = np.ravel(new_mask)
-            self.mark_selected(new_mask, self.visible_data)
+            shape_mask = np.reshape(mask, np.transpose(self.current_visible_array).shape)
+            shape_mask = np.ravel(np.transpose(shape_mask))
+            self.mark_selected(shape_mask, self.visible_data)
 
             self.lasso_reset()
 
@@ -127,9 +127,10 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
                 mask = self.draw_floodfill_visual(drag_distance / canvas_diag)
 
                 if mask is not None:
-                    new_mask = np.reshape(mask, self.current_visible_array.shape)
-                    new_mask = np.ravel(new_mask)
-                    self.mark_selected(new_mask, self.visible_data)
+                    # Smart selection mask has the same shape as data shape.
+                    smart_mask = np.reshape(mask, self.current_visible_array.shape)
+                    smart_mask = np.ravel(smart_mask)
+                    self.mark_selected(smart_mask, self.visible_data)
 
     def draw_floodfill_visual(self, threshold):
         formate_data = np.asarray(self.current_visible_array, np.float64)
