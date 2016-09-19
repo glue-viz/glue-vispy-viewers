@@ -4,7 +4,7 @@ import sys
 
 import numpy as np
 from ..extern.vispy import scene
-from ..extern.vispy.geometry import create_cube
+from .axes import AxesVisual3D
 
 try:
     from glue.external.qt import QtGui as QtWidgets, get_qapp
@@ -20,8 +20,6 @@ from glue.utils import nonpartial
 from matplotlib.colors import ColorConverter
 
 rgb = ColorConverter().to_rgb
-
-from ..extern.vispy.visuals.transforms import STTransform
 
 
 class VispyWidget(QtWidgets.QWidget):
@@ -56,55 +54,21 @@ class VispyWidget(QtWidgets.QWidget):
 
         fc = rgb(settings.FOREGROUND_COLOR)
 
-        # Add a 3D cube to show us the unit cube. The 1.001 factor is to make
-        # sure that the grid lines are not 'hidden' by volume renderings on the
-        # front side due to numerical precision.
-        vertices, filled_indices, outline_indices = create_cube()
-        self.axis = scene.visuals.Mesh(vertices['position'],
-                                       outline_indices,
-                                       color=fc, mode='lines')
-        self.axis.transform = self.scene_transform
-        self.view.add(self.axis)
-
-        # add the axis visual from Vispy library, with 2D ticks and labels, more refer to:
-        # https://github.com/vispy/vispy/blob/959fe5643ec9d717f9f01ba97552ec1c1668ec04/vispy/visuals/axis.py
-        # TODO: move this 3d axis into a subclass, set domain as data shape, add coordinate labels
-        # TODO: tick text color as foreground color
-        self.xax = scene.visuals.Axis(pos=[[-1.0, -1.0], [1.0, -1.0]], domain=(5., 10.), tick_direction=(0, -1),
-                         font_size=10, axis_color=fc, tick_color=fc, text_color=fc,
-                         parent=self.view.scene)
-
-        self.yax = scene.visuals.Axis(pos=[[-1.0, -1.0], [-1.0, 1.0]], tick_direction=(-1, 0),
-                         font_size=10, axis_color=fc, tick_color=fc, text_color=fc,
-                         parent=self.view.scene)
-
-        self.zax = scene.visuals.Axis(pos=[[-1.0, -1.0], [-1.0, 1.0]], tick_direction=(1, 0),
-                         font_size=10, axis_color=fc, tick_color=fc, text_color=fc,
-                         parent=self.view.scene)
-
-        self.xytr = STTransform()
-        self.xytr.translate = [0., 0., -1.]
-
-        self.xax.transform = self.xytr
-        self.yax.transform = self.xytr
-
-        # zax is the 180 rotation of yax
-        self.ztr = STTransform()
-        try:
-            self.ztr = self.ztr.as_matrix()
-        except AttributeError:   # Vispy <= 0.4
-            self.ztr = self.ztr.as_affine()
-
-        self.ztr.rotate(180, (0, 1, 1))
-        self.ztr.translate((-2., -1., 0.))
-        self.zax.transform = self.ztr
+        self.axis = AxesVisual3D(axis_color=fc, tick_color=fc, text_color=fc,
+                                 tick_width=1, minor_tick_length=2,
+                                 major_tick_length=4, axis_width=0,
+                                 tick_label_margin=10, axis_label_margin=25,
+                                 tick_font_size=6, axis_font_size=8,
+                                 view=self.view,
+                                 transform=self.scene_transform)
 
         # Create a turntable camera. For now, this is the only camerate type
         # we support, but if we support more in future, we should implement
         # that here
 
         # Orthographic perspective view as default
-        self.view.camera = scene.cameras.TurntableCamera(parent=self.view.scene, fov=0., distance=4.0)
+        self.view.camera = scene.cameras.TurntableCamera(parent=self.view.scene,
+                                                         fov=0., distance=4.0)
 
         # Add the native canvas widget to this widget
         layout = QtWidgets.QVBoxLayout()
@@ -129,27 +93,28 @@ class VispyWidget(QtWidgets.QWidget):
 
     def _toggle_perspective(self):
         if self.perspective_view:
-            self.view.camera.fov = 60
+            self.view.camera.fov = 30
+            self.axis.tick_font_size = 28
+            self.axis.axis_font_size = 35
         else:
             self.view.camera.fov = 0
+            self.axis.tick_font_size = 6
+            self.axis.axis_font_size = 8
 
     def add_data_visual(self, visual):
         self.limit_transforms[visual] = scene.STTransform()
         visual.transform = self.limit_transforms[visual]
         self.view.add(visual)
 
+    def _update_attributes(self):
+        self.axis.xlabel = self.options.x_att.label
+        self.axis.ylabel = self.options.y_att.label
+        self.axis.zlabel = self.options.z_att.label
+
     def _update_stretch(self, *stretch):
+
         self.scene_transform.scale = stretch
 
-        # set stretch for 3d axis here
-        self.xytr.scale = stretch
-        self.xytr.translate = [0., 0., -stretch[2]]
-
-        # self.ztr.scale will accumulate with previous settings, so we need reset
-        self.ztr.reset()
-        self.ztr.rotate(180, (0, 1, 1))
-        self.ztr.translate((-2., -1., 0.))
-        self.ztr.scale(stretch)
         self._update_limits()
 
     def _update_limits(self):
@@ -175,9 +140,9 @@ class VispyWidget(QtWidgets.QWidget):
             self.limit_transforms[visual].scale = scale
             self.limit_transforms[visual].translate = translate
 
-        self.xax.domain = (self.options.x_min, self.options.x_max)
-        self.yax.domain = (self.options.y_min, self.options.y_max)
-        self.zax.domain = (self.options.z_min, self.options.z_max)
+        self.axis.xlim = self.options.x_min, self.options.x_max
+        self.axis.ylim = self.options.y_min, self.options.y_max
+        self.axis.zlim = self.options.z_min, self.options.z_max
 
     def _reset_view(self):
         self.view.camera.reset()

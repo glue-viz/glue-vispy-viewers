@@ -109,7 +109,7 @@ class AxisVisual(CompoundVisual):
         self.tick_label_margin = tick_label_margin  # px
         self.axis_label_margin = axis_label_margin  # px
 
-        self.axis_label = axis_label
+        self._axis_label_text = axis_label
 
         self._need_update = True
 
@@ -121,6 +121,32 @@ class AxisVisual(CompoundVisual):
         if pos is not None:
             self.pos = pos
         self.domain = domain
+
+    @property
+    def tick_font_size(self):
+        return self._text.font_size
+
+    @tick_font_size.setter
+    def tick_font_size(self, value):
+        self._text.font_size = value
+
+    @property
+    def axis_font_size(self):
+        return self._axis_label.font_size
+
+    @axis_font_size.setter
+    def axis_font_size(self, value):
+        self._axis_label.font_size = value
+
+    @property
+    def axis_label(self):
+        return self._axis_label_text
+
+    @axis_label.setter
+    def axis_label(self, axis_label):
+        self._axis_label_text = axis_label
+        self._need_update = True
+        self.update()
 
     @property
     def pos(self):
@@ -168,7 +194,9 @@ class AxisVisual(CompoundVisual):
             # TODO: make sure we only call get_transform if the transform for
             # the line is updated
             tr = self._line.get_transform(map_from='visual', map_to='canvas')
-            x1, y1, x2, y2 = tr.map(self.pos)[:,:2].ravel()
+            trpos = tr.map(self.pos)
+            trpos /= trpos[:, 3:]
+            x1, y1, x2, y2 = trpos[:, :2].ravel()
             if x1 > x2:
                 x1, y1, x2, y2 = x2, y2, x1, y1
             self._axis_label.rotation = math.degrees(math.atan2(y2-y1, x2-x1))

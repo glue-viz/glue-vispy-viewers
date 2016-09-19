@@ -11,6 +11,7 @@ except ImportError:
 
 from glue.utils.qt.widget_properties import CurrentComboProperty, FloatLineProperty, connect_bool_button, ButtonProperty
 from glue.utils.qt import load_ui
+from glue.utils import nonpartial
 
 __all__ = ["VispyOptionsWidget"]
 
@@ -70,6 +71,9 @@ class VispyOptionsWidget(QtWidgets.QWidget):
             self.ui.combo_x_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)
             self.ui.combo_y_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)
             self.ui.combo_z_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)
+            self.ui.combo_x_attribute.currentIndexChanged.connect(nonpartial(self._vispy_widget._update_attributes))
+            self.ui.combo_y_attribute.currentIndexChanged.connect(nonpartial(self._vispy_widget._update_attributes))
+            self.ui.combo_z_attribute.currentIndexChanged.connect(nonpartial(self._vispy_widget._update_attributes))
 
         self.ui.combo_x_attribute.currentIndexChanged.connect(self._update_attribute_limits)
         self.ui.combo_y_attribute.currentIndexChanged.connect(self._update_attribute_limits)
@@ -181,6 +185,7 @@ class VispyOptionsWidget(QtWidgets.QWidget):
             self._set_attributes_enabled(True)
             self._first_attributes = False
 
+        self._vispy_widget._update_attributes()
         self._update_attribute_limits()
 
     def _update_attribute_limits(self):
