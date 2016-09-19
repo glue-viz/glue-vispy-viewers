@@ -148,3 +148,7 @@ class BaseVispyViewer(DataViewer):
             self.status_label = QtWidgets.QLabel()
             statusbar.addWidget(self.status_label)
         self.status_label.setText(text)
+
+    def initialize_toolbar(self):
+        # TODO: override this until we actually implement the toolbar properly
+        pass
