@@ -21,6 +21,8 @@ from matplotlib.colors import ColorConverter
 
 rgb = ColorConverter().to_rgb
 
+from ..extern.vispy.visuals.transforms import STTransform
+
 
 class VispyWidget(QtWidgets.QWidget):
 
@@ -52,15 +54,50 @@ class VispyWidget(QtWidgets.QWidget):
         self.scene_transform = scene.STTransform()
         self.limit_transforms = {}
 
+        fc = rgb(settings.FOREGROUND_COLOR)
+
         # Add a 3D cube to show us the unit cube. The 1.001 factor is to make
         # sure that the grid lines are not 'hidden' by volume renderings on the
         # front side due to numerical precision.
         vertices, filled_indices, outline_indices = create_cube()
         self.axis = scene.visuals.Mesh(vertices['position'],
                                        outline_indices,
-                                       color=rgb(settings.FOREGROUND_COLOR), mode='lines')
+                                       color=fc, mode='lines')
         self.axis.transform = self.scene_transform
         self.view.add(self.axis)
+
+        # add the axis visual from Vispy library, with 2D ticks and labels, more refer to:
+        # https://github.com/vispy/vispy/blob/959fe5643ec9d717f9f01ba97552ec1c1668ec04/vispy/visuals/axis.py
+        # TODO: move this 3d axis into a subclass, set domain as data shape, add coordinate labels
+        # TODO: tick text color as foreground color
+        self.xax = scene.visuals.Axis(pos=[[-1.0, -1.0], [1.0, -1.0]], domain=(5., 10.), tick_direction=(0, -1),
+                         font_size=10, axis_color=fc, tick_color=fc, text_color=fc,
+                         parent=self.view.scene)
+
+        self.yax = scene.visuals.Axis(pos=[[-1.0, -1.0], [-1.0, 1.0]], tick_direction=(-1, 0),
+                         font_size=10, axis_color=fc, tick_color=fc, text_color=fc,
+                         parent=self.view.scene)
+
+        self.zax = scene.visuals.Axis(pos=[[-1.0, -1.0], [-1.0, 1.0]], tick_direction=(1, 0),
+                         font_size=10, axis_color=fc, tick_color=fc, text_color=fc,
+                         parent=self.view.scene)
+
+        self.xytr = STTransform()
+        self.xytr.translate = [0., 0., -1.]
+
+        self.xax.transform = self.xytr
+        self.yax.transform = self.xytr
+
+        # zax is the 180 rotation of yax
+        self.ztr = STTransform()
+        try:
+            self.ztr = self.ztr.as_matrix()
+        except AttributeError:   # Vispy <= 0.4
+            self.ztr = self.ztr.as_affine()
+
+        self.ztr.rotate(180, (0, 1, 1))
+        self.ztr.translate((-2., -1., 0.))
+        self.zax.transform = self.ztr
 
         # Create a turntable camera. For now, this is the only camerate type
         # we support, but if we support more in future, we should implement
@@ -103,6 +140,16 @@ class VispyWidget(QtWidgets.QWidget):
 
     def _update_stretch(self, *stretch):
         self.scene_transform.scale = stretch
+
+        # set stretch for 3d axis here
+        self.xytr.scale = stretch
+        self.xytr.translate = [0., 0., -stretch[2]]
+
+        # self.ztr.scale will accumulate with previous settings, so we need reset
+        self.ztr.reset()
+        self.ztr.rotate(180, (0, 1, 1))
+        self.ztr.translate((-2., -1., 0.))
+        self.ztr.scale(stretch)
         self._update_limits()
 
     def _update_limits(self):
@@ -127,6 +174,10 @@ class VispyWidget(QtWidgets.QWidget):
         for visual in self.limit_transforms:
             self.limit_transforms[visual].scale = scale
             self.limit_transforms[visual].translate = translate
+
+        self.xax.domain = (self.options.x_min, self.options.x_max)
+        self.yax.domain = (self.options.y_min, self.options.y_max)
+        self.zax.domain = (self.options.z_min, self.options.z_max)
 
     def _reset_view(self):
         self.view.camera.reset()
