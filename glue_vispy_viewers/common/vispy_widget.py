@@ -37,7 +37,7 @@ class VispyWidget(QtWidgets.QWidget):
 
         # Prepare Vispy canvas. We set the depth_size to 24 to avoid issues
         # with isosurfaces on MacOS X
-        self.canvas = scene.SceneCanvas(keys='interactive', show=False,
+        self.canvas = scene.SceneCanvas(keys=None, show=False,
                                         config={'depth_size': 24}, bgcolor=rgb(settings.BACKGROUND_COLOR))
 
         # Set up a viewbox
