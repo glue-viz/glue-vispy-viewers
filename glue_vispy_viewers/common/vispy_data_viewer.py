@@ -16,6 +16,10 @@ from .toolbar import VispyDataViewerToolbar
 
 
 class BaseVispyViewer(DataViewer):
+<<<<<<< HEAD
+=======
+    # tools = ['tools']  # in bracket should be the filename
+>>>>>>> 50637fc... add test for base vispy viewer
     _toolbar_cls = VispyDataViewerToolbar
 
     def __init__(self, session, parent=None):
@@ -29,6 +33,8 @@ class BaseVispyViewer(DataViewer):
 
         toolbar = self._toolbar_cls(vispy_widget=self._vispy_widget, parent=self)
         self.addToolBar(toolbar)
+        # try customize tool
+        # super(BaseVispyViewer, self).initialize_toolbar()
 
         add_callback(self._vispy_widget, 'clip_data', nonpartial(self._toggle_clip))
         add_callback(self._vispy_widget, 'clip_limits', nonpartial(self._toggle_clip))
