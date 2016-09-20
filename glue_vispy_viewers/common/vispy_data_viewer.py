@@ -13,9 +13,11 @@ except ImportError:
 
 from .vispy_widget import VispyWidget
 from .viewer_options import VispyOptionsWidget
+from .toolbar import VispyDataViewerToolbar
 
 
 class BaseVispyViewer(DataViewer):
+    _toolbar_cls = VispyDataViewerToolbar
 
     def __init__(self, session, parent=None):
 
@@ -30,6 +32,7 @@ class BaseVispyViewer(DataViewer):
         self.addToolBar(toolbar)
 
         self.status_label = None
+        self.client = None
 
     def register_to_hub(self, hub):
 
@@ -87,6 +90,13 @@ class BaseVispyViewer(DataViewer):
     @data.setter
     def data(self, data):
         self._data = data
+
+    # instance by object viewers later
+    def add_data(self, data):
+        return True
+
+    def _add_subset(self, message):
+        pass
 
     def _update_subset(self, message):
         if message.subset in self._layer_artist_container:
@@ -152,3 +162,10 @@ class BaseVispyViewer(DataViewer):
     def initialize_toolbar(self):
         # TODO: override this until we actually implement the toolbar properly
         pass
+
+    def _update_attributes(self, index=None, layer_artist=None):
+        pass
+
+    def restore_layers(self, layers, context):
+        pass
+
