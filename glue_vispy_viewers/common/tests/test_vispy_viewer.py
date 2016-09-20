@@ -15,9 +15,13 @@ class BaseTestDataViewer(object):
 
     def test_unregister_on_close(self):
 
+# main two things for testing dataviewer is
+# 1. register to hub
+# 2. add/remove data, subsets
 
-class BaseTestVispyDataViewer(object):
 
+def test_base_vispy_viewer(tmpdir):
+    # create fake data
     ndim = 3
 
     def test_new_vispy_viewer(self, tmpdir):

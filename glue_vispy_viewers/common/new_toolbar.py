@@ -6,6 +6,7 @@ all button functions will be implemented as a tool function
 
 from __future__ import absolute_import, division, print_function
 
+import os
 from qtpy import QtCore
 from qtpy import PYQT5
 
@@ -76,7 +77,7 @@ class SaveTool(Tool):
 
 class VispyViewerToolbar(BasicToolbar):
 
-    def __init__(self, parent): #parent would be a viewer
+    def __init__(self, vispy_widget=None, parent=None): #parent would be a viewer
         print('vispyviewer toolbar parent is', parent)
         self._vispy_widget = parent._vispy_widget
         self.canvas = parent._vispy_widget.canvas

@@ -14,12 +14,13 @@ from glue.icons.qt import get_icon
 from glue.core.tests.util import simple_session
 
 from ..vispy_widget import VispyWidget
-from ..new_toolbar import VispyViewerToolbar
-from ..new_toolbar import SaveTool
+from ..toolbar import VispyDataViewerToolbar
+from ..new_toolbar import VispyViewerToolbar, SaveTool
 from ..vispy_data_viewer import BaseVispyViewer
 
 # we need to test both toolbar and tool here
 # solve the viewer test bug first
+
 
 class ExampleViewer(BaseVispyViewer):
 
@@ -27,13 +28,18 @@ class ExampleViewer(BaseVispyViewer):
 
     def __init__(self, session, parent=None):
         super(ExampleViewer, self).__init__(session, parent=parent)
-        self.central_widget = VispyWidget(parent)
+        v = VispyWidget(parent)
+        self.central_widget = v
         self.setCentralWidget(self.central_widget)
+        self.toolbar = self._toolbar_cls(vispy_widget=v, parent=self)
 
     def initialize_toolbar(self):
         super(ExampleViewer, self).initialize_toolbar()
-        self.tool = SaveTool(self, release_callback=self.callback)
+        self.tool = SaveTool(self)
         self.toolbar.add_tool(self.tool)
+
+    def _update_attributes(self):
+        pass
 
     def callback(self, mode):
         self._called_back = True

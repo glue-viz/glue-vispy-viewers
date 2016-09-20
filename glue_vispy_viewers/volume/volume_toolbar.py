@@ -3,6 +3,7 @@ This is for 3D selection in Glue 3d volume rendering viewer, with shape selectio
 selection (not available now).
 """
 from ..common.toolbar import VispyDataViewerToolbar
+from ..common.new_toolbar import VispyViewerToolbar
 
 import math
 import numpy as np
@@ -14,7 +15,7 @@ from ..extern.vispy import scene
 from .floodfill_scipy import floodfill_scipy
 
 
-class VolumeSelectionToolbar(VispyDataViewerToolbar):
+class VolumeSelectionToolbar(VispyViewerToolbar):
 
     def __init__(self, vispy_widget=None, parent=None):
         super(VolumeSelectionToolbar, self).__init__(vispy_widget=vispy_widget,
