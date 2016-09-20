@@ -26,6 +26,7 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
         self.visual = None
         self.current_visible_array = None
         self.max_value_pos = None
+        self.max_value = None
 
 
 # todo: add global variable of self.visual, vol_data, vol_shape
@@ -49,14 +50,12 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
             pos = self.get_ray_line()
             max_value_pos, max_value = self.get_inter_value(pos)
             self.max_value_pos = max_value_pos
+            self.max_value = max_value
 
             # set marker and status text
             if max_value:
                 self.markers.set_data(pos=np.array(max_value_pos),
                                       face_color='yellow')
-                status_text = 'pos '+str(max_value_pos[0]) \
-                              + ' value '+str(max_value)
-                self._vispy_data_viewer.show_status(status_text)
 
             self._vispy_widget.canvas.update()
 
@@ -152,6 +151,11 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
 
         if self.max_value_pos:
             select_mask = floodfill_scipy(formate_data, (z, y, x), threshold)
+
+            status_text = 'x=%.2f, y=%.2f, z=%.2f' % (x, y, z) \
+                  + ' value=%.2f' % self.max_value
+            self._vispy_data_viewer.show_status(status_text)
+
             return select_mask
         else:
             return None
