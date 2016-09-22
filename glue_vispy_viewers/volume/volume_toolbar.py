@@ -104,6 +104,32 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
             # Shape selection mask is generated from mapped data, so it has the same shape as transposed data array.
             # The ravel here is to make mask compatible with ElementSubsetState input.
             shape_mask = np.reshape(mask, np.transpose(self.current_visible_array).shape)
+
+            # add output region box for mask (mask is z, y, x shape)
+            mash_shape = shape_mask.shape
+            print('mask shape', shape_mask.shape)
+            cum_mask = np.cumsum(shape_mask, axis=2)
+            cum_mask = np.array(cum_mask[:, :, shape_mask.shape[2]-1], dtype=bool)  # compressed 2D mask
+            print('cum_mask is', cum_mask, cum_mask.shape, sum(cum_mask))
+
+            b = np.argwhere(cum_mask)
+            (ystart, xstart), (ystop, xstop) = b.min(0), b.max(0) + 1
+            x, y = (xstop + xstart)/2., (ystop + ystart)/2.
+            width, height = (xstop - xstart)/2., (ystop - ystart)/2.
+
+            # Write to region file
+            # TODO: replace image pixel with wcs coordinate
+            filename = '/Users/penny/Documents/test.reg'
+            import os
+            print('os.path', os.path.isfile(filename), os.path)
+            f = open(filename, 'a')
+            f.writelines('box(%f, %f, %f, %f, 0)' % (x, y, width, height))
+            print('write line!!!!!')
+            f.close()
+
+            # TODO: assign this mask to glue for 2D viewers
+
+
             shape_mask = np.ravel(np.transpose(shape_mask))
             self.mark_selected(shape_mask, self.visible_data)
 
