@@ -113,8 +113,8 @@ class AxisVisual(CompoundVisual):
 
         self._need_update = True
 
-        self._line = LineVisual(method='gl', width=axis_width)
-        self._ticks = LineVisual(method='gl', width=tick_width, connect='segments')
+        self._line = LineVisual(method='gl', width=axis_width, antialias=True)
+        self._ticks = LineVisual(method='gl', width=tick_width, connect='segments', antialias=True)
         self._text = TextVisual(font_size=tick_font_size, color=text_color)
         self._axis_label = TextVisual(font_size=axis_font_size, color=text_color)
         CompoundVisual.__init__(self, [self._line, self._text, self._ticks, self._axis_label])
