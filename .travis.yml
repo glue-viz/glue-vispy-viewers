@@ -9,7 +9,7 @@ env:
   global:
     - SETUP_XVFB=True
     - CONDA_CHANNELS="conda-forge"
-    - CONDA_DEPENDENCIES="glueviz pytest mock pyopengl pyqt=4"
+    - CONDA_DEPENDENCIES="glueviz pytest mock pyopengl pyqt=4.11.3"
     - CONDA_CHANNEL_PRIORITY=True
   matrix:
     - PYTHON_VERSION=2.7
