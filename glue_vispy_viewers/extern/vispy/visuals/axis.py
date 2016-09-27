@@ -4,6 +4,7 @@
 # Distributed under the (new) BSD License. See LICENSE.txt for more info.
 # -----------------------------------------------------------------------------
 
+import sys
 import math
 import warnings
 
@@ -12,6 +13,8 @@ import numpy as np
 from .visual import CompoundVisual
 from .line import LineVisual
 from .text import TextVisual
+
+IS_WINDOWS = sys.platform.startswith('win')
 
 # XXX TODO list (see code, plus):
 # 1. Automated tick direction?
@@ -115,9 +118,27 @@ class AxisVisual(CompoundVisual):
 
         self._line = LineVisual(method='gl', width=axis_width, antialias=True)
         self._ticks = LineVisual(method='gl', width=tick_width, connect='segments', antialias=True)
-        self._text = TextVisual(font_size=tick_font_size, color=text_color)
-        self._axis_label = TextVisual(font_size=axis_font_size, color=text_color)
-        CompoundVisual.__init__(self, [self._line, self._text, self._ticks, self._axis_label])
+        visuals = [self._line, self._ticks]
+
+        # FIXME: on Windows, the presence of TextVisual objects causes
+        #        segmentation faults, so we disable the labels for now.
+
+        if IS_WINDOWS:
+            class MockText(object):
+                font_size = 5
+                text = ''
+                pos = 0
+                anchors = ''
+                rotation = 0
+            self._text = MockText()
+            self._axis_label = MockText()
+        else:
+            self._text = TextVisual(font_size=tick_font_size, color=text_color)
+            self._axis_label = TextVisual(font_size=axis_font_size, color=text_color)
+            visuals.extend([self._text, self._axis_label])
+
+
+        CompoundVisual.__init__(self, visuals)
         if pos is not None:
             self.pos = pos
         self.domain = domain

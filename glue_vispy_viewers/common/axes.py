@@ -17,10 +17,8 @@ class AxesVisual3D(object):
                                        outline_indices, parent=self.view.scene,
                                        color=kwargs['axis_color'], mode='lines')
 
-        # add the axis visual from Vispy library, with 2D ticks and labels, more refer to:
-        # https://github.com/vispy/vispy/blob/959fe5643ec9d717f9f01ba97552ec1c1668ec04/vispy/visuals/axis.py
-        # TODO: move this 3d axis into a subclass, set domain as data shape, add coordinate labels
-        # TODO: tick text color as foreground color
+        self.axis.transform = transform
+
         self.xax = scene.visuals.Axis(pos=[[-1.0, 0], [1.0, 0]],
                                       tick_direction=(0, -1),
                                       parent=self.view.scene, axis_label='X',
@@ -52,7 +50,6 @@ class AxesVisual3D(object):
         self.ztr.rotate(90, (1, 0, 0))
         self.ztr.translate((-1, -1, 0.))
 
-        self.axis.transform = transform
         self.xax.transform = ChainTransform(transform, self.xtr)
         self.yax.transform = ChainTransform(transform, self.ytr)
         self.zax.transform = ChainTransform(transform, self.ztr)
