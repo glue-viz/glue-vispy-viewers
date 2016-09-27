@@ -4,7 +4,7 @@ import sys
 
 import numpy as np
 from ..extern.vispy import scene
-from ..extern.vispy.geometry import create_cube
+from .axes import AxesVisual3D
 
 try:
     from glue.external.qt import QtGui as QtWidgets, get_qapp
@@ -52,22 +52,23 @@ class VispyWidget(QtWidgets.QWidget):
         self.scene_transform = scene.STTransform()
         self.limit_transforms = {}
 
-        # Add a 3D cube to show us the unit cube. The 1.001 factor is to make
-        # sure that the grid lines are not 'hidden' by volume renderings on the
-        # front side due to numerical precision.
-        vertices, filled_indices, outline_indices = create_cube()
-        self.axis = scene.visuals.Mesh(vertices['position'],
-                                       outline_indices,
-                                       color=rgb(settings.FOREGROUND_COLOR), mode='lines')
-        self.axis.transform = self.scene_transform
-        self.view.add(self.axis)
+        fc = rgb(settings.FOREGROUND_COLOR)
+
+        self.axis = AxesVisual3D(axis_color=fc, tick_color=fc, text_color=fc,
+                                 tick_width=1, minor_tick_length=2,
+                                 major_tick_length=4, axis_width=0,
+                                 tick_label_margin=10, axis_label_margin=25,
+                                 tick_font_size=6, axis_font_size=8,
+                                 view=self.view,
+                                 transform=self.scene_transform)
 
         # Create a turntable camera. For now, this is the only camerate type
         # we support, but if we support more in future, we should implement
         # that here
 
         # Orthographic perspective view as default
-        self.view.camera = scene.cameras.TurntableCamera(parent=self.view.scene, fov=0., distance=4.0)
+        self.view.camera = scene.cameras.TurntableCamera(parent=self.view.scene,
+                                                         fov=0., distance=4.0)
 
         # Add the native canvas widget to this widget
         layout = QtWidgets.QVBoxLayout()
@@ -92,17 +93,28 @@ class VispyWidget(QtWidgets.QWidget):
 
     def _toggle_perspective(self):
         if self.perspective_view:
-            self.view.camera.fov = 60
+            self.view.camera.fov = 30
+            self.axis.tick_font_size = 28
+            self.axis.axis_font_size = 35
         else:
             self.view.camera.fov = 0
+            self.axis.tick_font_size = 6
+            self.axis.axis_font_size = 8
 
     def add_data_visual(self, visual):
         self.limit_transforms[visual] = scene.STTransform()
         visual.transform = self.limit_transforms[visual]
         self.view.add(visual)
 
+    def _update_attributes(self):
+        self.axis.xlabel = self.options.x_att.label
+        self.axis.ylabel = self.options.y_att.label
+        self.axis.zlabel = self.options.z_att.label
+
     def _update_stretch(self, *stretch):
+
         self.scene_transform.scale = stretch
+
         self._update_limits()
 
     def _update_limits(self):
@@ -127,6 +139,10 @@ class VispyWidget(QtWidgets.QWidget):
         for visual in self.limit_transforms:
             self.limit_transforms[visual].scale = scale
             self.limit_transforms[visual].translate = translate
+
+        self.axis.xlim = self.options.x_min, self.options.x_max
+        self.axis.ylim = self.options.y_min, self.options.y_max
+        self.axis.zlim = self.options.z_min, self.options.z_max
 
     def _reset_view(self):
         self.view.camera.reset()

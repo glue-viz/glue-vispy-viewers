@@ -4,6 +4,7 @@
 # Distributed under the (new) BSD License. See LICENSE.txt for more info.
 # -----------------------------------------------------------------------------
 
+import sys
 import math
 import warnings
 
@@ -12,6 +13,8 @@ import numpy as np
 from .visual import CompoundVisual
 from .line import LineVisual
 from .text import TextVisual
+
+IS_WINDOWS = sys.platform.startswith('win')
 
 # XXX TODO list (see code, plus):
 # 1. Automated tick direction?
@@ -109,18 +112,62 @@ class AxisVisual(CompoundVisual):
         self.tick_label_margin = tick_label_margin  # px
         self.axis_label_margin = axis_label_margin  # px
 
-        self.axis_label = axis_label
+        self._axis_label_text = axis_label
 
         self._need_update = True
 
-        self._line = LineVisual(method='gl', width=axis_width)
-        self._ticks = LineVisual(method='gl', width=tick_width, connect='segments')
-        self._text = TextVisual(font_size=tick_font_size, color=text_color)
-        self._axis_label = TextVisual(font_size=axis_font_size, color=text_color)
-        CompoundVisual.__init__(self, [self._line, self._text, self._ticks, self._axis_label])
+        self._line = LineVisual(method='gl', width=axis_width, antialias=True)
+        self._ticks = LineVisual(method='gl', width=tick_width, connect='segments', antialias=True)
+        visuals = [self._line, self._ticks]
+
+        # FIXME: on Windows, the presence of TextVisual objects causes
+        #        segmentation faults, so we disable the labels for now.
+
+        if IS_WINDOWS:
+            class MockText(object):
+                font_size = 5
+                text = ''
+                pos = 0
+                anchors = ''
+                rotation = 0
+            self._text = MockText()
+            self._axis_label = MockText()
+        else:
+            self._text = TextVisual(font_size=tick_font_size, color=text_color)
+            self._axis_label = TextVisual(font_size=axis_font_size, color=text_color)
+            visuals.extend([self._text, self._axis_label])
+
+
+        CompoundVisual.__init__(self, visuals)
         if pos is not None:
             self.pos = pos
         self.domain = domain
+
+    @property
+    def tick_font_size(self):
+        return self._text.font_size
+
+    @tick_font_size.setter
+    def tick_font_size(self, value):
+        self._text.font_size = value
+
+    @property
+    def axis_font_size(self):
+        return self._axis_label.font_size
+
+    @axis_font_size.setter
+    def axis_font_size(self, value):
+        self._axis_label.font_size = value
+
+    @property
+    def axis_label(self):
+        return self._axis_label_text
+
+    @axis_label.setter
+    def axis_label(self, axis_label):
+        self._axis_label_text = axis_label
+        self._need_update = True
+        self.update()
 
     @property
     def pos(self):
@@ -168,7 +215,9 @@ class AxisVisual(CompoundVisual):
             # TODO: make sure we only call get_transform if the transform for
             # the line is updated
             tr = self._line.get_transform(map_from='visual', map_to='canvas')
-            x1, y1, x2, y2 = tr.map(self.pos)[:,:2].ravel()
+            trpos = tr.map(self.pos)
+            trpos /= trpos[:, 3:]
+            x1, y1, x2, y2 = trpos[:, :2].ravel()
             if x1 > x2:
                 x1, y1, x2, y2 = x2, y2, x1, y1
             self._axis_label.rotation = math.degrees(math.atan2(y2-y1, x2-x1))

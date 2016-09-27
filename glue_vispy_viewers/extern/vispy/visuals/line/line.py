@@ -346,14 +346,19 @@ class _GLLineVisual(Visual):
                 pass
 
         # Turn on line smooth and/or line width
-        if GL:
-            if self._parent._antialias:
-                GL.glEnable(GL.GL_LINE_SMOOTH)
-            else:
-                GL.glDisable(GL.GL_LINE_SMOOTH)
-            px_scale = self.transforms.pixel_scale
-            width = px_scale * self._parent._width
-            GL.glLineWidth(max(width, 1.))
+        try:
+            if GL:
+                if self._parent._antialias:
+                    GL.glEnable(GL.GL_LINE_SMOOTH)
+                else:
+                    GL.glDisable(GL.GL_LINE_SMOOTH)
+                px_scale = self.transforms.pixel_scale
+                width = px_scale * self._parent._width
+                GL.glLineWidth(max(width, 1.))
+        except Exception:
+            # FIXME: on AppVeyor, the above code doesn't run properly, possibly
+            #        because some of these OpenGL methods have been deprecated
+            pass
 
         if self._parent._changed['connect']:
             self._connect = self._parent._interpret_connect()

@@ -34,9 +34,6 @@ class VispyVolumeViewer(BaseVispyViewer):
                                  "3D volume rendering viewer",
                                  buttons=QMessageBox.Ok)
 
-        # TODO: how to get text value from volume_toolbar...
-        self.show_status('hello')
-
     def add_data(self, data):
 
         if data in self._layer_artist_container:
