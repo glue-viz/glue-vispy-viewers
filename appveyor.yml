@@ -16,8 +16,8 @@ environment:
       CONDA_CHANNEL_PRIORITY: "True"
 
   matrix:
-      - PYTHON_VERSION: "3.5"
-      - PYTHON_VERSION: "3.5"
+      - PYTHON_VERSION: "3.4"
+      - PYTHON_VERSION: "3.4"
         PIP_DEPENDENCIES: "qtpy https://github.com/glue-viz/glue/archive/master.zip"
 
 platform:
