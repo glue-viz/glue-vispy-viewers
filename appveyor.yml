@@ -12,13 +12,14 @@ environment:
                         # to the matrix section.
       CONDA_VERSION: "4.1.11"
       CONDA_CHANNELS: "conda-forge"
-      CONDA_DEPENDENCIES: "glueviz scikit-image pytest mock pyqt pyopengl"
+      CONDA_DEPENDENCIES: "glueviz scikit-image pytest mock pyqt"
       CONDA_CHANNEL_PRIORITY: "True"
+      PIP_DEPENDENCIES: "pyopengl"
 
   matrix:
       - PYTHON_VERSION: "3.4"
       - PYTHON_VERSION: "3.4"
-        PIP_DEPENDENCIES: "qtpy https://github.com/glue-viz/glue/archive/master.zip"
+        PIP_DEPENDENCIES: "pyopengl qtpy https://github.com/glue-viz/glue/archive/master.zip"
 
 platform:
     -x64
