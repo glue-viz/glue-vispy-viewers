@@ -12,7 +12,7 @@ from ..utils import as_matrix_transform
 from ..extern.vispy import scene
 
 from .floodfill_scipy import floodfill_scipy
-
+from glue.core import Coordinates
 
 class VolumeSelectionToolbar(VispyDataViewerToolbar):
 
@@ -20,6 +20,8 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
         super(VolumeSelectionToolbar, self).__init__(vispy_widget=vispy_widget,
                                                      parent=parent)
         self.markers = scene.visuals.Markers(parent=self._vispy_widget.view.scene)
+
+        self.catalogue = scene.visuals.Markers(parent=self._vispy_widget.view.scene)
 
         self.visual_tr = None
         self.visible_data = None
@@ -45,6 +47,36 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
             self.visual_tr = self._vispy_widget.limit_transforms[self.visual]
 
         if self.mode is 'point':
+            # temporary add 3d markers here
+            # TODO: add an icon for controlling
+            index_data = []
+            # so in cube data the coords is in [m/s, deg, deg]
+            # while our point data match the cube unit
+            # TODO: move catalogue data to setting file as an variable
+            data = [[23.372, -0.524, 63300], [23.434, -0.522, 63300], [23.48, -0.536, 63300]] # lbv
+            for each_point in data:
+                vol_index = []
+                for i in [0, 1, 2]:
+                    if type(self.visible_data[0].coords) != Coordinates:
+                        world = self.visible_data[0].coords.world_axis(self.visible_data[0], 2-i)
+                        value = np.argmin(np.abs(world - each_point[i]))
+                        vol_index.append(value)   # index of each_point within volume array
+                    else:
+                        vol_index = None
+                index_data.append(vol_index)
+
+            # for each lbv do -> l*scale[0] + trans[0] as below
+            trans = self.visual_tr.translate
+            scale = self.visual_tr.scale
+            coor_data = []
+            for each_point in index_data:
+                l = each_point[0]*scale[0] + trans[0]
+                b = each_point[1]*scale[1] + trans[1]
+                v = each_point[2]*scale[2] + trans[2]
+                coor_data.append([l, b, v])
+            coor_data = np.array(coor_data)  # normalized coor pos
+
+            self.catalogue.set_data(pos=coor_data, face_color='red')
 
             # get start and end point of ray line
             pos = self.get_ray_line()
