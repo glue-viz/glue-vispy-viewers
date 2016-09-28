@@ -90,8 +90,10 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
                 # self._vispy_data_viewer.show_status(status_text)
 
                 # TODO: vispy_viewer doesn't have client, how to get dendrogram data?
-                print('visible_data, client.data', self.visible_data, self._vispy_widget.client.data)
-                for each_data in self._vispy_widget.client.data:
+                # print('visible_data, client.data', self.visible_data, self._vispy_widget.client.data)
+                for each_data in self.parent().session.data_collection:
+                    print('each_data', each_data, each_data.label)
+                # for each_data in self._vispy_widget.client.data:
                     if each_data.label == 'Dendrogram':
                         d = each_data
 
