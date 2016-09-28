@@ -4,7 +4,7 @@ from ...extern.vispy import scene
 
 from ..viewer_options import VispyOptionsWidget
 from ..vispy_widget import VispyWidget
-
+from ..axis import CornerXYZAxis
 
 def test_vispy_widget():
 
@@ -57,3 +57,6 @@ def test_vispy_widget():
 
     np.testing.assert_equal(scat_visual.transform.scale, [20., 5., 1, 1.])
     np.testing.assert_equal(scat_visual.transform.translate, [-10, -5., 4., 0.])
+
+    # test corner axis
+    corner_axis = CornerXYZAxis(vispy_widget=w, parent=w.view)

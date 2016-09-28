@@ -21,6 +21,7 @@ from matplotlib.colors import ColorConverter
 
 rgb = ColorConverter().to_rgb
 
+from .axis import CornerXYZAxis
 
 class VispyWidget(QtWidgets.QWidget):
 
@@ -69,6 +70,9 @@ class VispyWidget(QtWidgets.QWidget):
         # Orthographic perspective view as default
         self.view.camera = scene.cameras.TurntableCamera(parent=self.view.scene,
                                                          fov=0., distance=4.0)
+
+        # Add the corner axis here
+        corner_axis = CornerXYZAxis(vispy_widget=self, parent=self.view)
 
         # Add the native canvas widget to this widget
         layout = QtWidgets.QVBoxLayout()
