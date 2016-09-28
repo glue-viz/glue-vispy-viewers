@@ -14,8 +14,6 @@ from .visual import CompoundVisual
 from .line import LineVisual
 from .text import TextVisual
 
-IS_WINDOWS = sys.platform.startswith('win')
-
 # XXX TODO list (see code, plus):
 # 1. Automated tick direction?
 # 2. Expand to 3D (only 2D supported currently)
@@ -120,23 +118,9 @@ class AxisVisual(CompoundVisual):
         self._ticks = LineVisual(method='gl', width=tick_width, connect='segments', antialias=True)
         visuals = [self._line, self._ticks]
 
-        # FIXME: on Windows, the presence of TextVisual objects causes
-        #        segmentation faults, so we disable the labels for now.
-
-        if IS_WINDOWS:
-            class MockText(object):
-                font_size = 5
-                text = ''
-                pos = 0
-                anchors = ''
-                rotation = 0
-            self._text = MockText()
-            self._axis_label = MockText()
-        else:
-            self._text = TextVisual(font_size=tick_font_size, color=text_color)
-            self._axis_label = TextVisual(font_size=axis_font_size, color=text_color)
-            visuals.extend([self._text, self._axis_label])
-
+        self._text = TextVisual(font_size=tick_font_size, color=text_color)
+        self._axis_label = TextVisual(font_size=axis_font_size, color=text_color)
+        visuals.extend([self._text, self._axis_label])
 
         CompoundVisual.__init__(self, visuals)
         if pos is not None:
