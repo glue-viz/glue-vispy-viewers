@@ -24,7 +24,7 @@ class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
     attribute = CurrentComboProperty('ui.combo_attribute')
     level = FloatLineProperty('ui.value_level')
     # We don't have IntLineProperty?
-    step_num = FloatLineProperty('ui.step_num')
+    step_number = FloatLineProperty('ui.step_num')
     alpha = ValueProperty('ui.slider_alpha')
 
     def __init__(self, layer_artist):
