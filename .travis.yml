@@ -9,7 +9,7 @@ env:
   global:
     - SETUP_XVFB=True
     - CONDA_CHANNELS="conda-forge"
-    - CONDA_DEPENDENCIES="glueviz pytest mock pyopengl pyqt=4.11.3"
+    - CONDA_DEPENDENCIES="glueviz pytest mock pyopengl pyqt=4.11.3 pytest-cov"
     - CONDA_CHANNEL_PRIORITY=True
   matrix:
     - PYTHON_VERSION=2.7
@@ -20,6 +20,10 @@ env:
 install:
   - git clone git://github.com/astropy/ci-helpers.git
   - source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
+  - pip install coveralls
 
 script:
-  - py.test glue_vispy_viewers
+  - py.test glue_vispy_viewers --cov glue_vispy_viewers
+
+after_success:
+  - coveralls
