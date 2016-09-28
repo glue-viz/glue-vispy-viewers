@@ -77,15 +77,13 @@ class BaseTestDataViewer(object):
         options.visible_box = False
 
 
-class TestDataViewerVolume(BaseTestDataViewer):
-    widget_cls = VispyVolumeViewer
-
-
-class TestDataViewerScatter(BaseTestDataViewer):
-    widget_cls = VispyScatterViewer
-
-
-class TestDataViewerIsosurface(BaseTestDataViewer):
-    widget_cls = VispyIsosurfaceViewer
-
-
+# class TestDataViewerVolume(BaseTestDataViewer):
+#     widget_cls = VispyVolumeViewer
+#
+#
+# class TestDataViewerScatter(BaseTestDataViewer):
+#     widget_cls = VispyScatterViewer
+#
+#
+# class TestDataViewerIsosurface(BaseTestDataViewer):
+#     widget_cls = VispyIsosurfaceViewer
