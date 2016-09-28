@@ -119,7 +119,7 @@ class VispyDataViewerToolbar(QtWidgets.QToolBar):
         self.point_action = a
 
         # TODO: show if there is dendrogram file or not shown
-        a = QtGui.QAction(QtGui.QIcon(DENDROGRAM_ICON), 'Dendrogram Selection', parent)
+        a = QtWidgets.QAction(QtGui.QIcon(DENDROGRAM_ICON), 'Dendrogram Selection', parent)
         a.triggered.connect(nonpartial(self.toggle_dendrogram))
         a.setCheckable(True)
         parent.addAction(a)

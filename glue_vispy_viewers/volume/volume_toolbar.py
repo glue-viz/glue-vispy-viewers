@@ -51,7 +51,9 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
 
             # Get all data sets visible in current viewer
             self.visible_data, self.visual = self.get_visible_data()
-            self.current_visible_array = np.nan_to_num(self.visible_data[0]['PRIMARY'])
+            # self.current_visible_array = np.nan_to_num(self.visible_data[0]['PRIMARY'])
+            # dendrogram data object does not has PRIMARY att
+            self.current_visible_array = self.visible_data[0]['intensity']
             self.visual_tr = self._vispy_widget.limit_transforms[self.visual]
 
         if self.mode is 'point':
