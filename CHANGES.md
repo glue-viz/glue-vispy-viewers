@@ -1,6 +1,9 @@
 0.5 (unreleased)
 ----------------
 
+- Fixed a bug that caused alpha scaling to not work correctly when mapping
+  scatter marker colors to an attribute. [#201]
+
 - Watch for ``NumericalDataChangedMessage`` messages. [#183, #184]
 
 - Fixed a bug that caused color-coding and size-scaling of points in 3D viewer
