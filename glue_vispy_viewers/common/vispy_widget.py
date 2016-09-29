@@ -112,9 +112,7 @@ class VispyWidget(QtWidgets.QWidget):
         self.axis.zlabel = self.options.z_att.label
 
     def _update_stretch(self, *stretch):
-
         self.scene_transform.scale = stretch
-
         self._update_limits()
 
     def _update_limits(self):

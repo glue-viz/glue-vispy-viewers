@@ -188,6 +188,27 @@ class VispyOptionsWidget(QtWidgets.QWidget):
         self._vispy_widget._update_attributes()
         self._update_attribute_limits()
 
+    def _update_attributes_from_data_pixel(self, data):
+
+        z_cid, y_cid, x_cid = data.pixel_component_ids
+
+        self.ui.combo_x_attribute.clear()
+        self.ui.combo_x_attribute.addItem(x_cid.label, userData=x_cid)
+        self._components[x_cid] = data.get_component(x_cid)
+
+        self.ui.combo_y_attribute.clear()
+        self.ui.combo_y_attribute.addItem(y_cid.label, userData=y_cid)
+        self._components[y_cid] = data.get_component(y_cid)
+
+        self.ui.combo_z_attribute.clear()
+        self.ui.combo_z_attribute.addItem(z_cid.label, userData=z_cid)
+        self._components[z_cid] = data.get_component(z_cid)
+
+        self._set_attributes_enabled(True)
+
+        self._vispy_widget._update_attributes()
+        self._update_attribute_limits()
+
     def _update_attribute_limits(self):
 
         if not hasattr(self, '_limits'):

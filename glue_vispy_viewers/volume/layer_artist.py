@@ -167,6 +167,11 @@ class VolumeLayerArtist(LayerArtistBase):
             self._multivol.disable(self.id)
         self.redraw()
 
+    def set_coordinates(self, x_coord, y_coord, z_coord):
+        zatt, yatt, xatt = self.layer.pixel_component_ids
+        if x_coord != xatt or y_coord != yatt or z_coord != zatt:
+            raise NotImplementedError("Can only show cube in xyz order for now")
+
     def set(self, **kwargs):
 
         # This method can be used to set many properties in one go, and will
