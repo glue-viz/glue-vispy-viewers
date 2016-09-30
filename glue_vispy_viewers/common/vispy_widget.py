@@ -26,6 +26,8 @@ class VispyWidget(QtWidgets.QWidget):
 
     visible_axes = CallbackProperty()
     perspective_view = CallbackProperty()
+    clip_data = CallbackProperty()
+    clip_limits = CallbackProperty()
 
     def _update_appearance_from_settings(self):
         self.canvas.bgcolor = rgb(settings.BACKGROUND_COLOR)
@@ -141,6 +143,10 @@ class VispyWidget(QtWidgets.QWidget):
         self.axis.xlim = self.options.x_min, self.options.x_max
         self.axis.ylim = self.options.y_min, self.options.y_max
         self.axis.zlim = self.options.z_min, self.options.z_max
+
+        self.clip_limits = (self.options.x_min, self.options.x_max,
+                            self.options.y_min, self.options.y_max,
+                            self.options.z_min, self.options.z_max)
 
     def _reset_view(self):
         self.view.camera.reset()

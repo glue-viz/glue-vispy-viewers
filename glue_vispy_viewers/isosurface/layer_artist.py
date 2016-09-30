@@ -41,6 +41,8 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         add_callback(self, 'color', nonpartial(self._update_color))
         add_callback(self, 'alpha', nonpartial(self._update_color))
 
+        self._clip_limits = None
+
     @property
     def bbox(self):
         return (-0.5, self.layer.shape[2] - 0.5,
@@ -100,6 +102,21 @@ class IsosurfaceLayerArtist(LayerArtistBase):
             data = mask.astype(float)
         else:
             data = self.layer[self.attribute]
+
+        if self._clip_limits is not None:
+            xmin, xmax, ymin, ymax, zmin, zmax = self._clip_limits
+            imin, imax = int(np.ceil(xmin)), int(np.ceil(xmax))
+            jmin, jmax = int(np.ceil(ymin)), int(np.ceil(ymax))
+            kmin, kmax = int(np.ceil(zmin)), int(np.ceil(zmax))
+            invalid = -np.inf
+            data = data.copy()
+            data[:, :, :imin] = invalid
+            data[:, :, imax:] = invalid
+            data[:, :jmin] = invalid
+            data[:, jmax:] = invalid
+            data[:kmin] = invalid
+            data[kmax:] = invalid
+
         self._iso_visual.set_data(np.nan_to_num(data).transpose())
         self.redraw()
 
@@ -109,3 +126,7 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         # else:
         #     self._multivol.disable(self.id)
         self.redraw()
+
+    def set_clip(self, limits):
+        self._clip_limits = limits
+        self._update_data()

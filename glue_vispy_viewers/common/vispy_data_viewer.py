@@ -5,6 +5,8 @@ except ImportError:
 
 from glue.core import message as msg
 from glue.core import Data
+from glue.external.echo import add_callback
+from glue.utils import nonpartial
 
 try:
     from glue.external.qt import QtGui as QtWidgets
@@ -30,6 +32,9 @@ class BaseVispyViewer(DataViewer):
 
         toolbar = self._toolbar_cls(vispy_widget=self._vispy_widget, parent=self)
         self.addToolBar(toolbar)
+
+        add_callback(self._vispy_widget, 'clip_data', nonpartial(self._toggle_clip))
+        add_callback(self._vispy_widget, 'clip_limits', nonpartial(self._toggle_clip))
 
         self.status_label = None
         self.client = None
@@ -181,3 +186,10 @@ class BaseVispyViewer(DataViewer):
 
     def restore_layers(self, layers, context):
         pass
+
+    def _toggle_clip(self):
+        for layer_artist in self._layer_artist_container:
+            if self._vispy_widget.clip_data:
+                layer_artist.set_clip(self._vispy_widget.clip_limits)
+            else:
+                layer_artist.set_clip(None)

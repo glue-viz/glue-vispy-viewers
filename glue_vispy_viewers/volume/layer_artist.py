@@ -75,6 +75,8 @@ class VolumeLayerArtist(LayerArtistBase):
         if isinstance(self.layer, Subset):
             add_callback(self, 'subset_mode', nonpartial(self._update_data))
 
+        self._clip_limits = None
+
     @property
     def visual(self):
         return self._multivol
@@ -157,6 +159,20 @@ class VolumeLayerArtist(LayerArtistBase):
 
             data = self.layer[self.attribute]
 
+        if self._clip_limits is not None:
+            xmin, xmax, ymin, ymax, zmin, zmax = self._clip_limits
+            imin, imax = int(np.ceil(xmin)), int(np.ceil(xmax))
+            jmin, jmax = int(np.ceil(ymin)), int(np.ceil(ymax))
+            kmin, kmax = int(np.ceil(zmin)), int(np.ceil(zmax))
+            invalid = -np.inf
+            data = data.copy()
+            data[:, :, :imin] = invalid
+            data[:, :, imax:] = invalid
+            data[:, :jmin] = invalid
+            data[:, jmax:] = invalid
+            data[:kmin] = invalid
+            data[kmax:] = invalid
+
         self._multivol.set_data(self.id, data)
         self.redraw()
 
@@ -185,3 +201,7 @@ class VolumeLayerArtist(LayerArtistBase):
 
         for attr in sorted(kwargs, key=priorities):
             setattr(self, attr, kwargs[attr])
+
+    def set_clip(self, limits):
+        self._clip_limits = limits
+        self._update_data()
