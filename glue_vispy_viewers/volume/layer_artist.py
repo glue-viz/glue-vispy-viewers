@@ -167,6 +167,9 @@ class VolumeLayerArtist(LayerArtistBase):
             self._multivol.disable(self.id)
         self.redraw()
 
+    def set_coordinates(self, x_coord, y_coord, z_coord):
+        pass
+
     def set(self, **kwargs):
 
         # This method can be used to set many properties in one go, and will

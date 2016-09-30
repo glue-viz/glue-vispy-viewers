@@ -141,10 +141,14 @@ class BaseVispyViewer(DataViewer):
         viewer = super(BaseVispyViewer, cls).__setgluestate__(rec, context)
 
         from ..scatter.layer_artist import ScatterLayerArtist
+        from ..volume.layer_artist import VolumeLayerArtist
 
         for layer_artist in viewer.layers:
-            if isinstance(layer_artist, ScatterLayerArtist) and isinstance(layer_artist.layer, Data):
-                viewer._options_widget._update_attributes_from_data(layer_artist.layer)
+            if isinstance(layer_artist.layer, Data):
+                if isinstance(layer_artist, ScatterLayerArtist):
+                    viewer._options_widget._update_attributes_from_data(layer_artist.layer)
+                elif isinstance(layer_artist, VolumeLayerArtist):
+                    viewer._options_widget._update_attributes_from_data_pixel(layer_artist.layer)
 
         for attr in sorted(rec['options'], key=lambda x: 0 if 'att' in x else 1):
             value = rec['options'][attr]
@@ -164,8 +168,16 @@ class BaseVispyViewer(DataViewer):
         pass
 
     def _update_attributes(self, index=None, layer_artist=None):
-        pass
+
+        if layer_artist is None:
+            layer_artists = self._layer_artist_container
+        else:
+            layer_artists = [layer_artist]
+
+        for artist in layer_artists:
+            artist.set_coordinates(self._options_widget.x_att,
+                                   self._options_widget.y_att,
+                                   self._options_widget.z_att)
 
     def restore_layers(self, layers, context):
         pass
-

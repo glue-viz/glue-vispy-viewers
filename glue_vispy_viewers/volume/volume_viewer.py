@@ -10,6 +10,9 @@ from .layer_artist import VolumeLayerArtist
 from .layer_style_widget import VolumeLayerStyleWidget
 from .volume_toolbar import VolumeSelectionToolbar
 
+from ..scatter.layer_artist import ScatterLayerArtist
+from ..scatter.layer_style_widget import ScatterLayerStyleWidget
+
 try:
     import OpenGL  # flake8: noqa
 except ImportError:
@@ -22,7 +25,9 @@ class VispyVolumeViewer(BaseVispyViewer):
 
     LABEL = "3D Volume Rendering"
 
-    _layer_style_widget_cls = VolumeLayerStyleWidget
+    _layer_style_widget_cls = {VolumeLayerArtist: VolumeLayerStyleWidget,
+                               ScatterLayerArtist: ScatterLayerStyleWidget}
+
     _toolbar_cls = VolumeSelectionToolbar
 
     def __init__(self, *args, **kwargs):
@@ -39,23 +44,45 @@ class VispyVolumeViewer(BaseVispyViewer):
         if data in self._layer_artist_container:
             return True
 
-        if data.ndim != 3:
+        if data.ndim == 1:
+
+            if len(self._layer_artist_container) == 0:
+                QMessageBox.critical(self, "Error",
+                                     "Can only add a scatter plot overlay once a volume is present".format(data.ndim),
+                                     buttons=QMessageBox.Ok)
+
+            # Assume that the user wants a scatter plot overlay
+
+            layer_artist = ScatterLayerArtist(data, vispy_viewer=self)
+            self._vispy_widget._update_limits()
+
+        elif data.ndim == 3:
+
+            if len(self._layer_artist_container) > 0:
+                required_shape = self._layer_artist_container[0].shape
+                if data.shape != required_shape:
+                    QMessageBox.critical(self, "Error",
+                                         "Shape of dataset ({0}) does not agree "
+                                         "with shape of existing datasets in volume "
+                                         "rendering ({1})".format(data.shape, required_shape),
+                                         buttons=QMessageBox.Ok)
+                    return False
+
+
+            if len(self._layer_artist_container) == 0:
+                self._options_widget._update_attributes_from_data_pixel(data)
+
+            layer_artist = VolumeLayerArtist(data, vispy_viewer=self)
+
+        else:
+
             QMessageBox.critical(self, "Error",
-                                 "Data should be 3-dimensional ({0} dimensions found)".format(data.ndim),
+                                 "Data should be 1- or 3-dimensional ({0} dimensions found)".format(data.ndim),
                                  buttons=QMessageBox.Ok)
             return False
 
-        if len(self._layer_artist_container) > 0:
-            required_shape = self._layer_artist_container[0].shape
-            if data.shape != required_shape:
-                QMessageBox.critical(self, "Error",
-                                     "Shape of dataset ({0}) does not agree "
-                                     "with shape of existing datasets in volume "
-                                     "rendering ({1})".format(data.shape, required_shape),
-                                     buttons=QMessageBox.Ok)
-                return False
 
-        layer_artist = VolumeLayerArtist(data, vispy_viewer=self)
+        self._update_attributes(layer_artist=layer_artist)
 
         if len(self._layer_artist_container) == 0:
             self._options_widget.set_limits(*layer_artist.bbox)
@@ -76,9 +103,6 @@ class VispyVolumeViewer(BaseVispyViewer):
 
     def _add_subset(self, message):
         self.add_subset(message.subset)
-
-    def _update_attributes(self, index=None, layer_artist=None):
-        pass
 
     @classmethod
     def __setgluestate__(cls, rec, context):
