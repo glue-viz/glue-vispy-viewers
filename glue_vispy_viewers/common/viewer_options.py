@@ -36,6 +36,7 @@ class VispyOptionsWidget(QtWidgets.QWidget):
     visible_box = ButtonProperty('ui.checkbox_axes')
     perspective_view = ButtonProperty('ui.checkbox_perspective')
     clip_data = ButtonProperty('ui.checkbox_clip')
+    native_aspect = ButtonProperty('ui.checkbox_native_aspect')
 
     def __init__(self, parent=None, vispy_widget=None, data_viewer=None):
 
@@ -56,6 +57,8 @@ class VispyOptionsWidget(QtWidgets.QWidget):
                                self.ui.value_y_stretch,
                                self.ui.value_z_stretch]
 
+        self.aspect = np.array([1, 1, 1], dtype=float)
+
         self._event_lock = False
 
         for slider, label in zip(self.stretch_sliders, self.stretch_values):
@@ -68,6 +71,8 @@ class VispyOptionsWidget(QtWidgets.QWidget):
         connect_bool_button(self._vispy_widget, 'visible_axes', self.ui.checkbox_axes)
         connect_bool_button(self._vispy_widget, 'perspective_view', self.ui.checkbox_perspective)
         connect_bool_button(self._vispy_widget, 'clip_data', self.ui.checkbox_clip)
+
+        self.ui.checkbox_native_aspect.toggled.connect(self._update_aspect)
 
         if self._data_viewer is not None:
             self.ui.combo_x_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)
@@ -101,6 +106,17 @@ class VispyOptionsWidget(QtWidgets.QWidget):
         self._set_limits_enabled(False)
 
         self._first_attributes = True
+
+    def _update_aspect(self):
+        if self.native_aspect:
+            self.aspect[0] = 1.
+            self.aspect[1] = (self.y_max - self.y_min) / (self.x_max - self.x_min)
+            self.aspect[2] = (self.z_max - self.z_min) / (self.x_max - self.x_min)
+            self.aspect /= self.aspect.max()
+        else:
+            self.aspect[:] = 1
+        self._vispy_widget._update_limits()
+        self._update_stretch()
 
     def set_limits(self, x_min, x_max, y_min, y_max, z_min, z_max):
 
@@ -236,6 +252,7 @@ class VispyOptionsWidget(QtWidgets.QWidget):
         self._set_limits_enabled(True)
 
         self.ui.value_x_min.editingFinished.emit()
+        self._update_aspect()
 
     def _update_limits(self):
 
@@ -246,12 +263,13 @@ class VispyOptionsWidget(QtWidgets.QWidget):
         self._limits[self.y_att] = self.y_min, self.y_max
         self._limits[self.z_att] = self.z_min, self.z_max
 
-        self._vispy_widget._update_limits()
+        # The following calls self._vispy_widget._update_limits()
+        self._update_aspect()
 
     def _update_stretch(self):
-        self._vispy_widget._update_stretch(self.x_stretch,
-                                           self.y_stretch,
-                                           self.z_stretch)
+        self._vispy_widget._update_stretch(self.x_stretch * self.aspect[0],
+                                           self.y_stretch * self.aspect[1],
+                                           self.z_stretch * self.aspect[2])
 
     def _update_labels_from_sliders(self, label, slider):
         if self._event_lock:

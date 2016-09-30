@@ -29,6 +29,9 @@
 
 - Add an option to clip any data outside the specified limits. [#203]
 
+- Add a checkbox to force the aspect ratio to be native instead of
+  making all axes the same length. [#205]
+
 0.4 (2016-05-24)
 ----------------
 

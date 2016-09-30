@@ -128,9 +128,9 @@ class VispyWidget(QtWidgets.QWidget):
             raise Exception("We should never get here because if any data is "
                             "present, the limits should be set")
 
-        scale = [2 / (self.options.x_max - self.options.x_min) * self.options.x_stretch,
-                 2 / (self.options.y_max - self.options.y_min) * self.options.y_stretch,
-                 2 / (self.options.z_max - self.options.z_min) * self.options.z_stretch]
+        scale = [2 / (self.options.x_max - self.options.x_min) * self.options.x_stretch * self.options.aspect[0],
+                 2 / (self.options.y_max - self.options.y_min) * self.options.y_stretch * self.options.aspect[1],
+                 2 / (self.options.z_max - self.options.z_min) * self.options.z_stretch * self.options.aspect[2]]
 
         translate = [-0.5 * (self.options.x_min + self.options.x_max) * scale[0],
                      -0.5 * (self.options.y_min + self.options.y_max) * scale[1],
