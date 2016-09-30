@@ -45,18 +45,6 @@ class VispyScatterViewer(BaseVispyViewer):
     def _add_subset(self, message):
         self.add_subset(message.subset)
 
-    def _update_attributes(self, index=None, layer_artist=None):
-
-        if layer_artist is None:
-            layer_artists = self._layer_artist_container
-        else:
-            layer_artists = [layer_artist]
-
-        for artist in layer_artists:
-            artist.set_coordinates(self._options_widget.x_att,
-                                   self._options_widget.y_att,
-                                   self._options_widget.z_att)
-
     @classmethod
     def __setgluestate__(cls, rec, context):
         viewer = super(VispyScatterViewer, cls).__setgluestate__(rec, context)

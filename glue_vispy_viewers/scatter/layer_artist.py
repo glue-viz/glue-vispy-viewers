@@ -92,6 +92,9 @@ class ScatterLayerArtist(LayerArtistBase):
         self._color_data = None
         self._size_data = None
 
+        self._clip_limits = None
+
+
     @property
     def visual(self):
         return self._multiscat
@@ -184,6 +187,11 @@ class ScatterLayerArtist(LayerArtistBase):
         else:
             self._enabled = True
 
+        if self._clip_limits is not None:
+            xmin, xmax, ymin, ymax, zmin, zmax = self._clip_limits
+            keep = (x >= xmin) & (x <= xmax) & (y >= ymin) & (y <= ymax) & (z >= zmin) & (z <= zmax)
+            x, y, z = x[keep], y[keep], z[keep]
+
         self._marker_data = np.array([x, y, z]).transpose()
 
         # We need to make sure we update the sizes and colors in case
@@ -224,3 +232,7 @@ class ScatterLayerArtist(LayerArtistBase):
 
         for attr in sorted(kwargs, key=priorities):
             setattr(self, attr, kwargs[attr])
+
+    def set_clip(self, limits):
+        self._clip_limits = limits
+        self._update_data()

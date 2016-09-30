@@ -35,6 +35,7 @@ class VispyOptionsWidget(QtWidgets.QWidget):
 
     visible_box = ButtonProperty('ui.checkbox_axes')
     perspective_view = ButtonProperty('ui.checkbox_perspective')
+    clip_data = ButtonProperty('ui.checkbox_clip')
 
     def __init__(self, parent=None, vispy_widget=None, data_viewer=None):
 
@@ -66,6 +67,7 @@ class VispyOptionsWidget(QtWidgets.QWidget):
 
         connect_bool_button(self._vispy_widget, 'visible_axes', self.ui.checkbox_axes)
         connect_bool_button(self._vispy_widget, 'perspective_view', self.ui.checkbox_perspective)
+        connect_bool_button(self._vispy_widget, 'clip_data', self.ui.checkbox_clip)
 
         if self._data_viewer is not None:
             self.ui.combo_x_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)

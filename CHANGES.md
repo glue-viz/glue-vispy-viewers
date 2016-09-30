@@ -27,6 +27,8 @@
 
 - Fix Qt imports to use QtPy for new versions of glue. [#173, #186]
 
+- Add an option to clip any data outside the specified limits. [#203]
+
 0.4 (2016-05-24)
 ----------------
 
