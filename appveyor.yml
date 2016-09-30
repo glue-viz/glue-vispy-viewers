@@ -16,7 +16,8 @@ environment:
       CONDA_CHANNEL_PRIORITY: "True"
 
   matrix:
-      - PYTHON_VERSION: "3.5"
+      # Temporarily disable tests with stable glue
+      # - PYTHON_VERSION: "3.5"
       - PYTHON_VERSION: "3.5"
         PIP_DEPENDENCIES: "qtpy https://github.com/glue-viz/glue/archive/master.zip"
 
