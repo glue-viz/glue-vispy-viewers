@@ -9,6 +9,7 @@ try:
 except ImportError:
     from qtpy import QtWidgets
 
+from glue.core import Coordinates
 from glue.utils.qt.widget_properties import CurrentComboProperty, FloatLineProperty, connect_bool_button, ButtonProperty
 from glue.utils.qt import load_ui
 from glue.utils import nonpartial
@@ -36,6 +37,8 @@ class VispyOptionsWidget(QtWidgets.QWidget):
     visible_box = ButtonProperty('ui.checkbox_axes')
     perspective_view = ButtonProperty('ui.checkbox_perspective')
 
+    use_world = ButtonProperty('ui.checkbox_world')
+
     def __init__(self, parent=None, vispy_widget=None, data_viewer=None):
 
         super(VispyOptionsWidget, self).__init__(parent=parent)
@@ -46,6 +49,8 @@ class VispyOptionsWidget(QtWidgets.QWidget):
         self._vispy_widget = vispy_widget
         vispy_widget.options = self
         self._data_viewer = data_viewer
+
+        self.data = None
 
         self.stretch_sliders = [self.ui.slider_x_stretch,
                                 self.ui.slider_y_stretch,
@@ -92,6 +97,7 @@ class VispyOptionsWidget(QtWidgets.QWidget):
         self.ui.button_flip_z.clicked.connect(self._flip_z)
 
         self.ui.reset_button.clicked.connect(self._vispy_widget._reset_view)
+        self.ui.checkbox_world.toggled.connect(self._update_limits)
 
         self._components = {}
 
@@ -114,6 +120,9 @@ class VispyOptionsWidget(QtWidgets.QWidget):
         self._set_limits_enabled(True)
 
         self.ui.value_x_min.editingFinished.emit()
+        print('call set_limits?')
+        print('what is xyz min max', x_max, x_min, y_max, y_min)
+
 
     def _flip_x(self):
         self._set_limits_enabled(False)
@@ -162,7 +171,7 @@ class VispyOptionsWidget(QtWidgets.QWidget):
         self.ui.value_z_max.blockSignals(not value)
 
     def _update_attributes_from_data(self, data):
-
+        # init attributes
         components = data.visible_components
 
         for component_id in components:
@@ -210,6 +219,7 @@ class VispyOptionsWidget(QtWidgets.QWidget):
         self._update_attribute_limits()
 
     def _update_attribute_limits(self):
+        # called by update_attributes_from_data
 
         if not hasattr(self, '_limits'):
             self._limits = {}
@@ -236,13 +246,38 @@ class VispyOptionsWidget(QtWidgets.QWidget):
         self.ui.value_x_min.editingFinished.emit()
 
     def _update_limits(self):
-
         if not hasattr(self, '_limits'):
             self._limits = {}
 
-        self._limits[self.x_att] = self.x_min, self.x_max
-        self._limits[self.y_att] = self.y_min, self.y_max
-        self._limits[self.z_att] = self.z_min, self.z_max
+        if self.use_world:
+            # TODO: if I got data here
+            for i, s in enumerate(self.data.shape):
+                if type(self.data.coords) != Coordinates: # what's this for?
+                    world = self.data.coords.world_axis(self.data, i) # i is the axis index
+                    world_warning = len(self.data.coords.dependent_axes(i)) > 1
+                else:
+                    world = None
+                    world_warning = False
+
+                # i of 0, 1, 2 -> z, y, x
+                if i == 0:
+                    self._limits[self.z_att] = min(world), max(world)
+                if i == 1:
+                    self._limits[self.y_att] = min(world), max(world)
+                if i == 2:
+                    self._limits[self.x_att] = min(world), max(world)
+
+                # TODO: value is for settting limits on vispy_widget, self.xyz _ min/max still
+                # represent channel value so we later don't need to transform wcs back to pixel
+                # coor for user setting limits
+                    
+                # value = np.argmin(np.abs(self._world - float(text)))
+                # self._limits[??] = value_min, value_max
+
+        else:
+            self._limits[self.x_att] = self.x_min, self.x_max
+            self._limits[self.y_att] = self.y_min, self.y_max
+            self._limits[self.z_att] = self.z_min, self.z_max
 
         self._vispy_widget._update_limits()
 
@@ -280,4 +315,5 @@ class VispyOptionsWidget(QtWidgets.QWidget):
                     z_min=self.z_min, z_max=self.z_max,
                     z_stretch=self.z_stretch,
                     visible_box=self.visible_box,
-                    perspective_view=self.perspective_view)
+                    perspective_view=self.perspective_view,
+                    use_world=self.use_world)

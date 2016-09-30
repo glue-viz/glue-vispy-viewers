@@ -21,6 +21,7 @@ def test_vispy_widget():
     w.add_data_visual(scat_visual)
 
     d.set_limits(-1., 1., -1., 1., -1., 1.)
+    d.use_world = True
 
     np.testing.assert_equal(scat_visual.transform.scale, [1., 1., 1., 1.])
     np.testing.assert_equal(scat_visual.transform.translate, [0., 0., 0., 0.])

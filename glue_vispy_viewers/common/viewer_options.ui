@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>254</width>
-    <height>279</height>
+    <width>267</width>
+    <height>295</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -291,6 +291,13 @@
     <widget class="QPushButton" name="reset_button">
      <property name="text">
       <string>Reset View</string>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="3" colspan="3">
+    <widget class="QCheckBox" name="checkbox_world">
+     <property name="text">
+      <string>Show real coordinates</string>
      </property>
     </widget>
    </item>

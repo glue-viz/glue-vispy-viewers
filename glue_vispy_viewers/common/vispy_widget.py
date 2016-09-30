@@ -116,6 +116,9 @@ class VispyWidget(QtWidgets.QWidget):
         self._update_limits()
 
     def _update_limits(self):
+        # TODO:
+        # if real_value toggle is checked
+        # transform real values back to channels and do update_limits
 
         if len(self.limit_transforms) == 0:
             return
