@@ -1,5 +1,16 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 
+from __future__ import absolute_import, division, print_function
+
+import numpy as np
+from mock import MagicMock, patch
+
+from glue.core import Data, DataCollection
+from glue.app.qt import GlueApplication
+
+from glue.core.tests.util import simple_session
+
+from ..vispy_data_viewer import BaseVispyViewer
 from ...volume.volume_viewer import VispyVolumeViewer
 from ...scatter.scatter_viewer import VispyScatterViewer
 from ...isosurface.isosurface_viewer import VispyIsosurfaceViewer
@@ -14,17 +25,6 @@ class BaseTestDataViewer(object):
     ndim = 3
 
     def test_unregister_on_close(self):
-
-# main two things for testing dataviewer is
-# 1. register to hub
-# 2. add/remove data, subsets
-
-
-def test_base_vispy_viewer(tmpdir):
-    # create fake data
-    ndim = 3
-
-    def test_new_vispy_viewer(self, tmpdir):
         session = simple_session()
         hub = session.hub
 
@@ -87,6 +87,3 @@ class TestDataViewerScatter(BaseTestDataViewer):
 
 class TestDataViewerIsosurface(BaseTestDataViewer):
     widget_cls = VispyIsosurfaceViewer
-
-
-

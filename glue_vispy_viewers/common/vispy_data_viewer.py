@@ -12,20 +12,12 @@ from qtpy import PYQT5, QtWidgets
 
 from .vispy_widget import VispyWidgetHelper
 from .viewer_options import VispyOptionsWidget
-from .toolbar import VispyDataViewerToolbar
-from .new_toolbar import VispyViewerToolbar
+from .toolbar import VispyViewerToolbar
 
 
 class BaseVispyViewer(DataViewer):
-<<<<<<< HEAD
-=======
-    # tools = ['tools']  # in bracket should be the filename
-<<<<<<< HEAD
->>>>>>> 50637fc... add test for base vispy viewer
-    _toolbar_cls = VispyDataViewerToolbar
-=======
+
     _toolbar_cls = VispyViewerToolbar
->>>>>>> 40f8751... add test code
 
     def __init__(self, session, parent=None):
 

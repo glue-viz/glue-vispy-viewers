@@ -9,8 +9,7 @@ from glue.icons.qt import get_icon
 from glue.core.tests.util import simple_session
 
 from ..vispy_widget import VispyWidget
-from ..toolbar import VispyDataViewerToolbar
-from ..new_toolbar import VispyViewerToolbar, SaveTool, RecordTool, RotateTool
+from ..toolbar import VispyViewerToolbar, SaveTool, RecordTool, RotateTool
 from ..vispy_data_viewer import BaseVispyViewer
 
 from qtpy.QtTest import QTest
@@ -92,5 +91,6 @@ def test_toolbar():
         lasso.press(MouseEvent('mouse_press'))
         lasso.move(MouseEvent('mouse_move'))
         lasso.release(MouseEvent('mouse_release'))
+        assert toolbar.tools['Lasso'] == lasso
 
     # assert len(w) == 1

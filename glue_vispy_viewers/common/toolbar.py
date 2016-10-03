@@ -1,3 +1,26 @@
+"""
+This file will replace current toolbar and tools
+all button functions will be implemented as a tool function
+"""
+
+
+from __future__ import absolute_import, division, print_function
+
+import os
+from qtpy import QtCore
+from qtpy import PYQT5
+
+from glue.icons.qt import get_icon
+from glue.utils import nonpartial
+from glue.viewers.common.qt.tool import CheckableTool, Tool
+from glue.viewers.common.qt.mouse_mode import MouseMode
+from glue.viewers.common.qt.toolbar import BasicToolbar
+
+if PYQT5:
+    from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
+else:
+    from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
+
 import os
 
 import numpy as np
@@ -5,124 +28,43 @@ from ..extern.vispy import app, scene, io
 
 from qtpy import QtCore, QtWidgets, QtGui
 from qtpy.compat import getsavefilename
+from glue.config import viewer_tool
+from glue.viewers.common.qt.tool import Tool, CheckableTool
 
 from glue.icons.qt import get_icon
 from glue.utils import nonpartial
+
+try:
+    import imageio
+except ImportError:
+    print('Imageio package required')
 
 from glue.core import Data
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.subset import ElementSubsetState
+from glue.core.exceptions import IncompatibleAttribute
 from glue.config import settings
 
-try:
-    import imageio
-except ImportError:
-    IMAGEIO_INSTALLED = False
-else:
-    IMAGEIO_INSTALLED = True
 
-POINT_ICON = os.path.join(os.path.dirname(__file__), 'glue_point.png')
-ROTATE_ICON = os.path.join(os.path.dirname(__file__), 'glue_rotate.png')
 RECORD_START_ICON = os.path.join(os.path.dirname(__file__), 'glue_record_start.png')
 RECORD_STOP_ICON = os.path.join(os.path.dirname(__file__), 'glue_record_stop.png')
+POINT_ICON = os.path.join(os.path.dirname(__file__), 'glue_point.png')
+ROTATE_ICON = os.path.join(os.path.dirname(__file__), 'glue_rotate.png')
 
 
-class VispyDataViewerToolbar(QtWidgets.QToolBar):
-    """
-    This class is for showing the toolbar UI and drawing selection line on canvas
-    """
+class SaveTool(Tool):
+    def __init__(self, viewer):
+        super(SaveTool, self).__init__(viewer=viewer)
+        self._vispy_widget = viewer._vispy_widget
 
-    def __init__(self, vispy_widget=None, parent=None):
+        self.icon = get_icon('glue_filesave')
+        self.tool_id = 'Save'
+        self.action_text = 'Save the figure'
+        self.tool_tip = 'Save the figure'
+        self.shortcut = 'Ctrl+Shift+S'
 
-        super(VispyDataViewerToolbar, self).__init__(parent=parent)
-
-        # Keep a reference to the Vispy Widget and the Vispy Data Viewer
-        self._vispy_widget = vispy_widget
-        self._vispy_data_viewer = parent
-        self._data_collection = parent._data
-
-        # Set visual preferences
-        self.setIconSize(QtCore.QSize(25, 25))
-
-        # Initialize drawing visual
-        self.line_pos = []
-        self.line = scene.visuals.Line(color=settings.FOREGROUND_COLOR,
-                                       width=2, method='agg',
-                                       parent=self._vispy_widget.canvas.scene)
-
-        # Selection defaults
-        self._scatter = None
-        self.mode = None
-        self.selection_origin = (0, 0)
-        self.selected = []
-
-        '''# Add a timer to control the view rotate
-        self.timer = app.Timer(connect=self.rotate)
-        self.record_timer = app.Timer(connect=self.record)
-
-        self.writer = None
-
-        a = QtWidgets.QAction(get_icon('glue_filesave'), 'Save', parent)
-        a.triggered.connect(nonpartial(self.save_figure))
-        a.setToolTip('Save the figure')
-        a.setShortcut('Ctrl+Shift+S')
-        parent.addAction(a)
-        self.addAction(a)
-        self.save_action = a
-
-        if IMAGEIO_INSTALLED:
-            a = QtWidgets.QAction(QtGui.QIcon(RECORD_START_ICON), 'Record', parent)
-            a.triggered.connect(nonpartial(self.toggle_record))
-            a.setToolTip('Start/Stop the record')
-            a.setCheckable(True)
-            parent.addAction(a)
-            self.addAction(a)
-            self.record_action = a'''
-
-        a = QtWidgets.QAction(QtGui.QIcon(ROTATE_ICON), 'Rotate View', parent)
-        a.triggered.connect(nonpartial(self.toggle_rotate))
-        a.setCheckable(True)
-        parent.addAction(a)
-        self.addAction(a)
-        self.rotate_action = a
-
-        # Set up selection actions
-        a = QtWidgets.QAction(get_icon('glue_lasso'), 'Lasso Selection', parent)
-        a.triggered.connect(nonpartial(self.toggle_lasso))
-        a.setCheckable(True)
-        parent.addAction(a)
-        self.addAction(a)
-        self.lasso_action = a
-
-        a = QtWidgets.QAction(get_icon('glue_square'), 'Rectangle Selection', parent)
-        a.triggered.connect(nonpartial(self.toggle_rectangle))
-        a.setCheckable(True)
-        parent.addAction(a)
-        self.addAction(a)
-        self.rectangle_action = a
-
-        a = QtWidgets.QAction(get_icon('glue_circle'), 'Ellipse Selection', parent)
-        a.triggered.connect(nonpartial(self.toggle_ellipse))
-        a.setCheckable(True)
-        parent.addAction(a)
-        self.addAction(a)
-        self.ellipse_action = a
-
-        # TODO: change path to icon once it's in a released version of glue
-        a = QtWidgets.QAction(QtGui.QIcon(POINT_ICON), 'Point Selection', parent)
-        a.triggered.connect(nonpartial(self.toggle_point))
-        a.setCheckable(True)
-        parent.addAction(a)
-        self.addAction(a)
-        self.point_action = a
-
-        # Connect callback functions to VisPy Canvas
-        self._vispy_widget.canvas.events.mouse_press.connect(self.on_mouse_press)
-        self._vispy_widget.canvas.events.mouse_release.connect(self.on_mouse_release)
-        self._vispy_widget.canvas.events.mouse_move.connect(self.on_mouse_move)
-
-    '''def save_figure(self):
+    def activate(self):
         outfile, file_filter = getsavefilename(caption='Save File',
                                                filters='PNG Files (*.png);;'
                                                        'JPEG Files (*.jpeg);;'
@@ -141,24 +83,46 @@ class VispyDataViewerToolbar(QtWidgets.QToolBar):
                 outfile += '.png'
             io.write_png(outfile, img)
 
-    def toggle_record(self):
-        if self.record_action.isChecked():
-            # pop up a window for file saving
-            outfile, file_filter = getsavefilename(caption='Save Animation',
-                                                   filters='GIF Files (*.gif);;')
-            # This indicates that the user cancelled
-            if not outfile:
-                self.record_action.blockSignals(True)
-                self.record_action.setChecked(False)
-                self.record_action.blockSignals(False)
-                return
-            self.record_action.setIcon(QtGui.QIcon(RECORD_STOP_ICON))
+
+class RecordTool(CheckableTool):
+
+    def __init__(self, viewer):
+        super(RecordTool, self).__init__(viewer=viewer)
+        self._vispy_widget = viewer._vispy_widget
+
+        self.icon = QtGui.QIcon(RECORD_START_ICON)
+        self.tool_id = 'Record'
+        self.action_text = 'Record'
+        self.tool_tip = 'Start/Stop the record'
+
+        # Add a timer to control the view rotate
+        # self.timer = app.Timer(connect=self.rotate)
+        self.record_timer = app.Timer(connect=self.record)
+
+        self.writer = None
+
+    def activate(self):
+        # pop up a window for file saving
+        outfile, file_filter = getsavefilename(caption='Save Animation',
+                                               filters='GIF Files (*.gif);;')
+        # This indicates that the user cancelled
+        if outfile:
+
+            self.icon = QtGui.QIcon(RECORD_STOP_ICON)
+            # self.record_action.setIcon(QtGui.QIcon(RECORD_STOP_ICON))
             self.writer = imageio.get_writer(outfile)
             self.record_timer.start(0.1)
         else:
-            self.record_timer.stop()
-            self.record_action.setIcon(QtGui.QIcon(RECORD_START_ICON))
-            self.writer.close()
+            self.deactivate()
+            # TODO: this should be added later
+            # self.record_action.blockSignals(True)
+            # self.record_action.setChecked(False)
+            # self.record_action.blockSignals(False)
+
+    def deactivate(self):
+        self.record_timer.stop()
+        self.icon = QtGui.QIcon(RECORD_START_ICON)
+        self.writer.close()
 
     def record(self, event):
         if self.writer is not None:
@@ -166,122 +130,108 @@ class VispyDataViewerToolbar(QtWidgets.QToolBar):
             self.writer.append_data(im)
         else:
             # maybe better give an option to let user install the package
-            print('imageio module needed!')'''
+            print('imageio module needed!')
 
-    def toggle_lasso(self):
-        if self.lasso_action.isChecked():
-            self.mode = 'lasso'
-            self.rectangle_action.setChecked(False)
-            self.point_action.setChecked(False)
-            self.ellipse_action.setChecked(False)
-            self.rotate_action.setChecked(False)
-        else:
-            self.mode = None
 
-    def toggle_rectangle(self):
-        if self.rectangle_action.isChecked():
-            self.mode = 'rectangle'
-            self.lasso_action.setChecked(False)
-            self.point_action.setChecked(False)
-            self.ellipse_action.setChecked(False)
-            self.rotate_action.setChecked(False)
-        else:
-            self.mode = None
+class RotateTool(CheckableTool):
+    def __init__(self, viewer):
+        self._vispy_widget = viewer._vispy_widget
 
-    def toggle_ellipse(self):
-        if self.ellipse_action.isChecked():
-            self.mode = 'ellipse'
-            self.lasso_action.setChecked(False)
-            self.point_action.setChecked(False)
-            self.rectangle_action.setChecked(False)
-            self.rotate_action.setChecked(False)
-        else:
-            self.mode = None
+        self.icon = QtGui.QIcon(ROTATE_ICON)
+        self.tool_id = 'Rotate'
+        self.timer = app.Timer(connect=self.rotate)
 
-    def toggle_point(self):
-        if self.point_action.isChecked():
-            self.mode = 'point'
-            self.lasso_action.setChecked(False)
-            self.rectangle_action.setChecked(False)
-            self.ellipse_action.setChecked(False)
-            self.rotate_action.setChecked(False)
-        else:
-            self.mode = None
+    def activate(self):
+        self.timer.start(0.1)
 
-    '''def toggle_rotate(self):
-        if self.rotate_action.isChecked():
-            # Start the rotation
-            self.timer.start(0.1)
-        else:
-            self.timer.stop()
+    def deactivate(self):
+        self.timer.stop()
 
     def rotate(self, event):
         self._vispy_widget.view.camera.azimuth -= 1.  # set speed as constant first
 
-    @property
-    def mode(self):
-        return self._mode
 
-    @mode.setter
-    def mode(self, value):
-        self._mode = value
-        if value is None:
-            self.enable_camera_events()
+# tools and toolbar will be divided to another file later
+class PatchedElementSubsetState(ElementSubsetState):
+
+    # TODO: apply this patch to the core glue code
+
+    def __init__(self, data, indices):
+        super(PatchedElementSubsetState, self).__init__(indices=indices)
+        self._data = data
+
+    def to_mask(self, data, view=None):
+        if data in self._data:
+            return super(PatchedElementSubsetState, self).to_mask(data, view=view)
         else:
-            # when the selection icon is clicked, the view should be updated and the tr should also be updated
-            self._vispy_widget.canvas.update()
-            self.disable_camera_events()
+            # TODO: should really be IncompatibleDataException but many other
+            # viewers don't recognize this.
+            raise IncompatibleAttribute()
 
-    @property
-    def camera(self):
-        return self._vispy_widget.view.camera
+    def copy(self):
+        return PatchedElementSubsetState(self._data, self._indices)
 
-    def enable_camera_events(self):
-        self.camera._viewbox.events.mouse_move.connect(self.camera.viewbox_mouse_event)
-        self.camera._viewbox.events.mouse_press.connect(self.camera.viewbox_mouse_event)
-        self.camera._viewbox.events.mouse_release.connect(self.camera.viewbox_mouse_event)
-        self.camera._viewbox.events.mouse_wheel.connect(self.camera.viewbox_mouse_event)
 
-    def disable_camera_events(self):
-        self.camera._viewbox.events.mouse_move.disconnect(self.camera.viewbox_mouse_event)
-        self.camera._viewbox.events.mouse_press.disconnect(self.camera.viewbox_mouse_event)
-        self.camera._viewbox.events.mouse_release.disconnect(self.camera.viewbox_mouse_event)
-        self.camera._viewbox.events.mouse_wheel.disconnect(self.camera.viewbox_mouse_event)
+class VispyMouseMode(CheckableTool):
+    # this will create an abstract selection mode class to handle mouse events
+    # instanced by lasso, rectangle, circular and point mode
 
-    def on_mouse_press(self, event):
+    def __init__(self, viewer):
+        super(VispyMouseMode, self).__init__(viewer)
+        self.selection_origin = (0, 0)
+        self._vispy_widget = viewer._vispy_widget
+
+        # Initialize drawing visual
+        self.line_pos = []
+        self.line = scene.visuals.Line(color=settings.FOREGROUND_COLOR,
+                                       width=2, method='agg',
+                                       parent=self._vispy_widget.canvas.scene)
+
+    def press(self, event):
+        if self.tool_id:
+            # do the initiation here
+            self.selection_origin = event.pos
+
+    def release(self, event):
         pass
 
-    def on_mouse_release(self, event):
-        pass
-
-    def on_mouse_move(self, event):
+    def move(self, event):
         """
         Draw selection line along dragging mouse
         """
-        if event.button == 1 and event.is_dragging and self.mode is not 'point':
-            if self.mode is 'lasso':
+        if event.button == 1 and event.is_dragging and 'Point' not in self.tool_id:
+            if 'Lasso' in self.tool_id:
                 self.line_pos.append(event.pos)
                 self.line.set_data(np.array(self.line_pos))
             else:
                 width = event.pos[0] - self.selection_origin[0]
                 height = event.pos[1] - self.selection_origin[1]
-                center = (width / 2. + self.selection_origin[0], height / 2. + self.selection_origin[1], 0)
+                center = (width / 2. + self.selection_origin[0], height / 2.
+                          + self.selection_origin[1], 0)
 
-                if self.mode is 'rectangle':
+                if 'Rectangle' in self.tool_id:
                     self.line_pos = self.rectangle_vertice(center, height, width)
                     self.line.set_data(np.array(self.line_pos))
 
-                if self.mode is 'ellipse':
+                # TODO: circle does not get shown sometimes
+                if 'Circle' in self.tool_id:
                     # create a circle instead of ellipse here
-                    self.line_pos = self.ellipse_vertice(center, radius=(np.abs((width + height) / 4.), np.abs((width + height) / 4.)),
-                                                         start_angle=0., span_angle=360., num_segments=500)
+                    radius = (np.abs((width + height) / 4.), np.abs((width + height) / 4.))
+                    self.line_pos = self.ellipse_vertice(center, radius=radius,
+                                                         start_angle=0.,
+                                                         span_angle=360.,
+                                                         num_segments=500)
                     self.line.set_data(pos=np.array(self.line_pos), connect='strip')
+
             self._vispy_widget.canvas.update()
+
+    ''' below are common functions for mousemode tool '''
 
     def get_visible_data(self):
         visible = []
         # Loop over visible layer artists
-        for layer_artist in self._vispy_data_viewer._layer_artist_container:
+        print('self.viewer', self.viewer)
+        for layer_artist in self.viewer._layer_artist_container:
             # Only extract Data objects, not subsets
             if isinstance(layer_artist.layer, Data):
                 visible.append(layer_artist.layer)
@@ -298,6 +248,7 @@ class VispyDataViewerToolbar(QtWidgets.QToolBar):
         # needed (this is delegated to the correct subset mode).
         mode = EditSubsetMode()
         focus = visible_data[0] if len(visible_data) > 0 else None
+        # TODO: get data_collection here
         mode.update(self._data_collection, subset_state, focus_data=focus)
 
     def lasso_reset(self):
@@ -383,4 +334,65 @@ class VispyDataViewerToolbar(QtWidgets.QToolBar):
         # close the curve
         vertices[num_segments + 1] = np.float32([center[0], center[1]])
 
-        return vertices[:-1]'''
+        return vertices[:-1]
+
+
+class VispyViewerToolbar(BasicToolbar):
+
+    def __init__(self, vispy_widget=None, parent=None): #parent would be a viewer
+        print('vispyviewer toolbar parent is', parent)
+        self._vispy_widget = parent._vispy_widget
+        self.canvas = parent._vispy_widget.canvas
+
+        BasicToolbar.__init__(self, parent)
+
+        # Set visual preferences
+        self.setIconSize(QtCore.QSize(25, 25))
+
+    def setup_default_modes(self):
+        save_mode = SaveTool(self.parent())
+        self.add_tool(save_mode)
+
+        try:
+            import imageio
+            record_mode = RecordTool(self.parent())
+            self.add_tool(record_mode)
+        except ImportError:
+            print('Record tool not loaded, imageio package is required')
+
+        rotate_mode = RotateTool(self.parent())
+        self.add_tool(rotate_mode)
+
+    def activate_tool(self, mode):
+        if isinstance(mode, VispyMouseMode):
+            # Connect callback functions to VisPy Canvas
+            self._vispy_widget.canvas.events.mouse_press.connect(mode.press)
+            self._vispy_widget.canvas.events.mouse_release.connect(mode.release)
+            self._vispy_widget.canvas.events.mouse_move.connect(mode.move)
+            self.disable_camera_events()
+            # self._vispy_widget.canvas.update()
+        super(VispyViewerToolbar, self).activate_tool(mode)
+
+    def deactivate_tool(self, mode):
+        if isinstance(mode, VispyMouseMode):
+            self._vispy_widget.canvas.events.mouse_press.disconnect(mode.press)
+            self._vispy_widget.canvas.events.mouse_release.disconnect(mode.release)
+            self._vispy_widget.canvas.events.mouse_move.disconnect(mode.move)
+            self.enable_camera_events()
+        super(VispyViewerToolbar, self).deactivate_tool(mode)
+
+    @property
+    def camera(self):
+        return self._vispy_widget.view.camera
+
+    def enable_camera_events(self):
+        self.camera._viewbox.events.mouse_move.connect(self.camera.viewbox_mouse_event)
+        self.camera._viewbox.events.mouse_press.connect(self.camera.viewbox_mouse_event)
+        self.camera._viewbox.events.mouse_release.connect(self.camera.viewbox_mouse_event)
+        self.camera._viewbox.events.mouse_wheel.connect(self.camera.viewbox_mouse_event)
+
+    def disable_camera_events(self):
+        self.camera._viewbox.events.mouse_move.disconnect(self.camera.viewbox_mouse_event)
+        self.camera._viewbox.events.mouse_press.disconnect(self.camera.viewbox_mouse_event)
+        self.camera._viewbox.events.mouse_release.disconnect(self.camera.viewbox_mouse_event)
+        self.camera._viewbox.events.mouse_wheel.disconnect(self.camera.viewbox_mouse_event)
