@@ -13,6 +13,12 @@ from ..toolbar import VispyDataViewerToolbar
 from ..new_toolbar import VispyViewerToolbar, SaveTool, RecordTool, RotateTool
 from ..vispy_data_viewer import BaseVispyViewer
 
+from qtpy.QtTest import QTest
+from qtpy.QtCore import Qt
+from qtpy import QtWidgets
+
+from ...extern.vispy.app import MouseEvent
+
 # we need to test both toolbar and tool here
 # solve the viewer test bug first
 
@@ -75,5 +81,16 @@ def test_toolbar():
         # test record tool
         # is record in actions.key
         # test record toggle too
+
+        # test lasso selection tool
+        toolbar.actions['Lasso'].toggle()
+        assert toolbar.active_tool.tool_id == 'Lasso'
+        lasso = toolbar.active_tool
+        # event = QTest.mouseMove(viewer._vispy_widget)
+
+        # TODO: add a real mouse move event so content in lasso.move() is called
+        lasso.press(MouseEvent('mouse_press'))
+        lasso.move(MouseEvent('mouse_move'))
+        lasso.release(MouseEvent('mouse_release'))
 
     # assert len(w) == 1

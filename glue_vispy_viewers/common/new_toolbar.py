@@ -188,6 +188,8 @@ class VispyMouseMode(CheckableTool):
     def __init__(self, viewer):
         super(VispyMouseMode, self).__init__(viewer)
         self.selection_origin = (0, 0)
+        self._vispy_widget = viewer._vispy_widget
+
         # Initialize drawing visual
         self.line_pos = []
         self.line = scene.visuals.Line(color=settings.FOREGROUND_COLOR,
@@ -204,8 +206,9 @@ class VispyMouseMode(CheckableTool):
         """
         Draw selection line along dragging mouse
         """
-        if event.button == 1 and event.is_dragging and self.mode is not 'point':
-            if self.mode is 'lasso':
+        print('event is', event, event.type)
+        if event.button == 1 and event.is_dragging and self.tool_id is not 'Point':
+            if self.tool_id is 'Lasso':
                 self.line_pos.append(event.pos)
                 self.line.set_data(np.array(self.line_pos))
             else:
@@ -214,11 +217,11 @@ class VispyMouseMode(CheckableTool):
                 center = (width / 2. + self.selection_origin[0], height / 2.
                           + self.selection_origin[1], 0)
 
-                if self.mode is 'rectangle':
+                if self.tool_id is 'Rectangle':
                     self.line_pos = self.rectangle_vertice(center, height, width)
                     self.line.set_data(np.array(self.line_pos))
 
-                if self.mode is 'ellipse':
+                if self.tool_id is 'Ellipse':
                     # create a circle instead of ellipse here
                     radius = (np.abs((width + height) / 4.), np.abs((width + height) / 4.))
                     self.line_pos = self.ellipse_vertice(center, radius=radius,
@@ -339,6 +342,34 @@ class VispyMouseMode(CheckableTool):
         return vertices[:-1]
 
 
+class LassoSelectionMode(VispyMouseMode):
+    def __init__(self, viewer):
+        super(LassoSelectionMode, self).__init__(viewer)
+        self.icon = get_icon('glue_lasso')
+        self.tool_id = 'Lasso'
+
+
+class RectangleSelectionMode(VispyMouseMode):
+    def __init__(self, viewer):
+        super(RectangleSelectionMode, self).__init__(viewer)
+        self.icon = get_icon('glue_square')
+        self.tool_id = 'Rectangle'
+
+
+class CircleSelectionMode(VispyMouseMode):
+    def __init__(self, viewer):
+        super(CircleSelectionMode, self).__init__(viewer)
+        self.icon = get_icon('glue_circle')
+        self.tool_id = 'Circle'
+
+
+class PointSelectionMode(VispyMouseMode):
+    def __init__(self, viewer):
+        super(PointSelectionMode, self).__init__(viewer)
+        self.icon = QtGui.QIcon(POINT_ICON)
+        self.tool_id = 'Point'
+
+
 class VispyViewerToolbar(BasicToolbar):
 
     def __init__(self, vispy_widget=None, parent=None): #parent would be a viewer
@@ -362,6 +393,9 @@ class VispyViewerToolbar(BasicToolbar):
         rotate_mode = RotateTool(self.parent())
         self.add_tool(rotate_mode)
 
+        lasso_mode = LassoSelectionMode(self.parent())
+        self.add_tool(lasso_mode)
+
         # more goes here
 
     def activate_tool(self, mode):
@@ -370,7 +404,8 @@ class VispyViewerToolbar(BasicToolbar):
             self._vispy_widget.canvas.events.mouse_press.connect(mode.press)
             self._vispy_widget.canvas.events.mouse_release.connect(mode.release)
             self._vispy_widget.canvas.events.mouse_move.connect(mode.move)
-            self.enable_camera_events()
+            self.disable_camera_events()
+            # self._vispy_widget.canvas.update()
         super(VispyViewerToolbar, self).activate_tool(mode)
 
     def deactivate_tool(self, mode):
@@ -378,7 +413,7 @@ class VispyViewerToolbar(BasicToolbar):
             self._vispy_widget.canvas.events.mouse_press.disconnect(mode.press)
             self._vispy_widget.canvas.events.mouse_release.disconnect(mode.release)
             self._vispy_widget.canvas.events.mouse_move.disconnect(mode.move)
-            self.disable_camera_events()
+            self.enable_camera_events()
         super(VispyViewerToolbar, self).deactivate_tool(mode)
 
     @property
