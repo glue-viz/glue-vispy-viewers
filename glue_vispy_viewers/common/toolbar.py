@@ -57,7 +57,7 @@ class VispyDataViewerToolbar(QtWidgets.QToolBar):
         self.selection_origin = (0, 0)
         self.selected = []
 
-        # Add a timer to control the view rotate
+        '''# Add a timer to control the view rotate
         self.timer = app.Timer(connect=self.rotate)
         self.record_timer = app.Timer(connect=self.record)
 
@@ -78,7 +78,7 @@ class VispyDataViewerToolbar(QtWidgets.QToolBar):
             a.setCheckable(True)
             parent.addAction(a)
             self.addAction(a)
-            self.record_action = a
+            self.record_action = a'''
 
         a = QtWidgets.QAction(QtGui.QIcon(ROTATE_ICON), 'Rotate View', parent)
         a.triggered.connect(nonpartial(self.toggle_rotate))
@@ -122,7 +122,7 @@ class VispyDataViewerToolbar(QtWidgets.QToolBar):
         self._vispy_widget.canvas.events.mouse_release.connect(self.on_mouse_release)
         self._vispy_widget.canvas.events.mouse_move.connect(self.on_mouse_move)
 
-    def save_figure(self):
+    '''def save_figure(self):
         outfile, file_filter = getsavefilename(caption='Save File',
                                                filters='PNG Files (*.png);;'
                                                        'JPEG Files (*.jpeg);;'
@@ -166,7 +166,7 @@ class VispyDataViewerToolbar(QtWidgets.QToolBar):
             self.writer.append_data(im)
         else:
             # maybe better give an option to let user install the package
-            print('imageio module needed!')
+            print('imageio module needed!')'''
 
     def toggle_lasso(self):
         if self.lasso_action.isChecked():
@@ -208,7 +208,7 @@ class VispyDataViewerToolbar(QtWidgets.QToolBar):
         else:
             self.mode = None
 
-    def toggle_rotate(self):
+    '''def toggle_rotate(self):
         if self.rotate_action.isChecked():
             # Start the rotation
             self.timer.start(0.1)
@@ -383,4 +383,4 @@ class VispyDataViewerToolbar(QtWidgets.QToolBar):
         # close the curve
         vertices[num_segments + 1] = np.float32([center[0], center[1]])
 
-        return vertices[:-1]
+        return vertices[:-1]'''
