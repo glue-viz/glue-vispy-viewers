@@ -25,6 +25,9 @@ def make_test_data():
         comp = Component(np.random.random((10, 10, 10)))
         data.add_component(comp, letter)
 
+    # make sure one component key is primary
+    data.add_component(Component(np.random.random((10, 10, 10))), 'PRIMARY')
+
     return data
 
 # TODO: how to get toolbar
