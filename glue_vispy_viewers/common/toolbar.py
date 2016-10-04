@@ -8,18 +8,8 @@ from __future__ import absolute_import, division, print_function
 
 import os
 from qtpy import QtCore
-from qtpy import PYQT5
-
-from glue.icons.qt import get_icon
-from glue.utils import nonpartial
-from glue.viewers.common.qt.tool import CheckableTool, Tool
-from glue.viewers.common.qt.mouse_mode import MouseMode
 from glue.viewers.common.qt.toolbar import BasicToolbar
 
-if PYQT5:
-    from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
-else:
-    from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
 
 import os
 
@@ -29,6 +19,7 @@ from ..extern.vispy import app, scene, io
 from qtpy import QtCore, QtWidgets, QtGui
 from qtpy.compat import getsavefilename
 from glue.config import viewer_tool
+
 from glue.viewers.common.qt.tool import Tool, CheckableTool
 
 from glue.icons.qt import get_icon
@@ -49,7 +40,6 @@ from glue.config import settings
 
 RECORD_START_ICON = os.path.join(os.path.dirname(__file__), 'glue_record_start.png')
 RECORD_STOP_ICON = os.path.join(os.path.dirname(__file__), 'glue_record_stop.png')
-POINT_ICON = os.path.join(os.path.dirname(__file__), 'glue_point.png')
 ROTATE_ICON = os.path.join(os.path.dirname(__file__), 'glue_rotate.png')
 
 
@@ -248,7 +238,6 @@ class VispyMouseMode(CheckableTool):
         # needed (this is delegated to the correct subset mode).
         mode = EditSubsetMode()
         focus = visible_data[0] if len(visible_data) > 0 else None
-        # TODO: get data_collection here
         mode.update(self._data_collection, subset_state, focus_data=focus)
 
     def lasso_reset(self):

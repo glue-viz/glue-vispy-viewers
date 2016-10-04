@@ -1,7 +1,7 @@
 """
 This is for 3D selection in Glue 3d scatter plot viewer.
 """
-from ..common.toolbar import VispyDataViewerToolbar
+from ..common.toolbar import VispyViewerToolbar
 from glue.core.roi import RectangularROI, CircularROI
 from ..utils import as_matrix_transform
 import numpy as np
@@ -14,7 +14,7 @@ except ImportError:
     SKLEARN_INSTALLED = False
 
 
-class ScatterSelectionToolbar(VispyDataViewerToolbar):
+class ScatterSelectionToolbar(VispyViewerToolbar):
 
     def __init__(self, vispy_widget=None, parent=None):
         super(ScatterSelectionToolbar, self).__init__(vispy_widget=vispy_widget,

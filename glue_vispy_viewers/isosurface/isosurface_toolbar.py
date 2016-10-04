@@ -3,10 +3,10 @@ __author__ = 'penny'
 """
 This is for getting the selection part and highlight it
 """
-from ..common.toolbar import VispyDataViewerToolbar
+from ..common.toolbar import VispyViewerToolbar
 
 
-class IsosurfaceSelectionToolbar(VispyDataViewerToolbar):
+class IsosurfaceSelectionToolbar(VispyViewerToolbar):
 
     def __init__(self, vispy_widget=None, parent=None):
         super(IsosurfaceSelectionToolbar, self).__init__(vispy_widget=vispy_widget, parent=parent)

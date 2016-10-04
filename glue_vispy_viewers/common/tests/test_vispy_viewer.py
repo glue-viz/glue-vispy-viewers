@@ -87,3 +87,4 @@ class TestDataViewerScatter(BaseTestDataViewer):
 
 class TestDataViewerIsosurface(BaseTestDataViewer):
     widget_cls = VispyIsosurfaceViewer
+

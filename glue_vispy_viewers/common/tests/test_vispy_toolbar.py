@@ -66,8 +66,9 @@ def test_toolbar():
         viewer = ExampleViewer(session)
         toolbar = viewer.toolbar
 
+        # TODO: how to add a test for dialogue option?
         # test save tool
-        # toolbar.actions['Save'].trigger()  # TODO: add a proper test for dialogue test
+        # toolbar.actions['Save'].trigger()
         # assert toolbar.active_tool.tool_id == 'Save'
 
         # test rotate tool
@@ -78,19 +79,13 @@ def test_toolbar():
         assert toolbar.active_tool is None
 
         # test record tool
-        # is record in actions.key
-        # test record toggle too
+        try:
+            import imageio
+            toolbar.actions['Record'].toggle()
+            assert toolbar.active_tool.tool_id == 'Record'
+            toolbar.actions['Record'].toggle()
+            assert toolbar.active_tool.tool_id is None
+        except ImportError:
+            print('Imageio package needed')
 
-        # test lasso selection tool
-        toolbar.actions['Lasso'].toggle()
-        assert toolbar.active_tool.tool_id == 'Lasso'
-        lasso = toolbar.active_tool
-        # event = QTest.mouseMove(viewer._vispy_widget)
-
-        # TODO: add a real mouse move event so content in lasso.move() is called
-        lasso.press(MouseEvent('mouse_press'))
-        lasso.move(MouseEvent('mouse_move'))
-        lasso.release(MouseEvent('mouse_release'))
-        assert toolbar.tools['Lasso'] == lasso
-
-    # assert len(w) == 1
+    assert len(w) == 0
