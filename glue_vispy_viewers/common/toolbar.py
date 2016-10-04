@@ -176,11 +176,17 @@ class VispyMouseMode(CheckableTool):
         self.line = scene.visuals.Line(color=settings.FOREGROUND_COLOR,
                                        width=2, method='agg',
                                        parent=self._vispy_widget.canvas.scene)
+        self.visual_tr = None
+        self.current_visible_array = None
+
 
     def press(self, event):
-        if self.tool_id:
-            # do the initiation here
-            self.selection_origin = event.pos
+        # do the initiation here
+        self.selection_origin = event.pos
+
+        # Get all data sets visible in current viewer
+        self.visible_data, self.visual = self.get_visible_data()
+        self.visual_tr = self._vispy_widget.limit_transforms[self.visual]
 
     def release(self, event):
         pass

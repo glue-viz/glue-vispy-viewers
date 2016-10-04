@@ -28,8 +28,8 @@ class BaseVispyViewer(DataViewer):
 
         self._options_widget = VispyOptionsWidget(vispy_widget=self._vispy_widget, data_viewer=self)
 
-        toolbar = self._toolbar_cls(vispy_widget=self._vispy_widget, parent=self)
-        self.addToolBar(toolbar)
+        self.toolbar = self._toolbar_cls(vispy_widget=self._vispy_widget, parent=self)
+        self.addToolBar(self.toolbar)
         # try customize tool
         # super(BaseVispyViewer, self).initialize_toolbar()
 

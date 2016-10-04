@@ -31,7 +31,7 @@ def make_test_data():
 # AttributeError: 'VispyVolumeViewer' object has no attribute 'toolbar'
 # try test_vispy_toolbar.py method
 
-'''def test_volumeviewer_toolbar():
+def test_volumeviewer_toolbar():
     session = simple_session()
     v = VispyVolumeViewer(session)
     data = make_test_data()
@@ -48,8 +48,8 @@ def make_test_data():
     assert toolbar.active_tool is None
 
     # test lasso selection tool
-    toolbar.actions['Lasso'].toggle()
-    assert toolbar.active_tool.tool_id == 'Lasso'
+    toolbar.actions['Vol:Lasso'].toggle()
+    assert 'Lasso' in toolbar.active_tool.tool_id
     lasso = toolbar.active_tool
     # event = QTest.mouseMove(viewer._vispy_widget)
 
@@ -57,4 +57,17 @@ def make_test_data():
     lasso.press(MouseEvent('mouse_press'))
     lasso.move(MouseEvent('mouse_move'))
     lasso.release(MouseEvent('mouse_release'))
-    assert toolbar.tools['Lasso'] == lasso'''
+    assert toolbar.tools['Vol:Lasso'] == lasso
+
+    # add point selection test
+    # set to perspective mode
+    toolbar.actions['Vol:Point'].toggle()
+    assert 'Point' in toolbar.active_tool.tool_id
+    point = toolbar.active_tool
+    # event = QTest.mouseMove(viewer._vispy_widget)
+
+    # TODO: add a real mouse move event so content in lasso.move() is called
+    point.press(MouseEvent('mouse_press'))
+    point.move(MouseEvent('mouse_move'))
+    point.release(MouseEvent('mouse_release'))
+    assert toolbar.tools['Vol:Point'] == point

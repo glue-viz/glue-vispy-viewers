@@ -15,7 +15,6 @@ from ..extern.vispy import scene
 from .floodfill_scipy import floodfill_scipy
 
 from glue.icons.qt import get_icon
-from glue.utils import nonpartial
 
 try:
     from glue.external.qt import QtCore, QtGui as QtWidgets, QtGui
@@ -32,25 +31,26 @@ POINT_ICON = os.path.join(os.path.dirname(__file__), 'glue_point.png')
 
 
 def get_map_data(visible_data, visual):
-    """
-    Get the mapped buffer from self.visual to canvas.
+        """
+        Get the mapped buffer from self.visual to canvas.
 
-    :return: Mapped data position on canvas.
-    """
+        :return: Mapped data position on canvas.
+        """
+        # Get the visible datasets
+        data_object = visible_data[0]
 
-    # Get the visible datasets
-    data_object = visible_data[0]
+        # TODO: add support for multiple data here, data_array should
+        # cover all self.visible_data array
 
-    # TODO: add support for multiple data here, data_array should
-    # cover all self.visible_data array
+        tr = as_matrix_transform(visual.get_transform(map_from='visual',
+                                                           map_to='canvas'))
 
-    tr = as_matrix_transform(visual.get_transform(map_from='visual', map_to='canvas'))
+        pos_data = np.indices(data_object.data.shape[::-1], dtype=float)
+        pos_data = pos_data.reshape(3, -1).transpose()
 
-    pos_data = np.indices(data_object.data.shape[::-1], dtype=float).reshape(3, -1).transpose()
-
-    data = tr.map(pos_data)
-    data /= data[:, 3:]   # normalize with homogeneous coordinates
-    return data[:, :2]
+        data = tr.map(pos_data)
+        data /= data[:, 3:]   # normalize with homogeneous coordinates
+        return data[:, :2]
 
 
 class LassoSelectionMode(VispyMouseMode):
@@ -76,14 +76,13 @@ class LassoSelectionMode(VispyMouseMode):
             x, y = data.transpose()
             mask = points_inside_poly(x, y, vx, vy)
 
-        # Mask matches transposed volume data set rather than the original one.
-        # The ravel here is to make mask compatible with ElementSubsetState input.
-        trans_ones_data = np.transpose(np.ones(visible_data[0].data.shape))
-        new_mask = np.reshape(mask, trans_ones_data.shape)
-        new_mask = np.ravel(np.transpose(new_mask))
-        self.mark_selected(new_mask, visible_data)
+            # Shape selection mask is generated from mapped data, so it has the same shape as transposed data array.
+            # The ravel here is to make mask compatible with ElementSubsetState input.
+            shape_mask = np.reshape(mask, np.transpose(self.visible_data[0]['PRIMARY']).shape)
+            shape_mask = np.ravel(np.transpose(shape_mask))
+            self.mark_selected(shape_mask, visible_data)
 
-        self.lasso_reset()
+            self.lasso_reset()
 
 # TODO: move other functions to the three modes below
 
@@ -114,14 +113,13 @@ class RectangleSelectionMode(VispyMouseMode):
             r = RectangularROI(xmin, xmax, ymin, ymax)
             mask = r.contains(data[:, 0], data[:, 1])
 
-        # Mask matches transposed volume data set rather than the original one.
-        # The ravel here is to make mask compatible with ElementSubsetState input.
-        trans_ones_data = np.transpose(np.ones(visible_data[0].data.shape))
-        new_mask = np.reshape(mask, trans_ones_data.shape)
-        new_mask = np.ravel(np.transpose(new_mask))
-        self.mark_selected(new_mask, visible_data)
+            # Shape selection mask is generated from mapped data, so it has the same shape as transposed data array.
+            # The ravel here is to make mask compatible with ElementSubsetState input.
+            shape_mask = np.reshape(mask, np.transpose(self.visible_data[0]['PRIMARY']).shape)
+            shape_mask = np.ravel(np.transpose(shape_mask))
+            self.mark_selected(shape_mask, visible_data)
 
-        self.lasso_reset()
+            self.lasso_reset()
 
 
 class CircleSelectionMode(VispyMouseMode):
@@ -149,65 +147,59 @@ class CircleSelectionMode(VispyMouseMode):
             c = CircularROI((xmax+xmin)/2., (ymax+ymin)/2., (xmax-xmin)/2.)
             mask = c.contains(data[:, 0], data[:, 1])
 
-        # Mask matches transposed volume data set rather than the original one.
-        # The ravel here is to make mask compatible with ElementSubsetState input.
-        trans_ones_data = np.transpose(np.ones(visible_data[0].data.shape))
-        new_mask = np.reshape(mask, trans_ones_data.shape)
-        new_mask = np.ravel(np.transpose(new_mask))
-        self.mark_selected(new_mask, visible_data)
+            # Shape selection mask is generated from mapped data, so it has the same shape as transposed data array.
+            # The ravel here is to make mask compatible with ElementSubsetState input.
+            shape_mask = np.reshape(mask, np.transpose(self.visible_data[0]['PRIMARY']).shape)
+            shape_mask = np.ravel(np.transpose(shape_mask))
+            self.mark_selected(shape_mask, visible_data)
 
-        self.lasso_reset()
+            self.lasso_reset()
 
 
+# TODO: replaced by dendrogram and floodfill mode
 class PointSelectionMode(VispyMouseMode):
     def __init__(self, viewer):
         super(PointSelectionMode, self).__init__(viewer)
         self.icon = QtGui.QIcon(POINT_ICON)
         self.tool_id = 'Vol:Point'
         self._data_collection = viewer._data
+        self._vispy_data_viewer = viewer  # vispy data viewer
 
-        # for getting transposed vol_data shape and getting pos array
-        self.trans_ones_data = None
         # add some markers
         self.markers = scene.visuals.Markers(parent=self._vispy_widget.view.scene)
-
-        self.visual_tr = None
-        self.visible_data = None
-        self.visual = None
-        self.current_visible_array = None
         self.max_value_pos = None
         self.max_value = None
+
+    def deactivate(self):
+        # remove marker
+        self.markers.visible = False
 
     def press(self, event):
         """
         Assign mouse position and do point selection.
         :param event:
         """
-        if self.tool_id:
-            # do the initiation here
-            self.selection_origin = event.pos
+        super(PointSelectionMode, self).press(event)
 
-            # Get all data sets visible in current viewer
-            self.visible_data, self.visual = self.get_visible_data()
-            self.current_visible_array = np.nan_to_num(self.visible_data[0]['PRIMARY'])
-            self.visual_tr = self._vispy_widget.limit_transforms[self.visual]
+        self.current_visible_array = np.nan_to_num(self.visible_data[0]['PRIMARY'])
 
-            # get start and end point of ray line
-            pos = self.get_ray_line()
-            max_value_pos, max_value = self.get_inter_value(pos)
-            self.max_value_pos = max_value_pos
-            self.max_value = max_value
+        # get start and end point of ray line
+        pos = self.get_ray_line()
+        max_value_pos, max_value = self.get_inter_value(pos)
+        self.max_value_pos = max_value_pos
+        self.max_value = max_value
 
-            # set marker and status text
-            if max_value:
-                self.markers.set_data(pos=np.array(max_value_pos),
-                                      face_color='yellow')
+        # set marker and status text
+        if max_value:
+            self.markers.set_data(pos=np.array(max_value_pos),
+                                  face_color='yellow')
+            self.markers.visible = True
 
-            self._vispy_widget.canvas.update()
-
+        self._vispy_widget.canvas.update()
 
     def move(self, event):
         if event.button == 1 and event.is_dragging and self.tool_id:
+            visible_data, visual = self.get_visible_data()
 
             # calculate the threshold and call draw visual
             width = event.pos[0] - self.selection_origin[0]
@@ -219,9 +211,10 @@ class PointSelectionMode(VispyMouseMode):
             mask = self.draw_floodfill_visual(drag_distance / canvas_diag)
 
             if mask is not None:
-                new_mask = np.reshape(mask, self.trans_ones_data.shape)
-                new_mask = np.ravel(np.transpose(new_mask))
-                self.mark_selected(new_mask, self.visible_data)
+                # Smart selection mask has the same shape as data shape.
+                smart_mask = np.reshape(mask, self.current_visible_array.shape)
+                smart_mask = np.ravel(smart_mask)
+                self.mark_selected(smart_mask, visible_data)
 
     def draw_floodfill_visual(self, threshold):
         formate_data = np.asarray(self.current_visible_array, np.float64)
@@ -322,18 +315,6 @@ class VolumeSelectionToolbar(VispyViewerToolbar):
     def __init__(self, vispy_widget=None, parent=None):
         super(VolumeSelectionToolbar, self).__init__(vispy_widget=vispy_widget,
                                                      parent=parent)
-        # for getting transposed vol_data shape and getting pos array
-        self.trans_ones_data = None
-        # add some markers
-        self.markers = scene.visuals.Markers(parent=self._vispy_widget.view.scene)
-        self.ray_line = scene.visuals.Line(color='green', width=5,
-                                           parent=self._vispy_widget.view.scene)
-
-        self.visual_tr = None
-        self.visible_data = None
-        self.visual = None
-        self.vol_data = None
-        self.max_value_pos = None
 
         # add new tools here
         lasso_mode = LassoSelectionMode(self.parent())
