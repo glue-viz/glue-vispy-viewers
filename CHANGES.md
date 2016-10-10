@@ -18,14 +18,16 @@
 
 - Make selection frame wider. [#161]
 
-- Small fix of the camera initial settings & rotate speed . [#154] 
+- Small fix of the camera initial settings & rotate speed . [#154]
 
 - Advanced point-mode selection for scatter points. [#160]
+
+- Experimental point-mode selection for volume viewer. [#159]
 
 - Fix button to record animations when the user cancels the file save dialog.
   [#186]
 
-- Fix Qt imports to use QtPy for new versions of glue. [#173, #186]
+- Fix Qt imports to use QtPy for new versions of glue. [#173, #178, #186]
 
 - Add an option to clip any data outside the specified limits. [#203]
 
@@ -47,7 +49,7 @@
 0.3 (2016-05-04)
 ----------------
 
-- Add selection toolbar and icons for 3D viewers. [#88, #92] 
+- Add selection toolbar and icons for 3D viewers. [#88, #92]
 
 - Workaround OpenGL issue that caused cubes with size > 2048 along any
   dimension to not display. [#100]
