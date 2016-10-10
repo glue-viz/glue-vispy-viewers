@@ -8,10 +8,7 @@ from glue.core import Data
 from glue.external.echo import add_callback
 from glue.utils import nonpartial
 
-try:
-    from glue.external.qt import QtGui as QtWidgets
-except ImportError:
-    from qtpy import QtWidgets
+from qtpy import QtWidgets
 
 from .vispy_widget import VispyWidget
 from .viewer_options import VispyOptionsWidget

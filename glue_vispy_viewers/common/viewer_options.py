@@ -4,10 +4,7 @@ from functools import partial
 
 import numpy as np
 
-try:
-    from glue.external.qt import QtGui as QtWidgets
-except ImportError:
-    from qtpy import QtWidgets
+from qtpy import QtWidgets
 
 from glue.utils.qt.widget_properties import CurrentComboProperty, FloatLineProperty, connect_bool_button, ButtonProperty
 from glue.utils.qt import load_ui

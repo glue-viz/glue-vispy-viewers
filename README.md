@@ -45,3 +45,13 @@ To run the tests, do:
 
 at the root of the repository. This requires the [pytest](http://pytest.org)
 module to be installed.
+
+Using the isosurface viewer
+---------------------------
+
+The isosurface viewer is currently still unstable - to enable it, put the
+following in a file called ``config.py`` file in your current working
+directory:
+
+    from glue_vispy_viewers.isosurface import setup as setup_isosurface
+    setup_isosurface()
