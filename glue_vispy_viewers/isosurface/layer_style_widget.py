@@ -16,6 +16,7 @@ from glue.utils.qt.widget_properties import (ValueProperty,
                                              FloatLineProperty, connect_value,
                                              connect_float_edit,
                                              connect_current_combo)
+from glue.utils import nonpartial
 
 
 class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
@@ -26,7 +27,8 @@ class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
     level_low = FloatLineProperty('ui.limits_low')  # could get and set float value
     level_high = FloatLineProperty('ui.limits_high')
     # We don't have IntLineProperty?
-    step = ValueProperty('ui.slider_step')  # TODO: set default value here?
+    step = ValueProperty('ui.slider_step')
+    step_value = FloatLineProperty('ui.step_edit')
 
     def __init__(self, layer_artist):
 
@@ -47,6 +49,17 @@ class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
         # TODO: alpha is now automatically set, in the future each level could be one layer
         # and its color, transparency and visibility could be set from layer panel
         # self.layer_artist.alpha = self.layer.style.alpha
+
+        # set up step slider and edit box
+        # self.ui.slider_step.setValue(5)
+        self._event_lock = False
+
+        label = self.ui.step_edit
+        slider = self.ui.slider_step
+        slider.valueChanged.connect(nonpartial(self._update_labels_from_sliders, label, slider))
+        label.editingFinished.connect(nonpartial(self._update_sliders_from_labels, slider, label))
+        label.setText('1')
+        label.editingFinished.emit()
 
         with delay_callback(self.layer_artist, 'attribute'):
             self.attribute = self.visible_components[0]
@@ -117,3 +130,21 @@ class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
             return self.layer.data.visible_components
         else:
             return self.layer.visible_components
+
+    def _update_labels_from_sliders(self, label, slider):
+        if self._event_lock:
+            return  # prevent infinite event loop
+        self._event_lock = True
+        try:
+            label.setText(str(slider.value()))
+        finally:
+            self._event_lock = False
+
+    def _update_sliders_from_labels(self, slider, label):
+        if self._event_lock:
+            return  # prevent infinite event loop
+        self._event_lock = True
+        try:
+            slider.setValue(int(label.text()))  # TODO: only allow int input
+        finally:
+            self._event_lock = False

@@ -62,7 +62,15 @@ def test_volume_viewer(tmpdir):
     style_widget.attribute = data.id['b']
     style_widget.level_low = 0.1
     style_widget.level_high = 0.9
+
+    # test set label from slider
     style_widget.step = 5
+    assert style_widget.step_value == 5.0
+
+    # test edit step label text
+    style_widget.ui.step_edit.setText('4')
+    style_widget.ui.step_edit.editingFinished.emit()
+    assert style_widget.step == 4
 
     # Check that writing a session works as expected.
 
@@ -99,6 +107,6 @@ def test_volume_viewer(tmpdir):
     assert style_widget.attribute.label == 'b'
     assert style_widget.level_low == 0.1
     assert style_widget.level_high == 0.9
-    assert style_widget.step == 5
+    assert style_widget.step == 4
 
     ga2.close()
