@@ -168,6 +168,7 @@ class IsosurfaceLayerArtist(LayerArtistBase):
     color = CallbackProperty()
     # alpha = CallbackProperty()
     step = CallbackProperty()
+    step_value = CallbackProperty()
 
     def __init__(self, layer, vispy_viewer):
 
@@ -191,6 +192,7 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         add_callback(self, 'color', nonpartial(self._update_color))
         # add_callback(self, 'alpha', nonpartial(self._update_color))
         add_callback(self, 'step', nonpartial(self._update_level))
+        add_callback(self, 'step_value', nonpartial(self._update_level))
 
         self._clip_limits = None
 
@@ -231,8 +233,6 @@ class IsosurfaceLayerArtist(LayerArtistBase):
     def _update_level(self):
         if self.level_high and self.level_low and self.step:
             self._iso_visual.threshold = float((self.level_high - self.level_low)/self.step)
-            print('current level high, low step is', self.level_high, self.level_low, self.step)
-            print('threshold', self._iso_visual.threshold)
             self.redraw()
 
     def _update_color(self):
@@ -245,10 +245,6 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         # self._iso_visual.color = self._vispy_color
         self.redraw()
         pass
-
-    # TODO: or use update_level for step callback
-    # def _update_step(self):
-    #     self._update_level()
 
     def _update_vispy_color(self):
         # TODO: add cmap that contains color numbers as same as isosurface shell number

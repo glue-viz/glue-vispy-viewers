@@ -51,9 +51,7 @@ class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
         # self.layer_artist.alpha = self.layer.style.alpha
 
         # set up step slider and edit box
-        # self.ui.slider_step.setValue(5)
         self._event_lock = False
-
         label = self.ui.step_edit
         slider = self.ui.slider_step
         slider.valueChanged.connect(nonpartial(self._update_labels_from_sliders, label, slider))
@@ -107,7 +105,6 @@ class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
         else:
             self.level_low, self.level_high = self.default_levels(self.attribute)
             self._levels[self.attribute] = self.level_low, self.level_high
-        print('in update levels', self.level_low, self.level_high)
 
     def _cache_levels(self):
         if not isinstance(self.layer, Subset) or self.layer_artist.subset_mode == 'data':
