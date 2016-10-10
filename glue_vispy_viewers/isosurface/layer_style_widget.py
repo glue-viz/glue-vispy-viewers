@@ -26,7 +26,7 @@ class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
     level_low = FloatLineProperty('ui.limits_low')  # could get and set float value
     level_high = FloatLineProperty('ui.limits_high')
     # We don't have IntLineProperty?
-    step = ValueProperty('ui.slider_step')
+    step = ValueProperty('ui.slider_step')  # TODO: set default value here?
 
     def __init__(self, layer_artist):
 
@@ -47,6 +47,7 @@ class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
         # TODO: alpha is now automatically set, in the future each level could be one layer
         # and its color, transparency and visibility could be set from layer panel
         # self.layer_artist.alpha = self.layer.style.alpha
+
         with delay_callback(self.layer_artist, 'attribute'):
             self.attribute = self.visible_components[0]
             self._update_levels()

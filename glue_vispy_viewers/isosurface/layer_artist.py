@@ -190,7 +190,7 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         add_callback(self, 'level_high', nonpartial(self._update_level))
         add_callback(self, 'color', nonpartial(self._update_color))
         # add_callback(self, 'alpha', nonpartial(self._update_color))
-        # add_callback(self, 'step', nonpartial(self._update_step))
+        add_callback(self, 'step', nonpartial(self._update_level))
 
         self._clip_limits = None
 
@@ -229,9 +229,10 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         self._changed = False
 
     def _update_level(self):
-        print('current level high, low step is', self.level_high, self.level_low, self.step)
         if self.level_high and self.level_low and self.step:
             self._iso_visual.threshold = float((self.level_high - self.level_low)/self.step)
+            print('current level high, low step is', self.level_high, self.level_low, self.step)
+            print('threshold', self._iso_visual.threshold)
             self.redraw()
 
     def _update_color(self):
