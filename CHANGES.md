@@ -1,4 +1,4 @@
-0.5 (unreleased)
+0.5 (2016-10-10)
 ----------------
 
 - Fixed a bug that caused alpha scaling to not work correctly when mapping
