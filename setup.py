@@ -9,7 +9,7 @@ entry_points = """
 [glue.plugins]
 vispy_volume=glue_vispy_viewers.volume:setup
 vispy_scatter=glue_vispy_viewers.scatter:setup
-vispy_isosurface=glue_vispy_viewers.isosurface:setup
+#vispy_isosurface=glue_vispy_viewers.isosurface:setup
 """
 
 with open('glue_vispy_viewers/version.py') as infile:
@@ -50,5 +50,5 @@ setup(name='glue-vispy-viewers',
       packages = find_packages(),
       package_data=package_data,
       entry_points=entry_points,
-      install_requires=['pyopengl']
+      install_requires=['pyopengl', 'glueviz>=0.9']
     )
