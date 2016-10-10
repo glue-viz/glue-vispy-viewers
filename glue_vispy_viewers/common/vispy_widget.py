@@ -6,11 +6,8 @@ import numpy as np
 from ..extern.vispy import scene
 from .axes import AxesVisual3D
 
-try:
-    from glue.external.qt import QtGui as QtWidgets, get_qapp
-except ImportError:
-    from qtpy import QtWidgets
-    from glue.utils.qt import get_qapp
+from qtpy import QtWidgets
+from glue.utils.qt import get_qapp
 
 from glue.config import settings
 from glue.external.echo import CallbackProperty, add_callback

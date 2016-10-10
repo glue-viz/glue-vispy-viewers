@@ -6,10 +6,7 @@ import numpy as np
 
 from glue.core.subset import Subset
 
-try:
-    from glue.external.qt import QtGui as QtWidgets
-except ImportError:
-    from qtpy import QtWidgets
+from qtpy import QtWidgets
 
 from glue.external.echo import delay_callback
 from glue.utils.qt import load_ui, update_combobox, connect_color

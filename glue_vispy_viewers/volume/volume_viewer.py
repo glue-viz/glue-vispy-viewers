@@ -1,9 +1,6 @@
 from glue.core.state import lookup_class_with_patches
 
-try:
-    from glue.external.qt.QtGui import QMessageBox
-except ImportError:
-    from qtpy.QtWidgets import QMessageBox
+from qtpy.QtWidgets import QMessageBox
 
 from ..common.vispy_data_viewer import BaseVispyViewer
 from .layer_artist import VolumeLayerArtist

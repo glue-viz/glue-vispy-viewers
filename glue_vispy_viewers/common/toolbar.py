@@ -3,15 +3,8 @@ import os
 import numpy as np
 from ..extern.vispy import app, scene, io
 
-try:
-    from glue.external.qt import QtCore, QtGui as QtWidgets, QtGui
-    def getsavefilename(*args, **kwargs):
-        if 'filters' in kwargs:
-            kwargs['filter'] = kwargs.pop('filters')
-        return QtWidgets.QFileDialog.getSaveFileName(*args, **kwargs)
-except ImportError:
-    from qtpy import QtCore, QtWidgets, QtGui
-    from qtpy.compat import getsavefilename
+from qtpy import QtCore, QtWidgets, QtGui
+from qtpy.compat import getsavefilename
 
 from glue.icons.qt import get_icon
 from glue.utils import nonpartial

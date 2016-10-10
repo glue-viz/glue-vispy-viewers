@@ -6,10 +6,7 @@ import sys
 if sys.platform.startswith('win'):
     import glue_vispy_viewers.extern.vispy.gloo.gl
 
-try:
-    from glue.external.qt import get_qapp
-except ImportError:
-    from glue.utils.qt import get_qapp
+from glue.utils.qt import get_qapp
 
 # The application has to always be referenced to avoid being shut down, so we
 # keep a reference to it here
