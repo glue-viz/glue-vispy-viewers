@@ -163,9 +163,11 @@ class IsosurfaceLayerArtist(LayerArtistBase):
     """
 
     attribute = CallbackProperty()
-    level = CallbackProperty()
+    level_low = CallbackProperty()
+    level_high = CallbackProperty()
     color = CallbackProperty()
-    alpha = CallbackProperty()
+    # alpha = CallbackProperty()
+    step = CallbackProperty()
 
     def __init__(self, layer, vispy_viewer):
 
@@ -184,9 +186,11 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         # Set up connections so that when any of the properties are
         # modified, we update the appropriate part of the visualization
         add_callback(self, 'attribute', nonpartial(self._update_data))
-        add_callback(self, 'level', nonpartial(self._update_level))
+        add_callback(self, 'level_low', nonpartial(self._update_level))
+        add_callback(self, 'level_high', nonpartial(self._update_level))
         add_callback(self, 'color', nonpartial(self._update_color))
-        add_callback(self, 'alpha', nonpartial(self._update_color))
+        # add_callback(self, 'alpha', nonpartial(self._update_color))
+        # add_callback(self, 'step', nonpartial(self._update_step))
 
         self._clip_limits = None
 
@@ -225,8 +229,10 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         self._changed = False
 
     def _update_level(self):
-        self._iso_visual.threshold = self.level
-        self.redraw()
+        print('current level high, low step is', self.level_high, self.level_low, self.step)
+        if self.level_high and self.level_low and self.step:
+            self._iso_visual.threshold = float((self.level_high - self.level_low)/self.step)
+            self.redraw()
 
     def _update_color(self):
         self._update_vispy_color()
@@ -238,6 +244,10 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         # self._iso_visual.color = self._vispy_color
         self.redraw()
         pass
+
+    # TODO: or use update_level for step callback
+    # def _update_step(self):
+    #     self._update_level()
 
     def _update_vispy_color(self):
         # TODO: add cmap that contains color numbers as same as isosurface shell number
