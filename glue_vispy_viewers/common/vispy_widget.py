@@ -19,7 +19,7 @@ from matplotlib.colors import ColorConverter
 rgb = ColorConverter().to_rgb
 
 
-class VispyWidget(QtWidgets.QWidget):
+class VispyWidgetHelper(object):
 
     visible_axes = CallbackProperty()
     perspective_view = CallbackProperty()
@@ -31,8 +31,6 @@ class VispyWidget(QtWidgets.QWidget):
         self.axis.color = rgb(settings.FOREGROUND_COLOR)
 
     def __init__(self, parent=None):
-
-        super(VispyWidget, self).__init__(parent=parent)
 
         # Prepare Vispy canvas. We set the depth_size to 24 to avoid issues
         # with isosurfaces on MacOS X
@@ -69,15 +67,9 @@ class VispyWidget(QtWidgets.QWidget):
         self.view.camera = scene.cameras.TurntableCamera(parent=self.view.scene,
                                                          fov=0., distance=4.0)
 
-        # Add the native canvas widget to this widget
-        layout = QtWidgets.QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.canvas.native)
-        self.setLayout(layout)
-
         # We need to call render here otherwise we'll later encounter an OpenGL
         # program validation error.
-        self.canvas.render()
+        # self.canvas.render()
 
         # Set up callbacks
         add_callback(self, 'visible_axes', nonpartial(self._toggle_axes))
