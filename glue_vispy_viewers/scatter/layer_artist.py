@@ -180,6 +180,8 @@ class ScatterLayerArtist(LayerArtistBase):
             x = self.layer[self._x_coord].ravel()
             y = self.layer[self._y_coord].ravel()
             z = self.layer[self._z_coord].ravel()
+        except AttributeError:
+            return
         except (IncompatibleAttribute, IndexError):
             # The following includes a call to self.clear()
             self.disable_invalid_attributes(self._x_coord, self._y_coord, self._z_coord)
