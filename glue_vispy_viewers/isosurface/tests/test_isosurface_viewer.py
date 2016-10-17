@@ -8,6 +8,7 @@ from glue.app.qt.application import GlueApplication
 from glue.core.component import Component
 
 from ..isosurface_viewer import VispyIsosurfaceViewer
+from ..multi_iso_visual import MultiIsoVisual
 
 GLUE_LT_08 = LooseVersion(glue.__version__) < LooseVersion('0.8')
 
@@ -77,6 +78,13 @@ def test_volume_viewer(tmpdir):
     session_file = tmpdir.join('test_volume_viewer.glu').strpath
     ga.save_session(session_file)
     ga.close()
+
+    # test MultiIsoVisual
+    visual = layer_artist._iso_visual
+    assert isinstance(visual, MultiIsoVisual)
+    assert visual.step == style_widget.step
+    assert visual.threshold == style_widget.level_high  # default
+
 
     # Now we can check that everything is restored correctly
 

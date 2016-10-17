@@ -56,7 +56,7 @@ class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
         slider = self.ui.slider_step
         slider.valueChanged.connect(nonpartial(self._update_labels_from_sliders, label, slider))
         label.editingFinished.connect(nonpartial(self._update_sliders_from_labels, slider, label))
-        label.setText('1')
+        label.setText('4')
         label.editingFinished.emit()
 
         with delay_callback(self.layer_artist, 'attribute'):

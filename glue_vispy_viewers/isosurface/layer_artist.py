@@ -15,145 +15,18 @@ from glue.utils import nonpartial
 from glue.core.exceptions import IncompatibleAttribute
 
 
-from ..extern.vispy.color import BaseColormap
+from ..extern.vispy.color import BaseColormap, get_colormaps
 from ..extern.vispy.visuals.volume import frag_dict, FRAG_SHADER
 
-# Custom shader to replace existing iso one
+from itertools import cycle
+from .multi_iso_visual import MultiIsoVisual
 
-ISO_SNIPPETS = dict(
-    before_loop="""
-        vec4 total_color = vec4(0.0);  // final color
-        vec4 src = vec4(0.0);
-        vec4 dst = vec4(0.0);
-        vec3 dstep = 1.5 / u_shape;  // step to sample derivative
-        gl_FragColor = vec4(0.0);
-        float val_prev = 0;
-        float outa = 0;
-        vec3 loc_prev = vec3(0.0);
-        vec3 loc_mid = vec3(0.0);
-        float t1 = 0.6;
-        float t2 = 0.4;
-
-    """,
-    in_loop="""
-        if (val > t1 && val_prev < t1) {
-
-            // Use bisection to find correct position of contour
-            for (int i=0; i<20; i++) {
-                loc_mid = 0.5 * (loc_prev + loc);
-                val = $sample(u_volumetex, loc_mid).g;
-                if (val > u_threshold) {
-                    loc = loc_mid;
-                } else {
-                    loc_prev = loc_mid;
-                }
-            }
-
-            dst = $cmap(val);
-            dst = calculateColor(dst, loc, dstep);
-
-            src = total_color;
-
-            outa = src.a + dst.a * (1 - src.a);
-            total_color = (src * src.a + dst * dst.a * (1 - src.a)) / outa;
-            total_color.a = outa;
-        }
-
-        if (val < t1 && val_prev > t1) {
-
-            // Use bisection to find correct position of contour
-            for (int i=0; i<20; i++) {
-                loc_mid = 0.5 * (loc_prev + loc);
-                val = $sample(u_volumetex, loc_mid).g;
-                if (val < u_threshold) {
-                    loc = loc_mid;
-                } else {
-                    loc_prev = loc_mid;
-                }
-            }
-
-            dst = $cmap(val);
-            dst = calculateColor(dst, loc, dstep);
-
-            src = total_color;
-
-            outa = src.a + dst.a * (1 - src.a);
-            total_color = (src * src.a + dst * dst.a * (1 - src.a)) / outa;
-            total_color.a = outa;
-        }
-
-        if (val > t2 && val_prev < t2) {
-
-            // Use bisection to find correct position of contour
-            for (int i=0; i<20; i++) {
-                loc_mid = 0.5 * (loc_prev + loc);
-                val = $sample(u_volumetex, loc_mid).g;
-                if (val > u_threshold) {
-                    loc = loc_mid;
-                } else {
-                    loc_prev = loc_mid;
-                }
-            }
-
-            dst = $cmap(val);
-            dst = calculateColor(dst, loc, dstep);
-            dst.a = 0.25;
-
-            src = total_color;
-
-            outa = src.a + dst.a * (1 - src.a);
-            total_color = (src * src.a + dst * dst.a * (1 - src.a)) / outa;
-            total_color.a = outa;
-
-        }
-
-        if (val < t2 && val_prev > t2) {
-
-            // Use bisection to find correct position of contour
-            for (int i=0; i<20; i++) {
-                loc_mid = 0.5 * (loc_prev + loc);
-                val = $sample(u_volumetex, loc_mid).g;
-                if (val < u_threshold) {
-                    loc = loc_mid;
-                } else {
-                    loc_prev = loc_mid;
-                }
-            }
-
-            dst = $cmap(val);
-            dst = calculateColor(dst, loc, dstep);
-            dst.a = 0.25;
-
-            src = total_color;
-
-            outa = src.a + dst.a * (1 - src.a);
-            total_color = (src * src.a + dst * dst.a * (1 - src.a)) / outa;
-            total_color.a = outa;
-
-        }
-
-        val_prev = val;
-        loc_prev = loc;
-        """,
-    after_loop="""
-        gl_FragColor = total_color;
-        """,
-)
-
-ISO_FRAG_SHADER = FRAG_SHADER.format(**ISO_SNIPPETS)
-
-frag_dict['iso'] = ISO_FRAG_SHADER
-
-
-class TwoLevel(BaseColormap):
+# TODO: create colormaps that is prettier
+class TransFire(BaseColormap):
     glsl_map = """
-    vec4 translucent_fire(float t) {{
-        if(t > 0.5) {
-            return vec4(0.3, 0.0, 0.6, 1.0);
-        } else {
-            return vec4(0.43, 0.09, 0.43, 0.5);
-        }
-    }}
+    vec4 translucent_fire(float t) {
+        return vec4(pow(t, 0.5), t, t*t, max(0, t*1.05 - 0.05));
+    }
     """
 
 
@@ -179,7 +52,7 @@ class IsosurfaceLayerArtist(LayerArtistBase):
 
         # self._iso_visual = scene.Isosurface(np.ones((3, 3, 3)), level=0.5, shading='smooth')
         # Create isosurface visual
-        self._iso_visual = scene.visuals.Volume(np.ones((3, 3, 3)), method='iso', relative_step_size=0.5)
+        self._iso_visual = MultiIsoVisual(np.ones((3, 3, 3)), step=4, relative_step_size=0.5)
         # relative_step_size: ray casting performance, recommond 0.5~1.5)
         self.vispy_viewer.add_data_visual(self._iso_visual)
         self._vispy_color = None
@@ -187,11 +60,11 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         # Set up connections so that when any of the properties are
         # modified, we update the appropriate part of the visualization
         add_callback(self, 'attribute', nonpartial(self._update_data))
-        add_callback(self, 'level_low', nonpartial(self._update_level))
-        add_callback(self, 'level_high', nonpartial(self._update_level))
+        add_callback(self, 'level_low', nonpartial(self._update_data))
+        add_callback(self, 'level_high', nonpartial(self._update_data))
         add_callback(self, 'color', nonpartial(self._update_color))
         # add_callback(self, 'alpha', nonpartial(self._update_color))
-        add_callback(self, 'step', nonpartial(self._update_level))
+        add_callback(self, 'step', nonpartial(self._update_step))
         add_callback(self, 'step_value', nonpartial(self._update_level))
 
         self._clip_limits = None
@@ -232,17 +105,25 @@ class IsosurfaceLayerArtist(LayerArtistBase):
 
     def _update_level(self):
         if self.level_high and self.level_low and self.step:
-            self._iso_visual.threshold = float((self.level_high - self.level_low)/self.step)
+            # TODO: also the clim should be changed according to high and low?
+            # self._iso_visual.threshold = np.mean(self.layer.data)
+            print('layer.data', self.layer.data['PRIMARY'])
+            self._iso_visual.step = self.step
+            print('set level', self.step)
+            print('threshold', self.level_high)
             self.redraw()
+
+    def _update_step(self):
+        # TODO: generate a new color and transparancy scheme based on step num
+        self._update_level()
 
     def _update_color(self):
         self._update_vispy_color()
         if self._vispy_color is not None:
             self._iso_visual.color = self._vispy_color
-        # TODO: accept color from ui
-        self._iso_visual.cmap = TwoLevel()
-        # self._update_vispy_color()
-        # self._iso_visual.color = self._vispy_color
+        # TODO: check if new color scheme works
+        self._iso_visual.cmap = TransFire()
+        # TODO: toggle color map code in volume.py
         self.redraw()
         pass
 
@@ -282,7 +163,7 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         # TODO: gaussian smooth for the data, why multiply by 4?
         gaussian_data = gaussian_filter(data/4, 1)
 
-        self._iso_visual.set_data(np.nan_to_num(gaussian_data))  # or .transpose()?
+        self._iso_visual.set_data(np.nan_to_num(gaussian_data))
         self.redraw()
 
     def _update_visibility(self):
