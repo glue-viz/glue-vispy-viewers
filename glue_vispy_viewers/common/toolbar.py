@@ -28,26 +28,6 @@ RECORD_START_ICON = os.path.join(os.path.dirname(__file__), 'glue_record_start.p
 RECORD_STOP_ICON = os.path.join(os.path.dirname(__file__), 'glue_record_stop.png')
 
 
-class PatchedElementSubsetState(ElementSubsetState):
-
-    # TODO: apply this patch to the core glue code
-
-    def __init__(self, data, indices):
-        super(PatchedElementSubsetState, self).__init__(indices=indices)
-        self._data = data
-
-    def to_mask(self, data, view=None):
-        if data in self._data:
-            return super(PatchedElementSubsetState, self).to_mask(data, view=view)
-        else:
-            # TODO: should really be IncompatibleDataException but many other
-            # viewers don't recognize this.
-            raise IncompatibleAttribute()
-
-    def copy(self):
-        return PatchedElementSubsetState(self._data, self._indices)
-
-
 class VispyDataViewerToolbar(QtWidgets.QToolBar):
     """
     This class is for showing the toolbar UI and drawing selection line on canvas
@@ -312,7 +292,7 @@ class VispyDataViewerToolbar(QtWidgets.QToolBar):
         # We now make a subset state. For scatter plots we'll want to use an
         # ElementSubsetState, while for cubes, we'll need to change to a
         # MaskSubsetState.
-        subset_state = PatchedElementSubsetState(visible_data, np.where(mask)[0])
+        subset_state = ElementSubsetState(indices=np.where(mask)[0], data=visible_data)
 
         # We now check what the selection mode is, and update the selection as
         # needed (this is delegated to the correct subset mode).
