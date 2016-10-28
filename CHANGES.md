@@ -1,3 +1,9 @@
+0.5.1 (2016-10-28)
+------------------
+
+- Fixed a bug that caused subsets to not be added to viewers when adding a
+  dataset with already existing subsets.
+
 0.5 (2016-10-10)
 ----------------
 
