@@ -23,6 +23,9 @@ class VispyIsosurfaceViewer(BaseVispyViewer):
 
         self._layer_artist_container.append(layer_artist)
 
+        for subset in data.subsets:
+            self.add_subset(subset)
+
         return True
 
     def add_subset(self, subset):
