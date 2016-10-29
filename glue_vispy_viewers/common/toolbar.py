@@ -292,7 +292,7 @@ class VispyDataViewerToolbar(QtWidgets.QToolBar):
         # We now make a subset state. For scatter plots we'll want to use an
         # ElementSubsetState, while for cubes, we'll need to change to a
         # MaskSubsetState.
-        subset_state = ElementSubsetState(indices=np.where(mask)[0], data=visible_data)
+        subset_state = ElementSubsetState(indices=np.where(mask)[0], data=visible_data[0])
 
         # We now check what the selection mode is, and update the selection as
         # needed (this is delegated to the correct subset mode).
