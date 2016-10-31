@@ -46,102 +46,97 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
         Assign mouse position and do point selection.
         :param event:
         """
+        # Initiation of before selection
         if self.mode:
             self.selection_origin = event.pos
 
             # Get all data sets visible in current viewer
             self.visible_data, self.visual = self.get_visible_data()
-            # self.current_visible_array = np.nan_to_num(self.visible_data[0]['PRIMARY'])
-            # dendrogram data object does not has PRIMARY att
-            self.current_visible_array = self.visible_data[0]['intensity']
-            self.visual_tr = self._vispy_widget.limit_transforms[self.visual]
 
-        if self.mode is 'point':
+        if self.mode in ['point', 'dendrogram']:
+            if self.mode is 'point':
+                self.current_visible_array = np.nan_to_num(self.visible_data[0]['PRIMARY'])
+                self.visual_tr = self._vispy_widget.limit_transforms[self.visual]
+
+            if self.mode is 'dendrogram':
+                # dendrogram data object does not has PRIMARY att
+                self.current_visible_array = self.visible_data[0]['intensity']
+                self.visual_tr = self._vispy_widget.limit_transforms[self.visual]
 
             # get start and end point of ray line
             pos = self.get_ray_line()
             max_value_pos, max_value = self.get_inter_value(pos)
             self.max_value_pos = max_value_pos
             self.max_value = max_value
-            # do the initiation here
-            self.selection_origin = event.pos
-            self.visible_data, self.visual = self.get_visible_data()
-
-            # for dendrogram cube the two attributes are intensity and structure, no ['PRIMARY']
-            data_array = self.visible_data[0]['intensity']
-
-            self.trans_ones_data = np.transpose(np.ones(data_array.shape))
-
-            self.vol_data = data_array # current_layer
-            self.visual_tr = self._vispy_widget.limit_transforms[self.visual]
-
-        if self.mode is 'dendrogram':
-
-            # get start and end point of ray line
-            pos = self.get_ray_line()
-            max_value_pos, max_value = self.get_inter_value(pos)
-            self.max_value_pos = max_value_pos
-
-            # change the color of max value marker
-            if max_value:
-                self.markers.set_data(pos=np.array(max_value_pos),
-                                      face_color='yellow')
-                status_text = 'pos '+str(max_value_pos[0]) \
-                              + ' value '+str(max_value)
-                # TODO: AttributeError: 'VispyVolumeViewer' object has no attribute 'show_status'
-                # self._vispy_data_viewer.show_status(status_text)
-
-                # TODO: vispy_viewer doesn't have client, how to get dendrogram data?
-                # print('visible_data, client.data', self.visible_data, self._vispy_widget.client.data)
-                for each_data in self.parent().session.data_collection:
-                    # print('each_data', each_data, each_data.label)
-                # for each_data in self._vispy_widget.client.data:
-                    if each_data.label == 'Dendrogram':
-                        d = each_data
-
-                try:
-                    branch_label = self.visible_data[0]['structure'][max_value_pos]
-                    print('max value pos', max_value_pos)
-                    print('branch_label', branch_label)
-                except IndexError:
-                    print('max value pos', max_value_pos)
-                    print('branch label = -1')
-                    branch_label = -1
-
-                # no structure found
-                if branch_label == -1:
-                    return None
-
-                # similar to DFS to find children
-                def get_all_branch(d, branch_label, ini_mask):
-                    mask = np.logical_or(ini_mask, self.visible_data['structure'] == branch_label)
-                    child_label = np.where(d['parent'] == branch_label)
-
-                    if len(child_label[0]) != 0:
-                        for each_child in child_label[0]:
-                            mask = get_all_branch(d, each_child, mask)
-                    print('get all branch mask', mask)
-                    return mask
-
-                ini_mask = np.zeros(self.visible_data['structure'].shape, dtype=bool)
-                mask = get_all_branch(d, branch_label, ini_mask)
-                print('sum mask', sum(mask))
-
-                # dendro_mask = substructure.get_mask(shape=np.transpose(self.trans_ones_data).shape)
-                # dendro_mask = np.ravel(dendro_mask) # confused by the transpose here
-                self.mark_selected(mask, self.vol_data)
-
-                self._vispy_widget.canvas.update()
-
-                # visible_data, visual = self.get_visible_data()
-                # self.vol_data = visible_data
-                # current_layer = visible_data[0]
-                # max_pos = self.get_max_pos()
 
             # set marker and status text
             if max_value:
                 self.markers.set_data(pos=np.array(max_value_pos),
                                       face_color='yellow')
+
+            self._vispy_widget.canvas.update()
+
+        if self.mode is 'dendrogram':
+            for each_data in self.parent().session.data_collection:
+                # print('each_data', each_data, each_data.label)
+            # for each_data in self._vispy_widget.client.data:
+                if each_data.label == 'Dendrogram':
+                    d = each_data
+
+            max_value_pos = self.max_value_pos[0]
+            trans = self.visual_tr.translate
+            scale = self.visual_tr.scale
+            # xyz index in volume array
+            x = (max_value_pos[0] - trans[0])/scale[0]
+            y = (max_value_pos[1] - trans[1])/scale[1]
+            z = (max_value_pos[2] - trans[2])/scale[2]
+
+            try:
+                # branch_label = self.visible_data[0]['structure'][max_value_pos]
+                print('xyz', x, y, z)
+                # ['structure'] shape is (53, 105, 105) -> z y x
+                branch_label = self.visible_data[0]['structure'][(z, y, x)]
+                print('max value pos', max_value_pos)
+                print('branch_label', branch_label)
+            except IndexError:
+                print('max value pos', max_value_pos)
+                print('branch label = -1')
+                # branch_label = -1
+                return None
+
+            if self.max_value_pos:
+                status_text = 'x=%.2f, y=%.2f, z=%.2f' % (x, y, z) \
+                              + ' value=%.2f' % self.max_value
+                self._vispy_data_viewer.show_status(status_text)
+
+            # no structure found
+            if branch_label == -1:
+                return None
+
+            # similar to DFS to find children
+            def get_all_branch(d, branch_label, ini_mask):
+                mask = np.logical_or(ini_mask, self.visible_data[0]['structure'] == branch_label)
+                child_label = np.where(d['parent'] == branch_label)
+
+                if len(child_label[0]) != 0:
+                    for each_child in child_label[0]:
+                        mask = get_all_branch(d, each_child, mask)
+                print('get all branch mask', mask)
+                return mask
+
+            # structure and intensity is the same shape
+            ini_mask = np.zeros(self.current_visible_array.shape, dtype=bool)
+            mask = get_all_branch(d, branch_label, ini_mask)
+            print('sum mask', mask.shape)
+
+            # dendro_mask = substructure.get_mask(shape=np.transpose(self.trans_ones_data).shape)
+            # dendro_mask = np.ravel(dendro_mask) # confused by the transpose here
+            # shape_mask = np.reshape(mask, np.transpose(self.current_visible_array).shape)
+            shape_mask = np.reshape(mask, np.transpose(self.current_visible_array).shape)
+            shape_mask = np.ravel(np.transpose(shape_mask))
+            self.mark_selected(np.ravel(mask), self.visible_data)
+
+            # self.mark_selected(np.ravel(mask), self.vol_data)
 
             self._vispy_widget.canvas.update()
 
