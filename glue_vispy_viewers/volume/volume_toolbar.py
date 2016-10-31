@@ -12,6 +12,10 @@ from ..utils import as_matrix_transform
 from ..extern.vispy import scene
 
 from .floodfill_scipy import floodfill_scipy
+from matplotlib import path
+from glue.core.roi import RectangularROI, CircularROI, PolygonalROI
+from astrodendro import Dendrogram
+from ..extern.vispy import scene
 
 
 class VolumeSelectionToolbar(VispyDataViewerToolbar):
@@ -36,15 +40,22 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
         Assign mouse position and do point selection.
         :param event:
         """
+        # Initiation of before selection
         if self.mode:
             self.selection_origin = event.pos
 
             # Get all data sets visible in current viewer
             self.visible_data, self.visual = self.get_visible_data()
-            self.current_visible_array = np.nan_to_num(self.visible_data[0]['PRIMARY'])
-            self.visual_tr = self._vispy_widget.limit_transforms[self.visual]
 
-        if self.mode is 'point':
+        if self.mode in ['point', 'dendrogram']:
+            if self.mode is 'point':
+                self.current_visible_array = np.nan_to_num(self.visible_data[0]['PRIMARY'])
+                self.visual_tr = self._vispy_widget.limit_transforms[self.visual]
+
+            if self.mode is 'dendrogram':
+                # dendrogram data object does not has PRIMARY att
+                self.current_visible_array = self.visible_data[0]['intensity']  # shape: z, y, x
+                self.visual_tr = self._vispy_widget.limit_transforms[self.visual]
 
             # get start and end point of ray line
             pos = self.get_ray_line()
@@ -56,6 +67,52 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
             if max_value:
                 self.markers.set_data(pos=np.array(max_value_pos),
                                       face_color='yellow')
+
+            self._vispy_widget.canvas.update()
+
+        if self.mode is 'dendrogram':
+            # Get dendrogram structure data
+            for each_data in self.parent().session.data_collection:
+                if each_data.label == 'Dendrogram':
+                    d = each_data
+
+            max_value_pos = self.max_value_pos[0]
+            trans = self.visual_tr.translate
+            scale = self.visual_tr.scale
+            # xyz index in volume array
+            x = (max_value_pos[0] - trans[0])/scale[0]
+            y = (max_value_pos[1] - trans[1])/scale[1]
+            z = (max_value_pos[2] - trans[2])/scale[2]
+
+            try:
+                branch_label = self.visible_data[0]['structure'][(z, y, x)]
+            except IndexError:
+                print('No dendrogram structure found on this position.')
+                return None
+
+            if self.max_value_pos:
+                status_text = 'x=%.2f, y=%.2f, z=%.2f' % (x, y, z) \
+                              + ' value=%.2f' % self.max_value
+                self._vispy_data_viewer.show_status(status_text)
+
+            # no structure found
+            if branch_label == -1:
+                return None
+
+            # similar to DFS to find children
+            def get_all_branch(d, branch_label, ini_mask):
+                mask = np.logical_or(ini_mask, self.visible_data[0]['structure'] == branch_label)
+                child_label = np.where(d['parent'] == branch_label)
+
+                if len(child_label[0]) != 0:
+                    for each_child in child_label[0]:
+                        mask = get_all_branch(d, each_child, mask)
+                return mask
+
+            # structure and intensity is the same shape
+            ini_mask = np.zeros(self.current_visible_array.shape, dtype=bool)
+            mask = get_all_branch(d, branch_label, ini_mask)
+            self.mark_selected(np.ravel(mask), self.visible_data)
 
             self._vispy_widget.canvas.update()
 
@@ -188,6 +245,7 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
         scale = self.visual_tr.scale
 
         inter_pos = []
+
         for z in range(0, self.current_visible_array.shape[0]):
             #   3D line defined with two points (x0, y0, z0) and (x1, y1, z1) as
             #   (x - x1)/(x2 - x1) = (y - y1)/(y2 - y1) = (z - z1)/(z2 - z1) = t
@@ -215,7 +273,10 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
             x = (each_point[0] - trans[0])/scale[0]
             y = (each_point[1] - trans[1])/scale[1]
             z = (each_point[2] - trans[2])/scale[2]
+
             inter_value.append(self.current_visible_array[(z, y, x)])
+
+            # inter_value.append(self.vol_data[(z, y, x)])
         inter_value = np.array(inter_value)
 
         assert inter_value.shape[0] == inter_pos.shape[0]
