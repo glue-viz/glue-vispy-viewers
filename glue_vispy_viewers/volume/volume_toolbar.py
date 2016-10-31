@@ -94,15 +94,18 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
                 # TODO: vispy_viewer doesn't have client, how to get dendrogram data?
                 # print('visible_data, client.data', self.visible_data, self._vispy_widget.client.data)
                 for each_data in self.parent().session.data_collection:
-                    print('each_data', each_data, each_data.label)
+                    # print('each_data', each_data, each_data.label)
                 # for each_data in self._vispy_widget.client.data:
                     if each_data.label == 'Dendrogram':
                         d = each_data
 
                 try:
                     branch_label = self.visible_data[0]['structure'][max_value_pos]
+                    print('max value pos', max_value_pos)
                     print('branch_label', branch_label)
                 except IndexError:
+                    print('max value pos', max_value_pos)
+                    print('branch label = -1')
                     branch_label = -1
 
                 # no structure found
@@ -117,6 +120,7 @@ class VolumeSelectionToolbar(VispyDataViewerToolbar):
                     if len(child_label[0]) != 0:
                         for each_child in child_label[0]:
                             mask = get_all_branch(d, each_child, mask)
+                    print('get all branch mask', mask)
                     return mask
 
                 ini_mask = np.zeros(self.visible_data['structure'].shape, dtype=bool)
