@@ -308,11 +308,11 @@ class QtBaseCanvasBackend(BaseCanvasBackend):
         # We call this here to set the physical size. We do this rather than set
         # the physical size directly, because resizeGL takes into account any
         # non-unity device pixel ratio.
+        w, h = p.size
         if qt_lib == 'pyqt5':
             # We take into account devicePixelRatio, which is non-unity on
             # e.g HiDPI displays.
             ratio = self.devicePixelRatio()
-            w, h = p.size
             w = w * ratio
             h = h * ratio
         self._vispy_set_physical_size(w, h)
