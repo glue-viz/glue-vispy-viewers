@@ -82,8 +82,9 @@ def test_volume_viewer(tmpdir):
     # test MultiIsoVisual
     visual = layer_artist._iso_visual
     assert isinstance(visual, MultiIsoVisual)
-    assert visual.step == style_widget.step
-    assert visual.threshold == style_widget.level_high  # default
+    assert visual.step == style_widget.step == 4
+    # assert visual.threshold == style_widget.level_high  # default
+    assert visual.cmap != None
 
 
     # Now we can check that everything is restored correctly
