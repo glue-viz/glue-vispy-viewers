@@ -3,15 +3,15 @@ import numpy as np
 from ...extern.vispy import scene
 
 from ..viewer_options import VispyOptionsWidget
-from ..vispy_widget import VispyWidget
+from ..vispy_widget import VispyWidgetHelper
 
 
 def test_vispy_widget():
 
-    w = VispyWidget()
+    w = VispyWidgetHelper()
     d = VispyOptionsWidget(vispy_widget=w)
 
-    w.show()
+    w.canvas.native.show()
     d.show()
 
     # Try adding marker visuals to the scene

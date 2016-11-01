@@ -8,9 +8,9 @@ from glue.core import Data
 from glue.external.echo import add_callback
 from glue.utils import nonpartial
 
-from qtpy import QtWidgets
+from qtpy import PYQT5, QtWidgets
 
-from .vispy_widget import VispyWidget
+from .vispy_widget import VispyWidgetHelper
 from .viewer_options import VispyOptionsWidget
 from .toolbar import VispyDataViewerToolbar
 
@@ -22,8 +22,8 @@ class BaseVispyViewer(DataViewer):
 
         super(BaseVispyViewer, self).__init__(session, parent=parent)
 
-        self._vispy_widget = VispyWidget()
-        self.setCentralWidget(self._vispy_widget)
+        self._vispy_widget = VispyWidgetHelper()
+        self.setCentralWidget(self._vispy_widget.canvas.native)
 
         self._options_widget = VispyOptionsWidget(vispy_widget=self._vispy_widget, data_viewer=self)
 
@@ -190,3 +190,32 @@ class BaseVispyViewer(DataViewer):
                 layer_artist.set_clip(self._vispy_widget.clip_limits)
             else:
                 layer_artist.set_clip(None)
+
+    if PYQT5:
+
+        def show(self):
+
+            # WORKAROUND:
+            # Due to a bug in Qt5, a hidden toolbar in glue causes a grey
+            # rectangle to be overlaid on top of the glue window. Therefore
+            # we check if the toolbar is hidden, and if so we make it into a
+            # floating toolbar temporarily - still hidden, so this will not
+            # be noticeable to the user.
+
+            # tbar.setAllowedAreas(Qt.NoToolBarArea)
+
+            from qtpy.QtCore import Qt
+
+            tbar = self._session.application._mode_toolbar
+            hidden = tbar.isHidden()
+
+            if hidden:
+                original_flags = tbar.windowFlags()
+                print(original_flags)
+                tbar.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
+
+            super(BaseVispyViewer, self).show()
+
+            if hidden:
+                tbar.setWindowFlags(original_flags)
+                tbar.hide()
