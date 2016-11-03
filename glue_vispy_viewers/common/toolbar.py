@@ -7,23 +7,17 @@ all button functions will be implemented as a tool function
 from __future__ import absolute_import, division, print_function
 
 import os
-from qtpy import QtCore
 from glue.viewers.common.qt.toolbar import BasicToolbar
-
-
-import os
 
 import numpy as np
 from ..extern.vispy import app, scene, io
 
-from qtpy import QtCore, QtWidgets, QtGui
+from qtpy import QtCore, QtGui
 from qtpy.compat import getsavefilename
-from glue.config import viewer_tool
 
 from glue.viewers.common.qt.tool import Tool, CheckableTool
 
 from glue.icons.qt import get_icon
-from glue.utils import nonpartial
 
 try:
     import imageio
@@ -34,7 +28,6 @@ from glue.core import Data
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.subset import ElementSubsetState
-from glue.core.exceptions import IncompatibleAttribute
 from glue.config import settings
 
 
