@@ -1,8 +1,15 @@
-0.5.1 (2016-10-28)
-------------------
+0.6 (2016-11-03)
+----------------
 
 - Fixed a bug that caused subsets to not be added to viewers when adding a
-  dataset with already existing subsets.
+  dataset with already existing subsets. [#218]
+
+- Fixed compatibility with Qt5. [#212]
+
+- Fixed a bug that caused session files created previously to not be 
+  openable. [#213, #214]
+
+- Fixed a bug that caused 3D selections to not work properly. [#219]
 
 0.5 (2016-10-10)
 ----------------
