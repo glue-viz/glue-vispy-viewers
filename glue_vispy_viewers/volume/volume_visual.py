@@ -41,7 +41,7 @@ from glue.external import six
 from ..extern.vispy.gloo import Texture3D, TextureEmulated3D, VertexBuffer, IndexBuffer
 from ..extern.vispy.visuals import VolumeVisual, Visual
 from ..extern.vispy.visuals.shaders import Function
-from ..extern.vispy.color import get_colormap
+from ..extern.vispy.color import get_colormap, Color
 from ..extern.vispy.scene.visuals import create_visual_node
 
 from .backports import block_reduce
@@ -74,7 +74,7 @@ class MultiVolumeVisual(VolumeVisual):
     """
 
     def __init__(self, n_volume_max=10, threshold=None, relative_step_size=0.8,
-                 emulate_texture=False):
+                 emulate_texture=False, bgcolor='white'):
 
         # Choose texture class
         tex_cls = TextureEmulated3D if emulate_texture else Texture3D
@@ -123,11 +123,14 @@ class MultiVolumeVisual(VolumeVisual):
         self.shared_program['a_position'] = self._vertices
         self.shared_program['a_texcoord'] = self._texcoord
         self.shared_program['u_shape'] = self._vol_shape[::-1]
+
         self._draw_mode = 'triangle_strip'
         self._index_buffer = IndexBuffer()
 
         self.shared_program.frag['sampler_type'] = self.textures[0].glsl_sampler_type
         self.shared_program.frag['sample'] = self.textures[0].glsl_sample
+
+        self.set_background(bgcolor)
 
         # Only show back faces of cuboid. This is required because if we are
         # inside the volume, then the front faces are outside of the clipping
@@ -145,6 +148,9 @@ class MultiVolumeVisual(VolumeVisual):
             self.freeze()
         except AttributeError:  # Older versions of VisPy
             pass
+
+    def set_background(self, color):
+        self.shared_program['u_bgcolor'] = Color(color).rgba
 
     @property
     def _free_slot_index(self):
