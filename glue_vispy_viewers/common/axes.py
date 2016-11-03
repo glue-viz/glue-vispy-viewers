@@ -55,6 +55,34 @@ class AxesVisual3D(object):
         self.zax.transform = ChainTransform(transform, self.ztr)
 
     @property
+    def tick_color(self):
+        return self.xax.tick_color
+
+    @tick_color.setter
+    def tick_color(self, value):
+        self.xax.tick_color = value
+        self.yax.tick_color = value
+        self.zax.tick_color = value
+
+    @property
+    def label_color(self):
+        return self._label_color
+
+    @label_color.setter
+    def label_color(self, value):
+        self.xax.label_color = value
+        self.yax.label_color = value
+        self.zax.label_color = value
+
+    @property
+    def axis_color(self):
+        return self._axis_color
+
+    @axis_color.setter
+    def axis_color(self, value):
+        self.axis.color = value
+
+    @property
     def tick_font_size(self):
         return self.xax.tick_font_size
 

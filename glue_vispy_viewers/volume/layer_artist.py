@@ -10,6 +10,7 @@ from glue.external.echo import CallbackProperty, add_callback
 from glue.core.data import Subset
 from glue.core.layer_artist import LayerArtistBase
 from glue.utils import nonpartial
+from glue.config import settings
 from glue.core.exceptions import IncompatibleAttribute
 from .volume_visual import MultiVolume
 from .colors import get_translucent_cmap
@@ -56,7 +57,8 @@ class VolumeLayerArtist(LayerArtistBase):
             emulate_texture = (sys.platform == 'win32' and
                                sys.version_info[0] < 3)
 
-            multivol = MultiVolume(threshold=0.1, emulate_texture=emulate_texture)
+            multivol = MultiVolume(threshold=0.1, emulate_texture=emulate_texture,
+                                   bgcolor=settings.BACKGROUND_COLOR)
 
             self.vispy_widget.add_data_visual(multivol)
             self.vispy_widget._multivol = multivol

@@ -104,8 +104,6 @@ class AxisVisual(CompoundVisual):
         self.tick_direction = np.array(tick_direction, float)
         self.tick_direction = self.tick_direction
         self.scale_type = scale_type
-        self.axis_color = axis_color
-        self.tick_color = tick_color
 
         self.minor_tick_length = minor_tick_length  # px
         self.major_tick_length = major_tick_length  # px
@@ -116,8 +114,10 @@ class AxisVisual(CompoundVisual):
 
         self._need_update = True
 
-        self._line = LineVisual(method='gl', width=axis_width, antialias=True)
-        self._ticks = LineVisual(method='gl', width=tick_width, connect='segments', antialias=True)
+        self._line = LineVisual(method='gl', width=axis_width, antialias=True,
+                                color=axis_color)
+        self._ticks = LineVisual(method='gl', width=tick_width, connect='segments',
+                                 antialias=True, color=tick_color)
         visuals = [self._line, self._ticks]
 
         # FIXME: on Windows, the presence of TextVisual objects causes
@@ -142,6 +142,31 @@ class AxisVisual(CompoundVisual):
         if pos is not None:
             self.pos = pos
         self.domain = domain
+
+    @property
+    def label_color(self):
+        return self._text.color
+
+    @label_color.setter
+    def label_color(self, value):
+        self._text.color = value
+        self._axis_label.color = value
+
+    @property
+    def axis_color(self):
+        return self._line.color
+
+    @axis_color.setter
+    def axis_color(self, value):
+        self._line.set_data(color=value)
+
+    @property
+    def tick_color(self):
+        return self._ticks.color
+
+    @tick_color.setter
+    def tick_color(self, value):
+        self._ticks.set_data(color=value)
 
     @property
     def tick_font_size(self):
