@@ -3,15 +3,17 @@ from glue.core.state import lookup_class_with_patches
 from ..common.vispy_data_viewer import BaseVispyViewer
 from .layer_artist import ScatterLayerArtist
 from .layer_style_widget import ScatterLayerStyleWidget
-from .scatter_toolbar import ScatterSelectionToolbar
 
+from . import scatter_toolbar
 
 class VispyScatterViewer(BaseVispyViewer):
 
     LABEL = "3D Scatter Plot"
 
     _layer_style_widget_cls = ScatterLayerStyleWidget
-    _toolbar_cls = ScatterSelectionToolbar
+
+    tools = BaseVispyViewer.tools + ['scatter3d:lasso', 'scatter3d:rectangle',
+                                     'scatter3d:circle', 'scatter3d:point']
 
     def add_data(self, data):
 

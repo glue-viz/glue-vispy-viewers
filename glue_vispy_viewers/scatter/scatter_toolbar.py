@@ -1,32 +1,25 @@
 """
 This is for 3D selection in Glue 3d scatter plot viewer.
 """
-from ..common.toolbar import VispyViewerToolbar, VispyMouseMode
-from glue.core.roi import RectangularROI, CircularROI
-from ..utils import as_matrix_transform
+
+import os
+import math
+
 import numpy as np
 from matplotlib import path
-import math
+
 try:
     from sklearn.neighbors import NearestNeighbors
     SKLEARN_INSTALLED = True
 except ImportError:
     SKLEARN_INSTALLED = False
 
-try:
-    from glue.external.qt import QtCore, QtGui as QtWidgets, QtGui
-    def getsavefilename(*args, **kwargs):
-        if 'filters' in kwargs:
-            kwargs['filter'] = kwargs.pop('filters')
-        return QtWidgets.QFileDialog.getSaveFileName(*args, **kwargs)
-except ImportError:
-    from qtpy import QtCore, QtWidgets, QtGui
-    from qtpy.compat import getsavefilename
+from glue.config import viewer_tool
+from glue.core.roi import RectangularROI, CircularROI
 
-from glue.icons.qt import get_icon
-import os
-
-POINT_ICON = os.path.join(os.path.dirname(__file__), 'glue_point.png')
+from ..common.toolbar import VispyMouseMode
+from ..utils import as_matrix_transform
+from ..extern.vispy.scene import Rectangle, Line, Ellipse
 
 
 def get_map_data(visible_data, visual, vispy_widget):
@@ -52,120 +45,180 @@ def get_map_data(visible_data, visual, vispy_widget):
     return data[:, :2]
 
 
-# TODO: release function could be reduced for lasso, rec and circle
-# the same for volume and isosurface
+@viewer_tool
 class LassoSelectionMode(VispyMouseMode):
+
+    icon = 'glue_lasso'
+    tool_id = 'scatter3d:lasso'
+    action_text = 'Select points using a lasso selection'
+
     def __init__(self, viewer):
         super(LassoSelectionMode, self).__init__(viewer)
-        self.icon = get_icon('glue_lasso')
-        self.tool_id = 'Scat:Lasso'
-        self._data_collection = viewer._data
-        self._vispy_widget = viewer._vispy_widget
+        self.line = Line(color='purple',
+                         width=2, method='agg',
+                         parent=self._vispy_widget.canvas.scene)
 
-    def release(self, event):
-        # Get the visible datasets
-        if event.button == 1 and self.tool_id:
-            visible_data, visual = self.get_visible_data()
-            data = get_map_data(visible_data, visual, self._vispy_widget)
+    def activate(self):
+        self.reset()
 
-            if len(self.line_pos) == 0:
-                self.lasso_reset()
-                return
-
-            selection_path = path.Path(self.line_pos, closed=True)
-            mask = selection_path.contains_points(data)
-
-            self.mark_selected(mask, visible_data)
-
-            self.lasso_reset()
-
-
-class RectangleSelectionMode(VispyMouseMode):
-    def __init__(self, viewer):
-        super(RectangleSelectionMode, self).__init__(viewer)
-        self.icon = get_icon('glue_square')
-        self.tool_id = 'Scat:Rectangle'
-        self._data_collection = viewer._data
-        self._vispy_widget = viewer._vispy_widget
-
-    def release(self, event):
-        # Get the visible datasets
-        if event.button == 1 and self.tool_id:
-            visible_data, visual = self.get_visible_data()
-            data = get_map_data(visible_data, visual, self._vispy_widget)
-
-            if len(self.line_pos) == 0:
-                self.lasso_reset()
-                return
-
-            xmin, ymin = np.min(self.line_pos[:, 0]), np.min(self.line_pos[:, 1])
-            xmax, ymax = np.max(self.line_pos[:, 0]), np.max(self.line_pos[:, 1])
-            r = RectangularROI(xmin, xmax, ymin, ymax)
-            mask = r.contains(data[:, 0], data[:, 1])
-
-            self.mark_selected(mask, visible_data)
-
-            self.lasso_reset()
-
-
-class CircleSelectionMode(VispyMouseMode):
-    def __init__(self, viewer):
-        super(CircleSelectionMode, self).__init__(viewer)
-        self.icon = get_icon('glue_circle')
-        self.tool_id = 'Scat:Circle'
-        self._data_collection = viewer._data
-        self._vispy_widget = viewer._vispy_widget
-
-    def release(self, event):
-        # Get the visible datasets
-        if event.button == 1 and self.tool_id:
-            visible_data, visual = self.get_visible_data()
-            data = get_map_data(visible_data, visual, self._vispy_widget)
-
-            if len(self.line_pos) == 0:
-                self.lasso_reset()
-                return
-
-            xmin, ymin = np.min(self.line_pos[:, 0]), np.min(self.line_pos[:, 1])
-            xmax, ymax = np.max(self.line_pos[:, 0]), np.max(self.line_pos[:, 1])
-            c = CircularROI((xmax + xmin) / 2., (ymax + ymin) / 2., (xmax - xmin) / 2.)  # (xc, yc, radius)
-            mask = c.contains(data[:, 0], data[:, 1])
-
-            self.mark_selected(mask, visible_data)
-
-            self.lasso_reset()
-
-
-# TODO: replaced by knn selection mode
-class PointSelectionMode(VispyMouseMode):
-    def __init__(self, viewer):
-        super(PointSelectionMode, self).__init__(viewer)
-        self.icon = QtGui.QIcon(POINT_ICON)
-        self.tool_id = 'Scat:Point'
-        self._data_collection = viewer._data
-        self._vispy_widget = viewer._vispy_widget
+    def reset(self):
+        self.line_pos = []
+        self.line.set_data(np.zeros((0, 2), dtype=float))
+        self.line.parent = None
 
     def press(self, event):
-        self.selection_origin = event.pos
-        visible_data, visual = self.get_visible_data()
+        if event.button == 1:
+            self.line_pos.append(event.pos)
 
-        # Ray intersection on the CPU to highlight the selected point(s)
-        data = get_map_data(visible_data, visual, self._vispy_widget)
+    def move(self, event):
+        if event.button == 1 and event.is_dragging:
+            self.line_pos.append(event.pos)
+            self.line.set_data(np.array(self.line_pos, dtype=float))
+            self.line.parent = self._vispy_widget.canvas.scene
 
-        # TODO: the threshold 2 here could replaced with a slider bar to
-        # control the selection region in the future
-        m1 = data > (event.pos - 2)
-        m2 = data < (event.pos + 2)
+    def release(self, event):
+        if event.button == 1:
+            visible_data, visual = self.get_visible_data()
+            data = get_map_data(visible_data, visual, self._vispy_widget)
+            if len(self.line_pos) > 0:
+                selection_path = path.Path(self.line_pos, closed=True)
+                mask = selection_path.contains_points(data)
+                self.mark_selected(mask, visible_data)
+            self.reset()
 
-        array_mark = np.argwhere(m1[:, 0] & m1[:, 1] & m2[:, 0] & m2[:, 1])
-        mask = np.zeros(len(data), dtype=bool)
-        for i in array_mark:
-            index = int(i[0])
-            mask[index] = True
-        visible_data, visual = self.get_visible_data()
 
-        self.mark_selected(mask, visible_data)
-        self._vispy_widget.canvas.update()
+@viewer_tool
+class RectangleSelectionMode(VispyMouseMode):
+
+    icon = 'glue_square'
+    tool_id = 'scatter3d:rectangle'
+    action_text = 'Select points using a rectangular selection'
+
+    def __init__(self, viewer):
+        super(RectangleSelectionMode, self).__init__(viewer)
+        self.rectangle = Rectangle(center=(0, 0), width=1, height=1, border_width=2,
+                                   color=(0, 0, 0, 0), border_color='purple')
+
+    def activate(self):
+        self.reset()
+
+    def reset(self):
+        self.corner1 = None
+        self.corner2 = None
+        self.rectangle.parent = None
+
+    def press(self, event):
+        if event.button == 1:
+            self.corner1 = event.pos
+
+    def move(self, event):
+        if event.button == 1 and event.is_dragging:
+            self.corner2 = event.pos
+            x1, y1 = self.corner1
+            x2, y2 = self.corner2
+            if abs(x2 - x1) > 0 and abs(y2 - y1) > 0:
+                self.rectangle.center = 0.5 * (x1 + x2), 0.5 * (y1 + y2)
+                self.rectangle.width = abs(x2 - x1)
+                self.rectangle.height = abs(y2 - y1)
+                self.rectangle.parent = self._vispy_widget.canvas.scene
+
+    @property
+    def bounds(self):
+        x1, y1 = self.corner1
+        x2, y2 = self.corner2
+        return (min(x1, x2), max(x1, x2), min(y1, y2), max(y1, y2))
+
+    def release(self, event):
+        if event.button == 1:
+            visible_data, visual = self.get_visible_data()
+            data = get_map_data(visible_data, visual, self._vispy_widget)
+            if self.corner2 is not None:
+                r = RectangularROI(*self.bounds)
+                mask = r.contains(data[:, 0], data[:, 1])
+                self.mark_selected(mask, visible_data)
+            self.reset()
+
+
+@viewer_tool
+class CircleSelectionMode(VispyMouseMode):
+
+    icon = 'glue_circle'
+    tool_id = 'scatter3d:circle'
+    action_text = 'Select points using a circular selection'
+
+    def __init__(self, viewer):
+        super(CircleSelectionMode, self).__init__(viewer)
+        self.ellipse = Ellipse(center=(0, 0), radius=1, border_width=2,
+                               color=(0, 0, 0, 0), border_color='purple')
+
+    def activate(self):
+        self.reset()
+
+    def reset(self):
+        self.center = None
+        self.radius = 0
+        self.ellipse.parent = None
+
+    def press(self, event):
+        if event.button == 1:
+            self.center = event.pos
+
+    def move(self, event):
+        if event.button == 1 and event.is_dragging:
+            self.radius = max(abs(event.pos[0] - self.center[0]),
+                              abs(event.pos[1] - self.center[1]))
+            if self.radius > 0:
+                self.ellipse.center = self.center
+                self.ellipse.radius = self.radius
+                self.ellipse.parent = self._vispy_widget.canvas.scene
+
+    def release(self, event):
+        if event.button == 1 and self.tool_id:
+            visible_data, visual = self.get_visible_data()
+            data = get_map_data(visible_data, visual, self._vispy_widget)
+            if self.radius > 0:
+                c = CircularROI(self.center[0], self.center[1], self.radius)
+                mask = c.contains(data[:, 0], data[:, 1])
+                self.mark_selected(mask, visible_data)
+            self.reset()
+
+
+# TODO: replace by knn selection mode
+
+@viewer_tool
+class PointSelectionMode(VispyMouseMode):
+
+    icon = 'glue_point'
+    tool_id = 'scatter3d:point'
+    action_text = 'Select points using a point selection'
+
+    def release(self, event):
+        pass
+
+    def press(self, event):
+
+        if event.button == 1:
+
+            self.selection_origin = event.pos
+
+            visible_data, visual = self.get_visible_data()
+
+            # Ray intersection on the CPU to highlight the selected point(s)
+            data = get_map_data(visible_data, visual, self._vispy_widget)
+
+            # TODO: the threshold 2 here could replaced with a slider bar to
+            # control the selection region in the future
+            m1 = data > (event.pos - 2)
+            m2 = data < (event.pos + 2)
+
+            array_mark = np.argwhere(m1[:, 0] & m1[:, 1] & m2[:, 0] & m2[:, 1])
+            mask = np.zeros(len(data), dtype=bool)
+            for i in array_mark:
+                index = int(i[0])
+                mask[index] = True
+            visible_data, visual = self.get_visible_data()
+
+            self.mark_selected(mask, visible_data)
 
     def move(self, event):
         # add the knn scheme to decide selected region when moving mouse
@@ -180,9 +233,9 @@ class PointSelectionMode(VispyMouseMode):
                 # calculate the threshold and call draw visual
                 width = event.pos[0] - self.selection_origin[0]
                 height = event.pos[1] - self.selection_origin[1]
-                drag_distance = math.sqrt(width**2+height**2)
-                canvas_diag = math.sqrt(self._vispy_widget.canvas.size[0]**2
-                                        + self._vispy_widget.canvas.size[1]**2)
+                drag_distance = math.sqrt(width**2 + height**2)
+                canvas_diag = math.sqrt(self._vispy_widget.canvas.size[0]**2 +
+                                        self._vispy_widget.canvas.size[1]**2)
 
                 # neighbor num proportioned to mouse moving distance
                 n_neighbors = drag_distance / canvas_diag * visible_data[0].data.shape[0]
@@ -193,22 +246,3 @@ class PointSelectionMode(VispyMouseMode):
                 mask = np.zeros(visible_data[0].data.shape)
                 mask[select_index] = 1
                 self.mark_selected(mask, visible_data)
-
-
-class ScatterSelectionToolbar(VispyViewerToolbar):
-
-    def __init__(self, vispy_widget=None, parent=None):
-        super(ScatterSelectionToolbar, self).__init__(vispy_widget=vispy_widget,
-                                                      parent=parent)
-        # add tools here
-        lasso_mode = LassoSelectionMode(self.parent())
-        self.add_tool(lasso_mode)
-
-        rectangle_mode = RectangleSelectionMode(self.parent())
-        self.add_tool(rectangle_mode)
-
-        circle_mode = CircleSelectionMode(self.parent())
-        self.add_tool(circle_mode)
-
-        point_mode = PointSelectionMode(self.parent())
-        self.add_tool(point_mode)

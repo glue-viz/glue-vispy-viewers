@@ -18,6 +18,7 @@ from .toolbar import VispyViewerToolbar
 class BaseVispyViewer(DataViewer):
 
     _toolbar_cls = VispyViewerToolbar
+    tools = ['vispy:save', 'vispy:rotate']
 
     def __init__(self, session, parent=None):
 
@@ -27,11 +28,6 @@ class BaseVispyViewer(DataViewer):
         self.setCentralWidget(self._vispy_widget.canvas.native)
 
         self._options_widget = VispyOptionsWidget(vispy_widget=self._vispy_widget, data_viewer=self)
-
-        self.toolbar = self._toolbar_cls(vispy_widget=self._vispy_widget, parent=self)
-        self.addToolBar(self.toolbar)
-        # try customize tool
-        # super(BaseVispyViewer, self).initialize_toolbar()
 
         add_callback(self._vispy_widget, 'clip_data', nonpartial(self._toggle_clip))
         add_callback(self._vispy_widget, 'clip_limits', nonpartial(self._toggle_clip))
@@ -167,10 +163,6 @@ class BaseVispyViewer(DataViewer):
             self.status_label = QtWidgets.QLabel()
             statusbar.addWidget(self.status_label)
         self.status_label.setText(text)
-
-    def initialize_toolbar(self):
-        # TODO: override this until we actually implement the toolbar properly
-        pass
 
     def _update_attributes(self, index=None, layer_artist=None):
 
