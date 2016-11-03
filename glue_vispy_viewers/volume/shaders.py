@@ -50,6 +50,7 @@ FRAG_SHADER = """
 uniform vec3 u_shape;
 uniform float u_threshold;
 uniform float u_relative_step_size;
+uniform vec4 u_bgcolor;
 
 //varyings
 // varying vec3 v_texcoord;
@@ -133,8 +134,25 @@ void main() {{
 
     {after_loop}
 
-    total_color /= count;
-    total_color.a = max_alpha;
+    if(count > 0) {{
+
+        total_color /= count;
+        total_color.a = max_alpha;
+
+        // Due to issues with transparency in Qt5, we need to convert the color
+        // to a flattened version without transparency, so we do alpha blending
+        // with the background and set alpha to 1:
+        total_color.r = total_color.r * total_color.a + u_bgcolor.r * (1 - total_color.a);
+        total_color.g = total_color.g * total_color.a + u_bgcolor.g * (1 - total_color.a);
+        total_color.b = total_color.b * total_color.a + u_bgcolor.b * (1 - total_color.a);
+        total_color.a = 1.;
+
+    }} else {{
+
+        total_color = u_bgcolor;
+
+    }}
+
     gl_FragColor = total_color;
 
     /* Set depth value - from visvis TODO

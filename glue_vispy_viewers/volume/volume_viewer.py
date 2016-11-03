@@ -1,4 +1,6 @@
 from glue.core.state import lookup_class_with_patches
+from glue.config import settings
+from glue.core import message as msg
 
 from qtpy.QtWidgets import QMessageBox
 
@@ -127,3 +129,8 @@ class VispyVolumeViewer(BaseVispyViewer):
                 self._options_widget.set_limits(*layer_artist.bbox)
             self._layer_artist_container.append(layer_artist)
             layer_artist.set(**props)
+
+    def _update_appearance_from_settings(self, message):
+        super(VispyVolumeViewer, self)._update_appearance_from_settings(message)
+        if hasattr(self._vispy_widget, '_multivol'):
+            self._vispy_widget._multivol.set_background(settings.BACKGROUND_COLOR)

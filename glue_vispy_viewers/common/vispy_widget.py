@@ -28,7 +28,9 @@ class VispyWidgetHelper(object):
 
     def _update_appearance_from_settings(self):
         self.canvas.bgcolor = rgb(settings.BACKGROUND_COLOR)
-        self.axis.color = rgb(settings.FOREGROUND_COLOR)
+        self.axis.axis_color = rgb(settings.FOREGROUND_COLOR)
+        self.axis.tick_color = rgb(settings.FOREGROUND_COLOR)
+        self.axis.label_color = rgb(settings.FOREGROUND_COLOR)
 
     def __init__(self, parent=None):
 
