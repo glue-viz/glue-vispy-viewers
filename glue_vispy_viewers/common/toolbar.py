@@ -134,27 +134,6 @@ class RotateTool(CheckableTool):
         self._vispy_widget.view.camera.azimuth -= 1.  # set speed as constant first
 
 
-# tools and toolbar will be divided to another file later
-class PatchedElementSubsetState(ElementSubsetState):
-
-    # TODO: apply this patch to the core glue code
-
-    def __init__(self, data, indices):
-        super(PatchedElementSubsetState, self).__init__(indices=indices)
-        self._data = data
-
-    def to_mask(self, data, view=None):
-        if data in self._data:
-            return super(PatchedElementSubsetState, self).to_mask(data, view=view)
-        else:
-            # TODO: should really be IncompatibleDataException but many other
-            # viewers don't recognize this.
-            raise IncompatibleAttribute()
-
-    def copy(self):
-        return PatchedElementSubsetState(self._data, self._indices)
-
-
 class VispyMouseMode(CheckableTool):
     # this will create an abstract selection mode class to handle mouse events
     # instanced by lasso, rectangle, circular and point mode
