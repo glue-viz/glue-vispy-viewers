@@ -5,18 +5,11 @@ from __future__ import absolute_import, division, print_function
 import warnings
 
 
-from glue.icons.qt import get_icon
 from glue.core.tests.util import simple_session
 
-from ..vispy_widget import VispyWidget
-from ..toolbar import VispyViewerToolbar, SaveTool, RecordTool, RotateTool
+from ..vispy_widget import VispyWidgetHelper
 from ..vispy_data_viewer import BaseVispyViewer
-
-from qtpy.QtTest import QTest
-from qtpy.QtCore import Qt
-from qtpy import QtWidgets
-
-from ...extern.vispy.app import MouseEvent
+from .. import tools
 
 # we need to test both toolbar and tool here
 # solve the viewer test bug first
@@ -26,32 +19,12 @@ from ...extern.vispy.app import MouseEvent
 
 class ExampleViewer(BaseVispyViewer):
 
-    _toolbar_cls = VispyViewerToolbar
-
     def __init__(self, session, parent=None):
         super(ExampleViewer, self).__init__(session, parent=parent)
-        v = VispyWidget(parent)
+        v = VispyWidgetHelper(parent)
 
-        self.central_widget = v
+        self.central_widget = v.canvas.native
         self.setCentralWidget(self.central_widget)
-        self.toolbar = self._toolbar_cls(vispy_widget=v, parent=self)
-
-    '''def initialize_toolbar(self):  # difference with set_default_tool
-        super(ExampleViewer, self).initialize_toolbar()
-        tool = SaveTool(self)
-        self.toolbar.add_tool(tool)
-
-        rotate_tool = RotateTool(self)
-        self.toolbar.add_tool(rotate_tool)
-
-        try:
-            import imageio
-            tool2 = RecordTool(self)
-            self.toolbar.add_tool(tool2)
-        except ImportError:
-            print('Install imageio first!')
-
-        # assert 1==0'''
 
     def _update_attributes(self):
         pass
@@ -72,18 +45,18 @@ def test_toolbar():
         # assert toolbar.active_tool.tool_id == 'Save'
 
         # test rotate tool
-        toolbar.actions['Rotate'].toggle()
-        assert toolbar.active_tool.tool_id == 'Rotate'
+        toolbar.actions['vispy:rotate'].toggle()
+        assert toolbar.active_tool.tool_id == 'vispy:rotate'
         # TODO: assert a mode here
-        toolbar.actions['Rotate'].toggle()
+        toolbar.actions['vispy:rotate'].toggle()
         assert toolbar.active_tool is None
 
         # test record tool
         try:
             import imageio
-            toolbar.actions['Record'].toggle()
-            assert toolbar.active_tool.tool_id == 'Record'
-            toolbar.actions['Record'].toggle()
+            toolbar.actions['vispy:record'].toggle()
+            assert toolbar.active_tool.tool_id == 'vispy:record'
+            toolbar.actions['vispy:record'].toggle()
             assert toolbar.active_tool.tool_id is None
         except ImportError:
             print('Imageio package needed')

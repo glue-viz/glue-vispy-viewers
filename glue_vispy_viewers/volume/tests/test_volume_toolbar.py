@@ -44,15 +44,15 @@ def test_volumeviewer_toolbar():
     toolbar = v.toolbar
 
     # test rotate tool
-    toolbar.actions['Rotate'].toggle()
-    assert toolbar.active_tool.tool_id == 'Rotate'
+    toolbar.actions['vispy:rotate'].toggle()
+    assert toolbar.active_tool.tool_id == 'vispy:rotate'
     # TODO: assert a mode here
-    toolbar.actions['Rotate'].toggle()
+    toolbar.actions['vispy:rotate'].toggle()
     assert toolbar.active_tool is None
 
     # test lasso selection tool
-    toolbar.actions['Vol:Lasso'].toggle()
-    assert 'Lasso' in toolbar.active_tool.tool_id
+    toolbar.actions['vispy:lasso'].toggle()
+    assert 'vispy:lasso' in toolbar.active_tool.tool_id
     lasso = toolbar.active_tool
     # event = QTest.mouseMove(viewer._vispy_widget)
 
@@ -60,12 +60,12 @@ def test_volumeviewer_toolbar():
     lasso.press(MouseEvent('mouse_press'))
     lasso.move(MouseEvent('mouse_move'))
     lasso.release(MouseEvent('mouse_release'))
-    assert toolbar.tools['Vol:Lasso'] == lasso
+    assert toolbar.tools['vispy:lasso'] == lasso
 
     # add point selection test
     # set to perspective mode
-    toolbar.actions['Vol:Point'].toggle()
-    assert 'Point' in toolbar.active_tool.tool_id
+    toolbar.actions['volume3d:point'].toggle()
+    assert 'volume3d:point' in toolbar.active_tool.tool_id
     point = toolbar.active_tool
     # event = QTest.mouseMove(viewer._vispy_widget)
 
@@ -73,4 +73,4 @@ def test_volumeviewer_toolbar():
     point.press(MouseEvent('mouse_press'))
     point.move(MouseEvent('mouse_move'))
     point.release(MouseEvent('mouse_release'))
-    assert toolbar.tools['Vol:Point'] == point
+    assert toolbar.tools['volume3d:point'] == point
