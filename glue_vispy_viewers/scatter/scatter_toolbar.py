@@ -22,23 +22,18 @@ from ..utils import as_matrix_transform
 from ..extern.vispy.scene import Rectangle, Line, Ellipse
 
 
-def get_map_data(visible_data, visual, vispy_widget):
+def get_map_data_scatter(data, visual, vispy_widget):
+
     # Get the component IDs
     x_att = vispy_widget.options.x_att
     y_att = vispy_widget.options.y_att
     z_att = vispy_widget.options.z_att
 
-    # Get the visible datasets
-    layer = visible_data[0]
-    layer_data = np.nan_to_num([layer[x_att], layer[y_att], layer[z_att]]).transpose()
+    # Get the visible data
+    layer_data = np.nan_to_num([data[x_att],
+                                data[y_att],
+                                data[z_att]]).transpose()
 
-    # TODO: multiple data here not work well now
-    # A possible solution for multiple data would be combine them into a whole data set, like the np.append here
-    # if len(visible_data) > 1:
-    #     n = len(visible_data)
-    #     for id in range(1, n):
-    #         layer = visible_data[id]
-    #         np.append(layer_data, np.array([layer[x_att], layer[y_att], layer[z_att]]).transpose(), axis=0)
     tr = as_matrix_transform(visual.get_transform(map_from='visual', map_to='canvas'))
     data = tr.map(layer_data)
     data /= data[:, 3:]  # normalize with homogeneous coordinates
@@ -79,7 +74,8 @@ class LassoSelectionMode(VispyMouseMode):
     def release(self, event):
         if event.button == 1:
             visible_data, visual = self.get_visible_data()
-            data = get_map_data(visible_data, visual, self._vispy_widget)
+            # TODO: support multiple datasets here
+            data = get_map_data_scatter(visible_data[0], visual, self._vispy_widget)
             if len(self.line_pos) > 0:
                 selection_path = path.Path(self.line_pos, closed=True)
                 mask = selection_path.contains_points(data)
@@ -131,7 +127,8 @@ class RectangleSelectionMode(VispyMouseMode):
     def release(self, event):
         if event.button == 1:
             visible_data, visual = self.get_visible_data()
-            data = get_map_data(visible_data, visual, self._vispy_widget)
+            # TODO: support multiple datasets here
+            data = get_map_data_scatter(visible_data[0], visual, self._vispy_widget)
             if self.corner2 is not None:
                 r = RectangularROI(*self.bounds)
                 mask = r.contains(data[:, 0], data[:, 1])
@@ -175,7 +172,8 @@ class CircleSelectionMode(VispyMouseMode):
     def release(self, event):
         if event.button == 1 and self.tool_id:
             visible_data, visual = self.get_visible_data()
-            data = get_map_data(visible_data, visual, self._vispy_widget)
+            # TODO: support multiple datasets here
+            data = get_map_data_scatter(visible_data[0], visual, self._vispy_widget)
             if self.radius > 0:
                 c = CircularROI(self.center[0], self.center[1], self.radius)
                 mask = c.contains(data[:, 0], data[:, 1])
@@ -226,7 +224,8 @@ class PointSelectionMode(VispyMouseMode):
         if SKLEARN_INSTALLED:
             if event.button == 1 and event.is_dragging:
                 visible_data, visual = self.get_visible_data()
-                data = get_map_data(visible_data, visual, self._vispy_widget)
+                # TODO: support multiple datasets here
+                data = get_map_data_scatter(visible_data[0], visual, self._vispy_widget)
 
                 visible_data = np.nan_to_num(visible_data)
 

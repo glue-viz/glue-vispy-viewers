@@ -7,10 +7,11 @@ from qtpy.QtWidgets import QMessageBox
 from ..common.vispy_data_viewer import BaseVispyViewer
 from .layer_artist import VolumeLayerArtist
 from .layer_style_widget import VolumeLayerStyleWidget
-from .volume_toolbar import VolumeSelectionToolbar
 
 from ..scatter.layer_artist import ScatterLayerArtist
 from ..scatter.layer_style_widget import ScatterLayerStyleWidget
+
+from . import volume_toolbar
 
 try:
     import OpenGL  # flake8: noqa
@@ -27,7 +28,8 @@ class VispyVolumeViewer(BaseVispyViewer):
     _layer_style_widget_cls = {VolumeLayerArtist: VolumeLayerStyleWidget,
                                ScatterLayerArtist: ScatterLayerStyleWidget}
 
-    _toolbar_cls = VolumeSelectionToolbar
+    tools = BaseVispyViewer.tools + ['volume3d:lasso', 'volume3d:rectangle',
+                                     'volume3d:circle', 'volume3d:point']
 
     def __init__(self, *args, **kwargs):
         super(VispyVolumeViewer, self).__init__(*args, **kwargs)
