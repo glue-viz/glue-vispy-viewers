@@ -4,7 +4,9 @@ from ..common.vispy_data_viewer import BaseVispyViewer
 from .layer_artist import ScatterLayerArtist
 from .layer_style_widget import ScatterLayerStyleWidget
 
+from ..common import selection_tools
 from . import scatter_toolbar
+
 
 class VispyScatterViewer(BaseVispyViewer):
 
@@ -12,8 +14,8 @@ class VispyScatterViewer(BaseVispyViewer):
 
     _layer_style_widget_cls = ScatterLayerStyleWidget
 
-    tools = BaseVispyViewer.tools + ['scatter3d:lasso', 'scatter3d:rectangle',
-                                     'scatter3d:circle', 'scatter3d:point']
+    tools = BaseVispyViewer.tools + ['vispy:lasso', 'vispy:rectangle',
+                                     'vispy:circle', 'scatter3d:point']
 
     def add_data(self, data):
 

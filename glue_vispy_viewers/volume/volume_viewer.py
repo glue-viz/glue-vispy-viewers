@@ -11,6 +11,8 @@ from .layer_style_widget import VolumeLayerStyleWidget
 from ..scatter.layer_artist import ScatterLayerArtist
 from ..scatter.layer_style_widget import ScatterLayerStyleWidget
 
+from ..common import tools
+from ..common import selection_tools
 from . import volume_toolbar
 
 try:
@@ -28,8 +30,8 @@ class VispyVolumeViewer(BaseVispyViewer):
     _layer_style_widget_cls = {VolumeLayerArtist: VolumeLayerStyleWidget,
                                ScatterLayerArtist: ScatterLayerStyleWidget}
 
-    tools = BaseVispyViewer.tools + ['volume3d:lasso', 'volume3d:rectangle',
-                                     'volume3d:circle', 'volume3d:point']
+    tools = BaseVispyViewer.tools + ['vispy:lasso', 'vispy:rectangle',
+                                     'vispy:circle', 'volume3d:point']
 
     def __init__(self, *args, **kwargs):
         super(VispyVolumeViewer, self).__init__(*args, **kwargs)

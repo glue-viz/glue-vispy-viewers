@@ -120,36 +120,3 @@ class RotateTool(CheckableTool):
 
     def rotate(self, event):
         self.viewer._vispy_widget.view.camera.azimuth -= 1.  # set speed as constant first
-
-
-class VispyMouseMode(CheckableTool):
-
-    # this will create an abstract selection mode class to handle mouse events
-    # instanced by lasso, rectangle, circular and point mode
-
-    def __init__(self, viewer):
-        super(VispyMouseMode, self).__init__(viewer)
-        self._vispy_widget = viewer._vispy_widget
-        self.current_visible_array = None
-
-    def get_visible_data(self):
-        visible = []
-        # Loop over visible layer artists
-        for layer_artist in self.viewer._layer_artist_container:
-            # Only extract Data objects, not subsets
-            if isinstance(layer_artist.layer, Data):
-                visible.append(layer_artist.layer)
-        visual = layer_artist.visual  # we only have one visual for each canvas
-        return visible, visual
-
-    def mark_selected(self, mask, visible_data):
-        # We now make a subset state. For scatter plots we'll want to use an
-        # ElementSubsetState, while for cubes, we'll need to change to a
-        # MaskSubsetState.
-        subset_state = ElementSubsetState(indices=np.where(mask)[0], data=visible_data[0])
-
-        # We now check what the selection mode is, and update the selection as
-        # needed (this is delegated to the correct subset mode).
-        mode = EditSubsetMode()
-        focus = visible_data[0] if len(visible_data) > 0 else None
-        mode.update(self.viewer._data, subset_state, focus_data=focus)

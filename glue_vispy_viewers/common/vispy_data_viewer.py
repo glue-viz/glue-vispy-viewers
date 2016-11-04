@@ -206,7 +206,6 @@ class BaseVispyViewer(DataViewer):
 
             if hidden:
                 original_flags = tbar.windowFlags()
-                print(original_flags)
                 tbar.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
 
             super(BaseVispyViewer, self).show()

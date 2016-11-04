@@ -7,116 +7,14 @@ import math
 
 import numpy as np
 
+from glue.core import Subset
 from glue.config import viewer_tool
-from glue.core.roi import RectangularROI, CircularROI
-from glue.utils.geometry import points_inside_poly
 
 from ..common.toolbar import VispyMouseMode
-from ..utils import as_matrix_transform
 from ..extern.vispy.scene import Markers
+from .layer_artist import VolumeLayerArtist
 from .floodfill_scipy import floodfill_scipy
 
-
-def get_map_data_volume(data, visual):
-    """
-    Get the mapped buffer from self.visual to canvas.
-
-    :return: Mapped data position on canvas.
-    """
-
-    tr = as_matrix_transform(visual.get_transform(map_from='visual',
-                                                  map_to='canvas'))
-
-    pos_data = np.indices(data.data.shape[::-1], dtype=float)
-    pos_data = pos_data.reshape(3, -1).transpose()
-
-    data = tr.map(pos_data)
-    data /= data[:, 3:]   # normalize with homogeneous coordinates
-    return data[:, :2]
-
-
-# TODO: actually combine into single classes
-from ..scatter.scatter_toolbar import (LassoSelectionMode as ScatterLassoSelectionMode,
-                                       RectangleSelectionMode as ScatterRectangleSelectionMode,
-                                       CircleSelectionMode as ScatterCircleSelectionMode)
-
-
-@viewer_tool
-class LassoSelectionMode(ScatterLassoSelectionMode):
-
-    icon = 'glue_lasso'
-    tool_id = 'volume3d:lasso'
-    action_text = 'Select volume using a lasso selection'
-
-    def release(self, event):
-
-        if event.button == 1:
-            visible_data, visual = self.get_visible_data()
-            data = get_map_data_volume(visible_data[0], visual)
-            if len(self.line_pos) > 0:
-
-                # Note, we use points_inside_poly here instead of calling e.g.
-                # matplotlib directly, because we include some optimizations
-                # in points_inside_poly
-                vx, vy = np.array(self.line_pos).transpose()
-                x, y = data.transpose()
-                mask = points_inside_poly(x, y, vx, vy)
-
-                # TODO: use MaskSubsetState not ElementSubsetState!
-
-                # Shape selection mask is generated from mapped data, so it has the same shape as transposed data array.
-                # The ravel here is to make mask compatible with ElementSubsetState input.
-                shape_mask = np.reshape(mask, visible_data[0].shape[::-1])
-                shape_mask = np.ravel(np.transpose(shape_mask))
-                self.mark_selected(shape_mask, visible_data)
-
-            self.reset()
-
-
-@viewer_tool
-class RectangleSelectionMode(ScatterRectangleSelectionMode):
-
-    icon = 'glue_square'
-    tool_id = 'volume3d:rectangle'
-    action_text = 'Select volume using a rectangular selection'
-
-    def release(self, event):
-        if event.button == 1:
-            visible_data, visual = self.get_visible_data()
-            # TODO: support multiple datasets here
-            data = get_map_data_volume(visible_data[0], visual)
-            if self.corner2 is not None:
-                r = RectangularROI(*self.bounds)
-                mask = r.contains(data[:, 0], data[:, 1])
-                # Shape selection mask is generated from mapped data, so it has the same shape as transposed data array.
-                # The ravel here is to make mask compatible with ElementSubsetState input.
-                shape_mask = np.reshape(mask, visible_data[0].shape[::-1])
-                shape_mask = np.ravel(np.transpose(shape_mask))
-                self.mark_selected(shape_mask, visible_data)
-            self.reset()
-
-
-@viewer_tool
-class CircleSelectionMode(ScatterCircleSelectionMode):
-
-    icon = 'glue_circle'
-    tool_id = 'volume3d:circle'
-    action_text = 'Select volume using a circular selection'
-
-    def release(self, event):
-        if event.button == 1 and self.tool_id:
-            visible_data, visual = self.get_visible_data()
-            # TODO: support multiple datasets here
-            data = get_map_data_volume(visible_data[0], visual)
-            if self.radius > 0:
-                c = CircularROI(self.center[0], self.center[1], self.radius)
-                mask = c.contains(data[:, 0], data[:, 1])
-                # Shape selection mask is generated from mapped data, so it has the same shape as transposed data array.
-                # The ravel here is to make mask compatible with ElementSubsetState input.
-                shape_mask = np.reshape(mask, visible_data[0].shape[::-1])
-                shape_mask = np.ravel(np.transpose(shape_mask))
-                self.mark_selected(shape_mask, visible_data)
-            self.reset()
 
 # TODO: replace by dendrogram and floodfill mode
 
@@ -145,34 +43,53 @@ class PointSelectionMode(VispyMouseMode):
         :param event:
         """
 
-        self.selection_origin = event.pos
+        if event.button == 1:
 
-        self.visible_data, self.visual = self.get_visible_data()
+            self.selection_origin = event.pos
 
-        # Get the values of the visual currently shown - we specifically pick
-        # the layer artist that is selected in the layer artist view in the
-        # left since we have to pick one.
-        layer_artist = self.viewer._view.layer_list.current_artist()
-        values = layer_artist.layer[layer_artist.attribute]
-        self.current_visible_array = np.nan_to_num(values).astype(float)
+            self.visible_data, self.visual = self.get_visible_data()
 
-        # get start and end point of ray line
-        pos = self.get_ray_line()
+            # Get the values of the currently active layer artist - we
+            # specifically pick the layer artist that is selected in the layer
+            # artist view in the left since we have to pick one.
+            layer_artist = self.viewer._view.layer_list.current_artist()
 
-        max_value_pos, max_value = self.get_inter_value(pos)
-        self.max_value_pos = max_value_pos
-        self.max_value = max_value
+            # If the layer artist is for a Subset not Data, pick the first Data
+            # one instead (where the layer artist is a volume artist)
+            if isinstance(layer_artist.layer, Subset):
+                for layer_artist in self.iter_data_layer_artists():
+                    if isinstance(layer_artist, VolumeLayerArtist):
+                        break
+                else:
+                    return
 
-        # set marker and status text
-        if max_value:
-            self.markers.set_data(pos=np.array(max_value_pos),
-                                  face_color='yellow')
-            self.markers.visible = True
+            # TODO: figure out how to make the above choice more sensible. How
+            #       does the user know which data layer will be used? Can we use
+            #       all of them in this mode?
 
-        self._vispy_widget.canvas.update()
+            values = layer_artist.layer[layer_artist.attribute]
+            self.active_layer_artist = layer_artist
+            self.current_visible_array = np.nan_to_num(values).astype(float)
+
+            # get start and end point of ray line
+            pos = self.get_ray_line()
+
+            max_value_pos, max_value = self.get_inter_value(pos)
+            self.max_value_pos = max_value_pos
+            self.max_value = max_value
+
+            # set marker and status text
+            if max_value:
+                self.markers.set_data(pos=np.array(max_value_pos),
+                                      face_color='yellow')
+                self.markers.visible = True
+
+            self._vispy_widget.canvas.update()
 
     def move(self, event):
-        if event.button == 1 and event.is_dragging and self.tool_id:
+
+        if event.button == 1 and event.is_dragging:
+
             visible_data, visual = self.get_visible_data()
 
             # calculate the threshold and call draw visual
@@ -188,7 +105,7 @@ class PointSelectionMode(VispyMouseMode):
                 # Smart selection mask has the same shape as data shape.
                 smart_mask = np.reshape(mask, self.current_visible_array.shape)
                 smart_mask = np.ravel(smart_mask)
-                self.mark_selected(smart_mask, visible_data)
+                self.mark_selected(smart_mask, self.active_layer_artist.layer)
 
     def draw_floodfill_visual(self, threshold):
 
@@ -264,7 +181,6 @@ class PointSelectionMode(VispyMouseMode):
 
         # TODO: there is a risk that no intersected points found here
         if len(inter_pos) == 0 or len(inter_value) == 0:
-            print('empty selection list', inter_pos, inter_value)
             return None, None
         else:
             return [inter_pos[np.argmax(inter_value)]], inter_value.max()
