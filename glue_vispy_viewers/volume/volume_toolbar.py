@@ -66,7 +66,7 @@ class LassoSelectionMode(ScatterLassoSelectionMode):
 
                 # Shape selection mask is generated from mapped data, so it has the same shape as transposed data array.
                 # The ravel here is to make mask compatible with ElementSubsetState input.
-                shape_mask = np.reshape(mask, np.transpose(visible_data[0]['PRIMARY']).shape)
+                shape_mask = np.reshape(mask, visible_data[0].shape[::-1])
                 shape_mask = np.ravel(np.transpose(shape_mask))
                 self.mark_selected(shape_mask, visible_data)
 
@@ -90,7 +90,7 @@ class RectangleSelectionMode(ScatterRectangleSelectionMode):
                 mask = r.contains(data[:, 0], data[:, 1])
                 # Shape selection mask is generated from mapped data, so it has the same shape as transposed data array.
                 # The ravel here is to make mask compatible with ElementSubsetState input.
-                shape_mask = np.reshape(mask, np.transpose(visible_data[0]['PRIMARY']).shape)
+                shape_mask = np.reshape(mask, visible_data[0].shape[::-1])
                 shape_mask = np.ravel(np.transpose(shape_mask))
                 self.mark_selected(shape_mask, visible_data)
             self.reset()
@@ -113,7 +113,7 @@ class CircleSelectionMode(ScatterCircleSelectionMode):
                 mask = c.contains(data[:, 0], data[:, 1])
                 # Shape selection mask is generated from mapped data, so it has the same shape as transposed data array.
                 # The ravel here is to make mask compatible with ElementSubsetState input.
-                shape_mask = np.reshape(mask, np.transpose(visible_data[0]['PRIMARY']).shape)
+                shape_mask = np.reshape(mask, visible_data[0].shape[::-1])
                 shape_mask = np.ravel(np.transpose(shape_mask))
                 self.mark_selected(shape_mask, visible_data)
             self.reset()
@@ -149,9 +149,12 @@ class PointSelectionMode(VispyMouseMode):
 
         self.visible_data, self.visual = self.get_visible_data()
 
-        # Get the values of the visual currently shown - picks the first one
-        # if multiple ones are available.
-        self.current_visible_array = np.nan_to_num(self.visible_data[0]['PRIMARY']).astype(float)
+        # Get the values of the visual currently shown - we specifically pick
+        # the layer artist that is selected in the layer artist view in the
+        # left since we have to pick one.
+        layer_artist = self.viewer._view.layer_list.current_artist()
+        values = layer_artist.layer[layer_artist.attribute]
+        self.current_visible_array = np.nan_to_num(values).astype(float)
 
         # get start and end point of ray line
         pos = self.get_ray_line()
