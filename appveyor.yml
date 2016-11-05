@@ -12,14 +12,14 @@ environment:
                         # to the matrix section.
       CONDA_VERSION: "4.1.11"
       CONDA_CHANNELS: "conda-forge"
-      CONDA_DEPENDENCIES: "glueviz scikit-image pytest mock pyqt=4 pyopengl"
+      CONDA_DEPENDENCIES: "glueviz scikit-image pytest mock pyqt=4 pyopengl qtpy"
       CONDA_CHANNEL_PRIORITY: "True"
 
   matrix:
       # Temporarily disable tests with stable glue
-      # - PYTHON_VERSION: "3.5"
       - PYTHON_VERSION: "3.5"
-        PIP_DEPENDENCIES: "qtpy https://github.com/glue-viz/glue/archive/master.zip"
+      - PYTHON_VERSION: "3.5"
+        PIP_DEPENDENCIES: "https://github.com/glue-viz/glue/archive/master.zip"
 
 platform:
     -x64
@@ -40,4 +40,3 @@ build: false
 
 test_script:
   - "%CMD_IN_ENV% py.test glue_vispy_viewers"
-

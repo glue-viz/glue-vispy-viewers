@@ -134,9 +134,9 @@ def test_scatter_viewer(tmpdir):
 def test_n_dimensional_data():
 
     # Create fake data
-    data = Data(x=np.random.random((2,3,4,5)),
-                y=np.random.random((2,3,4,5)),
-                z=np.random.random((2,3,4,5)))
+    data = Data(x=np.random.random((2, 3, 4, 5)),
+                y=np.random.random((2, 3, 4, 5)),
+                z=np.random.random((2, 3, 4, 5)))
 
     # Create fake session
 
@@ -156,4 +156,3 @@ def test_n_dimensional_data():
     style_widget.color_mode = 'Linear'
     style_widget.cmap_attribute = data.id['y']
     style_widget.cmap = cm.BuGn
-

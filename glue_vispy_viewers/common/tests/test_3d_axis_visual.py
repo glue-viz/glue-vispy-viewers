@@ -1,6 +1,4 @@
-import numpy as np
-
-from ...extern.vispy import app, scene, io
+from ...extern.vispy import scene
 from ..axes import AxesVisual3D
 
 
@@ -11,5 +9,5 @@ def test_3d_axis_visual():
     scene_transform = scene.STTransform()
     view.camera = scene.cameras.TurntableCamera(parent=view.scene,
                                                 fov=0., distance=4.0)
-    axes = AxesVisual3D(view=view, axis_color='red', transform=scene_transform)
+    AxesVisual3D(view=view, axis_color='red', transform=scene_transform)
     canvas.render()

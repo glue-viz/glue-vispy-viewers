@@ -7,24 +7,26 @@ notifications:
 
 env:
   global:
+    - COMMAND="py.test glue_vispy_viewers --cov glue_vispy_viewers"
     - SETUP_XVFB=True
     - CONDA_CHANNELS="conda-forge"
-    - CONDA_DEPENDENCIES="glueviz pytest mock pyopengl pyqt=4.11.3 pytest-cov"
+    - CONDA_DEPENDENCIES="glueviz pytest mock pyopengl pyqt=4.11.3 pytest-cov qtpy"
     - CONDA_CHANNEL_PRIORITY=True
   matrix:
     # Temporarily disable tests with stable glue
-    # - PYTHON_VERSION=2.7
-    # - PYTHON_VERSION=3.5
-    - PYTHON_VERSION=2.7 PIP_DEPENDENCIES="qtpy https://github.com/glue-viz/glue/archive/master.zip" PIP_DEPENDENCIES_FLAGS="--upgrade --no-deps"
-    - PYTHON_VERSION=3.5 PIP_DEPENDENCIES="qtpy https://github.com/glue-viz/glue/archive/master.zip" PIP_DEPENDENCIES_FLAGS="--upgrade --no-deps"
+    - PYTHON_VERSION=3.5 CONDA_DEPENDENCIES="" PIP_DEPENDENCIES="flake8" COMMAND="flake8 --max-line-length=100 --exclude=extern glue_vispy_viewers"
+    - PYTHON_VERSION=2.7
+    - PYTHON_VERSION=3.5
+    - PYTHON_VERSION=2.7 PIP_DEPENDENCIES="https://github.com/glue-viz/glue/archive/master.zip" PIP_DEPENDENCIES_FLAGS="--upgrade --no-deps"
+    - PYTHON_VERSION=3.5 PIP_DEPENDENCIES="https://github.com/glue-viz/glue/archive/master.zip" PIP_DEPENDENCIES_FLAGS="--upgrade --no-deps"
 
 install:
   - git clone git://github.com/astropy/ci-helpers.git
   - source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
-  - pip install coveralls
+  - if [[ $COMMAND == py.test* ]]; then pip install coveralls; fi
 
 script:
-  - py.test glue_vispy_viewers --cov glue_vispy_viewers
+  - $COMMAND
 
 after_success:
-  - coveralls
+  - if [[ $COMMAND == py.test* ]]; then coveralls; fi
