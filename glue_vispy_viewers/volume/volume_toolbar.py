@@ -124,9 +124,9 @@ class PointSelectionMode(VispyMouseMode):
         max_value_pos = self.max_value_pos[0]
 
         # xyz index in volume array
-        x = (max_value_pos[0] - trans[0])/scale[0]
-        y = (max_value_pos[1] - trans[1])/scale[1]
-        z = (max_value_pos[2] - trans[2])/scale[2]
+        x = (max_value_pos[0] - trans[0]) / scale[0]
+        y = (max_value_pos[1] - trans[1]) / scale[1]
+        z = (max_value_pos[2] - trans[2]) / scale[2]
 
         if self.max_value_pos:
             select_mask = floodfill_scipy(formate_data, (z, y, x), threshold)
@@ -161,7 +161,7 @@ class PointSelectionMode(VispyMouseMode):
         m1 = inter_pos[:, 0] > trans[0]  # for x
         m2 = inter_pos[:, 0] < (self.current_visible_array.shape[2] * scale[0] + trans[0])
         m3 = inter_pos[:, 1] > trans[1]  # for y
-        m4 = inter_pos[:, 1] < (self.current_visible_array.shape[1]*scale[1] + trans[1])
+        m4 = inter_pos[:, 1] < (self.current_visible_array.shape[1] * scale[1] + trans[1])
         inter_pos = inter_pos[m1 & m2 & m3 & m4]
 
         # set colors for markers

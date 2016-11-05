@@ -4,8 +4,7 @@ from distutils.version import LooseVersion
 import numpy as np
 
 import glue
-from glue.core import DataCollection, Data
-from glue.app.qt.application import GlueApplication
+from glue.core import Data
 from glue.core.component import Component
 from glue.core.tests.util import simple_session
 

@@ -2,18 +2,11 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-import numpy as np
-from ..extern.vispy import app, scene, io
-
 from qtpy import QtGui, compat
-from qtpy.QtWidgets import QMessageBox
-
 from glue.viewers.common.qt.tool import Tool, CheckableTool
+from glue.config import viewer_tool
 
-from glue.core import Data
-from glue.core.edit_subset_mode import EditSubsetMode
-from glue.core.subset import ElementSubsetState
-from glue.config import settings, viewer_tool
+from ..extern.vispy import app, io
 
 
 RECORD_START_ICON = os.path.join(os.path.dirname(__file__), 'glue_record_start.png')
@@ -45,7 +38,7 @@ class SaveTool(Tool):
             io.imsave(outfile, img, format=file_filter)
         except ImportError:
             # TODO: give out a window to notify that only .png file format is supported
-            if not '.' in outfile:
+            if '.' not in outfile:
                 outfile += '.png'
             io.write_png(outfile, img)
 

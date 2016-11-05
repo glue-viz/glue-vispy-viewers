@@ -6,7 +6,6 @@ import numpy as np
 from ..extern.vispy import scene
 from .axes import AxesVisual3D
 
-from qtpy import QtWidgets
 from glue.utils.qt import get_qapp
 
 from glue.config import settings
