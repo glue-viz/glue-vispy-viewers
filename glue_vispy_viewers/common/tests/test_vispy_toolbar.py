@@ -3,7 +3,7 @@
 from __future__ import absolute_import, division, print_function
 
 import warnings
-
+from mock import patch
 
 from glue.core.tests.util import simple_session
 
@@ -33,16 +33,16 @@ class ExampleViewer(BaseVispyViewer):
         self._called_back = True
 
 
-def test_toolbar():
+def test_toolbar(tmpdir):
     session = simple_session()
     with warnings.catch_warnings(record=True) as w:
         viewer = ExampleViewer(session)
         toolbar = viewer.toolbar
 
-        # TODO: how to add a test for dialogue option?
         # test save tool
-        # toolbar.actions['Save'].trigger()
-        # assert toolbar.active_tool.tool_id == 'Save'
+        with patch('qtpy.compat.getsavefilename') as fd:
+            fd.return_value = tmpdir.join('test.png').strpath, 'jnk'
+            toolbar.actions['vispy:save'].trigger()
 
         # test rotate tool
         toolbar.actions['vispy:rotate'].toggle()

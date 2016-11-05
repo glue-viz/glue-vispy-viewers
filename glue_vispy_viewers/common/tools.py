@@ -5,9 +5,8 @@ import os
 import numpy as np
 from ..extern.vispy import app, scene, io
 
-from qtpy import QtGui
+from qtpy import QtGui, compat
 from qtpy.QtWidgets import QMessageBox
-from qtpy.compat import getsavefilename
 
 from glue.viewers.common.qt.tool import Tool, CheckableTool
 
@@ -32,10 +31,10 @@ class SaveTool(Tool):
     shortcut = 'Ctrl+Shift+S'
 
     def activate(self):
-        outfile, file_filter = getsavefilename(caption='Save File',
-                                               filters='PNG Files (*.png);;'
-                                                       'JPEG Files (*.jpeg);;'
-                                                       'TIFF Files (*.tiff);;')
+        outfile, file_filter = compat.getsavefilename(caption='Save File',
+                                                      filters='PNG Files (*.png);;'
+                                                              'JPEG Files (*.jpeg);;'
+                                                              'TIFF Files (*.tiff);;')
 
         # This indicates that the user cancelled
         if not outfile:
@@ -72,8 +71,8 @@ class RecordTool(CheckableTool):
     def activate(self):
 
         # pop up a window for file saving
-        outfile, file_filter = getsavefilename(caption='Save Animation',
-                                               filters='GIF Files (*.gif);;')
+        outfile, file_filter = compat.getsavefilename(caption='Save Animation',
+                                                      filters='GIF Files (*.gif);;')
         # This indicates that the user cancelled
         if outfile:
             self.icon = QtGui.QIcon(RECORD_STOP_ICON)
