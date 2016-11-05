@@ -6,7 +6,8 @@ import numpy as np
 
 from qtpy import QtWidgets
 
-from glue.utils.qt.widget_properties import CurrentComboProperty, FloatLineProperty, connect_bool_button, ButtonProperty
+from glue.utils.qt.widget_properties import (CurrentComboProperty, FloatLineProperty,
+                                             connect_bool_button, ButtonProperty)
 from glue.utils.qt import load_ui
 from glue.utils import nonpartial
 
@@ -72,12 +73,12 @@ class VispyOptionsWidget(QtWidgets.QWidget):
         self.ui.checkbox_native_aspect.toggled.connect(self._update_aspect)
 
         if self._data_viewer is not None:
-            self.ui.combo_x_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)
-            self.ui.combo_y_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)
-            self.ui.combo_z_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)
-            self.ui.combo_x_attribute.currentIndexChanged.connect(nonpartial(self._vispy_widget._update_attributes))
-            self.ui.combo_y_attribute.currentIndexChanged.connect(nonpartial(self._vispy_widget._update_attributes))
-            self.ui.combo_z_attribute.currentIndexChanged.connect(nonpartial(self._vispy_widget._update_attributes))
+            self.ui.combo_x_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)  # noqa
+            self.ui.combo_y_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)  # noqa
+            self.ui.combo_z_attribute.currentIndexChanged.connect(self._data_viewer._update_attributes)  # noqa
+            self.ui.combo_x_attribute.currentIndexChanged.connect(nonpartial(self._vispy_widget._update_attributes))  # noqa
+            self.ui.combo_y_attribute.currentIndexChanged.connect(nonpartial(self._vispy_widget._update_attributes))  # noqa
+            self.ui.combo_z_attribute.currentIndexChanged.connect(nonpartial(self._vispy_widget._update_attributes))  # noqa
 
         self.ui.combo_x_attribute.currentIndexChanged.connect(self._update_attribute_limits)
         self.ui.combo_y_attribute.currentIndexChanged.connect(self._update_attribute_limits)

@@ -92,7 +92,8 @@ class ScatterLayerStyleWidget(QtWidgets.QWidget):
         connect_current_combo(self.layer_artist, 'size_attribute', self.ui.combo_size_attribute)
         connect_float_edit(self.layer_artist, 'size_vmin', self.ui.value_size_vmin)
         connect_float_edit(self.layer_artist, 'size_vmax', self.ui.value_size_vmax)
-        connect_value(self.layer_artist, 'size_scaling', self.ui.slider_size_scaling, value_range=(0.1, 10), log=True)
+        connect_value(self.layer_artist, 'size_scaling', self.ui.slider_size_scaling,
+                      value_range=(0.1, 10), log=True)
 
         # Set up internal connections
         self.ui.combo_size_mode.currentIndexChanged.connect(self._update_size_mode)

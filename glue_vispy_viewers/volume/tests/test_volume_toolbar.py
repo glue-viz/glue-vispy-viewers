@@ -29,9 +29,6 @@ def make_test_data():
 
     return data
 
-# TODO: how to get toolbar
-# AttributeError: 'VispyVolumeViewer' object has no attribute 'toolbar'
-# try test_vispy_toolbar.py method
 
 def test_volumeviewer_toolbar():
     session = simple_session()

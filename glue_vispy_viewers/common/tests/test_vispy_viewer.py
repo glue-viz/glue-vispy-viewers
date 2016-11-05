@@ -3,7 +3,7 @@
 from __future__ import absolute_import, division, print_function
 
 import numpy as np
-from mock import MagicMock, patch
+from mock import patch
 
 from glue.core import Data, DataCollection
 from glue.app.qt import GlueApplication
@@ -87,4 +87,3 @@ class TestDataViewerScatter(BaseTestDataViewer):
 
 class TestDataViewerIsosurface(BaseTestDataViewer):
     widget_cls = VispyIsosurfaceViewer
-

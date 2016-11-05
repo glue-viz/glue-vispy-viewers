@@ -4,9 +4,9 @@ from __future__ import absolute_import, division, print_function
 # side-effects when PyQt4.Qt is imported first (which it now is in QtPy)
 import sys
 if sys.platform.startswith('win'):
-    import glue_vispy_viewers.extern.vispy.gloo.gl
+    import glue_vispy_viewers.extern.vispy.gloo.gl  # noqa
 
-from glue.utils.qt import get_qapp
+from glue.utils.qt import get_qapp  # noqa
 
 # The application has to always be referenced to avoid being shut down, so we
 # keep a reference to it here
