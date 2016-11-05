@@ -61,8 +61,6 @@ class VispyMouseMode(CheckableTool):
 
 class MultiElementSubsetState(SubsetState):
 
-    # TODO: temporary, doesn't save state or anything yet, just for testing
-
     def __init__(self, indices_dict=None):
         super(MultiElementSubsetState, self).__init__()
         indices_dict_uuid = {}
