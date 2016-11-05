@@ -65,11 +65,17 @@ class MultiElementSubsetState(SubsetState):
 
     def __init__(self, indices_dict=None):
         super(MultiElementSubsetState, self).__init__()
-        self._indices_dict = indices_dict
+        indices_dict_uuid = {}
+        for key in indices_dict:
+            if isinstance(key, Data):
+                indices_dict_uuid[key.uuid] = indices_dict[key]
+            else:
+                indices_dict_uuid[key] = indices_dict[key]
+        self._indices_dict = indices_dict_uuid
 
     def to_mask(self, data, view=None):
-        if data in self._indices_dict:
-            indices = self._indices_dict[data]
+        if data.uuid in self._indices_dict:
+            indices = self._indices_dict[data.uuid]
             result = np.zeros(data.shape, dtype=bool)
             result.flat[indices] = True
             if view is not None:
@@ -80,6 +86,16 @@ class MultiElementSubsetState(SubsetState):
 
     def copy(self):
         state = MultiElementSubsetState(indices_dict=self._indices_dict)
+        return state
+
+    def __gluestate__(self, context):
+        serialized = {key: context.do(value) for key, value in self._indices_dict.items()}
+        return {'indices_dict': serialized}
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        unserialized = {key: context.object(value) for key, value in rec['indices_dict'].items()}
+        state = cls(indices_dict=unserialized)
         return state
 
 
