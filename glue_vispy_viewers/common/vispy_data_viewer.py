@@ -35,6 +35,14 @@ class BaseVispyViewer(DataViewer):
         self.status_label = None
         self.client = None
 
+        # If imageio is available, we can add the record icon
+        try:
+            import imageio  # noqa
+        except ImportError:
+            pass
+        else:
+            self.tools.insert(1, 'vispy:record')
+
     def register_to_hub(self, hub):
 
         super(BaseVispyViewer, self).register_to_hub(hub)

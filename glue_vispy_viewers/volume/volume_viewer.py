@@ -11,9 +11,9 @@ from .layer_style_widget import VolumeLayerStyleWidget
 from ..scatter.layer_artist import ScatterLayerArtist
 from ..scatter.layer_style_widget import ScatterLayerStyleWidget
 
-from ..common import tools
-from ..common import selection_tools
-from . import volume_toolbar
+from ..common import tools  # noqa
+from ..common import selection_tools  # noqa
+from . import volume_toolbar  # noqa
 
 try:
     import OpenGL  # flake8: noqa

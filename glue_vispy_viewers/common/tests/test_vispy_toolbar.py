@@ -9,7 +9,8 @@ from glue.core.tests.util import simple_session
 
 from ..vispy_widget import VispyWidgetHelper
 from ..vispy_data_viewer import BaseVispyViewer
-from .. import tools
+
+from .. import tools  # noqa:
 
 # we need to test both toolbar and tool here
 # solve the viewer test bug first
@@ -53,7 +54,7 @@ def test_toolbar(tmpdir):
 
         # test record tool
         try:
-            import imageio
+            import imageio  # noqa
             toolbar.actions['vispy:record'].toggle()
             assert toolbar.active_tool.tool_id == 'vispy:record'
             toolbar.actions['vispy:record'].toggle()

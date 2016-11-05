@@ -4,8 +4,8 @@ from ..common.vispy_data_viewer import BaseVispyViewer
 from .layer_artist import ScatterLayerArtist
 from .layer_style_widget import ScatterLayerStyleWidget
 
-from ..common import selection_tools
-from . import scatter_toolbar
+from ..common import selection_tools  # noqa
+from . import scatter_toolbar  # noqa
 
 
 class VispyScatterViewer(BaseVispyViewer):

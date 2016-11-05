@@ -131,8 +131,8 @@ class PointSelectionMode(VispyMouseMode):
         if self.max_value_pos:
             select_mask = floodfill_scipy(formate_data, (z, y, x), threshold)
 
-            status_text = 'x=%.2f, y=%.2f, z=%.2f' % (x, y, z) \
-                  + ' value=%.2f' % self.max_value
+            status_text = ('x=%.2f, y=%.2f, z=%.2f' % (x, y, z) +
+                           ' value=%.2f' % self.max_value)
             self.viewer.show_status(status_text)
 
             return select_mask

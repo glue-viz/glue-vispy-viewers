@@ -44,7 +44,7 @@ class SaveTool(Tool):
 
 
 @viewer_tool
-class RecordTool(CheckableTool):
+class RecordTool(Tool):
 
     icon = RECORD_START_ICON
     tool_id = 'vispy:record'
@@ -55,37 +55,34 @@ class RecordTool(CheckableTool):
         super(RecordTool, self).__init__(viewer=viewer)
         self.record_timer = app.Timer(connect=self.record)
         self.writer = None
-        try:
-            import imageio
-        except:
-            self.tool_tip = 'The imageio package is required for recording'
-            self.disable()
+        self.next_action = 'start'
 
     def activate(self):
 
-        # pop up a window for file saving
-        outfile, file_filter = compat.getsavefilename(caption='Save Animation',
-                                                      filters='GIF Files (*.gif);;')
-        # This indicates that the user cancelled
-        if outfile:
-            self.icon = QtGui.QIcon(RECORD_STOP_ICON)
-            # self.record_action.setIcon(QtGui.QIcon(RECORD_STOP_ICON))
-            import imageio
-            self.writer = imageio.get_writer(outfile)
-            self.record_timer.start(0.1)
+        if self.next_action == 'start':
+
+            # pop up a window for file saving
+            outfile, file_filter = compat.getsavefilename(caption='Save Animation',
+                                                          filters='GIF Files (*.gif);;')
+
+            # if outfile is not set, the user cancelled
+            if outfile:
+                import imageio
+                self.set_icon(RECORD_STOP_ICON)
+                self.writer = imageio.get_writer(outfile)
+                self.record_timer.start(0.1)
+                self.next_action = 'stop'
+
         else:
-            self.deactivate()
 
-            # TODO: this should be added later
-            # self.record_action.blockSignals(True)
-            # self.record_action.setChecked(False)
-            # self.record_action.blockSignals(False)
+            self.record_timer.stop()
+            if self.writer is not None:
+                self.writer.close()
+            self.set_icon(RECORD_START_ICON)
+            self.next_action = 'start'
 
-    def deactivate(self):
-        self.record_timer.stop()
-        self.icon = QtGui.QIcon(RECORD_START_ICON)
-        if self.writer is not None:
-            self.writer.close()
+    def set_icon(self, icon):
+        self.viewer.toolbar.actions[self.tool_id].setIcon(QtGui.QIcon(icon))
 
     def record(self, event):
         im = self.viewer._vispy_widget.canvas.render()
