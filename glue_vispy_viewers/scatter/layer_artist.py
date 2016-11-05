@@ -94,7 +94,6 @@ class ScatterLayerArtist(LayerArtistBase):
 
         self._clip_limits = None
 
-
     @property
     def visual(self):
         return self._multiscat

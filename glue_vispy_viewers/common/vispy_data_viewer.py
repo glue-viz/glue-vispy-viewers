@@ -12,11 +12,13 @@ from qtpy import PYQT5, QtWidgets
 
 from .vispy_widget import VispyWidgetHelper
 from .viewer_options import VispyOptionsWidget
-from .toolbar import VispyDataViewerToolbar
+from .toolbar import VispyViewerToolbar
 
 
 class BaseVispyViewer(DataViewer):
-    _toolbar_cls = VispyDataViewerToolbar
+
+    _toolbar_cls = VispyViewerToolbar
+    tools = ['vispy:save', 'vispy:rotate']
 
     def __init__(self, session, parent=None):
 
@@ -27,14 +29,19 @@ class BaseVispyViewer(DataViewer):
 
         self._options_widget = VispyOptionsWidget(vispy_widget=self._vispy_widget, data_viewer=self)
 
-        toolbar = self._toolbar_cls(vispy_widget=self._vispy_widget, parent=self)
-        self.addToolBar(toolbar)
-
         add_callback(self._vispy_widget, 'clip_data', nonpartial(self._toggle_clip))
         add_callback(self._vispy_widget, 'clip_limits', nonpartial(self._toggle_clip))
 
         self.status_label = None
         self.client = None
+
+        # If imageio is available, we can add the record icon
+        try:
+            import imageio  # noqa
+        except ImportError:
+            pass
+        else:
+            self.tools.insert(1, 'vispy:record')
 
     def register_to_hub(self, hub):
 
@@ -165,10 +172,6 @@ class BaseVispyViewer(DataViewer):
             statusbar.addWidget(self.status_label)
         self.status_label.setText(text)
 
-    def initialize_toolbar(self):
-        # TODO: override this until we actually implement the toolbar properly
-        pass
-
     def _update_attributes(self, index=None, layer_artist=None):
 
         if layer_artist is None:
@@ -211,7 +214,6 @@ class BaseVispyViewer(DataViewer):
 
             if hidden:
                 original_flags = tbar.windowFlags()
-                print(original_flags)
                 tbar.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
 
             super(BaseVispyViewer, self).show()

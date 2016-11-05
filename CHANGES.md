@@ -1,7 +1,12 @@
 0.7 (unreleased)
 ----------------
 
-- No changes yet.
+- When multiple datasets are visible in a 3D view, selections now apply to 
+  all of them (except for point and point and drag selections, for which the 
+  selection applies to the currently selected layer). [#208]
+
+- The selection tools have been refactored to use the new toolbar/tool
+  infrastructure in glue. [#208]
 
 0.6 (2016-11-03)
 ----------------

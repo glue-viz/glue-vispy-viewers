@@ -6,7 +6,6 @@ import numpy as np
 from ..extern.vispy import scene
 from .axes import AxesVisual3D
 
-from qtpy import QtWidgets
 from glue.utils.qt import get_qapp
 
 from glue.config import settings
@@ -37,7 +36,8 @@ class VispyWidgetHelper(object):
         # Prepare Vispy canvas. We set the depth_size to 24 to avoid issues
         # with isosurfaces on MacOS X
         self.canvas = scene.SceneCanvas(keys=None, show=False,
-                                        config={'depth_size': 24}, bgcolor=rgb(settings.BACKGROUND_COLOR))
+                                        config={'depth_size': 24},
+                                        bgcolor=rgb(settings.BACKGROUND_COLOR))
 
         # Set up a viewbox
         self.view = self.canvas.central_widget.add_view()
@@ -115,13 +115,16 @@ class VispyWidgetHelper(object):
 
         if (self.options.x_min is None or self.options.x_max is None or
             self.options.y_min is None or self.options.y_max is None or
-            self.options.z_min is None or self.options.z_max is None):
+            self.options.z_min is None or self.options.z_max is None):  # noqa
             raise Exception("We should never get here because if any data is "
                             "present, the limits should be set")
 
-        scale = [2 / (self.options.x_max - self.options.x_min) * self.options.x_stretch * self.options.aspect[0],
-                 2 / (self.options.y_max - self.options.y_min) * self.options.y_stretch * self.options.aspect[1],
-                 2 / (self.options.z_max - self.options.z_min) * self.options.z_stretch * self.options.aspect[2]]
+        scale = [2 / (self.options.x_max - self.options.x_min) *
+                 self.options.x_stretch * self.options.aspect[0],
+                 2 / (self.options.y_max - self.options.y_min) *
+                 self.options.y_stretch * self.options.aspect[1],
+                 2 / (self.options.z_max - self.options.z_min) *
+                 self.options.z_stretch * self.options.aspect[2]]
 
         translate = [-0.5 * (self.options.x_min + self.options.x_max) * scale[0],
                      -0.5 * (self.options.y_min + self.options.y_max) * scale[1],
@@ -150,7 +153,7 @@ if __name__ == "__main__":
     from viewer_options import VispyOptionsWidget
 
     app = get_qapp()
-    w = VispyWidget()
+    w = VispyWidgetHelper()
     d = VispyOptionsWidget(vispy_widget=w)
     d.show()
 

@@ -94,16 +94,14 @@ class MultiVolumeVisual(VolumeVisual):
         # Create gloo objects
         self._vertices = VertexBuffer()
         self._texcoord = VertexBuffer(
-            np.array([
-                [0, 0, 0],
-                [1, 0, 0],
-                [0, 1, 0],
-                [1, 1, 0],
-                [0, 0, 1],
-                [1, 0, 1],
-                [0, 1, 1],
-                [1, 1, 1],
-            ], dtype=np.float32))
+            np.array([[0, 0, 0],
+                      [1, 0, 0],
+                      [0, 1, 0],
+                      [1, 1, 0],
+                      [0, 0, 1],
+                      [1, 0, 1],
+                      [0, 1, 1],
+                      [1, 1, 1]], dtype=np.float32))
 
         self.textures = []
         for i in range(n_volume_max):
@@ -114,7 +112,7 @@ class MultiVolumeVisual(VolumeVisual):
 
             # Pass texture object and default colormap to shader program
             self.shared_program['u_volumetex_{0}'.format(i)] = self.textures[i]
-            self.shared_program.frag['cmap{0:d}'.format(i)] = Function(get_colormap('grays').glsl_map)
+            self.shared_program.frag['cmap{0:d}'.format(i)] = Function(get_colormap('grays').glsl_map)  # noqa
 
             # Make sure all textures are disbaled
             self.shared_program['u_enabled_{0}'.format(i)] = 0
@@ -197,7 +195,7 @@ class MultiVolumeVisual(VolumeVisual):
 
     def set_data(self, label, data):
 
-        if not 'clim' in self.volumes[label]:
+        if 'clim' not in self.volumes[label]:
             raise ValueError("set_clim should be called before set_data")
 
         # Get rid of NaN values
@@ -233,11 +231,13 @@ class MultiVolumeVisual(VolumeVisual):
             self.shared_program['u_shape'] = self._vol_shape[::-1]
             self._initial_shape = False
         elif np.any(data.shape != self._data_shape):
-            raise ValueError("Shape of arrays should be {0} instead of {1}".format(self._vol_shape, data.shape))
+            raise ValueError("Shape of arrays should be {0} instead "
+                             "of {1}".format(self._vol_shape, data.shape))
 
     @property
     def enabled(self):
-        return [self.shared_program['u_enabled_{0}'.format(i)] == 1 for i in range(self._n_volume_max)]
+        return [self.shared_program['u_enabled_{0}'.format(i)] == 1
+                for i in range(self._n_volume_max)]
 
     def draw(self):
         if not any(self.enabled):

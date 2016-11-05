@@ -1,31 +1,66 @@
 """
 This is for 3D selection in Glue 3d scatter plot viewer.
 """
-from ..common.toolbar import VispyDataViewerToolbar
-from glue.core.roi import RectangularROI, CircularROI
-from ..utils import as_matrix_transform
-import numpy as np
-from matplotlib import path
+
 import math
+
+import numpy as np
+
 try:
     from sklearn.neighbors import NearestNeighbors
     SKLEARN_INSTALLED = True
 except ImportError:
     SKLEARN_INSTALLED = False
 
+from glue.core import Subset
+from glue.config import viewer_tool
 
-class ScatterSelectionToolbar(VispyDataViewerToolbar):
+from ..common.selection_tools import VispyMouseMode, get_map_data_scatter
+from .layer_artist import ScatterLayerArtist
 
-    def __init__(self, vispy_widget=None, parent=None):
-        super(ScatterSelectionToolbar, self).__init__(vispy_widget=vispy_widget,
-                                                      parent=parent)
+# TODO: replace by knn selection mode
 
-    # TODO: implement advanced point selection here
-    def on_mouse_press(self, event):
-        self.selection_origin = event.pos
-        if self.mode is 'point':
+
+@viewer_tool
+class PointSelectionMode(VispyMouseMode):
+
+    icon = 'glue_point'
+    tool_id = 'scatter3d:point'
+    action_text = 'Select points using a point selection'
+
+    def release(self, event):
+        pass
+
+    def press(self, event):
+
+        if event.button == 1:
+
+            self.selection_origin = event.pos
+
+            # Get the values of the currently active layer artist - we
+            # specifically pick the layer artist that is selected in the layer
+            # artist view in the left since we have to pick one.
+            layer_artist = self.viewer._view.layer_list.current_artist()
+
+            # If the layer artist is for a Subset not Data, pick the first Data
+            # one instead (where the layer artist is a scatter artist)
+            if isinstance(layer_artist.layer, Subset):
+                for layer_artist in self.iter_data_layer_artists():
+                    if isinstance(layer_artist, ScatterLayerArtist):
+                        break
+                else:
+                    return
+
+            # TODO: figure out how to make the above choice more sensible. How
+            #       does the user know which data layer will be used? Can we use
+            #       all of them in this mode?
+
+            self.active_layer_artist = layer_artist
+
             # Ray intersection on the CPU to highlight the selected point(s)
-            data = self.get_map_data()
+            data = get_map_data_scatter(self.active_layer_artist.layer,
+                                        self.active_layer_artist.visual,
+                                        self._vispy_widget)
 
             # TODO: the threshold 2 here could replaced with a slider bar to
             # control the selection region in the future
@@ -37,92 +72,34 @@ class ScatterSelectionToolbar(VispyDataViewerToolbar):
             for i in array_mark:
                 index = int(i[0])
                 mask[index] = True
-            visible_data, visual = self.get_visible_data()
 
-            self.mark_selected(mask, visible_data)
-            self._vispy_widget.canvas.update()
+            self.mark_selected(mask, self.active_layer_artist.layer)
 
-    def on_mouse_move(self, event):
+    def move(self, event):
         # add the knn scheme to decide selected region when moving mouse
-        super(ScatterSelectionToolbar, self).on_mouse_move(event=event)
 
         if SKLEARN_INSTALLED:
-            if event.button == 1 and event.is_dragging and self.mode is 'point':
-                visible_data, visual = self.get_visible_data()
-                data = self.get_map_data()
+            if event.button == 1 and event.is_dragging:
 
-                visible_data = np.nan_to_num(visible_data)
+                # TODO: support multiple datasets here
+                data = get_map_data_scatter(self.active_layer_artist.layer,
+                                            self.active_layer_artist.visual,
+                                            self._vispy_widget)
 
                 # calculate the threshold and call draw visual
                 width = event.pos[0] - self.selection_origin[0]
                 height = event.pos[1] - self.selection_origin[1]
-                drag_distance = math.sqrt(width**2+height**2)
-                canvas_diag = math.sqrt(self._vispy_widget.canvas.size[0]**2
-                                        + self._vispy_widget.canvas.size[1]**2)
+                drag_distance = math.sqrt(width**2 + height**2)
+                canvas_diag = math.sqrt(self._vispy_widget.canvas.size[0]**2 +
+                                        self._vispy_widget.canvas.size[1]**2)
+
+                mask = np.zeros(self.active_layer_artist.layer.shape)
 
                 # neighbor num proportioned to mouse moving distance
-                n_neighbors = drag_distance / canvas_diag * visible_data[0].data.shape[0]
-                neigh = NearestNeighbors(n_neighbors=n_neighbors)
-                neigh.fit(data)
-                select_index = neigh.kneighbors([self.selection_origin])[1]
-
-                mask = np.zeros(visible_data[0].data.shape)
-                mask[select_index] = 1
-                self.mark_selected(mask, visible_data)
-
-    def on_mouse_release(self, event):
-
-        # Get the visible datasets
-        if event.button == 1 and self.mode is not None:
-            visible_data, visual = self.get_visible_data()
-            data = self.get_map_data()
-
-            if len(self.line_pos) == 0:
-                self.lasso_reset()
-                return
-
-            elif self.mode is 'lasso':
-                selection_path = path.Path(self.line_pos, closed=True)
-                mask = selection_path.contains_points(data)
-
-            elif self.mode is 'ellipse':
-                xmin, ymin = np.min(self.line_pos[:, 0]), np.min(self.line_pos[:, 1])
-                xmax, ymax = np.max(self.line_pos[:, 0]), np.max(self.line_pos[:, 1])
-                c = CircularROI((xmax + xmin) / 2., (ymax + ymin) / 2., (xmax - xmin) / 2.)  # (xc, yc, radius)
-                mask = c.contains(data[:, 0], data[:, 1])
-
-            elif self.mode is 'rectangle':
-                xmin, ymin = np.min(self.line_pos[:, 0]), np.min(self.line_pos[:, 1])
-                xmax, ymax = np.max(self.line_pos[:, 0]), np.max(self.line_pos[:, 1])
-                r = RectangularROI(xmin, xmax, ymin, ymax)
-                mask = r.contains(data[:, 0], data[:, 1])
-
-            else:
-                raise ValueError("Unknown mode: {0}".format(self.mode))
-
-            self.mark_selected(mask, visible_data)
-
-            self.lasso_reset()
-
-    def get_map_data(self):
-        # Get the component IDs
-        x_att = self._vispy_widget.options.x_att
-        y_att = self._vispy_widget.options.y_att
-        z_att = self._vispy_widget.options.z_att
-
-        # Get the visible datasets
-        visible_data, visual = self.get_visible_data()
-        layer = visible_data[0]
-        layer_data = np.nan_to_num([layer[x_att], layer[y_att], layer[z_att]]).transpose()
-
-        # TODO: multiple data here not work well now
-        # A possible solution for multiple data would be combine them into a whole data set, like the np.append here
-        # if len(visible_data) > 1:
-        #     n = len(visible_data)
-        #     for id in range(1, n):
-        #         layer = visible_data[id]
-        #         np.append(layer_data, np.array([layer[x_att], layer[y_att], layer[z_att]]).transpose(), axis=0)
-        tr = as_matrix_transform(visual.get_transform(map_from='visual', map_to='canvas'))
-        data = tr.map(layer_data)
-        data /= data[:, 3:]  # normalize with homogeneous coordinates
-        return data[:, :2]
+                n_neighbors = drag_distance / canvas_diag * self.active_layer_artist.layer.shape[0]
+                if n_neighbors >= 1:
+                    neigh = NearestNeighbors(n_neighbors=n_neighbors)
+                    neigh.fit(data)
+                    select_index = neigh.kneighbors([self.selection_origin])[1]
+                    mask[select_index] = 1
+                self.mark_selected(mask, self.active_layer_artist.layer)
