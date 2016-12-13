@@ -3,6 +3,7 @@ This is for 3D selection in Glue 3d volume rendering viewer, with shape selectio
 selection (not available now).
 """
 
+import os
 import math
 
 import numpy as np
@@ -14,6 +15,8 @@ from ..common.toolbar import VispyMouseMode
 from ..extern.vispy.scene import Markers
 from .layer_artist import VolumeLayerArtist
 from .floodfill_scipy import floodfill_scipy
+
+GLUE_DENDROGRAM_ICON = os.path.join(os.path.dirname(__file__), 'glue_dendrogram.png')
 
 
 # TODO: replace by dendrogram and floodfill mode
@@ -217,7 +220,7 @@ class PointSelectionMode(VispyMouseMode):
 @viewer_tool
 class DendroSelectionMode(VispyMouseMode):
 
-    icon = 'glue_dendrogram'
+    icon = GLUE_DENDROGRAM_ICON
     tool_id = 'volume3d:dendro'
     action_text = 'Select volume using a dendrogram selection'
 

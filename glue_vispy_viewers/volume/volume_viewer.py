@@ -31,7 +31,8 @@ class VispyVolumeViewer(BaseVispyViewer):
                                ScatterLayerArtist: ScatterLayerStyleWidget}
 
     tools = BaseVispyViewer.tools + ['vispy:lasso', 'vispy:rectangle',
-                                     'vispy:circle', 'volume3d:point']
+                                     'vispy:circle', 'volume3d:point',
+                                     'volume3d:dendro']
 
     def __init__(self, *args, **kwargs):
         super(VispyVolumeViewer, self).__init__(*args, **kwargs)
