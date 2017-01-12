@@ -124,7 +124,8 @@ class BaseVispyViewer(DataViewer):
                 layer_artist._update_data()
 
     def _numerical_data_changed(self, message):
-        return self._update_data(message)
+        for layer_artist in self._layer_artist_container:
+            layer_artist._update_data()
 
     def _redraw(self):
         self._vispy_widget.canvas.render()

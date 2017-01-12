@@ -8,6 +8,8 @@
 - The selection tools have been refactored to use the new toolbar/tool
   infrastructure in glue. [#208]
 
+- Update all layers in 3D viewers if numerical values change in any datasaet.
+
 0.6 (2016-11-03)
 ----------------
 
