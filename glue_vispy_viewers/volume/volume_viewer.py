@@ -90,7 +90,7 @@ class VispyVolumeViewer(BaseVispyViewer):
         self._update_attributes(layer_artist=layer_artist)
 
         if len(self._layer_artist_container) == 0:
-            self._options_widget.set_limits(*layer_artist.bbox)
+            self.viewer_state.set_limits(*layer_artist.bbox)
 
         self._layer_artist_container.append(layer_artist)
 
@@ -132,7 +132,7 @@ class VispyVolumeViewer(BaseVispyViewer):
             props = dict((k, context.object(v)) for k, v in l.items())
             layer_artist = cls(props['layer'], vispy_viewer=self)
             if len(self._layer_artist_container) == 0:
-                self._options_widget.set_limits(*layer_artist.bbox)
+                self.viewer_state.set_limits(*layer_artist.bbox)
             self._layer_artist_container.append(layer_artist)
             layer_artist.set(**props)
 

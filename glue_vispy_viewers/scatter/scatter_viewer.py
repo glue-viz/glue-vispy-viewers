@@ -34,7 +34,7 @@ class VispyScatterViewer(BaseVispyViewer):
         self._layer_artist_container.append(layer_artist)
 
         if first_layer_artist:
-            self._options_widget.set_limits(*layer_artist.default_limits)
+            self.viewer_state.set_limits(*layer_artist.default_limits)
 
         for subset in data.subsets:
             self.add_subset(subset)

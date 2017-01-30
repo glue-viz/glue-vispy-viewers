@@ -7,7 +7,6 @@ except ImportError:
 
 from glue.core import message as msg
 from glue.core import Data
-from glue.external.echo import add_callback
 from glue.utils import nonpartial
 
 from qtpy import PYQT5, QtWidgets
@@ -15,6 +14,7 @@ from qtpy import PYQT5, QtWidgets
 from .vispy_widget import VispyWidgetHelper
 from .viewer_options import VispyOptionsWidget
 from .toolbar import VispyViewerToolbar
+from .state import Vispy3DViewerState
 
 
 class BaseVispyViewer(DataViewer):
@@ -26,13 +26,14 @@ class BaseVispyViewer(DataViewer):
 
         super(BaseVispyViewer, self).__init__(session, parent=parent)
 
-        self._vispy_widget = VispyWidgetHelper()
+        self.viewer_state = Vispy3DViewerState()
+
+        self._vispy_widget = VispyWidgetHelper(viewer_state=self.viewer_state)
         self.setCentralWidget(self._vispy_widget.canvas.native)
 
-        self._options_widget = VispyOptionsWidget(vispy_widget=self._vispy_widget, data_viewer=self)
+        self._options_widget = VispyOptionsWidget(parent=self, viewer_state=self.viewer_state)
 
-        add_callback(self._vispy_widget, 'clip_data', nonpartial(self._toggle_clip))
-        add_callback(self._vispy_widget, 'clip_limits', nonpartial(self._toggle_clip))
+        self.viewer_state.add_callback('clip_data', nonpartial(self._toggle_clip))
 
         self.status_label = None
         self.client = None
@@ -183,17 +184,17 @@ class BaseVispyViewer(DataViewer):
             layer_artists = [layer_artist]
 
         for artist in layer_artists:
-            artist.set_coordinates(self._options_widget.x_att,
-                                   self._options_widget.y_att,
-                                   self._options_widget.z_att)
+            artist.set_coordinates(self.viewer_state.x_att[0],
+                                   self.viewer_state.y_att[0],
+                                   self.viewer_state.z_att[0])
 
     def restore_layers(self, layers, context):
         pass
 
     def _toggle_clip(self):
         for layer_artist in self._layer_artist_container:
-            if self._vispy_widget.clip_data:
-                layer_artist.set_clip(self._vispy_widget.clip_limits)
+            if self.viewer_state.clip_data:
+                layer_artist.set_clip(self.viewer_state.clip_limits)
             else:
                 layer_artist.set_clip(None)
 
