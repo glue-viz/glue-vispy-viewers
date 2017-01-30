@@ -21,7 +21,7 @@ from glue.utils.qt.widget_properties import (ValueProperty,
 class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
 
     # GUI elements
-    attribute = CurrentComboProperty('ui.combo_attribute')
+    attribute = CurrentComboProperty('ui.combodata_attribute')
     level = FloatLineProperty('ui.value_level')
     alpha = ValueProperty('ui.slider_alpha')
 
@@ -58,17 +58,17 @@ class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
 
         # Set up attribute list
         label_data = [(comp.label, comp) for comp in self.visible_components]
-        update_combobox(self.ui.combo_attribute, label_data)
+        update_combobox(self.ui.combodata_attribute, label_data)
 
         # Set up connections with layer artist
-        connect_current_combo(self.layer_artist, 'attribute', self.ui.combo_attribute)
+        connect_current_combo(self.layer_artist, 'attribute', self.ui.combodata_attribute)
         connect_float_edit(self.layer_artist, 'level', self.ui.value_level)
         connect_color(self.layer_artist, 'color', self.ui.label_color)
         connect_value(self.layer_artist, 'alpha', self.ui.slider_alpha, value_range=(0, 1))
 
         # Set up internal connections
         self.ui.value_level.editingFinished.connect(self._cache_levels)
-        self.ui.combo_attribute.currentIndexChanged.connect(self._update_levels)
+        self.ui.combodata_attribute.currentIndexChanged.connect(self._update_levels)
 
     def _update_levels(self):
 

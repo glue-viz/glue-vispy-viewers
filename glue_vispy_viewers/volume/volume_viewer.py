@@ -86,7 +86,6 @@ class VispyVolumeViewer(BaseVispyViewer):
                                  buttons=QMessageBox.Ok)
             return False
 
-
         self._update_attributes(layer_artist=layer_artist)
 
         if len(self._layer_artist_container) == 0:

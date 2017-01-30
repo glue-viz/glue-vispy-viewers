@@ -4,39 +4,17 @@ import uuid
 
 import numpy as np
 
-from glue.external.echo import CallbackProperty, add_callback
-
 from glue.core.layer_artist import LayerArtistBase
-from glue.utils import nonpartial
 from glue.core.exceptions import IncompatibleAttribute
 
 from .multi_scatter import MultiColorScatter
+from .layer_state import ScatterLayerState
 
 
 class ScatterLayerArtist(LayerArtistBase):
     """
     A layer artist to render 3d scatter plots.
     """
-
-    _properties = ["size_mode", "size", "size_attribute", "size_vmin",
-                   "size_vmax", "size_scaling", "color_mode", "color",
-                   "cmap_attribute", "cmap_vmin", "cmap_vmax", "cmap",
-                   "alpha", "layer"]
-
-    size_mode = CallbackProperty(None)
-    size = CallbackProperty()
-    size_attribute = CallbackProperty()
-    size_vmin = CallbackProperty()
-    size_vmax = CallbackProperty()
-    size_scaling = CallbackProperty()
-
-    color_mode = CallbackProperty(None)
-    color = CallbackProperty()
-    cmap_attribute = CallbackProperty()
-    cmap_vmin = CallbackProperty()
-    cmap_vmax = CallbackProperty()
-    cmap = CallbackProperty()
-    alpha = CallbackProperty()
 
     def __init__(self, layer, vispy_viewer):
 
@@ -45,6 +23,8 @@ class ScatterLayerArtist(LayerArtistBase):
         self.layer = layer
         self.vispy_viewer = vispy_viewer
         self.vispy_widget = vispy_viewer._vispy_widget
+
+        self.layer_state = ScatterLayerState(self.layer)
 
         # We create a unique ID for this layer artist, that will be used to
         # refer to the layer artist in the MultiColorScatter. We have to do this
@@ -68,24 +48,11 @@ class ScatterLayerArtist(LayerArtistBase):
         self._multiscat.allocate(self.id)
         self._multiscat.set_zorder(self.id, self.get_zorder)
 
-        # Set up connections so that when any of the size properties are
-        # modified, we update the marker sizes
-        add_callback(self, 'size_mode', nonpartial(self._update_sizes))
-        add_callback(self, 'size', nonpartial(self._update_sizes))
-        add_callback(self, 'size_attribute', nonpartial(self._update_sizes))
-        add_callback(self, 'size_vmin', nonpartial(self._update_sizes))
-        add_callback(self, 'size_vmax', nonpartial(self._update_sizes))
-        add_callback(self, 'size_scaling', nonpartial(self._update_sizes))
+        # TODO: Maybe should reintroduce global callbacks since they behave differently...
+        self.layer_state.add_callback('*', self._update_from_state, as_kwargs=True)
+        self._update_from_state(**self.layer_state.as_dict())
 
-        # Set up connections so that when any of the color properties are
-        # modified, we update the marker colors
-        add_callback(self, 'color_mode', nonpartial(self._update_colors))
-        add_callback(self, 'color', nonpartial(self._update_colors))
-        add_callback(self, 'cmap_attribute', nonpartial(self._update_colors))
-        add_callback(self, 'cmap_vmin', nonpartial(self._update_colors))
-        add_callback(self, 'cmap_vmax', nonpartial(self._update_colors))
-        add_callback(self, 'cmap', nonpartial(self._update_colors))
-        add_callback(self, 'alpha', nonpartial(self._update_alpha))
+        self._update_data()
 
         # Set data caches
         self._marker_data = None
@@ -93,6 +60,8 @@ class ScatterLayerArtist(LayerArtistBase):
         self._size_data = None
 
         self._clip_limits = None
+
+        self.visible = True
 
     @property
     def visual(self):
@@ -140,32 +109,41 @@ class ScatterLayerArtist(LayerArtistBase):
         self.redraw()
         self._changed = False
 
+    def _update_from_state(self, **props):
+        if any('size' in prop for prop in props):
+            self._update_sizes()
+        if any('color' in prop or 'cmap' in prop for prop in props):
+            self._update_colors()
+        if 'alpha' in props:
+            self._update_alpha()
+        self.redraw()
+
     def _update_sizes(self):
-        if self.size_mode is None:
+        if self.layer_state.size_mode is None:
             pass
-        elif self.size_mode == 'fixed':
-            self._multiscat.set_size(self.id, self.size * self.size_scaling)
+        elif self.layer_state.size_mode == 'Fixed':
+            self._multiscat.set_size(self.id, self.layer_state.size * self.layer_state.size_scaling)
         else:
-            data = self.layer[self.size_attribute].ravel()
-            size = 20 * (data - self.size_vmin) / (self.size_vmax - self.size_vmin)
-            size_data = size * self.size_scaling
+            data = self.layer[self.layer_state.size_attribute[0]].ravel()
+            size = 20 * (data - self.layer_state.size_vmin) / (self.layer_state.size_vmax - self.layer_state.size_vmin)
+            size_data = size * self.layer_state.size_scaling
             size_data[np.isnan(data)] = 0.
             self._multiscat.set_size(self.id, size_data)
 
     def _update_colors(self):
-        if self.color_mode is None:
+        if self.layer_state.color_mode is None:
             pass
-        elif self.color_mode == 'fixed':
-            self._multiscat.set_color(self.id, self.color)
+        elif self.layer_state.color_mode == 'Fixed':
+            self._multiscat.set_color(self.id, self.layer_state.color)
         else:
-            data = self.layer[self.cmap_attribute].ravel()
-            cmap_data = (data - self.cmap_vmin) / (self.cmap_vmax - self.cmap_vmin)
-            cmap_data = self.cmap(cmap_data)
+            data = self.layer[self.layer_state.cmap_attribute[0]].ravel()
+            cmap_data = (data - self.layer_state.cmap_vmin) / (self.layer_state.cmap_vmax - self.layer_state.cmap_vmin)
+            cmap_data = self.layer_state.cmap(cmap_data)
             cmap_data[:, 3][np.isnan(data)] = 0.
             self._multiscat.set_color(self.id, cmap_data)
 
     def _update_alpha(self):
-        self._multiscat.set_alpha(self.id, self.alpha)
+        self._multiscat.set_alpha(self.id, self.layer_state.alpha)
 
     def set_coordinates(self, x_coord, y_coord, z_coord):
         self._x_coord = x_coord
@@ -217,22 +195,6 @@ class ScatterLayerArtist(LayerArtistBase):
 
     def __gluestate__(self, context):
         return dict((attr, context.id(getattr(self, attr))) for attr in self._properties)
-
-    def set(self, **kwargs):
-
-        # This method can be used to set many properties in one go, and will
-        # make sure that the order is correct.
-
-        def priorities(value):
-            if 'mode' in value:
-                return 0
-            elif 'attribute' in value:
-                return 1
-            else:
-                return 2
-
-        for attr in sorted(kwargs, key=priorities):
-            setattr(self, attr, kwargs[attr])
 
     def set_clip(self, limits):
         self._clip_limits = limits

@@ -6,14 +6,13 @@ import uuid
 import numpy as np
 from matplotlib.colors import ColorConverter
 
-from glue.external.echo import CallbackProperty, add_callback
 from glue.core.data import Subset
 from glue.core.layer_artist import LayerArtistBase
-from glue.utils import nonpartial
 from glue.config import settings
 from glue.core.exceptions import IncompatibleAttribute
 from .volume_visual import MultiVolume
 from .colors import get_translucent_cmap
+from .layer_state import VolumeLayerState
 
 
 class VolumeLayerArtist(LayerArtistBase):
@@ -25,14 +24,6 @@ class VolumeLayerArtist(LayerArtistBase):
     each data viewer.
     """
 
-    attribute = CallbackProperty()
-    vmin = CallbackProperty()
-    vmax = CallbackProperty()
-    color = CallbackProperty()
-    cmap = CallbackProperty()
-    alpha = CallbackProperty()
-    subset_mode = CallbackProperty()
-
     def __init__(self, layer, vispy_viewer=None):
 
         super(VolumeLayerArtist, self).__init__(layer)
@@ -40,6 +31,8 @@ class VolumeLayerArtist(LayerArtistBase):
         self.layer = layer
         self.vispy_viewer = vispy_viewer
         self.vispy_widget = vispy_viewer._vispy_widget
+
+        self.layer_state = VolumeLayerState(self.layer)
 
         # We create a unique ID for this layer artist, that will be used to
         # refer to the layer artist in the MultiVolume. We have to do this
@@ -66,18 +59,13 @@ class VolumeLayerArtist(LayerArtistBase):
         self._multivol = self.vispy_widget._multivol
         self._multivol.allocate(self.id)
 
-        # Set up connections so that when any of the properties are
-        # modified, we update the appropriate part of the visualization
-        add_callback(self, 'attribute', nonpartial(self._update_data))
-        add_callback(self, 'vmin', nonpartial(self._update_limits))
-        add_callback(self, 'vmax', nonpartial(self._update_limits))
-        add_callback(self, 'color', nonpartial(self._update_cmap_from_color))
-        add_callback(self, 'cmap', nonpartial(self._update_cmap))
-        add_callback(self, 'alpha', nonpartial(self._update_alpha))
-        if isinstance(self.layer, Subset):
-            add_callback(self, 'subset_mode', nonpartial(self._update_data))
+        # TODO: Maybe should reintroduce global callbacks since they behave differently...
+        self.layer_state.add_callback('*', self._update_from_state, as_kwargs=True)
+        self._update_from_state(**self.layer_state.as_dict())
 
         self._clip_limits = None
+
+        self.visible = True
 
     @property
     def visual(self):
@@ -123,24 +111,37 @@ class VolumeLayerArtist(LayerArtistBase):
         self.redraw()
         self._changed = False
 
+    def _update_from_state(self, **props):
+
+        if 'color' in props:
+            self._update_cmap_from_color()
+
+        if 'vmin' in props or 'vmax' in props:
+            self._update_limits()
+
+        if 'alpha' in props:
+            self._update_alpha()
+
+        if 'attribute' in props or 'subset_mode' in props:
+            self._update_data()
+
     def _update_cmap_from_color(self):
-        cmap = get_translucent_cmap(*ColorConverter().to_rgb(self.color))
+        cmap = get_translucent_cmap(*ColorConverter().to_rgb(self.layer_state.color))
         self._multivol.set_cmap(self.id, cmap)
         self.redraw()
 
-    def _update_cmap(self):
-        self._multivol.set_cmap(self.id, self.cmap)
-        self.redraw()
-
     def _update_limits(self):
-        self._multivol.set_clim(self.id, (self.vmin, self.vmax))
+        self._multivol.set_clim(self.id, (self.layer_state.vmin, self.layer_state.vmax))
         self.redraw()
 
     def _update_alpha(self):
-        self._multivol.set_weight(self.id, self.alpha)
+        self._multivol.set_weight(self.id, self.layer_state.alpha)
         self.redraw()
 
     def _update_data(self):
+
+        if self.layer_state.attribute is None:
+            return
 
         if isinstance(self.layer, Subset):
 
@@ -153,13 +154,13 @@ class VolumeLayerArtist(LayerArtistBase):
             else:
                 self._enabled = True
 
-            if self.subset_mode == 'outline':
+            if self.layer_state.subset_mode == 'outline':
                 data = mask.astype(float)
             else:
-                data = self.layer.data[self.attribute] * mask
+                data = self.layer.data[self.layer_state.attribute[0]] * mask
         else:
 
-            data = self.layer[self.attribute]
+            data = self.layer[self.layer_state.attribute[0]]
 
         if self._clip_limits is not None:
             xmin, xmax, ymin, ymax, zmin, zmax = self._clip_limits
@@ -187,22 +188,6 @@ class VolumeLayerArtist(LayerArtistBase):
 
     def set_coordinates(self, x_coord, y_coord, z_coord):
         pass
-
-    def set(self, **kwargs):
-
-        # This method can be used to set many properties in one go, and will
-        # make sure that the order is correct.
-
-        def priorities(value):
-            if 'attribute' in value:
-                return 0
-            elif 'mode' in value:
-                return 1
-            else:
-                return 2
-
-        for attr in sorted(kwargs, key=priorities):
-            setattr(self, attr, kwargs[attr])
 
     def set_clip(self, limits):
         self._clip_limits = limits

@@ -1,7 +1,5 @@
 import os
 
-import numpy as np
-
 from qtpy import QtWidgets
 
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
@@ -39,7 +37,6 @@ class VispyOptionsWidget(QtWidgets.QWidget):
         self._attribute_combos = [self.ui.combodata_x_att,
                                   self.ui.combodata_y_att,
                                   self.ui.combodata_z_att]
-
 
         self._components = {}
 

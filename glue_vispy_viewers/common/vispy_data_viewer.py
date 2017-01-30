@@ -35,6 +35,10 @@ class BaseVispyViewer(DataViewer):
 
         self.viewer_state.add_callback('clip_data', nonpartial(self._toggle_clip))
 
+        self.viewer_state.add_callback('x_att', nonpartial(self._update_attributes))
+        self.viewer_state.add_callback('y_att', nonpartial(self._update_attributes))
+        self.viewer_state.add_callback('z_att', nonpartial(self._update_attributes))
+
         self.status_label = None
         self.client = None
 

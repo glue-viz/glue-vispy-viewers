@@ -88,5 +88,3 @@ class Vispy3DViewerState(State):
             self.y_max = y_max
             self.z_min = z_min
             self.z_max = z_max
-
-    

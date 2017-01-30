@@ -2,14 +2,12 @@ from __future__ import absolute_import, division, print_function
 
 import sys
 
-import numpy as np
 from ..extern.vispy import scene
 from .axes import AxesVisual3D
 
 from matplotlib.colors import ColorConverter
 
 from glue.config import settings
-from glue.utils.qt import get_qapp
 
 rgb = ColorConverter().to_rgb
 
@@ -61,7 +59,7 @@ class VispyWidgetHelper(object):
         # self.canvas.render()
 
         self.viewer_state = viewer_state
-        self.viewer_state.add_callback('*', self._update_from_state, echo_name=True)
+        self.viewer_state.add_callback('*', self._update_from_state, as_kwargs=True)
 
     def _update_appearance_from_settings(self):
         self.canvas.bgcolor = rgb(settings.BACKGROUND_COLOR)
@@ -71,98 +69,77 @@ class VispyWidgetHelper(object):
 
     def add_data_visual(self, visual):
         self.limit_transforms[visual] = scene.STTransform()
+        self._update_limits()
         visual.transform = self.limit_transforms[visual]
         self.view.add(visual)
 
-    def _update_from_state(self, prop, value):
+    def _update_from_state(self, **props):
 
-        if 'visible_axes' in prop:
+        if 'visible_axes' in props:
+            self._toggle_axes()
 
-            if self.viewer_state.visible_axes:
-                self.axis.xlim = self.viewer_state.x_min, self.viewer_state.x_max
-                self.axis.ylim = self.viewer_state.y_min, self.viewer_state.y_max
-                self.axis.zlim = self.viewer_state.z_min, self.viewer_state.z_max
-                self.axis.parent = self.view.scene
-            else:
-                self.axis.parent = None
+        if 'perspective_view' in props:
+            self._toggle_perspective()
 
-        if 'perspective_view' in prop:
+        if any(key in props for key in ('x_att', 'y_att', 'z_att')):
+            self._update_attributes()
 
-            if self.viewer_state.perspective_view:
-                self.view.camera.fov = 30
-                self.axis.tick_font_size = 28
-                self.axis.axis_font_size = 35
-            else:
-                self.view.camera.fov = 0
-                self.axis.tick_font_size = 6
-                self.axis.axis_font_size = 8
+        if any(key in props for key in ('x_stretch', 'y_stretch', 'z_stretch', 'native_aspect')):
+            self._update_stretch()
 
-        if 'x_att' in prop:
-            self.axis.xlabel = self.viewer_state.x_att[0].label
-
-        if 'y_att' in prop:
-            self.axis.ylabel = self.viewer_state.y_att[0].label
-
-        if 'z_att' in prop:
-            self.axis.zlabel = self.viewer_state.z_att[0].label
-
-        if 'x_stretch' in prop or 'y_stretch' in prop or 'z_stretch' in prop or 'native_aspect' in prop:
-            self.scene_transform.scale = (self.viewer_state.x_stretch * self.viewer_state.aspect[0],
-                                          self.viewer_state.y_stretch * self.viewer_state.aspect[1],
-                                          self.viewer_state.z_stretch * self.viewer_state.aspect[2])
-
-        if any(p in prop for p in LIMITS_PROPS) or 'native_aspect' in prop:
-
-            scale = [2 / (self.viewer_state.x_max - self.viewer_state.x_min) *
-                     self.viewer_state.x_stretch * self.viewer_state.aspect[0],
-                     2 / (self.viewer_state.y_max - self.viewer_state.y_min) *
-                     self.viewer_state.y_stretch * self.viewer_state.aspect[1],
-                     2 / (self.viewer_state.z_max - self.viewer_state.z_min) *
-                     self.viewer_state.z_stretch * self.viewer_state.aspect[2]]
-
-            translate = [-0.5 * (self.viewer_state.x_min + self.viewer_state.x_max) * scale[0],
-                         -0.5 * (self.viewer_state.y_min + self.viewer_state.y_max) * scale[1],
-                         -0.5 * (self.viewer_state.z_min + self.viewer_state.z_max) * scale[2]]
-
-            for visual in self.limit_transforms:
-                self.limit_transforms[visual].scale = scale
-                self.limit_transforms[visual].translate = translate
-
-            self.axis.xlim = self.viewer_state.x_min, self.viewer_state.x_max
-            self.axis.ylim = self.viewer_state.y_min, self.viewer_state.y_max
-            self.axis.zlim = self.viewer_state.z_min, self.viewer_state.z_max
+        if any(p in props for p in LIMITS_PROPS) or 'native_aspect' in props:
+            self._update_limits()
 
         self.canvas.update()
+
+    def _toggle_axes(self):
+        if self.viewer_state.visible_axes:
+            self.axis.parent = self.view.scene
+        else:
+            self.axis.parent = None
+
+    def _toggle_perspective(self):
+        if self.viewer_state.perspective_view:
+            self.view.camera.fov = 30
+            self.axis.tick_font_size = 28
+            self.axis.axis_font_size = 35
+        else:
+            self.view.camera.fov = 0
+            self.axis.tick_font_size = 6
+            self.axis.axis_font_size = 8
+
+    def _update_attributes(self):
+        self.axis.xlabel = self.viewer_state.x_att[0].label
+        self.axis.ylabel = self.viewer_state.y_att[0].label
+        self.axis.zlabel = self.viewer_state.z_att[0].label
+
+    def _update_stretch(self):
+        self.scene_transform.scale = (self.viewer_state.x_stretch * self.viewer_state.aspect[0],
+                                      self.viewer_state.y_stretch * self.viewer_state.aspect[1],
+                                      self.viewer_state.z_stretch * self.viewer_state.aspect[2])
+
+    def _update_limits(self):
+
+        scale = [2 / (self.viewer_state.x_max - self.viewer_state.x_min) *
+                 self.viewer_state.x_stretch * self.viewer_state.aspect[0],
+                 2 / (self.viewer_state.y_max - self.viewer_state.y_min) *
+                 self.viewer_state.y_stretch * self.viewer_state.aspect[1],
+                 2 / (self.viewer_state.z_max - self.viewer_state.z_min) *
+                 self.viewer_state.z_stretch * self.viewer_state.aspect[2]]
+
+        translate = [-0.5 * (self.viewer_state.x_min + self.viewer_state.x_max) * scale[0],
+                     -0.5 * (self.viewer_state.y_min + self.viewer_state.y_max) * scale[1],
+                     -0.5 * (self.viewer_state.z_min + self.viewer_state.z_max) * scale[2]]
+
+        for visual in self.limit_transforms:
+            self.limit_transforms[visual].scale = scale
+            self.limit_transforms[visual].translate = translate
+
+        self.axis.xlim = self.viewer_state.x_min, self.viewer_state.x_max
+        self.axis.ylim = self.viewer_state.y_min, self.viewer_state.y_max
+        self.axis.zlim = self.viewer_state.z_min, self.viewer_state.z_max
 
     def _reset_view(self):
         self.view.camera.reset()
         # update the cam.fov with checkbox
         self._toggle_perspective()
-
-
-if __name__ == "__main__":
-
-    from viewer_options import VispyOptionsWidget
-
-    app = get_qapp()
-    w = VispyWidgetHelper()
-    d = VispyOptionsWidget(vispy_widget=w)
-    d.show()
-
-    positions = np.random.random((1000, 3))
-    scat_visual = scene.visuals.Markers()
-    scat_visual.set_data(positions, symbol='disc', edge_color=None, face_color='red')
-    w.add_data_visual(scat_visual)
-
-    d.x_min = 0
-    d.x_max = +1
-
-    d.y_min = 0
-    d.y_max = +1
-
-    d.z_min = 0
-    d.z_max = +1
-
-    w.show()
-    app.exec_()
-    app.quit()
