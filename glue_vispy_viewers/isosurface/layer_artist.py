@@ -6,22 +6,19 @@ from matplotlib.colors import ColorConverter
 from ..extern.vispy import scene
 from ..extern.vispy.color import Color
 
-from glue.external.echo import CallbackProperty, add_callback
+from glue.external.echo import add_callback
 from glue.core.data import Subset
 from glue.core.layer_artist import LayerArtistBase
 from glue.utils import nonpartial
 from glue.core.exceptions import IncompatibleAttribute
+
+from .layer_state import IsosurfaceLayerState
 
 
 class IsosurfaceLayerArtist(LayerArtistBase):
     """
     A layer artist to render isosurfaces.
     """
-
-    attribute = CallbackProperty()
-    level = CallbackProperty()
-    color = CallbackProperty()
-    alpha = CallbackProperty()
 
     def __init__(self, layer, vispy_viewer):
 
@@ -30,18 +27,19 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         self.layer = layer
         self.vispy_viewer = vispy_viewer
 
+        self.layer_state = IsosurfaceLayerState(self.layer)
+
         self._iso_visual = scene.Isosurface(np.ones((3, 3, 3)), level=0.5, shading='smooth')
         self.vispy_viewer.add_data_visual(self._iso_visual)
         self._vispy_color = None
 
-        # Set up connections so that when any of the properties are
-        # modified, we update the appropriate part of the visualization
-        add_callback(self, 'attribute', nonpartial(self._update_data))
-        add_callback(self, 'level', nonpartial(self._update_level))
-        add_callback(self, 'color', nonpartial(self._update_color))
-        add_callback(self, 'alpha', nonpartial(self._update_color))
+        # TODO: Maybe should reintroduce global callbacks since they behave differently...
+        self.layer_state.add_callback('*', self._update_from_state, as_kwargs=True)
+        self._update_from_state(**self.layer_state.as_dict())
 
         self._clip_limits = None
+
+        self.visible = True
 
     @property
     def bbox(self):
@@ -77,8 +75,16 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         self.redraw()
         self._changed = False
 
+    def _update_from_state(self, **props):
+        if 'attribute' in props:
+            self._update_data()
+        if 'level' in props:
+            self._update_level()
+        if any(prop in props for prop in ('color', 'alpha')):
+            self._update_color()
+
     def _update_level(self):
-        self._iso_visual.level = self.level
+        self._iso_visual.level = self.layer_state.level
         self.redraw()
 
     def _update_color(self):
@@ -88,12 +94,16 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         self.redraw()
 
     def _update_vispy_color(self):
-        if self.color is None:
+        if self.layer_state.color is None:
             return
-        self._vispy_color = Color(ColorConverter().to_rgb(self.color))
-        self._vispy_color.alpha = self.alpha
+        self._vispy_color = Color(ColorConverter().to_rgb(self.layer_state.color))
+        self._vispy_color.alpha = self.layer_state.alpha
 
     def _update_data(self):
+
+        if self.layer_state.attribute is None:
+            return
+
         if isinstance(self.layer, Subset):
             try:
                 mask = self.layer.to_mask()
@@ -101,7 +111,7 @@ class IsosurfaceLayerArtist(LayerArtistBase):
                 mask = np.zeros(self.layer.data.shape, dtype=bool)
             data = mask.astype(float)
         else:
-            data = self.layer[self.attribute]
+            data = self.layer[self.layer_state.attribute[0]]
 
         if self._clip_limits is not None:
             xmin, xmax, ymin, ymax, zmin, zmax = self._clip_limits

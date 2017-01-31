@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+from ..common import tools
 from ..common.vispy_data_viewer import BaseVispyViewer
 from .layer_artist import IsosurfaceLayerArtist
 from .layer_style_widget import IsosurfaceLayerStyleWidget

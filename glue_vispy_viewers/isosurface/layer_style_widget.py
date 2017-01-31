@@ -6,24 +6,14 @@ import numpy as np
 
 from glue.core.subset import Subset
 
-from glue.external.echo import delay_callback
-
 from qtpy import QtWidgets
 
-from glue.utils.qt import load_ui, update_combobox, connect_color
-from glue.utils.qt.widget_properties import (ValueProperty,
-                                             CurrentComboProperty,
-                                             FloatLineProperty, connect_value,
-                                             connect_float_edit,
-                                             connect_current_combo)
+from glue.utils.qt import load_ui
+from glue.external.echo.qt import autoconnect_callbacks_to_qt
+from glue.core.qt.data_combo_helper import ComponentIDComboHelper
 
 
 class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
-
-    # GUI elements
-    attribute = CurrentComboProperty('ui.combodata_attribute')
-    level = FloatLineProperty('ui.value_level')
-    alpha = ValueProperty('ui.slider_alpha')
 
     def __init__(self, layer_artist):
 
@@ -32,42 +22,24 @@ class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
         self.ui = load_ui('layer_style_widget.ui', self,
                           directory=os.path.dirname(__file__))
 
+        self.layer_state = layer_artist.layer_state
+
+        connect_kwargs = {'value_alpha': dict(value_range=(0., 1.))}
+        autoconnect_callbacks_to_qt(self.layer_state, self.ui, connect_kwargs)
+
         self.layer_artist = layer_artist
         self.layer = layer_artist.layer
 
-        # Set up attribute and visual options
-        self._setup_options()
-        self._connect_global()
-
-        # Set initial values
-        self.layer_artist.color = self.layer.style.color
-        self.layer_artist.alpha = self.layer.style.alpha
-        with delay_callback(self.layer_artist, 'attribute'):
-            self.attribute = self.visible_components[0]
-            self._update_levels()
-        self.layer_artist.visible = True
-
-    def _connect_global(self):
-        connect_color(self.layer.style, 'color', self.ui.label_color)
-        connect_value(self.layer.style, 'alpha', self.ui.slider_alpha, value_range=(0, 1))
-
-    def _setup_options(self):
-        """
-        Set up the combo box with the list of attributes
-        """
-
-        # Set up attribute list
-        label_data = [(comp.label, comp) for comp in self.visible_components]
-        update_combobox(self.ui.combodata_attribute, label_data)
-
-        # Set up connections with layer artist
-        connect_current_combo(self.layer_artist, 'attribute', self.ui.combodata_attribute)
-        connect_float_edit(self.layer_artist, 'level', self.ui.value_level)
-        connect_color(self.layer_artist, 'color', self.ui.label_color)
-        connect_value(self.layer_artist, 'alpha', self.ui.slider_alpha, value_range=(0, 1))
+        # TODO: the following (passing self.layer to data_collection as second argument)
+        # is a hack and we need to figure out a better solution.
+        if isinstance(self.layer, Subset):
+            fake_data_collection = self.layer.data
+        else:
+            fake_data_collection = self.layer
+        self.att_helper = ComponentIDComboHelper(self.ui.combodata_attribute, fake_data_collection)
+        self.att_helper.append_data(self.layer)
 
         # Set up internal connections
-        self.ui.value_level.editingFinished.connect(self._cache_levels)
         self.ui.combodata_attribute.currentIndexChanged.connect(self._update_levels)
 
     def _update_levels(self):
@@ -80,13 +52,9 @@ class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
             self._levels = {}
 
         if self.attribute in self._levels:
-            self.level = self._levels[self.attribute]
+            self.level = self._levels[self.layer_state.attribute[0]]
         else:
-            self.level = self.default_levels(self.attribute)
-            self._levels[self.attribute] = self.level
-
-    def _cache_levels(self):
-        if not isinstance(self.layer, Subset) or self.layer_artist.subset_mode == 'data':
+            self.level = self.default_levels(self.layer_state.attribute[0])
             self._levels[self.attribute] = self.level
 
     def default_levels(self, attribute):
@@ -96,10 +64,3 @@ class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
             return 0.5
         else:
             return np.nanmedian(self.layer[attribute])
-
-    @property
-    def visible_components(self):
-        if isinstance(self.layer, Subset):
-            return self.layer.data.visible_components
-        else:
-            return self.layer.visible_components
