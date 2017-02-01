@@ -4,6 +4,7 @@ import uuid
 
 import numpy as np
 
+from glue.utils import nonpartial
 from glue.core.layer_artist import LayerArtistBase
 from glue.core.exceptions import IncompatibleAttribute
 
@@ -19,6 +20,8 @@ class ScatterLayerArtist(LayerArtistBase):
     def __init__(self, vispy_viewer, layer=None, layer_state=None):
 
         super(ScatterLayerArtist, self).__init__(layer)
+
+        self._clip_limits = None
 
         self.layer = layer or layer_state.layer
         self.vispy_viewer = vispy_viewer
@@ -56,14 +59,16 @@ class ScatterLayerArtist(LayerArtistBase):
         self.layer_state.add_callback('*', self._update_from_state, as_kwargs=True)
         self._update_from_state(**self.layer_state.as_dict())
 
+        self.viewer_state.add_callback('x_att', nonpartial(self._update_data))
+        self.viewer_state.add_callback('y_att', nonpartial(self._update_data))
+        self.viewer_state.add_callback('z_att', nonpartial(self._update_data))
+
         self._update_data()
 
         # Set data caches
         self._marker_data = None
         self._color_data = None
         self._size_data = None
-
-        self._clip_limits = None
 
         self.visible = True
 
@@ -149,23 +154,19 @@ class ScatterLayerArtist(LayerArtistBase):
     def _update_alpha(self):
         self._multiscat.set_alpha(self.id, self.layer_state.alpha)
 
-    def set_coordinates(self, x_coord, y_coord, z_coord):
-        self._x_coord = x_coord
-        self._y_coord = y_coord
-        self._z_coord = z_coord
-        self._update_data()
-
     def _update_data(self):
 
         try:
-            x = self.layer[self._x_coord].ravel()
-            y = self.layer[self._y_coord].ravel()
-            z = self.layer[self._z_coord].ravel()
+            x = self.layer[self.viewer_state.x_att].ravel()
+            y = self.layer[self.viewer_state.y_att].ravel()
+            z = self.layer[self.viewer_state.z_att].ravel()
         except AttributeError:
             return
         except (IncompatibleAttribute, IndexError):
             # The following includes a call to self.clear()
-            self.disable_invalid_attributes(self._x_coord, self._y_coord, self._z_coord)
+            self.disable_invalid_attributes(self.viewer_state.x_att,
+                                            self.viewer_state.y_att,
+                                            self.viewer_state.z_att)
             return
         else:
             self._enabled = True

@@ -45,3 +45,11 @@ class ScatterLayerState(State):
 
         if self.cmap is None:
             self.cmap = colormaps.members[0][1]
+
+        if self.layer is not None:
+
+            if self.cmap_attribute is None:
+                self.cmap_attribute = self.layer.visible_components[0]
+
+            if self.size_attribute is None:
+                self.size_attribute = self.layer.visible_components[0]

@@ -36,10 +36,6 @@ class BaseVispyViewer(DataViewer):
 
         self.viewer_state.add_callback('clip_data', nonpartial(self._toggle_clip))
 
-        self.viewer_state.add_callback('x_att', nonpartial(self._update_attributes))
-        self.viewer_state.add_callback('y_att', nonpartial(self._update_attributes))
-        self.viewer_state.add_callback('z_att', nonpartial(self._update_attributes))
-
         self.status_label = None
         self.client = None
 
@@ -172,7 +168,8 @@ class BaseVispyViewer(DataViewer):
         for l in rec['layers']:
             cls = lookup_class_with_patches(l.pop('_type'))
             layer_state = context.object(l['state'])
-            cls(viewer, layer_state=layer_state)
+            layer_artist = cls(viewer, layer_state=layer_state)
+            viewer._layer_artist_container.append(layer_artist)
 
         return viewer
 
@@ -182,18 +179,6 @@ class BaseVispyViewer(DataViewer):
             self.status_label = QtWidgets.QLabel()
             statusbar.addWidget(self.status_label)
         self.status_label.setText(text)
-
-    def _update_attributes(self, index=None, layer_artist=None):
-
-        if layer_artist is None:
-            layer_artists = self._layer_artist_container
-        else:
-            layer_artists = [layer_artist]
-
-        for artist in layer_artists:
-            artist.set_coordinates(self.viewer_state.x_att,
-                                   self.viewer_state.y_att,
-                                   self.viewer_state.z_att)
 
     def restore_layers(self, layers, context):
         pass
