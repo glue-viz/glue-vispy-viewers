@@ -73,11 +73,7 @@ class VispyVolumeViewer(BaseVispyViewer):
                                          buttons=QMessageBox.Ok)
                     return False
 
-
-            if len(self._layer_artist_container) == 0:
-                self._options_widget._update_attributes_from_data_pixel(data)
-
-            layer_artist = VolumeLayerArtist(data, vispy_viewer=self)
+            layer_artist = VolumeLayerArtist(layer=data, vispy_viewer=self)
 
         else:
 
@@ -106,9 +102,9 @@ class VispyVolumeViewer(BaseVispyViewer):
         mask = subset.to_mask()
 
         if mask.ndim == 1:
-            layer_artist = ScatterLayerArtist(subset, vispy_viewer=self)
+            layer_artist = ScatterLayerArtist(layer=subset, vispy_viewer=self)
         elif mask.ndim == 3:
-            layer_artist = VolumeLayerArtist(subset, vispy_viewer=self)
+            layer_artist = VolumeLayerArtist(layer=subset, vispy_viewer=self)
         else:
             return
 
@@ -124,16 +120,6 @@ class VispyVolumeViewer(BaseVispyViewer):
         viewer = super(VispyVolumeViewer, cls).__setgluestate__(rec, context)
         viewer._update_attributes()
         return viewer
-
-    def restore_layers(self, layers, context):
-        for l in layers:
-            cls = lookup_class_with_patches(l.pop('_type'))
-            props = dict((k, context.object(v)) for k, v in l.items())
-            layer_artist = cls(props['layer'], vispy_viewer=self)
-            if len(self._layer_artist_container) == 0:
-                self.viewer_state.set_limits(*layer_artist.bbox)
-            self._layer_artist_container.append(layer_artist)
-            layer_artist.set(**props)
 
     def _update_appearance_from_settings(self, message):
         super(VispyVolumeViewer, self)._update_appearance_from_settings(message)

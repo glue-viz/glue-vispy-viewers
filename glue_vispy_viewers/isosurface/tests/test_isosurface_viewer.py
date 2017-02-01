@@ -1,7 +1,7 @@
 import numpy as np
 
 from glue.core import Data
-from glue.core.tests.util import simple_session
+from ...common.tests.util import simple_session
 
 from ..isosurface_viewer import VispyIsosurfaceViewer
 

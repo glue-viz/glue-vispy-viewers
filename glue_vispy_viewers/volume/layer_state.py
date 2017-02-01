@@ -19,11 +19,13 @@ class VolumeLayerState(State):
     alpha = CallbackProperty()
     subset_mode = CallbackProperty('data')
 
-    def __init__(self, layer, **kwargs):
+    layer = CallbackProperty()
+
+    def __init__(self, **kwargs):
+
+        print(kwargs)
 
         super(VolumeLayerState, self).__init__(**kwargs)
-
-        self.layer = layer
 
         self.att_helper = StateAttributeLimitsHelper(self, attribute='attribute',
                                                      lower='vmin', upper='vmax')

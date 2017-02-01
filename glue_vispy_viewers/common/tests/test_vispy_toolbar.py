@@ -5,7 +5,7 @@ from __future__ import absolute_import, division, print_function
 import warnings
 from mock import patch
 
-from glue.core.tests.util import simple_session
+from .util import simple_session
 
 from ..vispy_widget import VispyWidgetHelper
 from ..vispy_data_viewer import BaseVispyViewer
@@ -21,11 +21,8 @@ from .. import tools  # noqa:
 class ExampleViewer(BaseVispyViewer):
 
     def __init__(self, session, parent=None):
-        super(ExampleViewer, self).__init__(session, parent=parent)
-        v = VispyWidgetHelper(parent)
 
-        self.central_widget = v.canvas.native
-        self.setCentralWidget(self.central_widget)
+        super(ExampleViewer, self).__init__(session, parent=parent)
 
     def _update_attributes(self):
         pass

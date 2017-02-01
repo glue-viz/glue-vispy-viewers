@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 
 from glue.external.echo import CallbackProperty, delay_callback
-from glue.core.state_objects import State, StateAttributeLimitsHelper
+from glue.core.state_objects import State, StateAttributeLimitsHelper, ListCallbackProperty
 
 __all__ = ['Vispy3DViewerState']
 
@@ -32,6 +32,14 @@ class Vispy3DViewerState(State):
     perspective_view = CallbackProperty(False)
     clip_data = CallbackProperty(False)
     native_aspect = CallbackProperty(False)
+
+    layers = ListCallbackProperty()
+
+    def update_priority(self, name):
+        if name == 'layers':
+            return 1
+        else:
+            return 0
 
     def __init__(self, **kwargs):
 

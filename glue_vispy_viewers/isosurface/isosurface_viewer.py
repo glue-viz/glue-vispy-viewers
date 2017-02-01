@@ -17,7 +17,7 @@ class VispyIsosurfaceViewer(BaseVispyViewer):
         if data in self._layer_artist_container:
             return True
 
-        layer_artist = IsosurfaceLayerArtist(data, vispy_viewer=self._vispy_widget)
+        layer_artist = IsosurfaceLayerArtist(layer=data, vispy_viewer=self)
 
         if len(self._layer_artist_container) == 0:
             self.viewer_state.set_limits(*layer_artist.bbox)
@@ -36,7 +36,7 @@ class VispyIsosurfaceViewer(BaseVispyViewer):
         if subset.to_mask().ndim != 3:
             return
 
-        layer_artist = IsosurfaceLayerArtist(subset, vispy_viewer=self._vispy_widget)
+        layer_artist = IsosurfaceLayerArtist(layer=subset, vispy_viewer=self)
         self._layer_artist_container.append(layer_artist)
 
     def _add_subset(self, message):

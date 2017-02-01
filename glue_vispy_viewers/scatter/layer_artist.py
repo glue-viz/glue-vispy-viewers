@@ -16,15 +16,19 @@ class ScatterLayerArtist(LayerArtistBase):
     A layer artist to render 3d scatter plots.
     """
 
-    def __init__(self, layer, vispy_viewer):
+    def __init__(self, vispy_viewer, layer=None, layer_state=None):
 
         super(ScatterLayerArtist, self).__init__(layer)
 
-        self.layer = layer
+        self.layer = layer or layer_state.layer
         self.vispy_viewer = vispy_viewer
         self.vispy_widget = vispy_viewer._vispy_widget
 
-        self.layer_state = ScatterLayerState(self.layer)
+        # TODO: need to remove layers when layer artist is removed
+        self.viewer_state = vispy_viewer.viewer_state
+        self.layer_state = layer_state or ScatterLayerState(layer=self.layer)
+        if not self.layer_state in self.viewer_state.layers:
+            self.viewer_state.layers.append(self.layer_state)
 
         # We create a unique ID for this layer artist, that will be used to
         # refer to the layer artist in the MultiColorScatter. We have to do this
@@ -124,7 +128,7 @@ class ScatterLayerArtist(LayerArtistBase):
         elif self.layer_state.size_mode == 'Fixed':
             self._multiscat.set_size(self.id, self.layer_state.size * self.layer_state.size_scaling)
         else:
-            data = self.layer[self.layer_state.size_attribute[0]].ravel()
+            data = self.layer[self.layer_state.size_attribute].ravel()
             size = 20 * (data - self.layer_state.size_vmin) / (self.layer_state.size_vmax - self.layer_state.size_vmin)
             size_data = size * self.layer_state.size_scaling
             size_data[np.isnan(data)] = 0.
@@ -136,7 +140,7 @@ class ScatterLayerArtist(LayerArtistBase):
         elif self.layer_state.color_mode == 'Fixed':
             self._multiscat.set_color(self.id, self.layer_state.color)
         else:
-            data = self.layer[self.layer_state.cmap_attribute[0]].ravel()
+            data = self.layer[self.layer_state.cmap_attribute].ravel()
             cmap_data = (data - self.layer_state.cmap_vmin) / (self.layer_state.cmap_vmax - self.layer_state.cmap_vmin)
             cmap_data = self.layer_state.cmap(cmap_data)
             cmap_data[:, 3][np.isnan(data)] = 0.
@@ -193,9 +197,10 @@ class ScatterLayerArtist(LayerArtistBase):
         # TODO: the following can be optimized
         return tuple(np.array([dmin, dmax]).transpose().ravel())
 
-    def __gluestate__(self, context):
-        return dict((attr, context.id(getattr(self, attr))) for attr in self._properties)
-
     def set_clip(self, limits):
         self._clip_limits = limits
         self._update_data()
+
+    # TODO: put in base class
+    def __gluestate__(self, context):
+        return dict(state=context.id(self.layer_state))

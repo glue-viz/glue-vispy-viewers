@@ -24,15 +24,21 @@ class VolumeLayerArtist(LayerArtistBase):
     each data viewer.
     """
 
-    def __init__(self, layer, vispy_viewer=None):
+    def __init__(self, vispy_viewer=None, layer=None, layer_state=None):
 
         super(VolumeLayerArtist, self).__init__(layer)
 
-        self.layer = layer
+        self._clip_limits = None
+
+        self.layer = layer or layer_state.layer
         self.vispy_viewer = vispy_viewer
         self.vispy_widget = vispy_viewer._vispy_widget
 
-        self.layer_state = VolumeLayerState(self.layer)
+        # TODO: need to remove layers when layer artist is removed
+        self.viewer_state = vispy_viewer.viewer_state
+        self.layer_state = layer_state or VolumeLayerState(layer=self.layer)
+        if not self.layer_state in self.viewer_state.layers:
+            self.viewer_state.layers.append(self.layer_state)
 
         # We create a unique ID for this layer artist, that will be used to
         # refer to the layer artist in the MultiVolume. We have to do this
@@ -62,8 +68,6 @@ class VolumeLayerArtist(LayerArtistBase):
         # TODO: Maybe should reintroduce global callbacks since they behave differently...
         self.layer_state.add_callback('*', self._update_from_state, as_kwargs=True)
         self._update_from_state(**self.layer_state.as_dict())
-
-        self._clip_limits = None
 
         self.visible = True
 
@@ -157,10 +161,10 @@ class VolumeLayerArtist(LayerArtistBase):
             if self.layer_state.subset_mode == 'outline':
                 data = mask.astype(float)
             else:
-                data = self.layer.data[self.layer_state.attribute[0]] * mask
+                data = self.layer.data[self.layer_state.attribute] * mask
         else:
 
-            data = self.layer[self.layer_state.attribute[0]]
+            data = self.layer[self.layer_state.attribute]
 
         if self._clip_limits is not None:
             xmin, xmax, ymin, ymax, zmin, zmax = self._clip_limits
@@ -192,3 +196,7 @@ class VolumeLayerArtist(LayerArtistBase):
     def set_clip(self, limits):
         self._clip_limits = limits
         self._update_data()
+
+    # TODO: put in base class
+    def __gluestate__(self, context):
+        return dict(state=context.id(self.layer_state))

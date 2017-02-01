@@ -4,15 +4,15 @@ from ...extern.vispy import scene
 
 from ..viewer_options import VispyOptionsWidget
 from ..vispy_widget import VispyWidgetHelper
-
+from ..state import Vispy3DViewerState
 
 def test_vispy_widget():
 
-    w = VispyWidgetHelper()
-    d = VispyOptionsWidget(vispy_widget=w)
+    d = Vispy3DViewerState()
+
+    w = VispyWidgetHelper(viewer_state=d)
 
     w.canvas.native.show()
-    d.show()
 
     # Try adding marker visuals to the scene
     positions = np.random.random((1000, 3))
@@ -20,7 +20,7 @@ def test_vispy_widget():
     scat_visual.set_data(positions, symbol='disc', edge_color=None, face_color='red')
     w.add_data_visual(scat_visual)
 
-    d.viewer_state.set_limits(-1., 1., -1., 1., -1., 1.)
+    d.set_limits(-1., 1., -1., 1., -1., 1.)
 
     np.testing.assert_equal(scat_visual.transform.scale, [1., 1., 1., 1.])
     np.testing.assert_equal(scat_visual.transform.translate, [0., 0., 0., 0.])

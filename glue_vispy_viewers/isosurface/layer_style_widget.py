@@ -52,9 +52,9 @@ class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
             self._levels = {}
 
         if self.attribute in self._levels:
-            self.level = self._levels[self.layer_state.attribute[0]]
+            self.level = self._levels[self.layer_state.attribute]
         else:
-            self.level = self.default_levels(self.layer_state.attribute[0])
+            self.level = self.default_levels(self.layer_state.attribute)
             self._levels[self.attribute] = self.level
 
     def default_levels(self, attribute):

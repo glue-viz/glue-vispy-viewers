@@ -17,11 +17,11 @@ class IsosurfaceLayerState(State):
     color = CallbackProperty()
     alpha = CallbackProperty()
 
-    def __init__(self, layer, **kwargs):
+    layer = CallbackProperty()
+
+    def __init__(self, **kwargs):
 
         super(IsosurfaceLayerState, self).__init__(**kwargs)
-
-        self.layer = layer
 
         self.color = self.layer.style.color
         self.alpha = self.layer.style.alpha

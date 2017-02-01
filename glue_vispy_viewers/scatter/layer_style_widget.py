@@ -23,10 +23,6 @@ class ScatterLayerStyleWidget(QtWidgets.QWidget):
 
         self.layer_state = layer_artist.layer_state
 
-        connect_kwargs = {'value_alpha': dict(value_range=(0., 1.)),
-                          'value_size_scaling': dict(value_range=(0.1, 10), log=True)}
-        autoconnect_callbacks_to_qt(self.layer_state, self.ui, connect_kwargs)
-
         self.layer_artist = layer_artist
         self.layer = layer_artist.layer
 
@@ -44,8 +40,9 @@ class ScatterLayerStyleWidget(QtWidgets.QWidget):
         self.cmap_att_helper = ComponentIDComboHelper(self.ui.combodata_cmap_attribute, fake_data_collection)
         self.cmap_att_helper.append_data(self.layer)
 
-        self.layer_artist = layer_artist
-        self.layer = layer_artist.layer
+        connect_kwargs = {'value_alpha': dict(value_range=(0., 1.)),
+                          'value_size_scaling': dict(value_range=(0.1, 10), log=True)}
+        autoconnect_callbacks_to_qt(self.layer_state, self.ui, connect_kwargs)
 
         # Set initial values
         self._update_size_mode()

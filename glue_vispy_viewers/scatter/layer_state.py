@@ -27,11 +27,11 @@ class ScatterLayerState(State):
     cmap = CallbackProperty()
     alpha = CallbackProperty()
 
-    def __init__(self, layer, **kwargs):
+    layer = CallbackProperty()
+
+    def __init__(self, **kwargs):
 
         super(ScatterLayerState, self).__init__(**kwargs)
-
-        self.layer = layer
 
         self.size_att_helper = StateAttributeLimitsHelper(self, attribute='size_attribute',
                                                           lower='size_vmin', upper='size_vmax')
@@ -43,4 +43,5 @@ class ScatterLayerState(State):
         self.size = self.layer.style.markersize
         self.alpha = self.layer.style.alpha
 
-        self.cmap = colormaps.members[0][1]
+        if self.cmap is None:
+            self.cmap = colormaps.members[0][1]

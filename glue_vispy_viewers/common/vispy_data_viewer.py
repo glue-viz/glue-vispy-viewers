@@ -8,6 +8,7 @@ except ImportError:
 from glue.core import message as msg
 from glue.core import Data
 from glue.utils import nonpartial
+from glue.core.state import lookup_class_with_patches
 
 from qtpy import PYQT5, QtWidgets
 
@@ -22,11 +23,11 @@ class BaseVispyViewer(DataViewer):
     _toolbar_cls = VispyViewerToolbar
     tools = ['vispy:save', 'vispy:rotate']
 
-    def __init__(self, session, parent=None):
+    def __init__(self, session, viewer_state=None, parent=None):
 
         super(BaseVispyViewer, self).__init__(session, parent=parent)
 
-        self.viewer_state = Vispy3DViewerState()
+        self.viewer_state = viewer_state or Vispy3DViewerState()
 
         self._vispy_widget = VispyWidgetHelper(viewer_state=self.viewer_state)
         self.setCentralWidget(self._vispy_widget.canvas.native)
@@ -148,28 +149,30 @@ class BaseVispyViewer(DataViewer):
         return self.LABEL
 
     def __gluestate__(self, context):
-        state = super(BaseVispyViewer, self).__gluestate__(context)
-        state['options'] = self._options_widget.__gluestate__(context)
-        return state
+        return dict(state=self.viewer_state.__gluestate__(context),
+                    session=context.id(self._session),
+                    size=self.viewer_size,
+                    pos=self.position,
+                    layers=list(map(context.do, self.layers)))
 
     @classmethod
     def __setgluestate__(cls, rec, context):
 
-        viewer = super(BaseVispyViewer, cls).__setgluestate__(rec, context)
+        session = context.object(rec['session'])
+        viewer = cls(session)
+        viewer.register_to_hub(session.hub)
+        viewer.viewer_size = rec['size']
+        x, y = rec['pos']
+        viewer.move(x=x, y=y)
 
-        from ..scatter.layer_artist import ScatterLayerArtist
-        from ..volume.layer_artist import VolumeLayerArtist
+        viewer_state = Vispy3DViewerState.__setgluestate__(rec['state'], context)
+        viewer.viewer_state.update_from_state(viewer_state)
 
-        for layer_artist in viewer.layers:
-            if isinstance(layer_artist.layer, Data):
-                if isinstance(layer_artist, ScatterLayerArtist):
-                    viewer._options_widget._update_attributes_from_data(layer_artist.layer)
-                elif isinstance(layer_artist, VolumeLayerArtist):
-                    viewer._options_widget._update_attributes_from_data_pixel(layer_artist.layer)
-
-        for attr in sorted(rec['options'], key=lambda x: 0 if 'att' in x else 1):
-            value = rec['options'][attr]
-            setattr(viewer._options_widget, attr, context.object(value))
+        # Restore layer artists
+        for l in rec['layers']:
+            cls = lookup_class_with_patches(l.pop('_type'))
+            layer_state = context.object(l['state'])
+            cls(viewer, layer_state=layer_state)
 
         return viewer
 
@@ -188,9 +191,9 @@ class BaseVispyViewer(DataViewer):
             layer_artists = [layer_artist]
 
         for artist in layer_artists:
-            artist.set_coordinates(self.viewer_state.x_att[0],
-                                   self.viewer_state.y_att[0],
-                                   self.viewer_state.z_att[0])
+            artist.set_coordinates(self.viewer_state.x_att,
+                                   self.viewer_state.y_att,
+                                   self.viewer_state.z_att)
 
     def restore_layers(self, layers, context):
         pass

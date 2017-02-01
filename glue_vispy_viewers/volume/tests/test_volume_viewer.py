@@ -40,29 +40,28 @@ def test_volume_viewer(tmpdir):
     volume.add_data(data)
     volume.viewer_size = (400, 500)
 
-    options = volume.options_widget()
+    viewer_state = volume.viewer_state
 
-    options.x_stretch = 0.5
-    options.y_stretch = 1.0
-    options.z_stretch = 2.0
+    viewer_state.x_stretch = 0.5
+    viewer_state.y_stretch = 1.0
+    viewer_state.z_stretch = 2.0
 
-    options.x_min = -0.1
-    options.x_max = 10.1
-    options.y_min = 0.1
-    options.y_max = 10.9
-    options.z_min = 0.2
-    options.z_max = 10.8
+    viewer_state.x_min = -0.1
+    viewer_state.x_max = 10.1
+    viewer_state.y_min = 0.1
+    viewer_state.y_max = 10.9
+    viewer_state.z_min = 0.2
+    viewer_state.z_max = 10.8
 
-    options.visible_box = False
+    viewer_state.visible_axes = False
 
     # Get layer artist style editor
-    layer_artist = volume.layers[0]
-    style_widget = volume._view.layout_style_widgets[layer_artist]
+    layer_state = viewer_state.layers[0]
 
-    style_widget.attribute = data.id['b']
-    style_widget.vmin = 0.1
-    style_widget.vmax = 0.9
-    style_widget.alpha = 0.8
+    layer_state.attribute = data.id['b']
+    layer_state.vmin = 0.1
+    layer_state.vmax = 0.9
+    layer_state.alpha = 0.8
 
     # Check that writing a session works as expected.
 
@@ -79,26 +78,26 @@ def test_volume_viewer(tmpdir):
 
     assert volume_r.viewer_size == (400, 500)
 
-    options = volume_r.options_widget()
+    viewer_state = volume_r.viewer_state
 
-    assert options.x_stretch == 0.5
-    assert options.y_stretch == 1.0
-    assert options.z_stretch == 2.0
+    np.testing.assert_allclose(viewer_state.x_stretch, 0.5, rtol=1e-4)
+    np.testing.assert_allclose(viewer_state.y_stretch, 1.0, rtol=1e-4)
+    np.testing.assert_allclose(viewer_state.z_stretch, 2.0, rtol=1e-4)
 
-    assert options.x_min == -0.1
-    assert options.x_max == 10.1
-    assert options.y_min == 0.1
-    assert options.y_max == 10.9
-    assert options.z_min == 0.2
-    assert options.z_max == 10.8
+    assert viewer_state.x_min == -0.1
+    assert viewer_state.x_max == 10.1
+    assert viewer_state.y_min == 0.1
+    assert viewer_state.y_max == 10.9
+    assert viewer_state.z_min == 0.2
+    assert viewer_state.z_max == 10.8
 
-    assert not options.visible_box
+    assert not viewer_state.visible_axes
 
-    layer_artist = volume_r.layers[0]
+    layer_artist = viewer_state.layers[0]
 
-    assert style_widget.attribute.label == 'b'
-    assert style_widget.vmin == 0.1
-    assert style_widget.vmax == 0.9
-    assert style_widget.alpha == 0.8
+    assert layer_artist.attribute.label == 'b'
+    assert layer_artist.vmin == 0.1
+    assert layer_artist.vmax == 0.9
+    assert layer_artist.alpha == 0.8
 
     ga2.close()

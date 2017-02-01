@@ -20,24 +20,29 @@ class IsosurfaceLayerArtist(LayerArtistBase):
     A layer artist to render isosurfaces.
     """
 
-    def __init__(self, layer, vispy_viewer):
+    def __init__(self, vispy_viewer, layer=None, layer_state=None):
 
         super(IsosurfaceLayerArtist, self).__init__(layer)
 
-        self.layer = layer
-        self.vispy_viewer = vispy_viewer
+        self._clip_limits = None
 
-        self.layer_state = IsosurfaceLayerState(self.layer)
+        self.layer = layer or layer_state.layer
+        self.vispy_viewer = vispy_viewer
+        self.vispy_widget = vispy_viewer._vispy_widget
+
+        # TODO: need to remove layers when layer artist is removed
+        self.viewer_state = vispy_viewer.viewer_state
+        self.layer_state = layer_state or IsosurfaceLayerState(layer=self.layer)
+        if not self.layer_state in self.viewer_state.layers:
+            self.viewer_state.layers.append(self.layer_state)
 
         self._iso_visual = scene.Isosurface(np.ones((3, 3, 3)), level=0.5, shading='smooth')
-        self.vispy_viewer.add_data_visual(self._iso_visual)
+        self.vispy_widget.add_data_visual(self._iso_visual)
         self._vispy_color = None
 
         # TODO: Maybe should reintroduce global callbacks since they behave differently...
         self.layer_state.add_callback('*', self._update_from_state, as_kwargs=True)
         self._update_from_state(**self.layer_state.as_dict())
-
-        self._clip_limits = None
 
         self.visible = True
 
@@ -60,7 +65,7 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         """
         Redraw the Vispy canvas
         """
-        self.vispy_viewer.canvas.update()
+        self.vispy_widget.canvas.update()
 
     def clear(self):
         """
@@ -111,7 +116,7 @@ class IsosurfaceLayerArtist(LayerArtistBase):
                 mask = np.zeros(self.layer.data.shape, dtype=bool)
             data = mask.astype(float)
         else:
-            data = self.layer[self.layer_state.attribute[0]]
+            data = self.layer[self.layer_state.attribute]
 
         if self._clip_limits is not None:
             xmin, xmax, ymin, ymax, zmin, zmax = self._clip_limits
@@ -140,3 +145,7 @@ class IsosurfaceLayerArtist(LayerArtistBase):
     def set_clip(self, limits):
         self._clip_limits = limits
         self._update_data()
+
+    # TODO: put in base class
+    def __gluestate__(self, context):
+        return dict(state=context.id(self.layer_state))
