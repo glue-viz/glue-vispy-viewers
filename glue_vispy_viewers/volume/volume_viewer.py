@@ -82,8 +82,6 @@ class VispyVolumeViewer(BaseVispyViewer):
                                  buttons=QMessageBox.Ok)
             return False
 
-        self._update_attributes(layer_artist=layer_artist)
-
         if len(self._layer_artist_container) == 0:
             self.viewer_state.set_limits(*layer_artist.bbox)
 
@@ -108,8 +106,6 @@ class VispyVolumeViewer(BaseVispyViewer):
         else:
             return
 
-        self._update_attributes(layer_artist=layer_artist)
-
         self._layer_artist_container.append(layer_artist)
 
     def _add_subset(self, message):
@@ -118,7 +114,6 @@ class VispyVolumeViewer(BaseVispyViewer):
     @classmethod
     def __setgluestate__(cls, rec, context):
         viewer = super(VispyVolumeViewer, cls).__setgluestate__(rec, context)
-        viewer._update_attributes()
         return viewer
 
     def _update_appearance_from_settings(self, message):

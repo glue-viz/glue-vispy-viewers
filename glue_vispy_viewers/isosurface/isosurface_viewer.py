@@ -41,6 +41,3 @@ class VispyIsosurfaceViewer(BaseVispyViewer):
 
     def _add_subset(self, message):
         self.add_subset(message.subset)
-
-    def _update_attributes(self, index=None, layer_artist=None):
-        pass

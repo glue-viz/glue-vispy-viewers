@@ -63,12 +63,12 @@ class ScatterLayerArtist(LayerArtistBase):
         self.viewer_state.add_callback('y_att', nonpartial(self._update_data))
         self.viewer_state.add_callback('z_att', nonpartial(self._update_data))
 
-        self._update_data()
-
         # Set data caches
         self._marker_data = None
         self._color_data = None
         self._size_data = None
+
+        self._update_data()
 
         self.visible = True
 

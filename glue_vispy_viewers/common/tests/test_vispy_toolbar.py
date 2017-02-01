@@ -24,9 +24,6 @@ class ExampleViewer(BaseVispyViewer):
 
         super(ExampleViewer, self).__init__(session, parent=parent)
 
-    def _update_attributes(self):
-        pass
-
     def callback(self, mode):
         self._called_back = True
 
