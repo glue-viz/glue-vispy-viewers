@@ -40,15 +40,15 @@ class Vispy3DViewerState(State):
         self.limits_cache = {}
 
         self.x_att_helper = StateAttributeLimitsHelper(self, attribute='x_att',
-                                                       vlo='x_min', vhi='x_max',
+                                                       lower='x_min', upper='x_max',
                                                        limits_cache=self.limits_cache)
 
         self.y_att_helper = StateAttributeLimitsHelper(self, attribute='y_att',
-                                                       vlo='y_min', vhi='y_max',
+                                                       lower='y_min', upper='y_max',
                                                        limits_cache=self.limits_cache)
 
         self.z_att_helper = StateAttributeLimitsHelper(self, attribute='z_att',
-                                                       vlo='z_min', vhi='z_max',
+                                                       lower='z_min', upper='z_max',
                                                        limits_cache=self.limits_cache)
 
     @property

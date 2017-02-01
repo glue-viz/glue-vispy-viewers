@@ -26,11 +26,11 @@ class VolumeLayerState(State):
         self.layer = layer
 
         self.att_helper = StateAttributeLimitsHelper(self, attribute='attribute',
-                                                     vlo='vmin', vhi='vmax')
+                                                     lower='vmin', upper='vmax')
 
         self.color = self.layer.style.color
         self.alpha = self.layer.style.alpha
 
         if isinstance(self.layer, Subset):
             self.vmin = 0
-            self.att_helper.vlo_frozen = True
+            self.att_helper.lower_frozen = True

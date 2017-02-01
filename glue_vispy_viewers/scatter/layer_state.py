@@ -34,10 +34,10 @@ class ScatterLayerState(State):
         self.layer = layer
 
         self.size_att_helper = StateAttributeLimitsHelper(self, attribute='size_attribute',
-                                                          vlo='size_vmin', vhi='size_vmax')
+                                                          lower='size_vmin', upper='size_vmax')
 
         self.cmap_att_helper = StateAttributeLimitsHelper(self, attribute='cmap_attribute',
-                                                          vlo='cmap_vmin', vhi='cmap_vmax')
+                                                          lower='cmap_vmin', upper='cmap_vmax')
 
         self.color = self.layer.style.color
         self.size = self.layer.style.markersize
