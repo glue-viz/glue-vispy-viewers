@@ -36,6 +36,8 @@
 # This modified version is released under the BSD license given in the LICENSE
 # file in this repository.
 
+from __future__ import absolute_import, division, print_function
+
 from glue.external import six
 
 from ..extern.vispy.gloo import Texture3D, TextureEmulated3D, VertexBuffer, IndexBuffer

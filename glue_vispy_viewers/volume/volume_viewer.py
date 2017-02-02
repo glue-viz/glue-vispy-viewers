@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 from glue.core.state import lookup_class_with_patches
 from glue.config import settings
 from glue.core import message as msg
