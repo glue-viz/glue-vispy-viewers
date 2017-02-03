@@ -15,6 +15,7 @@ from .vispy_widget import VispyWidgetHelper
 from .viewer_options import VispyOptionsWidget
 from .toolbar import VispyViewerToolbar
 from .state import Vispy3DViewerState
+from .compat import update_viewer_state
 
 
 class BaseVispyViewer(DataViewer):
@@ -148,10 +149,14 @@ class BaseVispyViewer(DataViewer):
                     session=context.id(self._session),
                     size=self.viewer_size,
                     pos=self.position,
-                    layers=list(map(context.do, self.layers)))
+                    layers=list(map(context.do, self.layers)),
+                    _protocol=1)
 
     @classmethod
     def __setgluestate__(cls, rec, context):
+
+        if rec.get('_protocol', 0) < 1:
+            update_viewer_state(rec, context)
 
         session = context.object(rec['session'])
         viewer = cls(session)

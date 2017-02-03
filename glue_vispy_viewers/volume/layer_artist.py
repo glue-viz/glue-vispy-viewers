@@ -7,15 +7,15 @@ import numpy as np
 from matplotlib.colors import ColorConverter
 
 from glue.core.data import Subset
-from glue.core.layer_artist import LayerArtistBase
 from glue.config import settings
 from glue.core.exceptions import IncompatibleAttribute
 from .volume_visual import MultiVolume
 from .colors import get_translucent_cmap
 from .layer_state import VolumeLayerState
+from ..common.layer_artist import VispyLayerArtist
 
 
-class VolumeLayerArtist(LayerArtistBase):
+class VolumeLayerArtist(VispyLayerArtist):
     """
     A layer artist to render volumes.
 
@@ -84,15 +84,6 @@ class VolumeLayerArtist(LayerArtistBase):
     @property
     def shape(self):
         return self.layer.shape
-
-    @property
-    def visible(self):
-        return self._visible
-
-    @visible.setter
-    def visible(self, value):
-        self._visible = value
-        self._update_visibility()
 
     def redraw(self):
         """
@@ -190,13 +181,6 @@ class VolumeLayerArtist(LayerArtistBase):
             self._multivol.disable(self.id)
         self.redraw()
 
-    def set_coordinates(self, x_coord, y_coord, z_coord):
-        pass
-
     def set_clip(self, limits):
         self._clip_limits = limits
         self._update_data()
-
-    # TODO: put in base class
-    def __gluestate__(self, context):
-        return dict(state=context.id(self.layer_state))

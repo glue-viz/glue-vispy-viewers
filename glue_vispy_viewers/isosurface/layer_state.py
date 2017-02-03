@@ -2,12 +2,15 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 from glue.external.echo import CallbackProperty
-from glue.core.state_objects import State, StateAttributeSingleValueHelper
+from glue.core.state_objects import StateAttributeSingleValueHelper
+
+from ..common.layer_state import VispyLayerState
+
 
 __all__ = ['IsosurfaceLayerState']
 
 
-class IsosurfaceLayerState(State):
+class IsosurfaceLayerState(VispyLayerState):
     """
     A state object for volume layers
     """
@@ -17,14 +20,13 @@ class IsosurfaceLayerState(State):
     color = CallbackProperty()
     alpha = CallbackProperty()
 
-    layer = CallbackProperty()
-
     def __init__(self, **kwargs):
 
         super(IsosurfaceLayerState, self).__init__(**kwargs)
 
-        self.color = self.layer.style.color
-        self.alpha = self.layer.style.alpha
+        if self.layer is not None:
+            self.color = self.layer.style.color
+            self.alpha = self.layer.style.alpha
 
         def default_level(values):
             percentile = max((1 - 1e3 / values.size) * 100, 99)

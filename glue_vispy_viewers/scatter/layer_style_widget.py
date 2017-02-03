@@ -2,8 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from glue.core.subset import Subset
-
 from qtpy import QtWidgets
 
 from glue.utils import nonpartial
@@ -29,17 +27,12 @@ class ScatterLayerStyleWidget(QtWidgets.QWidget):
         # FIXME: the following (passing self.layer to data_collection as second argument)
         # is a hack and we need to figure out a better solution.
 
-        if isinstance(self.layer, Subset):
-            fake_data_collection = self.layer.data
-        else:
-            fake_data_collection = self.layer
-
         self.size_att_helper = ComponentIDComboHelper(self.ui.combodata_size_attribute,
-                                                      fake_data_collection)
+                                                      self.layer)
         self.size_att_helper.append_data(self.layer)
 
         self.cmap_att_helper = ComponentIDComboHelper(self.ui.combodata_cmap_attribute,
-                                                      fake_data_collection)
+                                                      self.layer)
         self.cmap_att_helper.append_data(self.layer)
 
         connect_kwargs = {'value_alpha': dict(value_range=(0., 1.)),

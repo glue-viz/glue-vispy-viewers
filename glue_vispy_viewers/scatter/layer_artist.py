@@ -5,14 +5,14 @@ import uuid
 import numpy as np
 
 from glue.utils import nonpartial
-from glue.core.layer_artist import LayerArtistBase
 from glue.core.exceptions import IncompatibleAttribute
 
 from .multi_scatter import MultiColorScatter
 from .layer_state import ScatterLayerState
+from ..common.layer_artist import VispyLayerArtist
 
 
-class ScatterLayerArtist(LayerArtistBase):
+class ScatterLayerArtist(VispyLayerArtist):
     """
     A layer artist to render 3d scatter plots.
     """
@@ -76,27 +76,12 @@ class ScatterLayerArtist(LayerArtistBase):
     def visual(self):
         return self._multiscat
 
-    @property
-    def visible(self):
-        return self._visible
-
-    @visible.setter
-    def visible(self, value):
-        self._visible = value
+    def _update_visibility(self):
         self._multiscat.set_visible(self.id, self.visible)
         self.redraw()
 
     def get_zorder(self):
         return self.zorder
-
-    @property
-    def zorder(self):
-        return self._zorder
-
-    @zorder.setter
-    def zorder(self, value):
-        self._zorder = value
-        self.redraw()
 
     def redraw(self):
         """
@@ -203,7 +188,3 @@ class ScatterLayerArtist(LayerArtistBase):
     def set_clip(self, limits):
         self._clip_limits = limits
         self._update_data()
-
-    # TODO: put in base class
-    def __gluestate__(self, context):
-        return dict(state=context.id(self.layer_state))

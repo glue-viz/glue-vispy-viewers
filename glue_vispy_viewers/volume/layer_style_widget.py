@@ -27,11 +27,17 @@ class VolumeLayerStyleWidget(QtWidgets.QWidget):
         else:
             self.ui.radio_subset_data.setChecked(True)
 
-        connect_kwargs = {'value_alpha': dict(value_range=(0., 1.))}
-        autoconnect_callbacks_to_qt(self.layer_state, self.ui, connect_kwargs)
-
         self.layer_artist = layer_artist
         self.layer = layer_artist.layer
+
+        # TODO: the following (passing self.layer to data_collection as second argument)
+        # is a hack and we need to figure out a better solution.
+        self.att_helper = ComponentIDComboHelper(self.ui.combodata_attribute, self.layer)
+        self.att_helper.append_data(self.layer)
+
+        # autoconnect needs to come after setting up the component IDs
+        connect_kwargs = {'value_alpha': dict(value_range=(0., 1.))}
+        autoconnect_callbacks_to_qt(self.layer_state, self.ui, connect_kwargs)
 
         # Set up radio buttons for subset mode selection if this is a subset
         if isinstance(self.layer, Subset):
@@ -41,17 +47,10 @@ class VolumeLayerStyleWidget(QtWidgets.QWidget):
             self.ui.radio_subset_outline.toggled.connect(self._update_subset_mode)
             self.ui.radio_subset_data.toggled.connect(self._update_subset_mode)
             self.ui.valuetext_vmin.setEnabled(False)
-            fake_data_collection = self.layer.data
         else:
             self.ui.radio_subset_outline.hide()
             self.ui.radio_subset_data.hide()
             self.ui.label_subset_mode.hide()
-            fake_data_collection = self.layer
-
-        # TODO: the following (passing self.layer to data_collection as second argument)
-        # is a hack and we need to figure out a better solution.
-        self.att_helper = ComponentIDComboHelper(self.ui.combodata_attribute, fake_data_collection)
-        self.att_helper.append_data(self.layer)
 
     def _update_subset_mode(self):
         if self.ui.radio_subset_outline.isChecked():

@@ -32,11 +32,7 @@ class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
 
         # TODO: the following (passing self.layer to data_collection as second argument)
         # is a hack and we need to figure out a better solution.
-        if isinstance(self.layer, Subset):
-            fake_data_collection = self.layer.data
-        else:
-            fake_data_collection = self.layer
-        self.att_helper = ComponentIDComboHelper(self.ui.combodata_attribute, fake_data_collection)
+        self.att_helper = ComponentIDComboHelper(self.ui.combodata_attribute, self.layer)
         self.att_helper.append_data(self.layer)
 
         # Set up internal connections

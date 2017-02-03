@@ -46,6 +46,7 @@ class VispyOptionsWidget(QtWidgets.QWidget):
     def _update_attribute_combos(self):
 
         for layer in self.viewer_state.layers:
+
             if layer.layer.ndim == 3:
                 # We are using either the volume viewer or the isosurface
                 # viewer, so the attribute combo boxes should be set using

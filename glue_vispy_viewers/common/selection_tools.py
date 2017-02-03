@@ -102,9 +102,9 @@ class MultiElementSubsetState(SubsetState):
 def get_map_data_scatter(data, visual, vispy_widget):
 
     # Get the component IDs
-    x_att = vispy_widget.options.x_att
-    y_att = vispy_widget.options.y_att
-    z_att = vispy_widget.options.z_att
+    x_att = vispy_widget.viewer_state.x_att
+    y_att = vispy_widget.viewer_state.y_att
+    z_att = vispy_widget.viewer_state.z_att
 
     # Get the visible data
     layer_data = np.nan_to_num([data[x_att],

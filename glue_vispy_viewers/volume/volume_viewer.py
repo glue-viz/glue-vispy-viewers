@@ -97,11 +97,9 @@ class VispyVolumeViewer(BaseVispyViewer):
         if subset in self._layer_artist_container:
             return
 
-        mask = subset.to_mask()
-
-        if mask.ndim == 1:
+        if subset.ndim == 1:
             layer_artist = ScatterLayerArtist(layer=subset, vispy_viewer=self)
-        elif mask.ndim == 3:
+        elif subset.ndim == 3:
             layer_artist = VolumeLayerArtist(layer=subset, vispy_viewer=self)
         else:
             return
