@@ -30,7 +30,7 @@ class ScatterLayerArtist(LayerArtistBase):
         # TODO: need to remove layers when layer artist is removed
         self.viewer_state = vispy_viewer.viewer_state
         self.layer_state = layer_state or ScatterLayerState(layer=self.layer)
-        if not self.layer_state in self.viewer_state.layers:
+        if self.layer_state not in self.viewer_state.layers:
             self.viewer_state.layers.append(self.layer_state)
 
         # We create a unique ID for this layer artist, that will be used to
@@ -134,7 +134,8 @@ class ScatterLayerArtist(LayerArtistBase):
             self._multiscat.set_size(self.id, self.layer_state.size * self.layer_state.size_scaling)
         else:
             data = self.layer[self.layer_state.size_attribute].ravel()
-            size = 20 * (data - self.layer_state.size_vmin) / (self.layer_state.size_vmax - self.layer_state.size_vmin)
+            size = (20 * (data - self.layer_state.size_vmin) /
+                    (self.layer_state.size_vmax - self.layer_state.size_vmin))
             size_data = size * self.layer_state.size_scaling
             size_data[np.isnan(data)] = 0.
             self._multiscat.set_size(self.id, size_data)
@@ -146,7 +147,8 @@ class ScatterLayerArtist(LayerArtistBase):
             self._multiscat.set_color(self.id, self.layer_state.color)
         else:
             data = self.layer[self.layer_state.cmap_attribute].ravel()
-            cmap_data = (data - self.layer_state.cmap_vmin) / (self.layer_state.cmap_vmax - self.layer_state.cmap_vmin)
+            cmap_data = ((data - self.layer_state.cmap_vmin) /
+                         (self.layer_state.cmap_vmax - self.layer_state.cmap_vmin))
             cmap_data = self.layer_state.cmap(cmap_data)
             cmap_data[:, 3][np.isnan(data)] = 0.
             self._multiscat.set_color(self.id, cmap_data)

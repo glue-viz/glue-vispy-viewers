@@ -1,7 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.core.state import lookup_class_with_patches
-
 from ..common.vispy_data_viewer import BaseVispyViewer
 from .layer_artist import ScatterLayerArtist
 from .layer_style_widget import ScatterLayerStyleWidget

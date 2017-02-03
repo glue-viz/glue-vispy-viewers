@@ -7,7 +7,6 @@ from mock import patch
 
 from .util import simple_session
 
-from ..vispy_widget import VispyWidgetHelper
 from ..vispy_data_viewer import BaseVispyViewer
 
 from .. import tools  # noqa:

@@ -37,7 +37,7 @@ class VolumeLayerArtist(LayerArtistBase):
         # TODO: need to remove layers when layer artist is removed
         self.viewer_state = vispy_viewer.viewer_state
         self.layer_state = layer_state or VolumeLayerState(layer=self.layer)
-        if not self.layer_state in self.viewer_state.layers:
+        if self.layer_state not in self.viewer_state.layers:
             self.viewer_state.layers.append(self.layer_state)
 
         # We create a unique ID for this layer artist, that will be used to

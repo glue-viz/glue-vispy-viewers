@@ -6,10 +6,8 @@ from matplotlib.colors import ColorConverter
 from ..extern.vispy import scene
 from ..extern.vispy.color import Color
 
-from glue.external.echo import add_callback
 from glue.core.data import Subset
 from glue.core.layer_artist import LayerArtistBase
-from glue.utils import nonpartial
 from glue.core.exceptions import IncompatibleAttribute
 
 from .layer_state import IsosurfaceLayerState
@@ -33,7 +31,7 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         # TODO: need to remove layers when layer artist is removed
         self.viewer_state = vispy_viewer.viewer_state
         self.layer_state = layer_state or IsosurfaceLayerState(layer=self.layer)
-        if not self.layer_state in self.viewer_state.layers:
+        if self.layer_state not in self.viewer_state.layers:
             self.viewer_state.layers.append(self.layer_state)
 
         self._iso_visual = scene.Isosurface(np.ones((3, 3, 3)), level=0.5, shading='smooth')

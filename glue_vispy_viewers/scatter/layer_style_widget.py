@@ -34,10 +34,12 @@ class ScatterLayerStyleWidget(QtWidgets.QWidget):
         else:
             fake_data_collection = self.layer
 
-        self.size_att_helper = ComponentIDComboHelper(self.ui.combodata_size_attribute, fake_data_collection)
+        self.size_att_helper = ComponentIDComboHelper(self.ui.combodata_size_attribute,
+                                                      fake_data_collection)
         self.size_att_helper.append_data(self.layer)
 
-        self.cmap_att_helper = ComponentIDComboHelper(self.ui.combodata_cmap_attribute, fake_data_collection)
+        self.cmap_att_helper = ComponentIDComboHelper(self.ui.combodata_cmap_attribute,
+                                                      fake_data_collection)
         self.cmap_att_helper.append_data(self.layer)
 
         connect_kwargs = {'value_alpha': dict(value_range=(0., 1.)),

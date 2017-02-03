@@ -6,7 +6,6 @@ except ImportError:
     from glue.qt.widgets.data_viewer import DataViewer
 
 from glue.core import message as msg
-from glue.core import Data
 from glue.utils import nonpartial
 from glue.core.state import lookup_class_with_patches
 
