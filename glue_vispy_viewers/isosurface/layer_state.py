@@ -20,6 +20,8 @@ class IsosurfaceLayerState(VispyLayerState):
     color = CallbackProperty()
     alpha = CallbackProperty()
 
+    level_cache = CallbackProperty({})
+
     def __init__(self, **kwargs):
 
         super(IsosurfaceLayerState, self).__init__(**kwargs)
@@ -34,4 +36,5 @@ class IsosurfaceLayerState(VispyLayerState):
 
         self.level_helper = StateAttributeSingleValueHelper(self, 'attribute',
                                                             default_level,
-                                                            value='level')
+                                                            value='level',
+                                                            cache=self.level_cache)

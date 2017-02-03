@@ -28,6 +28,9 @@ class ScatterLayerState(VispyLayerState):
     cmap = CallbackProperty()
     alpha = CallbackProperty()
 
+    size_limits_cache = CallbackProperty({})
+    cmap_limits_cache = CallbackProperty({})
+
     def __init__(self, **kwargs):
 
         super(ScatterLayerState, self).__init__(**kwargs)
@@ -45,10 +48,13 @@ class ScatterLayerState(VispyLayerState):
             self.alpha = self.layer.style.alpha
 
         self.size_att_helper = StateAttributeLimitsHelper(self, attribute='size_attribute',
-                                                          lower='size_vmin', upper='size_vmax')
+                                                          lower='size_vmin', upper='size_vmax',
+                                                          cache=self.size_limits_cache)
 
         self.cmap_att_helper = StateAttributeLimitsHelper(self, attribute='cmap_attribute',
-                                                          lower='cmap_vmin', upper='cmap_vmax')
+                                                          lower='cmap_vmin', upper='cmap_vmax',
+                                                          cache=self.cmap_limits_cache)
+
 
         if self.cmap is None:
             self.cmap = colormaps.members[0][1]

@@ -19,6 +19,7 @@ class VolumeLayerState(VispyLayerState):
     color = CallbackProperty()
     alpha = CallbackProperty()
     subset_mode = CallbackProperty('data')
+    limits_cache = CallbackProperty({})
 
     def __init__(self, **kwargs):
 
@@ -33,7 +34,8 @@ class VolumeLayerState(VispyLayerState):
             self.alpha = self.layer.style.alpha
 
         self.att_helper = StateAttributeLimitsHelper(self, attribute='attribute',
-                                                     lower='vmin', upper='vmax')
+                                                     lower='vmin', upper='vmax',
+                                                     cache=self.limits_cache)
 
         if isinstance(self.layer, Subset):
             self.vmin = 0
