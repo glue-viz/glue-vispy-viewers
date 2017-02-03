@@ -55,6 +55,5 @@ class ScatterLayerState(VispyLayerState):
                                                           lower='cmap_vmin', upper='cmap_vmax',
                                                           cache=self.cmap_limits_cache)
 
-
         if self.cmap is None:
             self.cmap = colormaps.members[0][1]
