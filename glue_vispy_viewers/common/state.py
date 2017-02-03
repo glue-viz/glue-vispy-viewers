@@ -2,8 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from glue.external.echo import CallbackProperty, delay_callback
-from glue.core.state_objects import State, StateAttributeLimitsHelper, ListCallbackProperty
+from glue.external.echo import CallbackProperty, delay_callback, ListCallbackProperty
+from glue.core.state_objects import State, StateAttributeLimitsHelper
 
 __all__ = ['Vispy3DViewerState']
 
