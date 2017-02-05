@@ -35,7 +35,7 @@ class Vispy3DViewerState(State):
 
     layers = ListCallbackProperty()
 
-    limits_cache = CallbackProperty({})
+    limits_cache = CallbackProperty()
 
     def update_priority(self, name):
         if name == 'layers':
@@ -46,6 +46,9 @@ class Vispy3DViewerState(State):
     def __init__(self, **kwargs):
 
         super(Vispy3DViewerState, self).__init__(**kwargs)
+
+        if self.limits_cache is None:
+            self.limits_cache = {}
 
         self.x_att_helper = StateAttributeLimitsHelper(self, attribute='x_att',
                                                        lower='x_min', upper='x_max',
