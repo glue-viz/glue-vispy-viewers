@@ -102,9 +102,9 @@ def test_scatter_viewer(tmpdir):
     assert viewer_state.y_att.label == 'f'
     assert viewer_state.z_att.label == 'z'
 
-    np.testing.assert_allclose(viewer_state.x_stretch, 0.5, rtol=1e-4)
-    np.testing.assert_allclose(viewer_state.y_stretch, 1.0, rtol=1e-4)
-    np.testing.assert_allclose(viewer_state.z_stretch, 2.0, rtol=1e-4)
+    np.testing.assert_allclose(viewer_state.x_stretch, 0.5, rtol=1e-3)
+    np.testing.assert_allclose(viewer_state.y_stretch, 1.0, rtol=1e-3)
+    np.testing.assert_allclose(viewer_state.z_stretch, 2.0, rtol=1e-3)
 
     assert viewer_state.x_min == -0.1
     assert viewer_state.x_max == 1.1
