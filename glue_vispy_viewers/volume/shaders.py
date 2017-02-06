@@ -217,5 +217,5 @@ def get_shaders(n_volume_max):
                                            after_loop=after_loop)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: nocover
     print(get_shaders(6)[1])

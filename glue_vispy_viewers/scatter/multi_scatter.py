@@ -154,7 +154,7 @@ class MultiColorScatter(scene.visuals.Markers):
                 pass
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: nocover
 
     from ..extern.vispy import app, scene
 
