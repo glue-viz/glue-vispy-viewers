@@ -14,7 +14,7 @@ from qtpy import PYQT5, QtWidgets
 from .vispy_widget import VispyWidgetHelper
 from .viewer_options import VispyOptionsWidget
 from .toolbar import VispyViewerToolbar
-from .state import Vispy3DViewerState
+from .viewer_state import Vispy3DViewerState
 from .compat import update_viewer_state
 
 
