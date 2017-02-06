@@ -12,6 +12,11 @@ STATE_CLASS['VolumeLayerArtist'] = VolumeLayerState
 
 
 def update_viewer_state(rec, context):
+    """
+    Given viewer session information, make sure the session information is
+    compatible with the current version of the viewers, and if not, update
+    the session information in-place.
+    """
 
     if '_protocol' not in rec:
 

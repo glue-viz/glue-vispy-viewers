@@ -82,6 +82,7 @@ class Vispy3DViewerState(State):
 
     @property
     def aspect(self):
+        # TODO: this could be cached based on the limits, but is not urgent
         aspect = np.array([1, 1, 1], dtype=float)
         if self.native_aspect:
             aspect[0] = 1.
@@ -109,7 +110,6 @@ class Vispy3DViewerState(State):
                 self.z_min, self.z_max)
 
     def set_limits(self, x_min, x_max, y_min, y_max, z_min, z_max):
-
         with delay_callback(self, 'x_min', 'x_max', 'y_min', 'y_max', 'z_min', 'z_max'):
             self.x_min = x_min
             self.x_max = x_max
