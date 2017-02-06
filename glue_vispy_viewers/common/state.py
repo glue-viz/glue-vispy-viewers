@@ -40,9 +40,11 @@ class Vispy3DViewerState(State):
 
     def update_priority(self, name):
         if name == 'layers':
-            return 1
-        else:
+            return 2
+        elif name.endswith(('_min', '_max')):
             return 0
+        else:
+            return 1
 
     def __init__(self, **kwargs):
 

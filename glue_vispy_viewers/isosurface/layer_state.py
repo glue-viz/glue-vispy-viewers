@@ -38,3 +38,6 @@ class IsosurfaceLayerState(VispyLayerState):
                                                             default_level,
                                                             value='level',
                                                             cache=self.level_cache)
+
+    def update_priority(self, name):
+        return 0 if name == 'level' else 1

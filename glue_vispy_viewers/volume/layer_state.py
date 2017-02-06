@@ -40,3 +40,6 @@ class VolumeLayerState(VispyLayerState):
         if isinstance(self.layer, Subset):
             self.vmin = 0
             self.att_helper.lower_frozen = True
+
+    def update_priority(self, name):
+        return 0 if name.endswith(('vmin', 'vmax')) else 1

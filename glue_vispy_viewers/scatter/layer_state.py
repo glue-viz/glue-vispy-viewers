@@ -57,3 +57,6 @@ class ScatterLayerState(VispyLayerState):
 
         if self.cmap is None:
             self.cmap = colormaps.members[0][1]
+
+    def update_priority(self, name):
+        return 0 if name.endswith(('vmin', 'vmax')) else 1
