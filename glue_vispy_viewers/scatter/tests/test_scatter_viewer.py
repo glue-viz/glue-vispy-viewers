@@ -42,7 +42,7 @@ def test_scatter_viewer(tmpdir):
     scatter.add_data(data)
     scatter.viewer_size = (400, 500)
 
-    viewer_state = scatter.viewer_state
+    viewer_state = scatter.state
 
     viewer_state.x_att = data.id['a']
     viewer_state.y_att = data.id['f']
@@ -96,7 +96,7 @@ def test_scatter_viewer(tmpdir):
 
     assert scatter_r.viewer_size == (400, 500)
 
-    viewer_state = scatter_r.viewer_state
+    viewer_state = scatter_r.state
 
     assert viewer_state.x_att.label == 'a'
     assert viewer_state.y_att.label == 'f'

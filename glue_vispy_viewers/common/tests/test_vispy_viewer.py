@@ -62,18 +62,18 @@ class BaseTestDataViewer(object):
         app = GlueApplication(dc)
         w = app.new_data_viewer(self.widget_cls, data=d1)
 
-        w.viewer_state.x_stretch = 0.5
-        w.viewer_state.y_stretch = 1.0
-        w.viewer_state.z_stretch = 2.0
+        w.state.x_stretch = 0.5
+        w.state.y_stretch = 1.0
+        w.state.z_stretch = 2.0
 
-        w.viewer_state.x_min = -0.1
-        w.viewer_state.x_max = 10.1
-        w.viewer_state.y_min = 0.1
-        w.viewer_state.y_max = 10.9
-        w.viewer_state.z_min = 0.2
-        w.viewer_state.z_max = 10.8
+        w.state.x_min = -0.1
+        w.state.x_max = 10.1
+        w.state.y_min = 0.1
+        w.state.y_max = 10.9
+        w.state.z_min = 0.2
+        w.state.z_max = 10.8
 
-        w.viewer_state.visible_axes = False
+        w.state.visible_axes = False
 
 
 class TestDataViewerVolume(BaseTestDataViewer):

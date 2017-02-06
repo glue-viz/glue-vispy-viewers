@@ -19,7 +19,7 @@ class VispyIsosurfaceViewer(BaseVispyViewer):
         layer_artist = IsosurfaceLayerArtist(layer=data, vispy_viewer=self)
 
         if len(self._layer_artist_container) == 0:
-            self.viewer_state.set_limits(*layer_artist.bbox)
+            self.state.set_limits(*layer_artist.bbox)
 
         self._layer_artist_container.append(layer_artist)
 

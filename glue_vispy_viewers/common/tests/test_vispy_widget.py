@@ -3,7 +3,7 @@ import numpy as np
 from ...extern.vispy import scene
 
 from ..vispy_widget import VispyWidgetHelper
-from ..state import Vispy3DViewerState
+from ..viewer_state import Vispy3DViewerState
 
 
 def test_vispy_widget():

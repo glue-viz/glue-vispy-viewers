@@ -28,10 +28,10 @@ class ScatterLayerArtist(VispyLayerArtist):
         self.vispy_widget = vispy_viewer._vispy_widget
 
         # TODO: need to remove layers when layer artist is removed
-        self.viewer_state = vispy_viewer.viewer_state
-        self.layer_state = layer_state or ScatterLayerState(layer=self.layer)
-        if self.layer_state not in self.viewer_state.layers:
-            self.viewer_state.layers.append(self.layer_state)
+        self._viewer_state = vispy_viewer.state
+        self.state = layer_state or ScatterLayerState(layer=self.layer)
+        if self.state not in self._viewer_state.layers:
+            self._viewer_state.layers.append(self.state)
 
         # We create a unique ID for this layer artist, that will be used to
         # refer to the layer artist in the MultiColorScatter. We have to do this
@@ -56,12 +56,12 @@ class ScatterLayerArtist(VispyLayerArtist):
         self._multiscat.set_zorder(self.id, self.get_zorder)
 
         # TODO: Maybe should reintroduce global callbacks since they behave differently...
-        self.layer_state.add_callback('*', self._update_from_state, as_kwargs=True)
-        self._update_from_state(**self.layer_state.as_dict())
+        self.state.add_callback('*', self._update_from_state, as_kwargs=True)
+        self._update_from_state(**self.state.as_dict())
 
-        self.viewer_state.add_callback('x_att', nonpartial(self._update_data))
-        self.viewer_state.add_callback('y_att', nonpartial(self._update_data))
-        self.viewer_state.add_callback('z_att', nonpartial(self._update_data))
+        self._viewer_state.add_callback('x_att', nonpartial(self._update_data))
+        self._viewer_state.add_callback('y_att', nonpartial(self._update_data))
+        self._viewer_state.add_callback('z_att', nonpartial(self._update_data))
 
         # Set data caches
         self._marker_data = None
@@ -113,47 +113,47 @@ class ScatterLayerArtist(VispyLayerArtist):
         self.redraw()
 
     def _update_sizes(self):
-        if self.layer_state.size_mode is None:
+        if self.state.size_mode is None:
             pass
-        elif self.layer_state.size_mode == 'Fixed':
-            self._multiscat.set_size(self.id, self.layer_state.size * self.layer_state.size_scaling)
+        elif self.state.size_mode == 'Fixed':
+            self._multiscat.set_size(self.id, self.state.size * self.state.size_scaling)
         else:
-            data = self.layer[self.layer_state.size_attribute].ravel()
-            size = (20 * (data - self.layer_state.size_vmin) /
-                    (self.layer_state.size_vmax - self.layer_state.size_vmin))
-            size_data = size * self.layer_state.size_scaling
+            data = self.layer[self.state.size_attribute].ravel()
+            size = (20 * (data - self.state.size_vmin) /
+                    (self.state.size_vmax - self.state.size_vmin))
+            size_data = size * self.state.size_scaling
             size_data[np.isnan(data)] = 0.
             self._multiscat.set_size(self.id, size_data)
 
     def _update_colors(self):
-        if self.layer_state.color_mode is None:
+        if self.state.color_mode is None:
             pass
-        elif self.layer_state.color_mode == 'Fixed':
-            self._multiscat.set_color(self.id, self.layer_state.color)
+        elif self.state.color_mode == 'Fixed':
+            self._multiscat.set_color(self.id, self.state.color)
         else:
-            data = self.layer[self.layer_state.cmap_attribute].ravel()
-            cmap_data = ((data - self.layer_state.cmap_vmin) /
-                         (self.layer_state.cmap_vmax - self.layer_state.cmap_vmin))
-            cmap_data = self.layer_state.cmap(cmap_data)
+            data = self.layer[self.state.cmap_attribute].ravel()
+            cmap_data = ((data - self.state.cmap_vmin) /
+                         (self.state.cmap_vmax - self.state.cmap_vmin))
+            cmap_data = self.state.cmap(cmap_data)
             cmap_data[:, 3][np.isnan(data)] = 0.
             self._multiscat.set_color(self.id, cmap_data)
 
     def _update_alpha(self):
-        self._multiscat.set_alpha(self.id, self.layer_state.alpha)
+        self._multiscat.set_alpha(self.id, self.state.alpha)
 
     def _update_data(self):
 
         try:
-            x = self.layer[self.viewer_state.x_att].ravel()
-            y = self.layer[self.viewer_state.y_att].ravel()
-            z = self.layer[self.viewer_state.z_att].ravel()
+            x = self.layer[self._viewer_state.x_att].ravel()
+            y = self.layer[self._viewer_state.y_att].ravel()
+            z = self.layer[self._viewer_state.z_att].ravel()
         except AttributeError:
             return
         except (IncompatibleAttribute, IndexError):
             # The following includes a call to self.clear()
-            self.disable_invalid_attributes(self.viewer_state.x_att,
-                                            self.viewer_state.y_att,
-                                            self.viewer_state.z_att)
+            self.disable_invalid_attributes(self._viewer_state.x_att,
+                                            self._viewer_state.y_att,
+                                            self._viewer_state.z_att)
             return
         else:
             self._enabled = True

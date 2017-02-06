@@ -31,7 +31,7 @@ class VispyOptionsWidget(QtWidgets.QWidget):
 
         autoconnect_callbacks_to_qt(viewer_state, self.ui, connect_kwargs)
 
-        self.viewer_state = viewer_state
+        self.state = viewer_state
 
         self._att_helpers = {}
 
@@ -41,11 +41,11 @@ class VispyOptionsWidget(QtWidgets.QWidget):
 
         self._components = {}
 
-        self.viewer_state.add_callback('layers', nonpartial(self._update_attribute_combos))
+        self.state.add_callback('layers', nonpartial(self._update_attribute_combos))
 
     def _update_attribute_combos(self):
 
-        for layer in self.viewer_state.layers:
+        for layer in self.state.layers:
 
             if layer.layer.ndim == 3:
                 # We are using either the volume viewer or the isosurface
@@ -55,7 +55,7 @@ class VispyOptionsWidget(QtWidgets.QWidget):
                 return
 
         # Since we are still here, we must be using the scatter viewer
-        datasets = [layer.layer for layer in self.viewer_state.layers]
+        datasets = [layer.layer for layer in self.state.layers]
         self._update_attributes_from_data(datasets)
 
     def _update_attributes_from_data(self, datasets):

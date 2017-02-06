@@ -29,18 +29,18 @@ class IsosurfaceLayerArtist(VispyLayerArtist):
         self.vispy_widget = vispy_viewer._vispy_widget
 
         # TODO: need to remove layers when layer artist is removed
-        self.viewer_state = vispy_viewer.viewer_state
-        self.layer_state = layer_state or IsosurfaceLayerState(layer=self.layer)
-        if self.layer_state not in self.viewer_state.layers:
-            self.viewer_state.layers.append(self.layer_state)
+        self._viewer_state = vispy_viewer.state
+        self.state = layer_state or IsosurfaceLayerState(layer=self.layer)
+        if self.state not in self._viewer_state.layers:
+            self._viewer_state.layers.append(self.state)
 
         self._iso_visual = scene.Isosurface(np.ones((3, 3, 3)), level=0.5, shading='smooth')
         self.vispy_widget.add_data_visual(self._iso_visual)
         self._vispy_color = None
 
         # TODO: Maybe should reintroduce global callbacks since they behave differently...
-        self.layer_state.add_callback('*', self._update_from_state, as_kwargs=True)
-        self._update_from_state(**self.layer_state.as_dict())
+        self.state.add_callback('*', self._update_from_state, as_kwargs=True)
+        self._update_from_state(**self.state.as_dict())
 
         self.visible = True
 
@@ -78,7 +78,7 @@ class IsosurfaceLayerArtist(VispyLayerArtist):
             self._update_color()
 
     def _update_level(self):
-        self._iso_visual.level = self.layer_state.level
+        self._iso_visual.level = self.state.level
         self.redraw()
 
     def _update_color(self):
@@ -88,14 +88,14 @@ class IsosurfaceLayerArtist(VispyLayerArtist):
         self.redraw()
 
     def _update_vispy_color(self):
-        if self.layer_state.color is None:
+        if self.state.color is None:
             return
-        self._vispy_color = Color(ColorConverter().to_rgb(self.layer_state.color))
-        self._vispy_color.alpha = self.layer_state.alpha
+        self._vispy_color = Color(ColorConverter().to_rgb(self.state.color))
+        self._vispy_color.alpha = self.state.alpha
 
     def _update_data(self):
 
-        if self.layer_state.attribute is None:
+        if self.state.attribute is None:
             return
 
         if isinstance(self.layer, Subset):
@@ -105,7 +105,7 @@ class IsosurfaceLayerArtist(VispyLayerArtist):
                 mask = np.zeros(self.layer.data.shape, dtype=bool)
             data = mask.astype(float)
         else:
-            data = self.layer[self.layer_state.attribute]
+            data = self.layer[self.state.attribute]
 
         if self._clip_limits is not None:
             xmin, xmax, ymin, ymax, zmin, zmax = self._clip_limits

@@ -19,7 +19,7 @@ class ScatterLayerStyleWidget(QtWidgets.QWidget):
         self.ui = load_ui('layer_style_widget.ui', self,
                           directory=os.path.dirname(__file__))
 
-        self.layer_state = layer_artist.layer_state
+        self.state = layer_artist.state
 
         self.layer_artist = layer_artist
         self.layer = layer_artist.layer
@@ -37,18 +37,18 @@ class ScatterLayerStyleWidget(QtWidgets.QWidget):
 
         connect_kwargs = {'value_alpha': dict(value_range=(0., 1.)),
                           'value_size_scaling': dict(value_range=(0.1, 10), log=True)}
-        autoconnect_callbacks_to_qt(self.layer_state, self.ui, connect_kwargs)
+        autoconnect_callbacks_to_qt(self.state, self.ui, connect_kwargs)
 
         # Set initial values
         self._update_size_mode()
         self._update_color_mode()
 
-        self.layer_state.add_callback('color_mode', nonpartial(self._update_color_mode))
-        self.layer_state.add_callback('size_mode', nonpartial(self._update_size_mode))
+        self.state.add_callback('color_mode', nonpartial(self._update_color_mode))
+        self.state.add_callback('size_mode', nonpartial(self._update_size_mode))
 
     def _update_size_mode(self):
 
-        if self.layer_state.size_mode == "Fixed":
+        if self.state.size_mode == "Fixed":
             self.ui.size_row_2.hide()
             self.ui.combodata_size_attribute.hide()
             self.ui.valuetext_size.show()
@@ -59,7 +59,7 @@ class ScatterLayerStyleWidget(QtWidgets.QWidget):
 
     def _update_color_mode(self):
 
-        if self.layer_state.color_mode == "Fixed":
+        if self.state.color_mode == "Fixed":
             self.ui.color_row_2.hide()
             self.ui.color_row_3.hide()
             self.ui.combodata_cmap_attribute.hide()

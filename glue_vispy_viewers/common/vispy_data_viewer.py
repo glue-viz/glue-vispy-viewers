@@ -27,14 +27,14 @@ class BaseVispyViewer(DataViewer):
 
         super(BaseVispyViewer, self).__init__(session, parent=parent)
 
-        self.viewer_state = viewer_state or Vispy3DViewerState()
+        self.state = viewer_state or Vispy3DViewerState()
 
-        self._vispy_widget = VispyWidgetHelper(viewer_state=self.viewer_state)
+        self._vispy_widget = VispyWidgetHelper(viewer_state=self.state)
         self.setCentralWidget(self._vispy_widget.canvas.native)
 
-        self._options_widget = VispyOptionsWidget(parent=self, viewer_state=self.viewer_state)
+        self._options_widget = VispyOptionsWidget(parent=self, viewer_state=self.state)
 
-        self.viewer_state.add_callback('clip_data', nonpartial(self._toggle_clip))
+        self.state.add_callback('clip_data', nonpartial(self._toggle_clip))
 
         self.status_label = None
         self.client = None
@@ -145,7 +145,7 @@ class BaseVispyViewer(DataViewer):
         return self.LABEL
 
     def __gluestate__(self, context):
-        return dict(state=self.viewer_state.__gluestate__(context),
+        return dict(state=self.state.__gluestate__(context),
                     session=context.id(self._session),
                     size=self.viewer_size,
                     pos=self.position,
@@ -166,7 +166,7 @@ class BaseVispyViewer(DataViewer):
         viewer.move(x=x, y=y)
 
         viewer_state = Vispy3DViewerState.__setgluestate__(rec['state'], context)
-        viewer.viewer_state.update_from_state(viewer_state)
+        viewer.state.update_from_state(viewer_state)
 
         # Restore layer artists
         for l in rec['layers']:
@@ -189,8 +189,8 @@ class BaseVispyViewer(DataViewer):
 
     def _toggle_clip(self):
         for layer_artist in self._layer_artist_container:
-            if self.viewer_state.clip_data:
-                layer_artist.set_clip(self.viewer_state.clip_limits)
+            if self.state.clip_data:
+                layer_artist.set_clip(self.state.clip_limits)
             else:
                 layer_artist.set_clip(None)
 

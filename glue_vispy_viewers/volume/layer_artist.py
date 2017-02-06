@@ -35,10 +35,10 @@ class VolumeLayerArtist(VispyLayerArtist):
         self.vispy_widget = vispy_viewer._vispy_widget
 
         # TODO: need to remove layers when layer artist is removed
-        self.viewer_state = vispy_viewer.viewer_state
-        self.layer_state = layer_state or VolumeLayerState(layer=self.layer)
-        if self.layer_state not in self.viewer_state.layers:
-            self.viewer_state.layers.append(self.layer_state)
+        self._viewer_state = vispy_viewer.state
+        self.state = layer_state or VolumeLayerState(layer=self.layer)
+        if self.state not in self._viewer_state.layers:
+            self._viewer_state.layers.append(self.state)
 
         # We create a unique ID for this layer artist, that will be used to
         # refer to the layer artist in the MultiVolume. We have to do this
@@ -66,8 +66,8 @@ class VolumeLayerArtist(VispyLayerArtist):
         self._multivol.allocate(self.id)
 
         # TODO: Maybe should reintroduce global callbacks since they behave differently...
-        self.layer_state.add_callback('*', self._update_from_state, as_kwargs=True)
-        self._update_from_state(**self.layer_state.as_dict())
+        self.state.add_callback('*', self._update_from_state, as_kwargs=True)
+        self._update_from_state(**self.state.as_dict())
 
         self.visible = True
 
@@ -121,21 +121,21 @@ class VolumeLayerArtist(VispyLayerArtist):
             self._update_data()
 
     def _update_cmap_from_color(self):
-        cmap = get_translucent_cmap(*ColorConverter().to_rgb(self.layer_state.color))
+        cmap = get_translucent_cmap(*ColorConverter().to_rgb(self.state.color))
         self._multivol.set_cmap(self.id, cmap)
         self.redraw()
 
     def _update_limits(self):
-        self._multivol.set_clim(self.id, (self.layer_state.vmin, self.layer_state.vmax))
+        self._multivol.set_clim(self.id, (self.state.vmin, self.state.vmax))
         self.redraw()
 
     def _update_alpha(self):
-        self._multivol.set_weight(self.id, self.layer_state.alpha)
+        self._multivol.set_weight(self.id, self.state.alpha)
         self.redraw()
 
     def _update_data(self):
 
-        if self.layer_state.attribute is None:
+        if self.state.attribute is None:
             return
 
         if isinstance(self.layer, Subset):
@@ -149,13 +149,13 @@ class VolumeLayerArtist(VispyLayerArtist):
             else:
                 self._enabled = True
 
-            if self.layer_state.subset_mode == 'outline':
+            if self.state.subset_mode == 'outline':
                 data = mask.astype(float)
             else:
-                data = self.layer.data[self.layer_state.attribute] * mask
+                data = self.layer.data[self.state.attribute] * mask
         else:
 
-            data = self.layer[self.layer_state.attribute]
+            data = self.layer[self.state.attribute]
 
         if self._clip_limits is not None:
             xmin, xmax, ymin, ymax, zmin, zmax = self._clip_limits

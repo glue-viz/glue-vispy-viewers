@@ -40,7 +40,7 @@ def test_volume_viewer(tmpdir):
     volume.add_data(data)
     volume.viewer_size = (400, 500)
 
-    viewer_state = volume.viewer_state
+    viewer_state = volume.state
 
     viewer_state.x_stretch = 0.5
     viewer_state.y_stretch = 1.0
@@ -78,7 +78,7 @@ def test_volume_viewer(tmpdir):
 
     assert volume_r.viewer_size == (400, 500)
 
-    viewer_state = volume_r.viewer_state
+    viewer_state = volume_r.state
 
     np.testing.assert_allclose(viewer_state.x_stretch, 0.5, rtol=1e-3)
     np.testing.assert_allclose(viewer_state.y_stretch, 1.0, rtol=1e-3)

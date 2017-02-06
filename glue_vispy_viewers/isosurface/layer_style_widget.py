@@ -22,10 +22,10 @@ class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
         self.ui = load_ui('layer_style_widget.ui', self,
                           directory=os.path.dirname(__file__))
 
-        self.layer_state = layer_artist.layer_state
+        self.state = layer_artist.state
 
         connect_kwargs = {'value_alpha': dict(value_range=(0., 1.))}
-        autoconnect_callbacks_to_qt(self.layer_state, self.ui, connect_kwargs)
+        autoconnect_callbacks_to_qt(self.state, self.ui, connect_kwargs)
 
         self.layer_artist = layer_artist
         self.layer = layer_artist.layer
@@ -48,9 +48,9 @@ class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
             self._levels = {}
 
         if self.attribute in self._levels:
-            self.level = self._levels[self.layer_state.attribute]
+            self.level = self._levels[self.state.attribute]
         else:
-            self.level = self.default_levels(self.layer_state.attribute)
+            self.level = self.default_levels(self.state.attribute)
             self._levels[self.attribute] = self.level
 
     def default_levels(self, attribute):

@@ -20,9 +20,9 @@ class VolumeLayerStyleWidget(QtWidgets.QWidget):
         self.ui = load_ui('layer_style_widget.ui', self,
                           directory=os.path.dirname(__file__))
 
-        self.layer_state = layer_artist.layer_state
+        self.state = layer_artist.state
 
-        if self.layer_state.subset_mode == 'outline':
+        if self.state.subset_mode == 'outline':
             self.ui.radio_subset_outline.setChecked(True)
         else:
             self.ui.radio_subset_data.setChecked(True)
@@ -37,7 +37,7 @@ class VolumeLayerStyleWidget(QtWidgets.QWidget):
 
         # autoconnect needs to come after setting up the component IDs
         connect_kwargs = {'value_alpha': dict(value_range=(0., 1.))}
-        autoconnect_callbacks_to_qt(self.layer_state, self.ui, connect_kwargs)
+        autoconnect_callbacks_to_qt(self.state, self.ui, connect_kwargs)
 
         # Set up radio buttons for subset mode selection if this is a subset
         if isinstance(self.layer, Subset):
@@ -54,10 +54,10 @@ class VolumeLayerStyleWidget(QtWidgets.QWidget):
 
     def _update_subset_mode(self):
         if self.ui.radio_subset_outline.isChecked():
-            self.layer_state.subset_mode = 'outline'
+            self.state.subset_mode = 'outline'
             self.ui.valuetext_vmin.hide()
             self.ui.valuetext_vmax.hide()
         else:
-            self.layer_state.subset_mode = 'data'
+            self.state.subset_mode = 'data'
             self.ui.valuetext_vmin.show()
             self.ui.valuetext_vmax.show()

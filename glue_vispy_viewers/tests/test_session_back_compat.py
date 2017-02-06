@@ -35,7 +35,7 @@ def test_scatter_volume(protocol):
 
     scatter = ga.viewers[0][0]
 
-    viewer_state = scatter.viewer_state
+    viewer_state = scatter.state
 
     assert viewer_state.x_att.label == 'b'
     assert viewer_state.x_min == 8
@@ -76,7 +76,7 @@ def test_scatter_volume(protocol):
 
     volume = ga.viewers[0][1]
 
-    viewer_state = volume.viewer_state
+    viewer_state = volume.state
 
     assert viewer_state.x_att.label == 'Pixel Axis 2 [x]'
     assert viewer_state.x_min == 3.5
