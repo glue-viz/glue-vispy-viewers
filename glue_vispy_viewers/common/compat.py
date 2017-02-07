@@ -1,7 +1,6 @@
 import uuid
 
 from glue.external import six
-from glue.external.echo import delay_callback
 
 from ..scatter.layer_state import ScatterLayerState
 from ..volume.layer_state import VolumeLayerState
@@ -32,15 +31,14 @@ def update_viewer_state(rec, context):
             state_cls = STATE_CLASS[layer['_type'].split('.')[-1]]
             state = state_cls(layer=context.object(layer.pop('layer')))
             properties = set(layer.keys()) - set(['_type'])
-            with delay_callback(state, *properties):
-                for prop in sorted(properties):
-                    value = layer.pop(prop)
-                    value = context.object(value)
-                    if isinstance(value, six.string_types) and value == 'fixed':
-                        value = 'Fixed'
-                    if isinstance(value, six.string_types) and value == 'linear':
-                        value = 'Linear'
-                    setattr(state, prop, value)
+            for prop in sorted(properties, key=state.update_priority, reverse=True):
+                value = layer.pop(prop)
+                value = context.object(value)
+                if isinstance(value, six.string_types) and value == 'fixed':
+                    value = 'Fixed'
+                if isinstance(value, six.string_types) and value == 'linear':
+                    value = 'Linear'
+                setattr(state, prop, value)
             context.register_object(state_id, state)
             layer['state'] = state_id
             layer_states.append(state)
