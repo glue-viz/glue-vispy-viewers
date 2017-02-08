@@ -17,18 +17,12 @@ class IsosurfaceLayerState(VispyLayerState):
 
     attribute = CallbackProperty()
     level = CallbackProperty()
-    color = CallbackProperty()
-    alpha = CallbackProperty()
 
     level_cache = CallbackProperty({})
 
     def __init__(self, **kwargs):
 
         super(IsosurfaceLayerState, self).__init__(**kwargs)
-
-        if self.layer is not None:
-            self.color = self.layer.style.color
-            self.alpha = self.layer.style.alpha
 
         def default_level(values):
             percentile = max((1 - 1e3 / values.size) * 100, 99)

@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 from glue.config import colormaps
-from glue.external.echo import CallbackProperty
+from glue.external.echo import CallbackProperty, keep_in_sync
 from glue.core.state_objects import StateAttributeLimitsHelper
 from ..common.layer_state import VispyLayerState
 
@@ -21,17 +21,17 @@ class ScatterLayerState(VispyLayerState):
     size_scaling = CallbackProperty(1)
 
     color_mode = CallbackProperty('Fixed')
-    color = CallbackProperty()
     cmap_attribute = CallbackProperty()
     cmap_vmin = CallbackProperty()
     cmap_vmax = CallbackProperty()
     cmap = CallbackProperty()
-    alpha = CallbackProperty()
 
     size_limits_cache = CallbackProperty({})
     cmap_limits_cache = CallbackProperty({})
 
     def __init__(self, **kwargs):
+
+        self._sync_markersize = None
 
         super(ScatterLayerState, self).__init__(**kwargs)
 
@@ -60,3 +60,14 @@ class ScatterLayerState(VispyLayerState):
 
     def update_priority(self, name):
         return 0 if name.endswith(('vmin', 'vmax')) else 1
+
+    def _layer_changed(self):
+
+        super(ScatterLayerState, self)._layer_changed()
+
+        if self._sync_markersize is not None:
+            self._sync_markersize.stop_syncing()
+
+        if self.layer is not None:
+            self.size = self.layer.style.markersize
+            self._sync_color = keep_in_sync(self, 'size', self.layer.style, 'markersize')

@@ -16,8 +16,6 @@ class VolumeLayerState(VispyLayerState):
     attribute = CallbackProperty()
     vmin = CallbackProperty()
     vmax = CallbackProperty()
-    color = CallbackProperty()
-    alpha = CallbackProperty()
     subset_mode = CallbackProperty('data')
     limits_cache = CallbackProperty({})
 
