@@ -30,7 +30,8 @@ except (IOError, ImportError):
 package_data = {'glue_vispy_viewers.volume': ['*.ui'],
                 'glue_vispy_viewers.common': ['*.ui', '*.png'],
                 'glue_vispy_viewers.isosurface': ['*.ui'],
-                'glue_vispy_viewers.scatter': ['*.ui']}
+                'glue_vispy_viewers.scatter': ['*.ui'],
+                'glue_vispy_viewers.tests.data': ['*.glu']}
 
 # Include data for bundled version of VisPy.
 

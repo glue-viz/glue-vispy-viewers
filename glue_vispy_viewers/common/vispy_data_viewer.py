@@ -6,15 +6,16 @@ except ImportError:
     from glue.qt.widgets.data_viewer import DataViewer
 
 from glue.core import message as msg
-from glue.core import Data
-from glue.external.echo import add_callback
 from glue.utils import nonpartial
+from glue.core.state import lookup_class_with_patches
 
 from qtpy import PYQT5, QtWidgets
 
 from .vispy_widget import VispyWidgetHelper
 from .viewer_options import VispyOptionsWidget
 from .toolbar import VispyViewerToolbar
+from .viewer_state import Vispy3DViewerState
+from .compat import update_viewer_state
 
 
 class BaseVispyViewer(DataViewer):
@@ -22,17 +23,18 @@ class BaseVispyViewer(DataViewer):
     _toolbar_cls = VispyViewerToolbar
     tools = ['vispy:save', 'vispy:rotate']
 
-    def __init__(self, session, parent=None):
+    def __init__(self, session, viewer_state=None, parent=None):
 
         super(BaseVispyViewer, self).__init__(session, parent=parent)
 
-        self._vispy_widget = VispyWidgetHelper()
+        self.state = viewer_state or Vispy3DViewerState()
+
+        self._vispy_widget = VispyWidgetHelper(viewer_state=self.state)
         self.setCentralWidget(self._vispy_widget.canvas.native)
 
-        self._options_widget = VispyOptionsWidget(vispy_widget=self._vispy_widget, data_viewer=self)
+        self._options_widget = VispyOptionsWidget(parent=self, viewer_state=self.state)
 
-        add_callback(self._vispy_widget, 'clip_data', nonpartial(self._toggle_clip))
-        add_callback(self._vispy_widget, 'clip_limits', nonpartial(self._toggle_clip))
+        self.state.add_callback('clip_data', nonpartial(self._toggle_clip))
 
         self.status_label = None
         self.client = None
@@ -143,28 +145,35 @@ class BaseVispyViewer(DataViewer):
         return self.LABEL
 
     def __gluestate__(self, context):
-        state = super(BaseVispyViewer, self).__gluestate__(context)
-        state['options'] = self._options_widget.__gluestate__(context)
-        return state
+        return dict(state=self.state.__gluestate__(context),
+                    session=context.id(self._session),
+                    size=self.viewer_size,
+                    pos=self.position,
+                    layers=list(map(context.do, self.layers)),
+                    _protocol=1)
 
     @classmethod
     def __setgluestate__(cls, rec, context):
 
-        viewer = super(BaseVispyViewer, cls).__setgluestate__(rec, context)
+        if rec.get('_protocol', 0) < 1:
+            update_viewer_state(rec, context)
 
-        from ..scatter.layer_artist import ScatterLayerArtist
-        from ..volume.layer_artist import VolumeLayerArtist
+        session = context.object(rec['session'])
+        viewer = cls(session)
+        viewer.register_to_hub(session.hub)
+        viewer.viewer_size = rec['size']
+        x, y = rec['pos']
+        viewer.move(x=x, y=y)
 
-        for layer_artist in viewer.layers:
-            if isinstance(layer_artist.layer, Data):
-                if isinstance(layer_artist, ScatterLayerArtist):
-                    viewer._options_widget._update_attributes_from_data(layer_artist.layer)
-                elif isinstance(layer_artist, VolumeLayerArtist):
-                    viewer._options_widget._update_attributes_from_data_pixel(layer_artist.layer)
+        viewer_state = Vispy3DViewerState.__setgluestate__(rec['state'], context)
+        viewer.state.update_from_state(viewer_state)
 
-        for attr in sorted(rec['options'], key=lambda x: 0 if 'att' in x else 1):
-            value = rec['options'][attr]
-            setattr(viewer._options_widget, attr, context.object(value))
+        # Restore layer artists
+        for l in rec['layers']:
+            cls = lookup_class_with_patches(l.pop('_type'))
+            layer_state = context.object(l['state'])
+            layer_artist = cls(viewer, layer_state=layer_state)
+            viewer._layer_artist_container.append(layer_artist)
 
         return viewer
 
@@ -175,25 +184,13 @@ class BaseVispyViewer(DataViewer):
             statusbar.addWidget(self.status_label)
         self.status_label.setText(text)
 
-    def _update_attributes(self, index=None, layer_artist=None):
-
-        if layer_artist is None:
-            layer_artists = self._layer_artist_container
-        else:
-            layer_artists = [layer_artist]
-
-        for artist in layer_artists:
-            artist.set_coordinates(self._options_widget.x_att,
-                                   self._options_widget.y_att,
-                                   self._options_widget.z_att)
-
     def restore_layers(self, layers, context):
         pass
 
     def _toggle_clip(self):
         for layer_artist in self._layer_artist_container:
-            if self._vispy_widget.clip_data:
-                layer_artist.set_clip(self._vispy_widget.clip_limits)
+            if self.state.clip_data:
+                layer_artist.set_clip(self.state.clip_limits)
             else:
                 layer_artist.set_clip(None)
 

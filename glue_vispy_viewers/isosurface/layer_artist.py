@@ -6,42 +6,43 @@ from matplotlib.colors import ColorConverter
 from ..extern.vispy import scene
 from ..extern.vispy.color import Color
 
-from glue.external.echo import CallbackProperty, add_callback
 from glue.core.data import Subset
-from glue.core.layer_artist import LayerArtistBase
-from glue.utils import nonpartial
 from glue.core.exceptions import IncompatibleAttribute
 
+from .layer_state import IsosurfaceLayerState
+from ..common.layer_artist import VispyLayerArtist
 
-class IsosurfaceLayerArtist(LayerArtistBase):
+
+class IsosurfaceLayerArtist(VispyLayerArtist):
     """
     A layer artist to render isosurfaces.
     """
 
-    attribute = CallbackProperty()
-    level = CallbackProperty()
-    color = CallbackProperty()
-    alpha = CallbackProperty()
-
-    def __init__(self, layer, vispy_viewer):
+    def __init__(self, vispy_viewer, layer=None, layer_state=None):
 
         super(IsosurfaceLayerArtist, self).__init__(layer)
 
-        self.layer = layer
+        self._clip_limits = None
+
+        self.layer = layer or layer_state.layer
         self.vispy_viewer = vispy_viewer
+        self.vispy_widget = vispy_viewer._vispy_widget
+
+        # TODO: need to remove layers when layer artist is removed
+        self._viewer_state = vispy_viewer.state
+        self.state = layer_state or IsosurfaceLayerState(layer=self.layer)
+        if self.state not in self._viewer_state.layers:
+            self._viewer_state.layers.append(self.state)
 
         self._iso_visual = scene.Isosurface(np.ones((3, 3, 3)), level=0.5, shading='smooth')
-        self.vispy_viewer.add_data_visual(self._iso_visual)
+        self.vispy_widget.add_data_visual(self._iso_visual)
         self._vispy_color = None
 
-        # Set up connections so that when any of the properties are
-        # modified, we update the appropriate part of the visualization
-        add_callback(self, 'attribute', nonpartial(self._update_data))
-        add_callback(self, 'level', nonpartial(self._update_level))
-        add_callback(self, 'color', nonpartial(self._update_color))
-        add_callback(self, 'alpha', nonpartial(self._update_color))
+        # TODO: Maybe should reintroduce global callbacks since they behave differently...
+        self.state.add_callback('*', self._update_from_state, as_kwargs=True)
+        self._update_from_state(**self.state.as_dict())
 
-        self._clip_limits = None
+        self.visible = True
 
     @property
     def bbox(self):
@@ -49,20 +50,11 @@ class IsosurfaceLayerArtist(LayerArtistBase):
                 -0.5, self.layer.shape[1] - 0.5,
                 -0.5, self.layer.shape[0] - 0.5)
 
-    @property
-    def visible(self):
-        return self._visible
-
-    @visible.setter
-    def visible(self, value):
-        self._visible = value
-        self._update_visibility()
-
     def redraw(self):
         """
         Redraw the Vispy canvas
         """
-        self.vispy_viewer.canvas.update()
+        self.vispy_widget.canvas.update()
 
     def clear(self):
         """
@@ -77,8 +69,16 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         self.redraw()
         self._changed = False
 
+    def _update_from_state(self, **props):
+        if 'attribute' in props:
+            self._update_data()
+        if 'level' in props:
+            self._update_level()
+        if any(prop in props for prop in ('color', 'alpha')):
+            self._update_color()
+
     def _update_level(self):
-        self._iso_visual.level = self.level
+        self._iso_visual.level = self.state.level
         self.redraw()
 
     def _update_color(self):
@@ -88,12 +88,16 @@ class IsosurfaceLayerArtist(LayerArtistBase):
         self.redraw()
 
     def _update_vispy_color(self):
-        if self.color is None:
+        if self.state.color is None:
             return
-        self._vispy_color = Color(ColorConverter().to_rgb(self.color))
-        self._vispy_color.alpha = self.alpha
+        self._vispy_color = Color(ColorConverter().to_rgb(self.state.color))
+        self._vispy_color.alpha = self.state.alpha
 
     def _update_data(self):
+
+        if self.state.attribute is None:
+            return
+
         if isinstance(self.layer, Subset):
             try:
                 mask = self.layer.to_mask()
@@ -101,7 +105,7 @@ class IsosurfaceLayerArtist(LayerArtistBase):
                 mask = np.zeros(self.layer.data.shape, dtype=bool)
             data = mask.astype(float)
         else:
-            data = self.layer[self.attribute]
+            data = self.layer[self.state.attribute]
 
         if self._clip_limits is not None:
             xmin, xmax, ymin, ymax, zmin, zmax = self._clip_limits

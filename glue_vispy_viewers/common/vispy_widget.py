@@ -2,36 +2,21 @@ from __future__ import absolute_import, division, print_function
 
 import sys
 
-import numpy as np
 from ..extern.vispy import scene
 from .axes import AxesVisual3D
 
-from glue.utils.qt import get_qapp
-
-from glue.config import settings
-from glue.external.echo import CallbackProperty, add_callback
-
-from glue.utils import nonpartial
-
 from matplotlib.colors import ColorConverter
 
+from glue.config import settings
+
 rgb = ColorConverter().to_rgb
+
+LIMITS_PROPS = [coord + attribute for coord in 'xyz' for attribute in ['_min', '_max', '_stretch']]
 
 
 class VispyWidgetHelper(object):
 
-    visible_axes = CallbackProperty()
-    perspective_view = CallbackProperty()
-    clip_data = CallbackProperty()
-    clip_limits = CallbackProperty()
-
-    def _update_appearance_from_settings(self):
-        self.canvas.bgcolor = rgb(settings.BACKGROUND_COLOR)
-        self.axis.axis_color = rgb(settings.FOREGROUND_COLOR)
-        self.axis.tick_color = rgb(settings.FOREGROUND_COLOR)
-        self.axis.label_color = rgb(settings.FOREGROUND_COLOR)
-
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, viewer_state=None):
 
         # Prepare Vispy canvas. We set the depth_size to 24 to avoid issues
         # with isosurfaces on MacOS X
@@ -73,19 +58,48 @@ class VispyWidgetHelper(object):
         # program validation error.
         # self.canvas.render()
 
-        # Set up callbacks
-        add_callback(self, 'visible_axes', nonpartial(self._toggle_axes))
-        add_callback(self, 'perspective_view', nonpartial(self._toggle_perspective))
+        self.viewer_state = viewer_state
+        self.viewer_state.add_callback('*', self._update_from_state, as_kwargs=True)
+
+    def _update_appearance_from_settings(self):
+        self.canvas.bgcolor = rgb(settings.BACKGROUND_COLOR)
+        self.axis.axis_color = rgb(settings.FOREGROUND_COLOR)
+        self.axis.tick_color = rgb(settings.FOREGROUND_COLOR)
+        self.axis.label_color = rgb(settings.FOREGROUND_COLOR)
+
+    def add_data_visual(self, visual):
+        self.limit_transforms[visual] = scene.STTransform()
+        self._update_limits()
+        visual.transform = self.limit_transforms[visual]
+        self.view.add(visual)
+
+    def _update_from_state(self, **props):
+
+        if 'visible_axes' in props:
+            self._toggle_axes()
+
+        if 'perspective_view' in props:
+            self._toggle_perspective()
+
+        if any(key in props for key in ('x_att', 'y_att', 'z_att')):
+            self._update_attributes()
+
+        if any(key in props for key in ('x_stretch', 'y_stretch', 'z_stretch', 'native_aspect')):
+            self._update_stretch()
+
+        if any(p in props for p in LIMITS_PROPS) or 'native_aspect' in props:
+            self._update_limits()
+
+        self.canvas.update()
 
     def _toggle_axes(self):
-        if self.visible_axes:
+        if self.viewer_state.visible_axes:
             self.axis.parent = self.view.scene
         else:
             self.axis.parent = None
-        self.canvas.update()
 
     def _toggle_perspective(self):
-        if self.perspective_view:
+        if self.viewer_state.perspective_view:
             self.view.camera.fov = 30
             self.axis.tick_font_size = 28
             self.axis.axis_font_size = 35
@@ -94,83 +108,41 @@ class VispyWidgetHelper(object):
             self.axis.tick_font_size = 6
             self.axis.axis_font_size = 8
 
-    def add_data_visual(self, visual):
-        self.limit_transforms[visual] = scene.STTransform()
-        visual.transform = self.limit_transforms[visual]
-        self.view.add(visual)
-
     def _update_attributes(self):
-        self.axis.xlabel = self.options.x_att.label
-        self.axis.ylabel = self.options.y_att.label
-        self.axis.zlabel = self.options.z_att.label
+        if self.viewer_state.x_att is not None:
+            self.axis.xlabel = self.viewer_state.x_att.label
+        if self.viewer_state.y_att is not None:
+            self.axis.ylabel = self.viewer_state.y_att.label
+        if self.viewer_state.z_att is not None:
+            self.axis.zlabel = self.viewer_state.z_att.label
 
-    def _update_stretch(self, *stretch):
-        self.scene_transform.scale = stretch
-        self._update_limits()
+    def _update_stretch(self):
+        self.scene_transform.scale = (self.viewer_state.x_stretch * self.viewer_state.aspect[0],
+                                      self.viewer_state.y_stretch * self.viewer_state.aspect[1],
+                                      self.viewer_state.z_stretch * self.viewer_state.aspect[2])
 
     def _update_limits(self):
 
-        if len(self.limit_transforms) == 0:
-            return
+        scale = [2 / (self.viewer_state.x_max - self.viewer_state.x_min) *
+                 self.viewer_state.x_stretch * self.viewer_state.aspect[0],
+                 2 / (self.viewer_state.y_max - self.viewer_state.y_min) *
+                 self.viewer_state.y_stretch * self.viewer_state.aspect[1],
+                 2 / (self.viewer_state.z_max - self.viewer_state.z_min) *
+                 self.viewer_state.z_stretch * self.viewer_state.aspect[2]]
 
-        if (self.options.x_min is None or self.options.x_max is None or
-            self.options.y_min is None or self.options.y_max is None or
-            self.options.z_min is None or self.options.z_max is None):  # noqa
-            raise Exception("We should never get here because if any data is "
-                            "present, the limits should be set")
-
-        scale = [2 / (self.options.x_max - self.options.x_min) *
-                 self.options.x_stretch * self.options.aspect[0],
-                 2 / (self.options.y_max - self.options.y_min) *
-                 self.options.y_stretch * self.options.aspect[1],
-                 2 / (self.options.z_max - self.options.z_min) *
-                 self.options.z_stretch * self.options.aspect[2]]
-
-        translate = [-0.5 * (self.options.x_min + self.options.x_max) * scale[0],
-                     -0.5 * (self.options.y_min + self.options.y_max) * scale[1],
-                     -0.5 * (self.options.z_min + self.options.z_max) * scale[2]]
+        translate = [-0.5 * (self.viewer_state.x_min + self.viewer_state.x_max) * scale[0],
+                     -0.5 * (self.viewer_state.y_min + self.viewer_state.y_max) * scale[1],
+                     -0.5 * (self.viewer_state.z_min + self.viewer_state.z_max) * scale[2]]
 
         for visual in self.limit_transforms:
             self.limit_transforms[visual].scale = scale
             self.limit_transforms[visual].translate = translate
 
-        self.axis.xlim = self.options.x_min, self.options.x_max
-        self.axis.ylim = self.options.y_min, self.options.y_max
-        self.axis.zlim = self.options.z_min, self.options.z_max
-
-        self.clip_limits = (self.options.x_min, self.options.x_max,
-                            self.options.y_min, self.options.y_max,
-                            self.options.z_min, self.options.z_max)
+        self.axis.xlim = self.viewer_state.x_min, self.viewer_state.x_max
+        self.axis.ylim = self.viewer_state.y_min, self.viewer_state.y_max
+        self.axis.zlim = self.viewer_state.z_min, self.viewer_state.z_max
 
     def _reset_view(self):
         self.view.camera.reset()
         # update the cam.fov with checkbox
         self._toggle_perspective()
-
-
-if __name__ == "__main__":
-
-    from viewer_options import VispyOptionsWidget
-
-    app = get_qapp()
-    w = VispyWidgetHelper()
-    d = VispyOptionsWidget(vispy_widget=w)
-    d.show()
-
-    positions = np.random.random((1000, 3))
-    scat_visual = scene.visuals.Markers()
-    scat_visual.set_data(positions, symbol='disc', edge_color=None, face_color='red')
-    w.add_data_visual(scat_visual)
-
-    d.x_min = 0
-    d.x_max = +1
-
-    d.y_min = 0
-    d.y_max = +1
-
-    d.z_min = 0
-    d.z_max = +1
-
-    w.show()
-    app.exec_()
-    app.quit()

@@ -10,6 +10,10 @@
 
 - Update all layers in 3D viewers if numerical values change in any datasaet.
 
+- Refactored the viewers to simplify the code and make development easier. [#238]
+
+- Improve the default level selection for the isosurface viewer. [#238]
+
 0.6 (2016-11-03)
 ----------------
 

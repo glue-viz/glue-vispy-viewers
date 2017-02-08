@@ -6,17 +6,16 @@ import uuid
 import numpy as np
 from matplotlib.colors import ColorConverter
 
-from glue.external.echo import CallbackProperty, add_callback
 from glue.core.data import Subset
-from glue.core.layer_artist import LayerArtistBase
-from glue.utils import nonpartial
 from glue.config import settings
 from glue.core.exceptions import IncompatibleAttribute
 from .volume_visual import MultiVolume
 from .colors import get_translucent_cmap
+from .layer_state import VolumeLayerState
+from ..common.layer_artist import VispyLayerArtist
 
 
-class VolumeLayerArtist(LayerArtistBase):
+class VolumeLayerArtist(VispyLayerArtist):
     """
     A layer artist to render volumes.
 
@@ -25,21 +24,21 @@ class VolumeLayerArtist(LayerArtistBase):
     each data viewer.
     """
 
-    attribute = CallbackProperty()
-    vmin = CallbackProperty()
-    vmax = CallbackProperty()
-    color = CallbackProperty()
-    cmap = CallbackProperty()
-    alpha = CallbackProperty()
-    subset_mode = CallbackProperty()
-
-    def __init__(self, layer, vispy_viewer=None):
+    def __init__(self, vispy_viewer=None, layer=None, layer_state=None):
 
         super(VolumeLayerArtist, self).__init__(layer)
 
-        self.layer = layer
+        self._clip_limits = None
+
+        self.layer = layer or layer_state.layer
         self.vispy_viewer = vispy_viewer
         self.vispy_widget = vispy_viewer._vispy_widget
+
+        # TODO: need to remove layers when layer artist is removed
+        self._viewer_state = vispy_viewer.state
+        self.state = layer_state or VolumeLayerState(layer=self.layer)
+        if self.state not in self._viewer_state.layers:
+            self._viewer_state.layers.append(self.state)
 
         # We create a unique ID for this layer artist, that will be used to
         # refer to the layer artist in the MultiVolume. We have to do this
@@ -66,18 +65,11 @@ class VolumeLayerArtist(LayerArtistBase):
         self._multivol = self.vispy_widget._multivol
         self._multivol.allocate(self.id)
 
-        # Set up connections so that when any of the properties are
-        # modified, we update the appropriate part of the visualization
-        add_callback(self, 'attribute', nonpartial(self._update_data))
-        add_callback(self, 'vmin', nonpartial(self._update_limits))
-        add_callback(self, 'vmax', nonpartial(self._update_limits))
-        add_callback(self, 'color', nonpartial(self._update_cmap_from_color))
-        add_callback(self, 'cmap', nonpartial(self._update_cmap))
-        add_callback(self, 'alpha', nonpartial(self._update_alpha))
-        if isinstance(self.layer, Subset):
-            add_callback(self, 'subset_mode', nonpartial(self._update_data))
+        # TODO: Maybe should reintroduce global callbacks since they behave differently...
+        self.state.add_callback('*', self._update_from_state, as_kwargs=True)
+        self._update_from_state(**self.state.as_dict())
 
-        self._clip_limits = None
+        self.visible = True
 
     @property
     def visual(self):
@@ -92,15 +84,6 @@ class VolumeLayerArtist(LayerArtistBase):
     @property
     def shape(self):
         return self.layer.shape
-
-    @property
-    def visible(self):
-        return self._visible
-
-    @visible.setter
-    def visible(self, value):
-        self._visible = value
-        self._update_visibility()
 
     def redraw(self):
         """
@@ -123,24 +106,37 @@ class VolumeLayerArtist(LayerArtistBase):
         self.redraw()
         self._changed = False
 
+    def _update_from_state(self, **props):
+
+        if 'color' in props:
+            self._update_cmap_from_color()
+
+        if 'vmin' in props or 'vmax' in props:
+            self._update_limits()
+
+        if 'alpha' in props:
+            self._update_alpha()
+
+        if 'attribute' in props or 'subset_mode' in props:
+            self._update_data()
+
     def _update_cmap_from_color(self):
-        cmap = get_translucent_cmap(*ColorConverter().to_rgb(self.color))
+        cmap = get_translucent_cmap(*ColorConverter().to_rgb(self.state.color))
         self._multivol.set_cmap(self.id, cmap)
         self.redraw()
 
-    def _update_cmap(self):
-        self._multivol.set_cmap(self.id, self.cmap)
-        self.redraw()
-
     def _update_limits(self):
-        self._multivol.set_clim(self.id, (self.vmin, self.vmax))
+        self._multivol.set_clim(self.id, (self.state.vmin, self.state.vmax))
         self.redraw()
 
     def _update_alpha(self):
-        self._multivol.set_weight(self.id, self.alpha)
+        self._multivol.set_weight(self.id, self.state.alpha)
         self.redraw()
 
     def _update_data(self):
+
+        if self.state.attribute is None:
+            return
 
         if isinstance(self.layer, Subset):
 
@@ -153,13 +149,13 @@ class VolumeLayerArtist(LayerArtistBase):
             else:
                 self._enabled = True
 
-            if self.subset_mode == 'outline':
+            if self.state.subset_mode == 'outline':
                 data = mask.astype(float)
             else:
-                data = self.layer.data[self.attribute] * mask
+                data = self.layer.data[self.state.attribute] * mask
         else:
 
-            data = self.layer[self.attribute]
+            data = self.layer[self.state.attribute]
 
         if self._clip_limits is not None:
             xmin, xmax, ymin, ymax, zmin, zmax = self._clip_limits
@@ -184,25 +180,6 @@ class VolumeLayerArtist(LayerArtistBase):
         else:
             self._multivol.disable(self.id)
         self.redraw()
-
-    def set_coordinates(self, x_coord, y_coord, z_coord):
-        pass
-
-    def set(self, **kwargs):
-
-        # This method can be used to set many properties in one go, and will
-        # make sure that the order is correct.
-
-        def priorities(value):
-            if 'attribute' in value:
-                return 0
-            elif 'mode' in value:
-                return 1
-            else:
-                return 2
-
-        for attr in sorted(kwargs, key=priorities):
-            setattr(self, attr, kwargs[attr])
 
     def set_clip(self, limits):
         self._clip_limits = limits

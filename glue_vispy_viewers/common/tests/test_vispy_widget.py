@@ -2,17 +2,17 @@ import numpy as np
 
 from ...extern.vispy import scene
 
-from ..viewer_options import VispyOptionsWidget
 from ..vispy_widget import VispyWidgetHelper
+from ..viewer_state import Vispy3DViewerState
 
 
 def test_vispy_widget():
 
-    w = VispyWidgetHelper()
-    d = VispyOptionsWidget(vispy_widget=w)
+    d = Vispy3DViewerState()
+
+    w = VispyWidgetHelper(viewer_state=d)
 
     w.canvas.native.show()
-    d.show()
 
     # Try adding marker visuals to the scene
     positions = np.random.random((1000, 3))

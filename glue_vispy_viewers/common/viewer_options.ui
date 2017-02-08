@@ -6,25 +6,34 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>197</width>
-    <height>328</height>
+    <width>318</width>
+    <height>379</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>3D_Volume</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_5">
+   <property name="leftMargin">
+    <number>5</number>
+   </property>
+   <property name="topMargin">
+    <number>5</number>
+   </property>
+   <property name="rightMargin">
+    <number>5</number>
+   </property>
+   <property name="bottomMargin">
+    <number>5</number>
+   </property>
    <property name="verticalSpacing">
     <number>5</number>
    </property>
-   <property name="margin">
-    <number>5</number>
-   </property>
    <item row="5" column="3">
-    <widget class="QLineEdit" name="value_y_min"/>
+    <widget class="QLineEdit" name="valuetext_y_min"/>
    </item>
    <item row="6" column="5">
-    <widget class="QLineEdit" name="value_y_stretch">
+    <widget class="QLineEdit" name="valuetext_y_stretch">
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
@@ -46,10 +55,10 @@
     </widget>
    </item>
    <item row="1" column="3">
-    <widget class="QLineEdit" name="value_x_min"/>
+    <widget class="QLineEdit" name="valuetext_x_min"/>
    </item>
    <item row="4" column="3" colspan="3">
-    <widget class="QComboBox" name="combo_y_attribute">
+    <widget class="QComboBox" name="combodata_y_att">
      <property name="sizeAdjustPolicy">
       <enum>QComboBox::AdjustToMinimumContentsLength</enum>
      </property>
@@ -91,7 +100,7 @@
     </widget>
    </item>
    <item row="1" column="5">
-    <widget class="QLineEdit" name="value_x_max"/>
+    <widget class="QLineEdit" name="valuetext_x_max"/>
    </item>
    <item row="2" column="2">
     <widget class="QLabel" name="label">
@@ -101,7 +110,7 @@
     </widget>
    </item>
    <item row="9" column="3" colspan="2">
-    <widget class="QSlider" name="slider_z_stretch">
+    <widget class="QSlider" name="value_z_stretch">
      <property name="minimum">
       <number>-10000</number>
      </property>
@@ -117,7 +126,7 @@
     </widget>
    </item>
    <item row="2" column="3" colspan="2">
-    <widget class="QSlider" name="slider_x_stretch">
+    <widget class="QSlider" name="value_x_stretch">
      <property name="minimum">
       <number>-10000</number>
      </property>
@@ -148,12 +157,12 @@
     </widget>
    </item>
    <item row="8" column="3">
-    <widget class="QLineEdit" name="value_z_min"/>
+    <widget class="QLineEdit" name="valuetext_z_min"/>
    </item>
    <item row="10" column="2" colspan="4">
     <layout class="QGridLayout" name="gridLayout">
      <item row="1" column="0">
-      <widget class="QCheckBox" name="checkbox_perspective">
+      <widget class="QCheckBox" name="bool_perspective_view">
        <property name="text">
         <string>Perspective</string>
        </property>
@@ -163,7 +172,7 @@
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QCheckBox" name="checkbox_axes">
+      <widget class="QCheckBox" name="bool_visible_axes">
        <property name="text">
         <string>Show axes</string>
        </property>
@@ -173,14 +182,14 @@
       </widget>
      </item>
      <item row="2" column="0" colspan="2">
-      <widget class="QCheckBox" name="checkbox_clip">
+      <widget class="QCheckBox" name="bool_clip_data">
        <property name="text">
         <string>Show only data inside limits</string>
        </property>
       </widget>
      </item>
      <item row="0" column="0" colspan="2">
-      <widget class="QCheckBox" name="checkbox_native_aspect">
+      <widget class="QCheckBox" name="bool_native_aspect">
        <property name="text">
         <string>Native aspect ratio</string>
        </property>
@@ -189,7 +198,7 @@
     </layout>
    </item>
    <item row="6" column="3" colspan="2">
-    <widget class="QSlider" name="slider_y_stretch">
+    <widget class="QSlider" name="value_y_stretch">
      <property name="minimum">
       <number>-10000</number>
      </property>
@@ -212,14 +221,14 @@
     </widget>
    </item>
    <item row="12" column="2" colspan="4">
-    <widget class="QPushButton" name="reset_button">
+    <widget class="QPushButton" name="button_reset">
      <property name="text">
       <string>Reset View</string>
      </property>
     </widget>
    </item>
    <item row="7" column="3" colspan="3">
-    <widget class="QComboBox" name="combo_z_attribute">
+    <widget class="QComboBox" name="combodata_z_att">
      <property name="sizeAdjustPolicy">
       <enum>QComboBox::AdjustToMinimumContentsLength</enum>
      </property>
@@ -233,20 +242,20 @@
     </widget>
    </item>
    <item row="5" column="5">
-    <widget class="QLineEdit" name="value_y_max"/>
+    <widget class="QLineEdit" name="valuetext_y_max"/>
    </item>
    <item row="0" column="3" colspan="3">
-    <widget class="QComboBox" name="combo_x_attribute">
+    <widget class="QComboBox" name="combodata_x_att">
      <property name="sizeAdjustPolicy">
       <enum>QComboBox::AdjustToMinimumContentsLength</enum>
      </property>
     </widget>
    </item>
    <item row="8" column="5">
-    <widget class="QLineEdit" name="value_z_max"/>
+    <widget class="QLineEdit" name="valuetext_z_max"/>
    </item>
    <item row="2" column="5">
-    <widget class="QLineEdit" name="value_x_stretch">
+    <widget class="QLineEdit" name="valuetext_x_stretch">
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
@@ -293,7 +302,7 @@
     </widget>
    </item>
    <item row="9" column="5">
-    <widget class="QLineEdit" name="value_z_stretch">
+    <widget class="QLineEdit" name="valuetext_z_stretch">
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>

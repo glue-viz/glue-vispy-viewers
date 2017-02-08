@@ -42,40 +42,39 @@ def test_scatter_viewer(tmpdir):
     scatter.add_data(data)
     scatter.viewer_size = (400, 500)
 
-    options = scatter.options_widget()
+    viewer_state = scatter.state
 
-    options.x_att = data.id['a']
-    options.y_att = data.id['f']
-    options.z_att = data.id['z']
+    viewer_state.x_att = data.id['a']
+    viewer_state.y_att = data.id['f']
+    viewer_state.z_att = data.id['z']
 
-    options.x_stretch = 0.5
-    options.y_stretch = 1.0
-    options.z_stretch = 2.0
+    viewer_state.x_stretch = 0.5
+    viewer_state.y_stretch = 1.0
+    viewer_state.z_stretch = 2.0
 
-    options.x_min = -0.1
-    options.x_max = 1.1
-    options.y_min = 0.1
-    options.y_max = 0.9
-    options.z_min = 0.2
-    options.z_max = 0.8
+    viewer_state.x_min = -0.1
+    viewer_state.x_max = 1.1
+    viewer_state.y_min = 0.1
+    viewer_state.y_max = 0.9
+    viewer_state.z_min = 0.2
+    viewer_state.z_max = 0.8
 
-    options.visible_box = False
+    viewer_state.visible_axes = False
 
     # Get layer artist style editor
-    layer_artist = scatter.layers[0]
-    style_widget = scatter._view.layout_style_widgets[layer_artist]
+    layer_state = viewer_state.layers[0]
 
-    style_widget.size_mode = 'Linear'
-    style_widget.size_attribute = data.id['c']
-    style_widget.size_scaling = 2
-    style_widget.size_vmin = 0.2
-    style_widget.size_vmax = 0.8
+    layer_state.size_attribute = data.id['c']
+    layer_state.size_mode = 'Linear'
+    layer_state.size_scaling = 2
+    layer_state.size_vmin = 0.2
+    layer_state.size_vmax = 0.8
 
-    style_widget.color_mode = 'Linear'
-    style_widget.cmap_attribute = data.id['y']
-    style_widget.cmap_vmin = 0.1
-    style_widget.cmap_vmax = 0.9
-    style_widget.cmap = cm.BuGn
+    layer_state.cmap_attribute = data.id['y']
+    layer_state.color_mode = 'Linear'
+    layer_state.cmap_vmin = 0.1
+    layer_state.cmap_vmax = 0.9
+    layer_state.cmap = cm.BuGn
 
     # Check that writing a session works as expected. However, this only
     # works with Glue 0.8 and above, so we skip this test if we are using an
@@ -97,38 +96,38 @@ def test_scatter_viewer(tmpdir):
 
     assert scatter_r.viewer_size == (400, 500)
 
-    options = scatter_r.options_widget()
+    viewer_state = scatter_r.state
 
-    assert options.x_att.label == 'a'
-    assert options.y_att.label == 'f'
-    assert options.z_att.label == 'z'
+    assert viewer_state.x_att.label == 'a'
+    assert viewer_state.y_att.label == 'f'
+    assert viewer_state.z_att.label == 'z'
 
-    assert options.x_stretch == 0.5
-    assert options.y_stretch == 1.0
-    assert options.z_stretch == 2.0
+    np.testing.assert_allclose(viewer_state.x_stretch, 0.5, rtol=1e-3)
+    np.testing.assert_allclose(viewer_state.y_stretch, 1.0, rtol=1e-3)
+    np.testing.assert_allclose(viewer_state.z_stretch, 2.0, rtol=1e-3)
 
-    assert options.x_min == -0.1
-    assert options.x_max == 1.1
-    assert options.y_min == 0.1
-    assert options.y_max == 0.9
-    assert options.z_min == 0.2
-    assert options.z_max == 0.8
+    assert viewer_state.x_min == -0.1
+    assert viewer_state.x_max == 1.1
+    assert viewer_state.y_min == 0.1
+    assert viewer_state.y_max == 0.9
+    assert viewer_state.z_min == 0.2
+    assert viewer_state.z_max == 0.8
 
-    assert not options.visible_box
+    assert not viewer_state.visible_axes
 
-    layer_artist = scatter_r.layers[0]
+    layer_state = viewer_state.layers[0]
 
-    assert layer_artist.size_mode == 'linear'
-    assert layer_artist.size_attribute.label == 'c'
-    np.testing.assert_allclose(layer_artist.size_scaling, 2, rtol=0.01)
-    assert layer_artist.size_vmin == 0.2
-    assert layer_artist.size_vmax == 0.8
+    assert layer_state.size_mode == 'Linear'
+    assert layer_state.size_attribute.label == 'c'
+    np.testing.assert_allclose(layer_state.size_scaling, 2, rtol=0.01)
+    assert layer_state.size_vmin == 0.2
+    assert layer_state.size_vmax == 0.8
 
-    assert layer_artist.color_mode == 'linear'
-    assert layer_artist.cmap_attribute.label == 'y'
-    assert layer_artist.cmap_vmin == 0.1
-    assert layer_artist.cmap_vmax == 0.9
-    assert layer_artist.cmap is cm.BuGn
+    assert layer_state.color_mode == 'Linear'
+    assert layer_state.cmap_attribute.label == 'y'
+    assert layer_state.cmap_vmin == 0.1
+    assert layer_state.cmap_vmax == 0.9
+    assert layer_state.cmap is cm.BuGn
 
 
 def test_n_dimensional_data():
