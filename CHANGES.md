@@ -1,4 +1,4 @@
-0.7 (unreleased)
+0.7 (2017-02-15)
 ----------------
 
 - When multiple datasets are visible in a 3D view, selections now apply to 
@@ -8,7 +8,7 @@
 - The selection tools have been refactored to use the new toolbar/tool
   infrastructure in glue. [#208]
 
-- Update all layers in 3D viewers if numerical values change in any datasaet.
+- Update all layers in 3D viewers if numerical values change in any datasaet. [#236]
 
 - Refactored the viewers to simplify the code and make development easier. [#238]
 
