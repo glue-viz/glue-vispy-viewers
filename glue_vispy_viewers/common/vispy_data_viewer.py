@@ -19,6 +19,10 @@ from .toolbar import VispyViewerToolbar
 from .viewer_state import Vispy3DViewerState
 from .compat import update_viewer_state
 
+# The following detects whether we are using PyQt5 with Anaconda on Linux, which
+# is currently broken. Once https://github.com/ContinuumIO/anaconda-issues/issues/1267
+# is fixed, we will no longer need BROKEN_CONDA_PYQT5.
+
 BROKEN_CONDA_PYQT5 = (PYQT5 and sys.platform == 'linux' and
                       'Continuum Analytics' in sys.version)
 
