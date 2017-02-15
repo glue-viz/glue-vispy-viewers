@@ -16,14 +16,8 @@ vispy_scatter=glue_vispy_viewers.scatter:setup
 with open('glue_vispy_viewers/version.py') as infile:
     exec(infile.read())
 
-try:
-    import pypandoc
-    LONG_DESCRIPTION = pypandoc.convert('README.md', 'rst')
-except (IOError, ImportError):
-    if 'sdist' in sys.argv or 'register' in sys.argv:
-        raise  # don't let this pass silently
-    with open('README.md') as infile:
-        LONG_DESCRIPTION = infile.read()
+with open('README.rst') as infile:
+    LONG_DESCRIPTION = infile.read()
 
 # Define package data for our plugin
 
@@ -42,7 +36,14 @@ package_data['glue_vispy_viewers.extern.vispy'] = [os.path.join('io', '_data', '
 for subpackage in ['antialias', 'arrowheads', 'arrows', 'collections',
                    'colormaps', 'lines', 'markers', 'math', 'misc',
                    'transforms']:
-    package_data['glue_vispy_viewers.extern.vispy.glsl.' + subpackage] = ['*.vert','*.frag', "*.glsl"]
+    package_data['glue_vispy_viewers.extern.vispy.glsl.' + subpackage] = ['*.vert', '*.frag', '*.glsl']
+
+install_requires = ['numpy',
+                    'pyopengl',
+                    'glueviz>=0.10',
+                    'qtpy',
+                    'scipy',
+                    'scikit-image']
 
 setup(name='glue-vispy-viewers',
       version=__version__,
@@ -54,5 +55,5 @@ setup(name='glue-vispy-viewers',
       packages = find_packages(),
       package_data=package_data,
       entry_points=entry_points,
-      install_requires=['pyopengl', 'glueviz>=0.9']
+      install_requires=install_requires
     )
