@@ -38,7 +38,11 @@
 
 from __future__ import absolute_import, division, print_function
 
+from collections import defaultdict
+
+import numpy as np
 from glue.external import six
+from astropy.nddata.utils import block_reduce
 
 from ..extern.vispy.gloo import Texture3D, TextureEmulated3D, VertexBuffer, IndexBuffer
 from ..extern.vispy.visuals import VolumeVisual, Visual
@@ -46,11 +50,6 @@ from ..extern.vispy.visuals.shaders import Function
 from ..extern.vispy.color import get_colormap, Color
 from ..extern.vispy.scene.visuals import create_visual_node
 
-from .backports import block_reduce
-
-import numpy as np
-
-from collections import defaultdict
 from .shaders import get_shaders
 
 

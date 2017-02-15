@@ -43,7 +43,8 @@ install_requires = ['numpy',
                     'glueviz>=0.10',
                     'qtpy',
                     'scipy',
-                    'scikit-image']
+                    'scikit-image',
+                    'astropy>=1.1']
 
 setup(name='glue-vispy-viewers',
       version=__version__,
