@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+import sys
+
 try:
     from glue.viewers.common.qt.data_viewer import DataViewer
 except ImportError:
@@ -17,6 +19,15 @@ from .toolbar import VispyViewerToolbar
 from .viewer_state import Vispy3DViewerState
 from .compat import update_viewer_state
 
+# The following detects whether we are using PyQt5 with Anaconda on Linux, which
+# is currently broken. Once https://github.com/ContinuumIO/anaconda-issues/issues/1267
+# is fixed, we will no longer need BROKEN_CONDA_PYQT5.
+
+BROKEN_CONDA_PYQT5 = (PYQT5 and sys.platform == 'linux' and
+                      'Continuum Analytics' in sys.version)
+
+BROKEN_CONDA_PYQT5_MESSAGE = "The conda version of PyQt5 on Linux does not include OpenGL support, which means that the 3D viewers will not work. The easiest way to solve this is to manually downgrade to PyQt4. This can normally be done with 'conda install pyqt=4'."  # noqa
+
 
 class BaseVispyViewer(DataViewer):
 
@@ -28,6 +39,10 @@ class BaseVispyViewer(DataViewer):
         super(BaseVispyViewer, self).__init__(session, parent=parent)
 
         self.state = viewer_state or Vispy3DViewerState()
+
+        if BROKEN_CONDA_PYQT5:
+            QtWidgets.QMessageBox.critical(self, "Error", BROKEN_CONDA_PYQT5_MESSAGE)
+            raise Exception(BROKEN_CONDA_PYQT5_MESSAGE)
 
         self._vispy_widget = VispyWidgetHelper(viewer_state=self.state)
         self.setCentralWidget(self._vispy_widget.canvas.native)
