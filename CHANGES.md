@@ -1,8 +1,13 @@
+0.8 (unreleased)
+----------------
+
+- No changes yet.
+
 0.7 (2017-02-15)
 ----------------
 
-- When multiple datasets are visible in a 3D view, selections now apply to 
-  all of them (except for point and point and drag selections, for which the 
+- When multiple datasets are visible in a 3D view, selections now apply to
+  all of them (except for point and point and drag selections, for which the
   selection applies to the currently selected layer). [#208]
 
 - The selection tools have been refactored to use the new toolbar/tool
@@ -22,7 +27,7 @@
 
 - Fixed compatibility with Qt5. [#212]
 
-- Fixed a bug that caused session files created previously to not be 
+- Fixed a bug that caused session files created previously to not be
   openable. [#213, #214]
 
 - Fixed a bug that caused 3D selections to not work properly. [#219]
