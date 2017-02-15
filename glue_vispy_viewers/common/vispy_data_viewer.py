@@ -17,6 +17,8 @@ from .toolbar import VispyViewerToolbar
 from .viewer_state import Vispy3DViewerState
 from .compat import update_viewer_state
 
+from .. import BROKEN_PYQT5
+
 
 class BaseVispyViewer(DataViewer):
 
@@ -28,6 +30,12 @@ class BaseVispyViewer(DataViewer):
         super(BaseVispyViewer, self).__init__(session, parent=parent)
 
         self.state = viewer_state or Vispy3DViewerState()
+
+        if BROKEN_PYQT5:
+            error_message = ("PyQt5 has not been compiled with OpenGL "
+                             "support, so the viewers will appear empty")
+            QtWidgets.QMessageBox.critical(self, "Error", error_message)
+            raise Exception(error_message)
 
         self._vispy_widget = VispyWidgetHelper(viewer_state=self.state)
         self.setCentralWidget(self._vispy_widget.canvas.native)
