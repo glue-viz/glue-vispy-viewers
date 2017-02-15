@@ -1,7 +1,7 @@
 Experimental Glue VisPy plugin
 ==============================
 
-|Build Status| |Build status| |Coverage Status|
+|Travis Status| |AppVeyor Status| |Coverage Status|
 
 Requirements
 ------------
@@ -66,9 +66,9 @@ working directory:
     from glue_vispy_viewers.isosurface import setup as setup_isosurface
     setup_isosurface()
 
-.. |Build Status| image:: https://travis-ci.org/glue-viz/glue-vispy-viewers.svg
+.. |Travis Status| image:: https://travis-ci.org/glue-viz/glue-vispy-viewers.svg
    :target: https://travis-ci.org/glue-viz/glue-vispy-viewers?branch=master
-.. |Build status| image:: https://ci.appveyor.com/api/projects/status/1gov2vtuesjnij69/branch/master?svg=true
-   :target: https://ci.appveyor.com/project/astrofrog/glue-3d-viewer/branch/master
+.. |AppVeyor Status| image:: https://ci.appveyor.com/api/projects/status/7h9js5tdu9v9nnlg/branch/master?svg=true
+   :target: https://ci.appveyor.com/project/glue-viz/glue-3d-viewer/branch/master
 .. |Coverage Status| image:: https://coveralls.io/repos/github/glue-viz/glue-vispy-viewers/badge.svg
    :target: https://coveralls.io/github/glue-viz/glue-vispy-viewers
