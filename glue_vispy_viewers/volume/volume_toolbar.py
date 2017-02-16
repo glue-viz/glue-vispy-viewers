@@ -69,7 +69,7 @@ class PointSelectionMode(VispyMouseMode):
             #       does the user know which data layer will be used? Can we use
             #       all of them in this mode?
 
-            values = layer_artist.layer[layer_artist.attribute]
+            values = layer_artist.layer[layer_artist.state.attribute]
             self.active_layer_artist = layer_artist
             self.current_visible_array = np.nan_to_num(values).astype(float)
 

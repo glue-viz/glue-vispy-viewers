@@ -1,3 +1,10 @@
+0.7.1 (unreleased)
+------------------
+
+- Fixed bugs with 3D selections following refactoring. [#243]
+
+- Fixed the case where vmin == vmax for size or color. [#243]
+
 0.7 (2017-02-15)
 ----------------
 
