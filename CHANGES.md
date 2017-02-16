@@ -3,6 +3,11 @@
 
 - No changes yet.
 
+0.7.1 (unreleased)
+------------------
+
+- Fixed bugs with 3D selections following refactoring.
+
 0.7 (2017-02-15)
 ----------------
 
