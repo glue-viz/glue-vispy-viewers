@@ -3,6 +3,12 @@
 
 - No changes yet.
 
+0.7.2 (unreleased)
+------------------
+
+- Fixed bug with volume rendering on Windows with Python 2.7, due to
+  Numpy .shape returning long integers. [#245]
+
 0.7.1 (unreleased)
 ------------------
 
