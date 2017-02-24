@@ -24,9 +24,6 @@ class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
 
         self.state = layer_artist.state
 
-        connect_kwargs = {'value_alpha': dict(value_range=(0., 1.))}
-        autoconnect_callbacks_to_qt(self.state, self.ui, connect_kwargs)
-
         self.layer_artist = layer_artist
         self.layer = layer_artist.layer
 
@@ -35,8 +32,9 @@ class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
         self.att_helper = ComponentIDComboHelper(self.ui.combodata_attribute, self.layer)
         self.att_helper.append_data(self.layer)
 
-        # Set up internal connections
-        self.ui.combodata_attribute.currentIndexChanged.connect(self._update_levels)
+        connect_kwargs = {'value_alpha': dict(value_range=(0., 1.)),
+                          'value_step': dict(value_range=(0, 10))}
+        autoconnect_callbacks_to_qt(self.state, self.ui, connect_kwargs)
 
 
 if __name__ == "__main__":

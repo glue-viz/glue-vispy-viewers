@@ -59,7 +59,7 @@ def test_isosurface_viewer(tmpdir):
 
     # Get layer artist style editor
     layer_artist = volume.layers[0]
-    style_widget = volume._view.layout_style_widgets[layer_artist]
+    style_widget = volume._view.layout_style_widgets[layer_artist].state
 
     style_widget.attribute = data.id['b']
     style_widget.level_low = 0.1
@@ -67,7 +67,7 @@ def test_isosurface_viewer(tmpdir):
 
     # test set label from slider
     style_widget.step = 5
-    assert style_widget.step_value == 5.0
+    assert style_widget.step == 5.0
 
     # test edit step label text
     style_widget.ui.step_edit.setText('4')
@@ -94,7 +94,7 @@ def test_isosurface_viewer(tmpdir):
 
     assert volume_r.viewer_size == (400, 500)
 
-    options = volume_r.options_widget()
+    options = volume_r.options_widget().state
 
     assert options.x_stretch == 0.5
     assert options.y_stretch == 1.0

@@ -20,8 +20,7 @@ class IsosurfaceLayerState(VispyLayerState):
     level_low = CallbackProperty()
     level_high = CallbackProperty()
     cmap = CallbackProperty()
-    step = CallbackProperty()
-    step_value = CallbackProperty()
+    step = CallbackProperty(4)
 
     level_cache = CallbackProperty({})
 
