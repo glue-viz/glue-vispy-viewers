@@ -71,3 +71,9 @@ class ScatterLayerState(VispyLayerState):
         if self.layer is not None:
             self.size = self.layer.style.markersize
             self._sync_color = keep_in_sync(self, 'size', self.layer.style, 'markersize')
+
+    def flip_size(self):
+        self.size_att_helper.flip_limits()
+
+    def flip_cmap(self):
+        self.cmap_att_helper.flip_limits()
