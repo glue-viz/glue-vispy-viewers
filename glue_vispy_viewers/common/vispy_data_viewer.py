@@ -63,6 +63,17 @@ class BaseVispyViewer(DataViewer):
         self.status_label = None
         self.client = None
 
+        # When layer artists are removed from the layer artist container, we need
+        # to make sure we remove matching layer states in the viewer state
+        # layers attribute.
+        self._layer_artist_container.on_changed(nonpartial(self._sync_state_layers))
+
+    def _sync_state_layers(self):
+        # Remove layer state objects that no longer have a matching layer
+        for layer_state in self.state.layers:
+            if layer_state.layer not in self._layer_artist_container:
+                self.state.layers.remove(layer_state)
+
     def register_to_hub(self, hub):
 
         super(BaseVispyViewer, self).register_to_hub(hub)

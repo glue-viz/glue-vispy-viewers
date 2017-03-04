@@ -76,12 +76,7 @@ def test_scatter_viewer(tmpdir):
     layer_state.cmap_vmax = 0.9
     layer_state.cmap = cm.BuGn
 
-    # Check that writing a session works as expected. However, this only
-    # works with Glue 0.8 and above, so we skip this test if we are using an
-    # older version.
-
-    if GLUE_LT_08:
-        return
+    # Check that writing a session works as expected.
 
     session_file = tmpdir.join('test_scatter_viewer.glu').strpath
     ga.save_session(session_file)
@@ -155,3 +150,45 @@ def test_n_dimensional_data():
     style_widget.color_mode = 'Linear'
     style_widget.cmap_attribute = data.id['y']
     style_widget.cmap = cm.BuGn
+
+
+def test_scatter_remove_layer_artists(tmpdir):
+
+    # Regression test for a bug that caused layer states to not be removed
+    # when the matching layer artist was removed. This then caused issues when
+    # loading session files.
+
+    # Create fake data
+    data = make_test_data()
+
+    # Create fake session
+
+    dc = DataCollection([data])
+    ga = GlueApplication(dc)
+    ga.show()
+
+    scatter = ga.new_data_viewer(VispyScatterViewer)
+    scatter.add_data(data)
+
+    dc.new_subset_group(subset_state=data.id['x'] > 0.5, label='subset 1')
+
+    scatter.add_subset(data.subsets[0])
+
+    assert len(scatter.layers) == 2
+    assert len(scatter.state.layers) == 2
+
+    dc.remove_subset_group(dc.subset_groups[0])
+
+    assert len(scatter.layers) == 1
+    assert len(scatter.state.layers) == 1
+
+    # Check that writing a session works as expected.
+
+    session_file = tmpdir.join('test_scatter_viewer.glu').strpath
+    ga.save_session(session_file)
+    ga.close()
+
+    # Now we can check that everything is restored correctly
+
+    ga2 = GlueApplication.restore_session(session_file)
+    ga2.show()

@@ -136,7 +136,10 @@ class MultiColorScatter(scene.visuals.Markers):
                 sizes.append(size)
 
         if len(data) == 0:
+            self.visible = False
             return
+        else:
+            self.visible = True
 
         data = np.vstack(data)
         colors = np.vstack(colors)
