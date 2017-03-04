@@ -32,7 +32,16 @@ BROKEN_CONDA_PYQT5_MESSAGE = "The conda version of PyQt5 on Linux does not inclu
 class BaseVispyViewer(DataViewer):
 
     _toolbar_cls = VispyViewerToolbar
+
     tools = ['vispy:save', 'vispy:rotate']
+
+    # If imageio is available, we can add the record icon
+    try:
+        import imageio  # noqa
+    except ImportError:
+        pass
+    else:
+        tools.insert(1, 'vispy:record')
 
     def __init__(self, session, viewer_state=None, parent=None):
 
@@ -53,14 +62,6 @@ class BaseVispyViewer(DataViewer):
 
         self.status_label = None
         self.client = None
-
-        # If imageio is available, we can add the record icon
-        try:
-            import imageio  # noqa
-        except ImportError:
-            pass
-        else:
-            self.tools.insert(1, 'vispy:record')
 
     def register_to_hub(self, hub):
 
