@@ -58,7 +58,7 @@ class VispyVolumeViewer(BaseVispyViewer):
 
             # Assume that the user wants a scatter plot overlay
 
-            layer_artist = ScatterLayerArtist(data, vispy_viewer=self)
+            layer_artist = ScatterLayerArtist(layer=data, vispy_viewer=self)
             self._vispy_widget._update_limits()
 
         elif data.ndim == 3:
