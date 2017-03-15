@@ -1,6 +1,9 @@
 0.7.2 (unreleased)
 ------------------
 
+- Fixed bug that caused session files saved after removing subsets
+  to no longer be loadable. [#253]
+
 - Fixed bug that caused record icon to appear multiple times when
   successively creating 3D viewers. [#252]
 

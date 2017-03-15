@@ -58,7 +58,8 @@ class VispyMouseMode(CheckableTool):
     def mark_selected_dict(self, indices_dict):
         subset_state = MultiElementSubsetState(indices_dict=indices_dict)
         mode = EditSubsetMode()
-        mode.update(self.viewer._data, subset_state, focus_data=list(indices_dict)[0])
+        if len(indices_dict) > 0:
+            mode.update(self.viewer._data, subset_state, focus_data=list(indices_dict)[0])
 
 
 class MultiElementSubsetState(SubsetState):
