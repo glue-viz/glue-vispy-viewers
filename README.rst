@@ -1,5 +1,5 @@
-Experimental Glue VisPy plugin
-==============================
+Glue plugin for 3D viewers using VisPy
+======================================
 
 |Travis Status| |AppVeyor Status| |Coverage Status|
 
