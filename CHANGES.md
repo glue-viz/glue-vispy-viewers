@@ -1,6 +1,9 @@
 0.7.2 (unreleased)
 ------------------
 
+- Fixed bug that caused record icon to appear multiple times when
+  successively creating 3D viewers. [#252]
+
 - Fixed bug with volume rendering on Windows with Python 2.7, due to
   Numpy .shape returning long integers. [#245]
 
