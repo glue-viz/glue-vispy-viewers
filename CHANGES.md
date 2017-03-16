@@ -3,7 +3,7 @@
 
 - No changes yet.
 
-0.7.2 (unreleased)
+0.7.2 (2017-03-16)
 ------------------
 
 - Fixed bug that caused session files saved after removing subsets
