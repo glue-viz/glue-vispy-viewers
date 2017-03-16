@@ -10,6 +10,9 @@
 - Fixed bug with volume rendering on Windows with Python 2.7, due to
   Numpy .shape returning long integers. [#245]
 
+- Fixed bug that caused the flipping of size and cmap limits in the
+  3D viewers to not work properly. [#251]
+
 0.7.1 (2017-02-16)
 ------------------
 
