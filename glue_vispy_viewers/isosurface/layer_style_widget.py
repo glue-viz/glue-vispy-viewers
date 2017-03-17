@@ -33,7 +33,7 @@ class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
         self.att_helper.append_data(self.layer)
 
         connect_kwargs = {'value_alpha': dict(value_range=(0., 1.)),
-                          'value_step': dict(value_range=(0, 10))}
+                          'value_step': dict(value_range=(1, 10))}
         autoconnect_callbacks_to_qt(self.state, self.ui, connect_kwargs)
 
 

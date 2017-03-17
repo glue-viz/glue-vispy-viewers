@@ -27,7 +27,7 @@ def make_test_data():
     return data
 
 
-def test_isosurface_viewer(tmpdir):
+def test_volume_viewer(tmpdir):
 
     # Create fake data
     data = make_test_data()
@@ -42,37 +42,32 @@ def test_isosurface_viewer(tmpdir):
     volume.add_data(data)
     volume.viewer_size = (400, 500)
 
-    options = volume.options_widget()
+    viewer_state = volume.state
 
-    options.x_stretch = 0.5
-    options.y_stretch = 1.0
-    options.z_stretch = 2.0
+    viewer_state.x_stretch = 0.5
+    viewer_state.y_stretch = 1.0
+    viewer_state.z_stretch = 2.0
 
-    options.x_min = -0.1
-    options.x_max = 10.1
-    options.y_min = 0.1
-    options.y_max = 10.9
-    options.z_min = 0.2
-    options.z_max = 10.8
+    viewer_state.x_min = -0.1
+    viewer_state.x_max = 10.1
+    viewer_state.y_min = 0.1
+    viewer_state.y_max = 10.9
+    viewer_state.z_min = 0.2
+    viewer_state.z_max = 10.8
 
-    options.visible_box = False
+    viewer_state.visible_axes = False
 
     # Get layer artist style editor
-    layer_artist = volume.layers[0]
-    style_widget = volume._view.layout_style_widgets[layer_artist].state
+    layer_state = viewer_state.layers[0]
 
-    style_widget.attribute = data.id['b']
-    style_widget.level_low = 0.1
-    style_widget.level_high = 0.9
+    layer_state.attribute = data.id['b']
+    layer_state.level_low = 0.1
+    layer_state.level_high = 0.9
+    # layer_state.alpha = 0.8
 
     # test set label from slider
-    style_widget.step = 5
-    assert style_widget.step == 5.0
-
-    # test edit step label text
-    style_widget.ui.step_edit.setText('4')
-    style_widget.ui.step_edit.editingFinished.emit()
-    assert style_widget.step == 4
+    layer_state.step = 5
+    assert layer_state.step == 5.0
 
     # Check that writing a session works as expected.
 
@@ -80,13 +75,8 @@ def test_isosurface_viewer(tmpdir):
     ga.save_session(session_file)
     ga.close()
 
-    # test MultiIsoVisual
-    visual = layer_artist._iso_visual
-    assert isinstance(visual, MultiIsoVisual)
-    assert visual.step == style_widget.step
-    # assert visual.threshold == style_widget.level_high  # default
-
     # Now we can check that everything is restored correctly
+
     ga2 = GlueApplication.restore_session(session_file)
     ga2.show()
 
@@ -94,25 +84,27 @@ def test_isosurface_viewer(tmpdir):
 
     assert volume_r.viewer_size == (400, 500)
 
-    options = volume_r.options_widget().state
+    viewer_state = volume_r.state
 
-    assert options.x_stretch == 0.5
-    assert options.y_stretch == 1.0
-    assert options.z_stretch == 2.0
+    np.testing.assert_allclose(viewer_state.x_stretch, 0.5, rtol=1e-3)
+    np.testing.assert_allclose(viewer_state.y_stretch, 1.0, rtol=1e-3)
+    np.testing.assert_allclose(viewer_state.z_stretch, 2.0, rtol=1e-3)
 
-    assert options.x_min == -0.1
-    assert options.x_max == 10.1
-    assert options.y_min == 0.1
-    assert options.y_max == 10.9
-    assert options.z_min == 0.2
-    assert options.z_max == 10.8
+    assert viewer_state.x_min == -0.1
+    assert viewer_state.x_max == 10.1
+    assert viewer_state.y_min == 0.1
+    assert viewer_state.y_max == 10.9
+    assert viewer_state.z_min == 0.2
+    assert viewer_state.z_max == 10.8
 
-    assert not options.visible_box
+    assert not viewer_state.visible_axes
 
-    # layer_artist = volume_r.layers[0]
-    assert style_widget.attribute.label == 'b'
-    assert style_widget.level_low == 0.1
-    assert style_widget.level_high == 0.9
-    assert style_widget.step == 4
+    layer_artist = viewer_state.layers[0]
+
+    assert layer_artist.attribute.label == 'b'
+    assert layer_artist.level_low == 0.1
+    assert layer_artist.level_high == 0.9
+    # assert layer_artist.alpha == 0.8
+    assert layer_artist.step == 5
 
     ga2.close()
