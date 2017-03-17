@@ -15,6 +15,19 @@ ROTATE_ICON = os.path.join(os.path.dirname(__file__), 'glue_rotate.png')
 
 
 @viewer_tool
+class ResetTool(Tool):
+
+    icon = 'glue_home'
+    tool_id = 'vispy:reset'
+    action_text = 'Reset the view'
+    tool_tip = 'Reset the view'
+
+    def activate(self):
+        self.viewer._vispy_widget.view.camera.reset()
+        self.viewer._vispy_widget._toggle_perspective()
+
+
+@viewer_tool
 class SaveTool(Tool):
 
     icon = 'glue_filesave'

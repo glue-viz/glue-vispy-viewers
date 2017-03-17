@@ -33,7 +33,7 @@ class BaseVispyViewer(DataViewer):
 
     _toolbar_cls = VispyViewerToolbar
 
-    tools = ['vispy:save', 'vispy:rotate']
+    tools = ['vispy:reset', 'vispy:save', 'vispy:rotate']
 
     # If imageio is available, we can add the record icon
     try:
