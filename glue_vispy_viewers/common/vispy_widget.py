@@ -142,7 +142,3 @@ class VispyWidgetHelper(object):
         self.axis.ylim = self.viewer_state.y_min, self.viewer_state.y_max
         self.axis.zlim = self.viewer_state.z_min, self.viewer_state.z_max
 
-    def _reset_view(self):
-        self.view.camera.reset()
-        # update the cam.fov with checkbox
-        self._toggle_perspective()
