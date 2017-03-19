@@ -141,4 +141,3 @@ class VispyWidgetHelper(object):
         self.axis.xlim = self.viewer_state.x_min, self.viewer_state.x_max
         self.axis.ylim = self.viewer_state.y_min, self.viewer_state.y_max
         self.axis.zlim = self.viewer_state.z_min, self.viewer_state.z_max
-
