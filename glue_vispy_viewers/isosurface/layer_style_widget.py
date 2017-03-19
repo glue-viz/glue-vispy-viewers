@@ -2,10 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-import numpy as np
-
-from glue.core.subset import Subset
-
 from qtpy import QtWidgets
 
 from glue.utils.qt import load_ui
@@ -37,46 +33,45 @@ class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
         autoconnect_callbacks_to_qt(self.state, self.ui, connect_kwargs)
 
 
-if __name__ == "__main__":
-
-    from glue.utils.qt import get_qapp
-    from glue.external.echo import CallbackProperty
-
-    app = get_qapp()
-
-    class Style(object):
-        # TODO: need a cmap here
-        cmap = CallbackProperty(get_colormap('autumn'))
-        # alpha = CallbackProperty(1.0)
-        # markersize = CallbackProperty(4)
-
-    class Component(object):
-        def __init__(self, label):
-            self.label = label
-
-    c1 = Component('a')
-    c2 = Component('b')
-    c3 = Component('c')
-
-    class Layer(object):
-        style = Style()
-        visible_components = [c1, c2, c3]
-
-    class LayerArtist(object):
-        layer = Layer()
-
-        attribute = CallbackProperty()
-        level_low = CallbackProperty()
-        level_high = CallbackProperty()
-        # We don't have IntLineProperty?
-        cmap = CallbackProperty()
-        step = CallbackProperty()
-        step_value = CallbackProperty()
-
-
-    layer_artist = LayerArtist()
-
-    widget = IsosurfaceLayerStyleWidget(layer_artist)
-    widget.show()
-
-    app.exec_()
+# if __name__ == "__main__":
+#
+#     from glue.utils.qt import get_qapp
+#     from glue.external.echo import CallbackProperty
+#
+#     app = get_qapp()
+#
+#     # class Style(object):
+#         # TODO: need a cmap here
+#         # cmap = CallbackProperty(get_colormap('autumn'))
+#         # alpha = CallbackProperty(1.0)
+#         # markersize = CallbackProperty(4)
+#
+#     class Component(object):
+#         def __init__(self, label):
+#             self.label = label
+#
+#     c1 = Component('a')
+#     c2 = Component('b')
+#     c3 = Component('c')
+#
+#     class Layer(object):
+#         style = Style()
+#         visible_components = [c1, c2, c3]
+#
+#     class LayerArtist(object):
+#         layer = Layer()
+#
+#         attribute = CallbackProperty()
+#         level_low = CallbackProperty()
+#         level_high = CallbackProperty()
+#         # We don't have IntLineProperty?
+#         cmap = CallbackProperty()
+#         step = CallbackProperty()
+#         step_value = CallbackProperty()
+#
+#     layer_artist = LayerArtist()
+#
+#     widget = IsosurfaceLayerStyleWidget(layer_artist)
+#     widget.show()
+#
+#     app.exec_()

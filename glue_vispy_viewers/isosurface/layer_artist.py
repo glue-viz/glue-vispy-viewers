@@ -1,12 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import numpy as np
-from matplotlib.colors import ColorConverter
 from scipy.ndimage import gaussian_filter
-
-
-from ..extern.vispy import scene
-from ..extern.vispy.color import Color
 
 from glue.core.data import Subset
 from glue.core.exceptions import IncompatibleAttribute
@@ -14,11 +9,10 @@ from glue.core.exceptions import IncompatibleAttribute
 from .layer_state import IsosurfaceLayerState
 from ..common.layer_artist import VispyLayerArtist
 
-from ..extern.vispy.color import BaseColormap, get_colormaps
-from ..extern.vispy.visuals.volume import frag_dict, FRAG_SHADER
+from ..extern.vispy.color import BaseColormap
 
-from itertools import cycle
 from .multi_iso_visual import MultiIsoVisual
+
 
 # TODO: create colormaps that is prettier
 class TransFire(BaseColormap):
@@ -57,6 +51,7 @@ class TransFire(BaseColormap):
 # vec4 translucent_fire(float t) {
 #         return vec4(pow(t, 0.5), t, t*t, max(0, t*1.05 - 0.05));
 #     }
+
 
 class IsosurfaceLayerArtist(VispyLayerArtist):
     """
@@ -179,7 +174,9 @@ class IsosurfaceLayerArtist(VispyLayerArtist):
         gaussian_data = gaussian_filter(data/4, 1)
 
         # TODO: the clim here conflict with set levels
-        # self._iso_visual.set_data(np.nan_to_num(gaussian_data), clim=(self.level_low, self.level_high))
+        # self._iso_visual.set_data(
+        # np.nan_to_num(gaussian_data),
+        # clim=(self.level_low, self.level_high))
         # self._iso_visual.step = self.step
 
         self._iso_visual.set_data(np.nan_to_num(gaussian_data))

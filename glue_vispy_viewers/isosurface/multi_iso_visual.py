@@ -267,6 +267,7 @@ ISO_FRAG_SHADER = FRAG_SHADER.format(**ISO_SNIPPETS)
 
 frag_dict['iso'] = ISO_FRAG_SHADER
 
+
 class MultiIsoVisual(VolumeVisual):
     """
     Carry out additive volume rendering using an RGBA cube instead of a 3d cube
