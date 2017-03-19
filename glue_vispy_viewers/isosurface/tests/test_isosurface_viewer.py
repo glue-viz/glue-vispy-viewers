@@ -7,9 +7,7 @@ from glue.core import DataCollection, Data
 from glue.app.qt.application import GlueApplication
 from glue.core.component import Component
 
-from ...common.tests.util import simple_session
 from ..isosurface_viewer import VispyIsosurfaceViewer
-from ..multi_iso_visual import MultiIsoVisual
 
 GLUE_LT_08 = LooseVersion(glue.__version__) < LooseVersion('0.8')
 
