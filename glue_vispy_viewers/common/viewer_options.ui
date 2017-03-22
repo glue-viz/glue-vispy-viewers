@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>318</width>
-    <height>379</height>
+    <height>355</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -217,13 +217,6 @@
     <widget class="QLabel" name="label">
      <property name="text">
       <string>stretch:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="12" column="2" colspan="4">
-    <widget class="QPushButton" name="button_reset">
-     <property name="text">
-      <string>Reset View</string>
      </property>
     </widget>
    </item>
