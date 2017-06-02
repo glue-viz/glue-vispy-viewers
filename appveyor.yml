@@ -11,13 +11,12 @@ environment:
                         # of 32 bit and 64 bit builds are needed, move this
                         # to the matrix section.
       CONDA_VERSION: "4.1.11"
-      CONDA_CHANNELS: "conda-forge"
+      CONDA_CHANNELS: "glueviz"
       CONDA_DEPENDENCIES: "glueviz scikit-image pytest mock pyqt=4 pyopengl qtpy"
       CONDA_CHANNEL_PRIORITY: "True"
 
   matrix:
-      # Temporarily disable tests with stable glue
-      # - PYTHON_VERSION: "3.5"
+      - PYTHON_VERSION: "3.5"
       - PYTHON_VERSION: "3.5"
         PIP_DEPENDENCIES: "https://github.com/glue-viz/glue/archive/master.zip"
 

@@ -59,7 +59,10 @@ class VispyWidgetHelper(object):
         # self.canvas.render()
 
         self.viewer_state = viewer_state
-        self.viewer_state.add_callback('*', self._update_from_state, as_kwargs=True)
+        try:
+            self.viewer_state.add_callback('*', self._update_from_state, as_kwargs=True)
+        except TypeError:  # glue-core >= 0.11
+            self.viewer_state.add_global_callback(self._update_from_state)
 
     def _update_appearance_from_settings(self):
         self.canvas.bgcolor = rgb(settings.BACKGROUND_COLOR)

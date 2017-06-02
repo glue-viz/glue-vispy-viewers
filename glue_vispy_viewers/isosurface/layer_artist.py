@@ -83,8 +83,11 @@ class IsosurfaceLayerArtist(VispyLayerArtist):
         # Set up connections so that when any of the properties are
         # modified, we update the appropriate part of the visualization
 
-        # TODO: Maybe should reintroduce global callbacks since they behave differently...
-        self.state.add_callback('*', self._update_from_state, as_kwargs=True)
+        try:
+            self.state.add_callback('*', self._update_from_state, as_kwargs=True)
+        except TypeError:  # glue-core >= 0.11
+            self.state.add_global_callback(self._update_from_state)
+
         self._update_from_state(**self.state.as_dict())
 
         self.visible = True
