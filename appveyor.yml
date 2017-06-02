@@ -10,9 +10,8 @@ environment:
       PYTHON_ARCH: "64" # needs to be set for CMD_IN_ENV to succeed. If a mix
                         # of 32 bit and 64 bit builds are needed, move this
                         # to the matrix section.
-      CONDA_VERSION: "4.1.11"
       CONDA_CHANNELS: "glueviz"
-      CONDA_DEPENDENCIES: "glueviz scikit-image pytest mock pyqt=4 pyopengl qtpy"
+      CONDA_DEPENDENCIES: "glueviz scikit-image mock pyqt=4 pyopengl qtpy"
       CONDA_CHANNEL_PRIORITY: "True"
 
   matrix:
