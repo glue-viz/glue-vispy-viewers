@@ -14,9 +14,8 @@ env:
     - CONDA_CHANNEL_PRIORITY=True
   matrix:
     - PYTHON_VERSION=3.5 CONDA_DEPENDENCIES="" PIP_DEPENDENCIES="flake8" COMMAND="flake8 --max-line-length=100 --exclude=extern glue_vispy_viewers"
-    # Temporarily disable tests with stable glue
-    # - PYTHON_VERSION=2.7
-    # - PYTHON_VERSION=3.5
+    - PYTHON_VERSION=2.7
+    - PYTHON_VERSION=3.5
     - PYTHON_VERSION=2.7 PIP_DEPENDENCIES="https://github.com/glue-viz/glue/archive/master.zip" PIP_DEPENDENCIES_FLAGS="--upgrade --no-deps"
     - PYTHON_VERSION=3.5 PIP_DEPENDENCIES="https://github.com/glue-viz/glue/archive/master.zip" PIP_DEPENDENCIES_FLAGS="--upgrade --no-deps"
 
