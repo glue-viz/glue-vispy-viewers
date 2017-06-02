@@ -9,7 +9,7 @@ env:
   global:
     - COMMAND="py.test glue_vispy_viewers --cov glue_vispy_viewers"
     - SETUP_XVFB=True
-    - CONDA_CHANNELS="conda-forge"
+    - CONDA_CHANNELS="glueviz"
     - CONDA_DEPENDENCIES="glueviz pytest mock pyopengl pyqt=4.11.3 pytest-cov qtpy"
     - CONDA_CHANNEL_PRIORITY=True
   matrix:
