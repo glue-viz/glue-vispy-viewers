@@ -55,8 +55,11 @@ class ScatterLayerArtist(VispyLayerArtist):
         self._multiscat.allocate(self.id)
         self._multiscat.set_zorder(self.id, self.get_zorder)
 
-        # TODO: Maybe should reintroduce global callbacks since they behave differently...
-        self.state.add_callback('*', self._update_from_state, as_kwargs=True)
+        try:
+            self.state.add_callback('*', self._update_from_state, as_kwargs=True)
+        except TypeError:  # glue-core >= 0.11
+            self.state.add_global_callback(self._update_from_state)
+
         self._update_from_state(**self.state.as_dict())
 
         self._viewer_state.add_callback('x_att', nonpartial(self._update_data))
