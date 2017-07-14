@@ -23,6 +23,13 @@ class ScatterLayerArtist(VispyLayerArtist):
 
         self._clip_limits = None
 
+        self._marker_keep = Ellipsis
+
+        # Set data caches
+        self._marker_data = None
+        self._color_data = None
+        self._size_data = None
+
         self.layer = layer or layer_state.layer
         self.vispy_viewer = vispy_viewer
         self.vispy_widget = vispy_viewer._vispy_widget
@@ -65,12 +72,6 @@ class ScatterLayerArtist(VispyLayerArtist):
         self._viewer_state.add_callback('x_att', nonpartial(self._update_data))
         self._viewer_state.add_callback('y_att', nonpartial(self._update_data))
         self._viewer_state.add_callback('z_att', nonpartial(self._update_data))
-
-        # Set data caches
-        self._marker_keep = Ellipsis
-        self._marker_data = None
-        self._color_data = None
-        self._size_data = None
 
         self._update_data()
 
