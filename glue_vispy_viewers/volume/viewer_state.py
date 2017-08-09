@@ -1,6 +1,6 @@
 from glue_vispy_viewers.common.viewer_state import Vispy3DViewerState
 
-__all__ = ['VispyVolume3DViewerState']
+__all__ = ['Vispy3DVolumeViewerState']
 
 
 class Vispy3DVolumeViewerState(Vispy3DViewerState):
