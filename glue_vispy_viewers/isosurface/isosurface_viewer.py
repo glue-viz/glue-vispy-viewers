@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 from ..common.vispy_data_viewer import BaseVispyViewer
 from .layer_artist import IsosurfaceLayerArtist
 from .layer_style_widget import IsosurfaceLayerStyleWidget
+from .viewer_state import Vispy3DIsosurfaceViewerState
 
 from ..common import tools  # noqa
 from ..common import selection_tools  # noqa
@@ -12,6 +13,7 @@ class VispyIsosurfaceViewer(BaseVispyViewer):
 
     LABEL = "3D Isosurface Rendering"
 
+    _state_cls = Vispy3DIsosurfaceViewerState
     _layer_style_widget_cls = IsosurfaceLayerStyleWidget
 
     def add_data(self, data):

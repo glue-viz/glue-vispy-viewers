@@ -58,7 +58,7 @@
     <widget class="QLineEdit" name="valuetext_x_min"/>
    </item>
    <item row="4" column="3" colspan="3">
-    <widget class="QComboBox" name="combodata_y_att">
+    <widget class="QComboBox" name="combosel_y_att">
      <property name="sizeAdjustPolicy">
       <enum>QComboBox::AdjustToMinimumContentsLength</enum>
      </property>
@@ -221,7 +221,7 @@
     </widget>
    </item>
    <item row="7" column="3" colspan="3">
-    <widget class="QComboBox" name="combodata_z_att">
+    <widget class="QComboBox" name="combosel_z_att">
      <property name="sizeAdjustPolicy">
       <enum>QComboBox::AdjustToMinimumContentsLength</enum>
      </property>
@@ -238,7 +238,7 @@
     <widget class="QLineEdit" name="valuetext_y_max"/>
    </item>
    <item row="0" column="3" colspan="3">
-    <widget class="QComboBox" name="combodata_x_att">
+    <widget class="QComboBox" name="combosel_x_att">
      <property name="sizeAdjustPolicy">
       <enum>QComboBox::AdjustToMinimumContentsLength</enum>
      </property>

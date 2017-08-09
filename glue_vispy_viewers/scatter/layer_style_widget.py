@@ -24,17 +24,6 @@ class ScatterLayerStyleWidget(QtWidgets.QWidget):
         self.layer_artist = layer_artist
         self.layer = layer_artist.layer
 
-        # FIXME: the following (passing self.layer to data_collection as second argument)
-        # is a hack and we need to figure out a better solution.
-
-        self.size_att_helper = ComponentIDComboHelper(self.ui.combodata_size_attribute,
-                                                      self.layer)
-        self.size_att_helper.append_data(self.layer)
-
-        self.cmap_att_helper = ComponentIDComboHelper(self.ui.combodata_cmap_attribute,
-                                                      self.layer)
-        self.cmap_att_helper.append_data(self.layer)
-
         connect_kwargs = {'value_alpha': dict(value_range=(0., 1.)),
                           'value_size_scaling': dict(value_range=(0.1, 10), log=True)}
         autoconnect_callbacks_to_qt(self.state, self.ui, connect_kwargs)

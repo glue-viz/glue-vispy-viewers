@@ -9,6 +9,8 @@ from qtpy.QtWidgets import QMessageBox
 from ..common.vispy_data_viewer import BaseVispyViewer
 from .layer_artist import VolumeLayerArtist
 from .layer_style_widget import VolumeLayerStyleWidget
+from .viewer_state import Vispy3DVolumeViewerState
+
 
 from ..scatter.layer_artist import ScatterLayerArtist
 from ..scatter.layer_style_widget import ScatterLayerStyleWidget
@@ -29,6 +31,7 @@ class VispyVolumeViewer(BaseVispyViewer):
 
     LABEL = "3D Volume Rendering"
 
+    _state_cls = Vispy3DVolumeViewerState
     _layer_style_widget_cls = {VolumeLayerArtist: VolumeLayerStyleWidget,
                                ScatterLayerArtist: ScatterLayerStyleWidget}
 

@@ -23,11 +23,6 @@ class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
         self.layer_artist = layer_artist
         self.layer = layer_artist.layer
 
-        # TODO: the following (passing self.layer to data_collection as second argument)
-        # is a hack and we need to figure out a better solution.
-        self.att_helper = ComponentIDComboHelper(self.ui.combodata_attribute, self.layer)
-        self.att_helper.append_data(self.layer)
-
         connect_kwargs = {'value_alpha': dict(value_range=(0., 1.)),
                           'value_step': dict(value_range=(1, 10))}
         autoconnect_callbacks_to_qt(self.state, self.ui, connect_kwargs)
