@@ -126,9 +126,9 @@ class PointSelectionMode(VispyMouseMode):
         max_value_pos = self.max_value_pos[0]
 
         # xyz index in volume array
-        x = (max_value_pos[0] - trans[0]) / scale[0]
-        y = (max_value_pos[1] - trans[1]) / scale[1]
-        z = (max_value_pos[2] - trans[2]) / scale[2]
+        x = int(round((max_value_pos[0] - trans[0]) / scale[0]))
+        y = int(round((max_value_pos[1] - trans[1]) / scale[1]))
+        z = int(round((max_value_pos[2] - trans[2]) / scale[2]))
 
         if self.max_value_pos:
             select_mask = floodfill_scipy(formate_data, (z, y, x), threshold)
