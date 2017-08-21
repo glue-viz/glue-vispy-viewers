@@ -3,6 +3,8 @@
 
 - Fix compatibility of floodfill selection with recent Numpy versions. [#257, #267]
 
+- Avoid errors when lower and upper limits in viewer options are equal. [#268]
+
 0.7.2 (2017-03-16)
 ------------------
 

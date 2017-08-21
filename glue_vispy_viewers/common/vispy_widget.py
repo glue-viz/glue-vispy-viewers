@@ -2,6 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 import sys
 
+import numpy as np
+
 from ..extern.vispy import scene
 from .axes import AxesVisual3D
 
@@ -126,12 +128,19 @@ class VispyWidgetHelper(object):
 
     def _update_limits(self):
 
-        scale = [2 / (self.viewer_state.x_max - self.viewer_state.x_min) *
-                 self.viewer_state.x_stretch * self.viewer_state.aspect[0],
-                 2 / (self.viewer_state.y_max - self.viewer_state.y_min) *
-                 self.viewer_state.y_stretch * self.viewer_state.aspect[1],
-                 2 / (self.viewer_state.z_max - self.viewer_state.z_min) *
-                 self.viewer_state.z_stretch * self.viewer_state.aspect[2]]
+        dx = self.viewer_state.x_max - self.viewer_state.x_min
+        sx = (np.inf if dx == 0 else 2. / dx *
+              self.viewer_state.x_stretch * self.viewer_state.aspect[0])
+
+        dy = self.viewer_state.y_max - self.viewer_state.y_min
+        sy = (np.inf if dy == 0 else 2. / dy *
+              self.viewer_state.y_stretch * self.viewer_state.aspect[1])
+
+        dz = self.viewer_state.z_max - self.viewer_state.z_min
+        sz = (np.inf if dz == 0 else 2. / dz *
+              self.viewer_state.z_stretch * self.viewer_state.aspect[2])
+
+        scale = [sx, sy, sz]
 
         translate = [-0.5 * (self.viewer_state.x_min + self.viewer_state.x_max) * scale[0],
                      -0.5 * (self.viewer_state.y_min + self.viewer_state.y_max) * scale[1],
