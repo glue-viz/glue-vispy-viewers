@@ -1,7 +1,7 @@
 0.8 (unreleased)
 ----------------
 
-- No changes yet.
+- Fix compatibility of floodfill selection with recent Numpy versions. [#257, #267]
 
 0.7.2 (2017-03-16)
 ------------------
