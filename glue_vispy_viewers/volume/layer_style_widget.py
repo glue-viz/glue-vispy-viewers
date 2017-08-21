@@ -8,7 +8,6 @@ from qtpy import QtWidgets
 
 from glue.utils.qt import load_ui
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
-from glue.core.qt.data_combo_helper import ComponentIDComboHelper
 
 
 class VolumeLayerStyleWidget(QtWidgets.QWidget):
@@ -29,11 +28,6 @@ class VolumeLayerStyleWidget(QtWidgets.QWidget):
 
         self.layer_artist = layer_artist
         self.layer = layer_artist.layer
-
-        # TODO: the following (passing self.layer to data_collection as second argument)
-        # is a hack and we need to figure out a better solution.
-        self.att_helper = ComponentIDComboHelper(self.ui.combodata_attribute, self.layer)
-        self.att_helper.append_data(self.layer)
 
         # autoconnect needs to come after setting up the component IDs
         connect_kwargs = {'value_alpha': dict(value_range=(0., 1.))}

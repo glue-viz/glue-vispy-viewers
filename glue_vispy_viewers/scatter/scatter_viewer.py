@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 from ..common.vispy_data_viewer import BaseVispyViewer
 from .layer_artist import ScatterLayerArtist
 from .layer_style_widget import ScatterLayerStyleWidget
+from .viewer_state import Vispy3DScatterViewerState
 
 from ..common import selection_tools  # noqa
 from . import scatter_toolbar  # noqa
@@ -12,6 +13,7 @@ class VispyScatterViewer(BaseVispyViewer):
 
     LABEL = "3D Scatter Plot"
 
+    _state_cls = Vispy3DScatterViewerState
     _layer_style_widget_cls = ScatterLayerStyleWidget
 
     tools = BaseVispyViewer.tools + ['vispy:lasso', 'vispy:rectangle',

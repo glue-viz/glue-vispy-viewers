@@ -96,7 +96,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="combodata_size_attribute">
+           <widget class="QComboBox" name="combosel_size_attribute">
             <property name="sizeAdjustPolicy">
              <enum>QComboBox::AdjustToMinimumContentsLength</enum>
             </property>
@@ -258,7 +258,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="combodata_cmap_attribute">
+           <widget class="QComboBox" name="combosel_cmap_attribute">
             <property name="sizeAdjustPolicy">
              <enum>QComboBox::AdjustToMinimumContentsLength</enum>
             </property>

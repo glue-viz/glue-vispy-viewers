@@ -2,9 +2,11 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from glue.external.echo import CallbackProperty, delay_callback, ListCallbackProperty
+from glue.external.echo import (CallbackProperty, SelectionCallbackProperty,
+                                delay_callback, ListCallbackProperty)
 from glue.core.state_objects import State, StateAttributeLimitsHelper
 from glue.utils import nonpartial
+
 
 __all__ = ['Vispy3DViewerState']
 
@@ -14,17 +16,17 @@ class Vispy3DViewerState(State):
     A common state object for all vispy 3D viewers
     """
 
-    x_att = CallbackProperty()
+    x_att = SelectionCallbackProperty()
     x_min = CallbackProperty(0)
     x_max = CallbackProperty(1)
     x_stretch = CallbackProperty(1.)
 
-    y_att = CallbackProperty()
+    y_att = SelectionCallbackProperty()
     y_min = CallbackProperty(0)
     y_max = CallbackProperty(1)
     y_stretch = CallbackProperty(1.)
 
-    z_att = CallbackProperty()
+    z_att = SelectionCallbackProperty()
     z_min = CallbackProperty(0)
     z_max = CallbackProperty(1)
     z_stretch = CallbackProperty(1.)
@@ -38,7 +40,7 @@ class Vispy3DViewerState(State):
 
     limits_cache = CallbackProperty()
 
-    def update_priority(self, name):
+    def _update_priority(self, name):
         if name == 'layers':
             return 2
         elif name.endswith(('_min', '_max')):
@@ -53,15 +55,15 @@ class Vispy3DViewerState(State):
         if self.limits_cache is None:
             self.limits_cache = {}
 
-        self.x_att_helper = StateAttributeLimitsHelper(self, attribute='x_att',
+        self.x_lim_helper = StateAttributeLimitsHelper(self, attribute='x_att',
                                                        lower='x_min', upper='x_max',
                                                        cache=self.limits_cache)
 
-        self.y_att_helper = StateAttributeLimitsHelper(self, attribute='y_att',
+        self.y_lim_helper = StateAttributeLimitsHelper(self, attribute='y_att',
                                                        lower='y_min', upper='y_max',
                                                        cache=self.limits_cache)
 
-        self.z_att_helper = StateAttributeLimitsHelper(self, attribute='z_att',
+        self.z_lim_helper = StateAttributeLimitsHelper(self, attribute='z_att',
                                                        lower='z_min', upper='z_max',
                                                        cache=self.limits_cache)
 
@@ -73,12 +75,12 @@ class Vispy3DViewerState(State):
         self.add_callback('limits_cache', nonpartial(self._update_limits_cache))
 
     def _update_limits_cache(self):
-        self.x_att_helper._cache = self.limits_cache
-        self.x_att_helper._update_attribute()
-        self.y_att_helper._cache = self.limits_cache
-        self.y_att_helper._update_attribute()
-        self.z_att_helper._cache = self.limits_cache
-        self.z_att_helper._update_attribute()
+        self.x_lim_helper._cache = self.limits_cache
+        self.x_lim_helper._update_attribute()
+        self.y_lim_helper._cache = self.limits_cache
+        self.y_lim_helper._update_attribute()
+        self.z_lim_helper._cache = self.limits_cache
+        self.z_lim_helper._update_attribute()
 
     @property
     def aspect(self):
@@ -95,13 +97,13 @@ class Vispy3DViewerState(State):
         pass
 
     def flip_x(self):
-        self.x_att_helper.flip_limits()
+        self.x_lim_helper.flip_limits()
 
     def flip_y(self):
-        self.y_att_helper.flip_limits()
+        self.y_lim_helper.flip_limits()
 
     def flip_z(self):
-        self.z_att_helper.flip_limits()
+        self.z_lim_helper.flip_limits()
 
     @property
     def clip_limits(self):

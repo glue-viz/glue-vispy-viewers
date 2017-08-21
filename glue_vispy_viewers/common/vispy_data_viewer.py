@@ -31,6 +31,7 @@ BROKEN_CONDA_PYQT5_MESSAGE = "The conda version of PyQt5 on Linux does not inclu
 
 class BaseVispyViewer(DataViewer):
 
+    _state_cls = Vispy3DViewerState
     _toolbar_cls = VispyViewerToolbar
 
     tools = ['vispy:reset', 'vispy:save', 'vispy:rotate']
@@ -47,7 +48,7 @@ class BaseVispyViewer(DataViewer):
 
         super(BaseVispyViewer, self).__init__(session, parent=parent)
 
-        self.state = viewer_state or Vispy3DViewerState()
+        self.state = viewer_state or self._state_cls()
 
         if BROKEN_CONDA_PYQT5:
             QtWidgets.QMessageBox.critical(self, "Error", BROKEN_CONDA_PYQT5_MESSAGE)
@@ -192,7 +193,7 @@ class BaseVispyViewer(DataViewer):
         x, y = rec['pos']
         viewer.move(x=x, y=y)
 
-        viewer_state = Vispy3DViewerState.__setgluestate__(rec['state'], context)
+        viewer_state = cls._state_cls.__setgluestate__(rec['state'], context)
         viewer.state.update_from_state(viewer_state)
 
         # Restore layer artists
