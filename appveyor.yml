@@ -15,9 +15,9 @@ environment:
       CONDA_CHANNEL_PRIORITY: "True"
 
   matrix:
+      # - PYTHON_VERSION: "3.5"
       - PYTHON_VERSION: "3.5"
-      - PYTHON_VERSION: "3.5"
-        PIP_DEPENDENCIES: "https://github.com/glue-viz/glue/archive/master.zip"
+        CONDA_CHANNELS: "glueviz/label/dev"
 
 platform:
     -x64

@@ -14,8 +14,8 @@ env:
     - CONDA_CHANNEL_PRIORITY=True
   matrix:
     - PYTHON_VERSION=3.5 CONDA_DEPENDENCIES="" PIP_DEPENDENCIES="flake8" COMMAND="flake8 --max-line-length=100 --exclude=extern glue_vispy_viewers"
-    - PYTHON_VERSION=2.7
-    - PYTHON_VERSION=3.5
+    # - PYTHON_VERSION=2.7
+    # - PYTHON_VERSION=3.5
     - PYTHON_VERSION=2.7 CONDA_CHANNELS="glueviz/label/dev"
     - PYTHON_VERSION=3.5 CONDA_CHANNELS="glueviz/label/dev"
 
