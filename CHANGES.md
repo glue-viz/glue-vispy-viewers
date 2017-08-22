@@ -1,9 +1,17 @@
-0.8 (unreleased)
+0.8 (2017-08-22)
 ----------------
+
+- Update viewer code to use non-Qt-specific combo helpers. [#266]
 
 - Fix compatibility of floodfill selection with recent Numpy versions. [#257, #267]
 
 - Avoid errors when lower and upper limits in viewer options are equal. [#268]
+
+- Fix bug that caused the color of scatter plots to not always update. [#265]
+
+- Fix color and size encoding when using the data clip option. [#261]
+
+- Added a home button that resets the view. [#254]
 
 0.7.2 (2017-03-16)
 ------------------
