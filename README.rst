@@ -24,7 +24,7 @@ with:
 
 ::
 
-    conda install -c conda-forge glue-vispy-viewers
+    conda install -c glueviz glue-vispy-viewers
 
 To install the latest stable version of the plugin, you can do:
 
