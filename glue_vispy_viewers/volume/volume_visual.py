@@ -137,6 +137,7 @@ class MultiVolumeVisual(VolumeVisual):
         self.set_gl_state('translucent', cull_face=False)
 
         self.relative_step_size = relative_step_size
+        self.relative_step_size_orig = self.relative_step_size
 
         self.volumes = defaultdict(dict)
 
@@ -147,6 +148,15 @@ class MultiVolumeVisual(VolumeVisual):
             self.freeze()
         except AttributeError:  # Older versions of VisPy
             pass
+
+    def downsample(self):
+        if self._data_shape is None:
+            return
+        min_dimension = min(self._data_shape)
+        self.relative_step_size = max(0.5, min_dimension / 50)
+
+    def upsample(self):
+        self.relative_step_size = self.relative_step_size_orig
 
     def set_background(self, color):
         self.shared_program['u_bgcolor'] = Color(color).rgba

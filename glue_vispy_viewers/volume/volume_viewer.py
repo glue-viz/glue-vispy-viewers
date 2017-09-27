@@ -5,6 +5,7 @@ from glue.config import settings
 from glue.core import message as msg
 
 from qtpy.QtWidgets import QMessageBox
+from qtpy.QtCore import QTimer
 
 from ..common.vispy_data_viewer import BaseVispyViewer
 from .layer_artist import VolumeLayerArtist
@@ -46,6 +47,41 @@ class VispyVolumeViewer(BaseVispyViewer):
                                  "The PyOpenGL package is required for the "
                                  "3D volume rendering viewer",
                                  buttons=QMessageBox.Ok)
+
+        self._vispy_widget.canvas.events.mouse_press.connect(self.mouse_press)
+        self._vispy_widget.canvas.events.mouse_wheel.connect(self.mouse_wheel)
+        self._vispy_widget.canvas.events.mouse_release.connect(self.mouse_release)
+
+        self._downsampled = False
+
+        self._downsample_timer = QTimer()
+        self._downsample_timer.setInterval(250)
+        self._downsample_timer.setSingleShot(True)
+        self._downsample_timer.timeout.connect(self.mouse_release)
+
+    def mouse_press(self, event=None):
+        if self.state.downsample:
+            if hasattr(self._vispy_widget, '_multivol') and not self._downsampled:
+                self._vispy_widget._multivol.downsample()
+                self._downsampled = True
+
+    def mouse_release(self, event=None):
+        if self.state.downsample:
+            if hasattr(self._vispy_widget, '_multivol') and self._downsampled:
+                self._vispy_widget._multivol.upsample()
+                self._downsampled = False
+                self._vispy_widget.canvas.render()
+
+    def mouse_wheel(self, event=None):
+        if self.state.downsample:
+            if hasattr(self._vispy_widget, '_multivol'):
+                if not self._downsampled:
+                    self.mouse_press()
+                self._downsample_timer.start()
+
+    def resizeEvent(self, event=None):
+        self.mouse_wheel()
+        super(VispyVolumeViewer, self).resizeEvent(event)
 
     def add_data(self, data):
 

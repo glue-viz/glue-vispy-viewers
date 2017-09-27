@@ -1,9 +1,12 @@
+from glue.external.echo import CallbackProperty
 from glue_vispy_viewers.common.viewer_state import Vispy3DViewerState
 
 __all__ = ['Vispy3DVolumeViewerState']
 
 
 class Vispy3DVolumeViewerState(Vispy3DViewerState):
+
+    downsample = CallbackProperty(True)
 
     def __init__(self, **kwargs):
 
