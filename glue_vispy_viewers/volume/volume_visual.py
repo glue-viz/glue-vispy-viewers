@@ -74,7 +74,7 @@ class MultiVolumeVisual(VolumeVisual):
         Absolute maximum number of volumes that can be shown.
     """
 
-    def __init__(self, n_volume_max=10, threshold=None, relative_step_size=2.0,
+    def __init__(self, n_volume_max=10, threshold=None, relative_step_size=0.8,
                  emulate_texture=False, bgcolor='white'):
 
         # Choose texture class
@@ -108,8 +108,8 @@ class MultiVolumeVisual(VolumeVisual):
         for i in range(n_volume_max):
 
             # Set up texture object
-            self.textures.append(tex_cls(self._vol_shape, interpolation='nearest',
-                                         wrapping='clamp_to_edge', format="LUMINANCE", internalformat="R32F"))
+            self.textures.append(tex_cls(self._vol_shape, interpolation='linear',
+                                         wrapping='clamp_to_edge'))
 
             # Pass texture object and default colormap to shader program
             self.shared_program['u_volumetex_{0}'.format(i)] = self.textures[i]
@@ -118,8 +118,6 @@ class MultiVolumeVisual(VolumeVisual):
             # Make sure all textures are disbaled
             self.shared_program['u_enabled_{0}'.format(i)] = 0
             self.shared_program['u_weight_{0}'.format(i)] = 1
-            self.shared_program['u_cmin_{0}'.format(i)] = 0
-            self.shared_program['u_cmax_{0}'.format(i)] = 1
 
         self.shared_program['a_position'] = self._vertices
         self.shared_program['a_texcoord'] = self._texcoord
@@ -155,7 +153,7 @@ class MultiVolumeVisual(VolumeVisual):
         if self._data_shape is None:
             return
         min_dimension = min(self._data_shape)
-        self.relative_step_size = max(2.0, min_dimension / 50)
+        self.relative_step_size = max(0.8, min_dimension / 100)
 
     def upsample(self):
         self.relative_step_size = self.relative_step_size_orig
@@ -200,9 +198,7 @@ class MultiVolumeVisual(VolumeVisual):
     def set_clim(self, label, clim):
         self.volumes[label]['clim'] = clim
         if 'data' in self.volumes[label]:
-            index = self.volumes[label]['index']
-            self.shared_program['u_cmin_{0:d}'.format(index)] = float(clim[0])
-            self.shared_program['u_cmax_{0:d}'.format(index)] = float(clim[1])
+            self._update_scaled_data(label)
 
     def set_weight(self, label, weight):
         index = self.volumes[label]['index']
@@ -212,10 +208,6 @@ class MultiVolumeVisual(VolumeVisual):
 
         if 'clim' not in self.volumes[label]:
             raise ValueError("set_clim should be called before set_data")
-
-        # Get rid of NaN values
-        data = data.astype(np.float32)
-        np.nan_to_num(data, copy=False)
 
         # VisPy can't handle dimensions larger than 2048 so we need to reduce
         # the array on-the-fly if needed
@@ -228,10 +220,18 @@ class MultiVolumeVisual(VolumeVisual):
                 data = block_reduce(data, self._block_size, func=np.mean)
 
         self.volumes[label]['data'] = data
+        self._update_scaled_data(label)
 
-        # Why is this needed?
-
+    def _update_scaled_data(self, label):
         index = self.volumes[label]['index']
+        clim = self.volumes[label]['clim']
+        data = self.volumes[label]['data']
+
+        data = data.astype(np.float32)
+        data -= clim[0]
+        data /= (clim[1] - clim[0])
+        np.nan_to_num(data, copy=False)
+
         self.shared_program['u_volumetex_{0:d}'.format(index)].set_data(data)
 
         if self._initial_shape:
@@ -252,7 +252,10 @@ class MultiVolumeVisual(VolumeVisual):
         if not any(self.enabled):
             return
         else:
-            super(MultiVolumeVisual, self).draw()
+            try:
+                super(MultiVolumeVisual, self).draw()
+            except:
+                pass
 
 
 MultiVolume = create_visual_node(MultiVolumeVisual)

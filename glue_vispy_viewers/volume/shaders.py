@@ -188,21 +188,19 @@ def get_shaders(n_volume_max):
         declarations += "uniform $sampler_type u_volumetex_{0:d};\n".format(i)
         declarations += "uniform int u_enabled_{0:d};\n".format(i)
         declarations += "uniform float u_weight_{0:d};\n".format(i)
-        declarations += "uniform float u_cmin_{0:d};\n".format(i)
-        declarations += "uniform float u_cmax_{0:d};\n".format(i)
 
         # Declarations before the raytracing loop
         before_loop += "float max_val_{0:d} = 0;\n".format(i)
 
         # Calculation inside the main raytracing loop
         in_loop += ("if (u_enabled_{0:d} == 1) {{\n"
-                    "  val = $sample(u_volumetex_{0:d}, loc).r;\n"
+                    "  val = $sample(u_volumetex_{0:d}, loc).g;\n"
                     "  max_val_{0:d} = max(val, max_val_{0:d});\n}}\n").format(i)
 
         # Calculation after the main loop
 
         after_loop += ("if (u_enabled_{0:d} == 1) {{\n"
-                       "  color = $cmap{0:d}((max_val_{0:d} - u_cmin_{0:d}) / (u_cmax_{0:d} - u_cmin_{0:d}));\n"
+                       "  color = $cmap{0:d}(max_val_{0:d});\n"
                        "  color.a *= u_weight_{0:d};\n"
                        "  total_color += color.a * color;\n"
                        "  max_alpha = max(color.a, max_alpha);\n"
