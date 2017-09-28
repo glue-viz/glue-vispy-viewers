@@ -198,6 +198,9 @@ class MultiVolumeVisual(VolumeVisual):
         self.shared_program.frag['cmap{0:d}'.format(index)] = Function(cmap.glsl_map)
 
     def set_clim(self, label, clim):
+        # Avoid setting the same limits again
+        if 'clim' in self.volumes[label] and self.volumes[label]['clim'] == clim:
+            return
         self.volumes[label]['clim'] = clim
         if 'data' in self.volumes[label]:
             self._update_scaled_data(label)
@@ -210,6 +213,10 @@ class MultiVolumeVisual(VolumeVisual):
 
         if 'clim' not in self.volumes[label]:
             raise ValueError("set_clim should be called before set_data")
+
+        # Avoid adding the same data again
+        if 'data' in self.volumes[label] and self.volumes[label]['data'] is data:
+            return
 
         # VisPy can't handle dimensions larger than 2048 so we need to reduce
         # the array on-the-fly if needed
@@ -225,13 +232,14 @@ class MultiVolumeVisual(VolumeVisual):
         self._update_scaled_data(label)
 
     def _update_scaled_data(self, label):
+
         index = self.volumes[label]['index']
         clim = self.volumes[label]['clim']
         data = self.volumes[label]['data']
 
         data = data.astype(np.float32)
         data -= clim[0]
-        data /= (clim[1] - clim[0])
+        data *= 1 / (clim[1] - clim[0])
         np.nan_to_num(data, copy=False)
 
         self.shared_program['u_volumetex_{0:d}'.format(index)].set_data(data)
