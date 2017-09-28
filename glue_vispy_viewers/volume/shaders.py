@@ -50,7 +50,7 @@ FRAG_SHADER = """
 // uniforms
 {declarations}
 uniform vec3 u_shape;
-uniform float u_threshold;
+uniform float u_downsample;
 uniform float u_relative_step_size;
 uniform vec4 u_bgcolor;
 
@@ -71,15 +71,18 @@ const float u_shininess = 40.0;
 // global holding view direction in local coordinates
 vec3 view_ray;
 
-float rand(vec2 co)
-{{
-    // Create a pseudo-random number between 0 and 1.
-    // http://stackoverflow.com/questions/4200224
-    return fract(sin(dot(co.xy ,vec2(12.9898, 78.233))) * 43758.5453);
-}}
 
 // for some reason, this has to be the last function in order for the
 // filters to be inserted in the correct place...
+
+float rand(vec3 co) {{
+    float a = 12.9898;
+    float b = 78.233;
+    float c = 43758.5453;
+    float dt= dot(vec2(co.x, co.y + co.z) ,vec2(a,b));
+    float sn= mod(dt,3.14);
+    return fract(sin(sn) * c);
+}}
 
 void main() {{
     vec3 farpos = v_farpos.xyz / v_farpos.w;
@@ -102,9 +105,8 @@ void main() {{
     vec3 front = v_position + view_ray * distance;
 
     // Decide how many steps to take
-    int nsteps = int(-distance / u_relative_step_size + 0.5);
-    if( nsteps < 1 )
-        discard;
+    int nsteps = int(-distance / (u_relative_step_size * u_downsample) + 0.5);
+    if(nsteps < 1) discard;
 
     // Get starting location and step vector in texture coordinates
     vec3 step = ((v_position - front) / u_shape) / nsteps;
@@ -118,16 +120,39 @@ void main() {{
     // datasets. Ugly, but it works ...
     vec3 loc = start_loc;
     int iter = 0;
-    while (iter < nsteps) {{
-        for (iter=iter; iter<nsteps; iter++)
-        {{
 
-            {in_loop}
+    // We avoid putting this if statement in the loop for performance
 
-            // Advance location deeper into the volume
-            loc += step;
+    if (u_downsample > 1.) {{
+
+        while (iter < nsteps) {{
+            for (iter=iter; iter<nsteps; iter++)
+            {{
+
+                {in_loop}
+
+                // Advance location deeper into the volume
+                loc += (0.5 + rand(loc)) * step;
+
+            }}
         }}
+
+    }} else {{
+
+        while (iter < nsteps) {{
+            for (iter=iter; iter<nsteps; iter++)
+            {{
+
+                {in_loop}
+
+                // Advance location deeper into the volume
+                loc += step;
+
+            }}
+        }}
+
     }}
+
 
     float count = 0;
     vec4 color = vec4(0., 0., 0., 0.);

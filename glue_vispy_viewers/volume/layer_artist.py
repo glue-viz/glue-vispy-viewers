@@ -56,7 +56,7 @@ class VolumeLayerArtist(VispyLayerArtist):
             emulate_texture = (sys.platform == 'win32' and
                                sys.version_info[0] < 3)
 
-            multivol = MultiVolume(threshold=0.1, emulate_texture=emulate_texture,
+            multivol = MultiVolume(emulate_texture=emulate_texture,
                                    bgcolor=settings.BACKGROUND_COLOR)
 
             self.vispy_widget.add_data_visual(multivol)

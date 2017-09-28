@@ -74,7 +74,7 @@ class MultiVolumeVisual(VolumeVisual):
         Absolute maximum number of volumes that can be shown.
     """
 
-    def __init__(self, n_volume_max=10, threshold=None, relative_step_size=0.8,
+    def __init__(self, n_volume_max=10, relative_step_size=0.8,
                  emulate_texture=False, bgcolor='white'):
 
         # Choose texture class
@@ -123,6 +123,8 @@ class MultiVolumeVisual(VolumeVisual):
         self.shared_program['a_texcoord'] = self._texcoord
         self.shared_program['u_shape'] = self._vol_shape[::-1]
 
+        self.shared_program['u_downsample'] = 1.
+
         self._draw_mode = 'triangle_strip'
         self._index_buffer = IndexBuffer()
 
@@ -153,10 +155,10 @@ class MultiVolumeVisual(VolumeVisual):
         if self._data_shape is None:
             return
         min_dimension = min(self._data_shape)
-        self.relative_step_size = max(0.8, min_dimension / 100)
+        self.shared_program['u_downsample'] = min_dimension / 20
 
     def upsample(self):
-        self.relative_step_size = self.relative_step_size_orig
+        self.shared_program['u_downsample'] = 1.
 
     def set_background(self, color):
         self.shared_program['u_bgcolor'] = Color(color).rgba
@@ -252,10 +254,7 @@ class MultiVolumeVisual(VolumeVisual):
         if not any(self.enabled):
             return
         else:
-            try:
-                super(MultiVolumeVisual, self).draw()
-            except:
-                pass
+            super(MultiVolumeVisual, self).draw()
 
 
 MultiVolume = create_visual_node(MultiVolumeVisual)
