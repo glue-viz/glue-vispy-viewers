@@ -12,14 +12,14 @@ from ..volume_viewer import VispyVolumeViewer
 GLUE_LT_08 = LooseVersion(glue.__version__) < LooseVersion('0.8')
 
 
-def make_test_data():
+def make_test_data(dimensions=(10, 10, 10)):
 
     data = Data(label="Test Cube Data")
 
     np.random.seed(12345)
 
     for letter in 'abc':
-        comp = Component(np.random.random((10, 10, 10)))
+        comp = Component(np.random.random(dimensions))
         data.add_component(comp, letter)
 
     return data
@@ -101,3 +101,23 @@ def test_volume_viewer(tmpdir):
     assert layer_artist.alpha == 0.8
 
     ga2.close()
+
+
+def test_array_shape(tmpdir):
+    # Create irregularly shaped data cube
+    data = make_test_data((3841, 48, 46))
+
+    # Create fake session
+
+    dc = DataCollection([data])
+    ga = GlueApplication(dc)
+
+    volume = ga.new_data_viewer(VispyVolumeViewer)
+    volume.add_data(data)
+
+    viewer_state = volume.state
+
+    # Get layer artist style editor
+    layer_state = viewer_state.layers[0]
+
+    layer_state.attribute = data.id['b']
