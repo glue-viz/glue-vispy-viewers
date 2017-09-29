@@ -55,52 +55,52 @@ class VispyMouseMode(CheckableTool):
         mode = EditSubsetMode()
         mode.update(self.viewer._data, subset_state, focus_data=data)
 
-    def mark_selected_dict(self, indices_dict):
-        subset_state = MultiElementSubsetState(indices_dict=indices_dict)
+    def mark_selected_dict(self, mask_dict):
+        subset_state = MultiMaskSubsetState(mask_dict=mask_dict)
         mode = EditSubsetMode()
-        if len(indices_dict) > 0:
-            mode.update(self.viewer._data, subset_state, focus_data=list(indices_dict)[0])
+        if len(mask_dict) > 0:
+            mode.update(self.viewer._data, subset_state, focus_data=list(mask_dict)[0])
 
 
-class MultiElementSubsetState(SubsetState):
+class MultiMaskSubsetState(SubsetState):
 
-    def __init__(self, indices_dict=None):
-        super(MultiElementSubsetState, self).__init__()
-        indices_dict_uuid = {}
-        for key in indices_dict:
+    def __init__(self, mask_dict=None):
+        super(MultiMaskSubsetState, self).__init__()
+        mask_dict_uuid = {}
+        for key in mask_dict:
             if isinstance(key, Data):
-                indices_dict_uuid[key.uuid] = indices_dict[key]
+                mask_dict_uuid[key.uuid] = mask_dict[key]
             else:
-                indices_dict_uuid[key] = indices_dict[key]
-        self._indices_dict = indices_dict_uuid
+                mask_dict_uuid[key] = mask_dict[key]
+        self._mask_dict = mask_dict_uuid
 
     def to_mask(self, data, view=None):
-        if data.uuid in self._indices_dict:
-            indices = self._indices_dict[data.uuid]
-            result = np.zeros(data.shape, dtype=bool)
-            result.flat[indices] = True
+        if data.uuid in self._mask_dict:
+            mask = self._mask_dict[data.uuid]
+            print("MASK2", mask.shape)
             if view is not None:
-                result = result[view]
-            return result
+                mask = mask[view]
+            print("MASK3", mask.shape)
+            return mask
         else:
             raise IncompatibleAttribute()
 
     def copy(self):
-        state = MultiElementSubsetState(indices_dict=self._indices_dict)
+        state = MultiMaskSubsetState(mask_dict=self._mask_dict)
         return state
 
     def __gluestate__(self, context):
-        serialized = {key: context.do(value) for key, value in self._indices_dict.items()}
-        return {'indices_dict': serialized}
+        serialized = {key: context.do(value) for key, value in self._mask_dict.items()}
+        return {'mask_dict': serialized}
 
     @classmethod
     def __setgluestate__(cls, rec, context):
-        unserialized = {key: context.object(value) for key, value in rec['indices_dict'].items()}
-        state = cls(indices_dict=unserialized)
+        unserialized = {key: context.object(value) for key, value in rec['mask_dict'].items()}
+        state = cls(mask_dict=unserialized)
         return state
 
 
-def get_map_data_scatter(data, visual, vispy_widget):
+def get_mask_from_scatter(data, visual, vispy_widget, selection):
 
     # Get the component IDs
     x_att = vispy_widget.viewer_state.x_att
@@ -115,36 +115,72 @@ def get_map_data_scatter(data, visual, vispy_widget):
     tr = as_matrix_transform(visual.get_transform(map_from='visual', map_to='canvas'))
     data = tr.map(layer_data)
     data /= data[:, 3:]  # normalize with homogeneous coordinates
-    return data[:, :2]
+
+    return selection(data[:, 0], data[:, 1])
 
 
-def get_map_data_volume(data, visual):
+def get_mask_from_volume(data, visual, selection):
     """
     Get the mapped buffer from self.visual to canvas.
 
     :return: Mapped data position on canvas.
     """
 
+    # For large volumes, the code in this function would take up very large
+    # amounts of memory, so we need to proceed in chunks. The chunk size is
+    # chosen so that the chunking has negligeable performance implications.
+
+    chunk_size = 1000000
+
     tr = as_matrix_transform(visual.get_transform(map_from='visual',
                                                   map_to='canvas'))
 
-    pos_data = np.indices(data.data.shape[::-1], dtype=float)
-    pos_data = pos_data.reshape(3, -1).transpose()
+    # We chunk by selecting C-contiguous sets of data slices. We do this by
+    # first finding the number of elements along each slice then finding the
+    # numbe of slices we can fit in the chunk size
 
-    data = tr.map(pos_data)
-    data /= data[:, 3:]   # normalize with homogeneous coordinates
-    return data[:, :2]
+    values_per_slice = data.shape[1] * data.shape[2]
+    slices_per_chunk = max(chunk_size // values_per_slice, 1)
+    n_chunks = max(data.shape[0] // slices_per_chunk, 1)
+
+    mask = np.zeros(data.shape, dtype=bool)
+
+    for chunk in range(n_chunks):
+
+        imin = chunk * slices_per_chunk
+        imax = min((chunk + 1) * slices_per_chunk, data.shape[0])
+
+        chunk_shape = (imax - imin,) + data.shape[1:]
+
+        pos_data = np.indices(chunk_shape[::-1], dtype=float)
+        pos_data[2] += imin
+        pos_data = pos_data.reshape(3, -1).transpose()
+
+        data_sub = tr.map(pos_data)
+
+        data_sub /= data_sub[:, 3:]   # normalize with homogeneous coordinates
+
+        mask_sub = selection(data_sub[:, 0], data_sub[:, 1])
+
+        mask_sub = np.reshape(mask_sub, chunk_shape[::-1])
+        mask_sub = np.transpose(mask_sub)
+
+        mask[imin:imax] = mask_sub
+
+    return mask
 
 
-def get_map_data(layer_artist, viewer):
+def get_mask_for_layer_artist(layer_artist, viewer, selection):
 
     from ..scatter.layer_artist import ScatterLayerArtist
     from ..volume.layer_artist import VolumeLayerArtist
 
     if isinstance(layer_artist, ScatterLayerArtist):
-        return get_map_data_scatter(layer_artist.layer, layer_artist.visual, viewer._vispy_widget)
+        return get_mask_from_scatter(layer_artist.layer, layer_artist.visual,
+                                     viewer._vispy_widget, selection)
     elif isinstance(layer_artist, VolumeLayerArtist):
-        return get_map_data_volume(layer_artist.layer, layer_artist.visual)
+        return get_mask_from_volume(layer_artist.layer, layer_artist.visual,
+                                    selection)
     else:
         raise Exception("Unknown layer type: {0}".format(type(layer_artist)))
 
@@ -186,22 +222,20 @@ class LassoSelectionMode(VispyMouseMode):
 
             if len(self.line_pos) > 0:
 
-                indices_dict = {}
+                mask_dict = {}
 
                 for layer_artist in self.iter_data_layer_artists():
 
-                    data = get_map_data(layer_artist, self.viewer)
-
                     vx, vy = np.array(self.line_pos).transpose()
-                    x, y = data.transpose()
-                    mask = points_inside_poly(x, y, vx, vy)
 
-                    shape_mask = np.reshape(mask, layer_artist.layer.shape[::-1])
-                    shape_mask = np.ravel(np.transpose(shape_mask))
+                    def selection(x, y):
+                        return points_inside_poly(x, y, vx, vy)
 
-                    indices_dict[layer_artist.layer] = np.where(shape_mask)[0]
+                    mask = get_mask_for_layer_artist(layer_artist, self.viewer, selection)
 
-                self.mark_selected_dict(indices_dict)
+                    mask_dict[layer_artist.layer] = mask
+
+                self.mark_selected_dict(mask_dict)
 
             self.reset()
 
@@ -255,19 +289,18 @@ class RectangleSelectionMode(VispyMouseMode):
 
                 r = RectangularROI(*self.bounds)
 
-                indices_dict = {}
+                mask_dict = {}
 
                 for layer_artist in self.iter_data_layer_artists():
 
-                    data = get_map_data(layer_artist, self.viewer)
-                    mask = r.contains(data[:, 0], data[:, 1])
+                    def selection(x, y):
+                        return r.contains(x, y)
 
-                    shape_mask = np.reshape(mask, layer_artist.layer.shape[::-1])
-                    shape_mask = np.ravel(np.transpose(shape_mask))
+                    mask = get_mask_for_layer_artist(layer_artist, self.viewer, selection)
 
-                    indices_dict[layer_artist.layer] = np.where(shape_mask)[0]
+                    mask_dict[layer_artist.layer] = mask
 
-                self.mark_selected_dict(indices_dict)
+                self.mark_selected_dict(mask_dict)
 
             self.reset()
 
@@ -312,18 +345,17 @@ class CircleSelectionMode(VispyMouseMode):
             if self.radius > 0:
                 c = CircularROI(self.center[0], self.center[1], self.radius)
 
-                indices_dict = {}
+                mask_dict = {}
 
                 for layer_artist in self.iter_data_layer_artists():
 
-                    data = get_map_data(layer_artist, self.viewer)
-                    mask = c.contains(data[:, 0], data[:, 1])
+                    def selection(x, y):
+                        return c.contains(x, y)
 
-                    shape_mask = np.reshape(mask, layer_artist.layer.shape[::-1])
-                    shape_mask = np.ravel(np.transpose(shape_mask))
+                    mask = get_mask_for_layer_artist(layer_artist, self.viewer, selection)
 
-                    indices_dict[layer_artist.layer] = np.where(shape_mask)[0]
+                    mask_dict[layer_artist.layer] = mask
 
-                self.mark_selected_dict(indices_dict)
+                self.mark_selected_dict(mask_dict)
 
             self.reset()
