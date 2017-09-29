@@ -61,6 +61,12 @@ class VispyMouseMode(CheckableTool):
         if len(mask_dict) > 0:
             mode.update(self.viewer._data, subset_state, focus_data=list(mask_dict)[0])
 
+    def set_progress(self, value):
+        if value < 0:
+            self.viewer.show_status('')
+        else:
+            self.viewer.show_status('Calculating selection - {0}%'.format(int(value)))
+
 
 class MultiMaskSubsetState(SubsetState):
 
@@ -98,7 +104,7 @@ class MultiMaskSubsetState(SubsetState):
         return state
 
 
-def get_mask_from_scatter(data, visual, vispy_widget, selection):
+def get_mask_from_scatter(data, visual, vispy_widget, selection, progress=None):
 
     # Get the component IDs
     x_att = vispy_widget.viewer_state.x_att
@@ -117,7 +123,7 @@ def get_mask_from_scatter(data, visual, vispy_widget, selection):
     return selection(data[:, 0], data[:, 1])
 
 
-def get_mask_from_volume(data, visual, selection):
+def get_mask_from_volume(data, visual, selection, progress=None):
     """
     Get the mapped buffer from self.visual to canvas.
 
@@ -165,20 +171,23 @@ def get_mask_from_volume(data, visual, selection):
 
         mask[imin:imax] = mask_sub
 
+        if progress is not None:
+            progress(100. * (chunk + 1) / n_chunks)
+
     return mask
 
 
-def get_mask_for_layer_artist(layer_artist, viewer, selection):
+def get_mask_for_layer_artist(layer_artist, viewer, selection, progress=None):
 
     from ..scatter.layer_artist import ScatterLayerArtist
     from ..volume.layer_artist import VolumeLayerArtist
 
     if isinstance(layer_artist, ScatterLayerArtist):
         return get_mask_from_scatter(layer_artist.layer, layer_artist.visual,
-                                     viewer._vispy_widget, selection)
+                                     viewer._vispy_widget, selection, progress=progress)
     elif isinstance(layer_artist, VolumeLayerArtist):
         return get_mask_from_volume(layer_artist.layer, layer_artist.visual,
-                                    selection)
+                                    selection, progress=progress)
     else:
         raise Exception("Unknown layer type: {0}".format(type(layer_artist)))
 
@@ -222,6 +231,8 @@ class LassoSelectionMode(VispyMouseMode):
 
                 mask_dict = {}
 
+                self.set_progress(0)
+
                 for layer_artist in self.iter_data_layer_artists():
 
                     vx, vy = np.array(self.line_pos).transpose()
@@ -229,11 +240,13 @@ class LassoSelectionMode(VispyMouseMode):
                     def selection(x, y):
                         return points_inside_poly(x, y, vx, vy)
 
-                    mask = get_mask_for_layer_artist(layer_artist, self.viewer, selection)
+                    mask = get_mask_for_layer_artist(layer_artist, self.viewer, selection, progress=self.set_progress)
 
                     mask_dict[layer_artist.layer] = mask
 
                 self.mark_selected_dict(mask_dict)
+
+                self.set_progress(-1)
 
             self.reset()
 
@@ -289,16 +302,20 @@ class RectangleSelectionMode(VispyMouseMode):
 
                 mask_dict = {}
 
+                self.set_progress(0)
+
                 for layer_artist in self.iter_data_layer_artists():
 
                     def selection(x, y):
                         return r.contains(x, y)
 
-                    mask = get_mask_for_layer_artist(layer_artist, self.viewer, selection)
+                    mask = get_mask_for_layer_artist(layer_artist, self.viewer, selection, progress=self.set_progress)
 
                     mask_dict[layer_artist.layer] = mask
 
                 self.mark_selected_dict(mask_dict)
+
+                self.set_progress(-1)
 
             self.reset()
 
@@ -345,15 +362,19 @@ class CircleSelectionMode(VispyMouseMode):
 
                 mask_dict = {}
 
+                self.set_progress(0)
+
                 for layer_artist in self.iter_data_layer_artists():
 
                     def selection(x, y):
                         return c.contains(x, y)
 
-                    mask = get_mask_for_layer_artist(layer_artist, self.viewer, selection)
+                    mask = get_mask_for_layer_artist(layer_artist, self.viewer, selection, progress=self.set_progress)
 
                     mask_dict[layer_artist.layer] = mask
 
                 self.mark_selected_dict(mask_dict)
+
+                self.set_progress(-1)
 
             self.reset()
