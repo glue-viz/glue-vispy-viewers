@@ -209,7 +209,7 @@ class MultiVolumeVisual(VolumeVisual):
         index = self.volumes[label]['index']
         self.shared_program['u_weight_{0:d}'.format(index)] = weight
 
-    def set_data(self, label, data):
+    def set_data(self, label, data, inplace_ok=False):
 
         if 'clim' not in self.volumes[label]:
             raise ValueError("set_clim should be called before set_data")
@@ -217,6 +217,9 @@ class MultiVolumeVisual(VolumeVisual):
         # Avoid adding the same data again
         if 'data' in self.volumes[label] and self.volumes[label]['data'] is data:
             return
+
+        if inplace_ok and data.dtype != np.float32:
+            raise TypeError('data should be float32 if inplace_ok is set')
 
         # VisPy can't handle dimensions larger than 2048 so we need to reduce
         # the array on-the-fly if needed
@@ -229,6 +232,7 @@ class MultiVolumeVisual(VolumeVisual):
                 data = block_reduce(data, self._block_size, func=np.mean)
 
         self.volumes[label]['data'] = data
+        self.volumes[label]['inplace_ok'] = inplace_ok
         self._update_scaled_data(label)
 
     def _update_scaled_data(self, label):
@@ -236,8 +240,11 @@ class MultiVolumeVisual(VolumeVisual):
         index = self.volumes[label]['index']
         clim = self.volumes[label]['clim']
         data = self.volumes[label]['data']
+        inplace_ok = self.volumes[label]['inplace_ok']
 
-        data = data.astype(np.float32)
+        if not inplace_ok:
+            data = data.astype(np.float32)
+
         data -= clim[0]
         data *= 1 / (clim[1] - clim[0])
         np.nan_to_num(data, copy=False)

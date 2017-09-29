@@ -70,9 +70,14 @@ class VolumeLayerArtist(VispyLayerArtist):
         except TypeError:  # glue-core >= 0.11
             self.state.add_global_callback(self._update_from_state)
 
+        self.reset_cache()
+
         self._update_from_state(**self.state.as_dict())
 
         self.visible = True
+
+    def reset_cache(self):
+        self._last_layer_state = {}
 
     @property
     def visual(self):
@@ -111,16 +116,31 @@ class VolumeLayerArtist(VispyLayerArtist):
 
     def _update_from_state(self, **props):
 
-        if 'color' in props:
+        # Figure out which attributes are different from before. Ideally we shouldn't
+        # need this but currently this method is called multiple times if an
+        # attribute is changed due to x_att changing then hist_x_min, hist_x_max, etc.
+        # If we can solve this so that _update_histogram is really only called once
+        # then we could consider simplifying this. Until then, we manually keep track
+        # of which properties have changed.
+
+        changed = set()
+
+        for key, value in self.state.as_dict().items():
+            if value != self._last_layer_state.get(key, None):
+                changed.add(key)
+
+        self._last_layer_state.update(self.state.as_dict())
+
+        if 'color' in changed:
             self._update_cmap_from_color()
 
-        if 'vmin' in props or 'vmax' in props:
+        if 'vmin' in changed or 'vmax' in changed:
             self._update_limits()
 
-        if 'alpha' in props:
+        if 'alpha' in changed:
             self._update_alpha()
 
-        if 'attribute' in props or 'subset_mode' in props:
+        if 'attribute' in changed or 'subset_mode' in changed:
             self._update_data()
 
     def _update_cmap_from_color(self):
@@ -152,10 +172,17 @@ class VolumeLayerArtist(VispyLayerArtist):
             else:
                 self._enabled = True
 
-            if self.state.subset_mode == 'outline':
-                data = mask.astype(float)
+            if not np.any(mask):
+                self._multivol.disable(self.id)
+                return
             else:
-                data = self.layer.data[self.state.attribute] * mask
+                self._multivol.enable(self.id)
+
+            if self.state.subset_mode == 'outline':
+                data = mask.astype(np.astype32)
+            else:
+                data = self.layer.data[self.state.attribute].astype(np.float32)
+                data *= mask
         else:
 
             data = self.layer[self.state.attribute]
@@ -174,7 +201,7 @@ class VolumeLayerArtist(VispyLayerArtist):
             data[:kmin] = invalid
             data[kmax:] = invalid
 
-        self._multivol.set_data(self.id, data)
+        self._multivol.set_data(self.id, data, inplace_ok=isinstance(self.layer, Subset))
         self.redraw()
 
     def _update_visibility(self):

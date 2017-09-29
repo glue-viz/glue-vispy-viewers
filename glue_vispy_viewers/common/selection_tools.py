@@ -77,10 +77,8 @@ class MultiMaskSubsetState(SubsetState):
     def to_mask(self, data, view=None):
         if data.uuid in self._mask_dict:
             mask = self._mask_dict[data.uuid]
-            print("MASK2", mask.shape)
             if view is not None:
                 mask = mask[view]
-            print("MASK3", mask.shape)
             return mask
         else:
             raise IncompatibleAttribute()
