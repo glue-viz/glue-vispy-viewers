@@ -17,7 +17,7 @@ except ImportError:
 from glue.core import Subset
 from glue.config import viewer_tool
 
-from ..common.selection_tools import VispyMouseMode, get_map_data_scatter
+from ..common.selection_tools import VispyMouseMode, get_mask_for_layer_artist
 from .layer_artist import ScatterLayerArtist
 
 # TODO: replace by knn selection mode
@@ -60,20 +60,11 @@ class PointSelectionMode(VispyMouseMode):
             self.active_layer_artist = layer_artist
 
             # Ray intersection on the CPU to highlight the selected point(s)
-            data = get_map_data_scatter(self.active_layer_artist.layer,
-                                        self.active_layer_artist.visual,
-                                        self._vispy_widget)
 
-            # TODO: the threshold 2 here could replaced with a slider bar to
-            # control the selection region in the future
-            m1 = data > (event.pos - 2)
-            m2 = data < (event.pos + 2)
+            def selection(x, y):
+                return (np.abs(x - event.pos[0]) < 2) & (np.abs(y - event.pos[1]) < 2)
 
-            array_mark = np.argwhere(m1[:, 0] & m1[:, 1] & m2[:, 0] & m2[:, 1])
-            mask = np.zeros(len(data), dtype=bool)
-            for i in array_mark:
-                index = int(i[0])
-                mask[index] = True
+            mask = get_mask_for_layer_artist(self.active_layer_artist, self.viewer, selection)
 
             self.mark_selected(mask, self.active_layer_artist.layer)
 
@@ -84,9 +75,6 @@ class PointSelectionMode(VispyMouseMode):
             if event.button == 1 and event.is_dragging:
 
                 # TODO: support multiple datasets here
-                data = get_map_data_scatter(self.active_layer_artist.layer,
-                                            self.active_layer_artist.visual,
-                                            self._vispy_widget)
 
                 # calculate the threshold and call draw visual
                 width = event.pos[0] - self.selection_origin[0]
@@ -95,13 +83,19 @@ class PointSelectionMode(VispyMouseMode):
                 canvas_diag = math.sqrt(self._vispy_widget.canvas.size[0]**2 +
                                         self._vispy_widget.canvas.size[1]**2)
 
-                mask = np.zeros(self.active_layer_artist.layer.shape)
-
                 # neighbor num proportioned to mouse moving distance
-                n_neighbors = drag_distance / canvas_diag * self.active_layer_artist.layer.shape[0]
+                n_neighbors = int(drag_distance / canvas_diag * self.active_layer_artist.layer.shape[0])
                 if n_neighbors >= 1:
-                    neigh = NearestNeighbors(n_neighbors=n_neighbors)
-                    neigh.fit(data)
-                    select_index = neigh.kneighbors([self.selection_origin])[1]
-                    mask[select_index] = 1
-                self.mark_selected(mask, self.active_layer_artist.layer)
+
+                    # TODO: this has to be applied in one go, not in chunks
+                    def selection(x, y):
+                        mask = np.zeros(x.shape, dtype=bool)
+                        neigh = NearestNeighbors(n_neighbors=n_neighbors)
+                        neigh.fit(np.vstack([x, y]).transpose())
+                        select_index = neigh.kneighbors([self.selection_origin])[1]
+                        mask[select_index] = 1
+                        return mask
+
+                    mask = get_mask_for_layer_artist(self.active_layer_artist, self.viewer, selection)
+
+                    self.mark_selected(mask, self.active_layer_artist.layer)
