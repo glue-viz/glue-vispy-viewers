@@ -6,6 +6,7 @@ import os
 import pytest
 
 import numpy as np
+from numpy.testing import assert_equal
 
 from glue.core.state import GlueUnSerializer
 
@@ -106,3 +107,44 @@ def test_scatter_volume(protocol):
     assert layer_state.vmax == 23
     assert layer_state.color == '#e60010'
     assert layer_state.alpha == 0.36
+
+
+def test_scatter_volume_selection():
+
+    filename = os.path.join(DATA, 'scatter_volume_selection.glu')
+
+    with open(filename, 'r') as f:
+        session = f.read()
+
+    state = GlueUnSerializer.loads(session)
+
+    ga = state.object('__main__')
+
+    dc = ga.session.data_collection
+
+    assert len(dc) == 2
+
+    assert dc[0].label == 'array'
+    assert dc[1].label == 'table'
+
+    expected_array = np.array([[[0, 0, 0, 0],
+                                [0, 0, 0, 0],
+                                [0, 0, 0, 0],
+                                [0, 0, 0, 0]],
+                               [[0, 0, 0, 0],
+                                [0, 0, 0, 0],
+                                [0, 1, 0, 0],
+                                [0, 1, 1, 1]],
+                               [[0, 0, 0, 0],
+                                [0, 0, 1, 1],
+                                [0, 1, 1, 1],
+                                [0, 1, 1, 1]],
+                               [[0, 0, 1, 1],
+                                [0, 0, 1, 1],
+                                [0, 1, 1, 1],
+                                [0, 0, 0, 1]]], dtype=bool)
+
+    expected_table = np.array([0, 1, 0], dtype=bool)
+
+    assert_equal(dc[0].subsets[0].to_mask(), expected_array)
+    assert_equal(dc[1].subsets[0].to_mask(), expected_table)

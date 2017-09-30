@@ -206,11 +206,8 @@ class BaseVispyViewer(DataViewer):
         return viewer
 
     def show_status(self, text):
-        if not self.status_label:
-            statusbar = self.statusBar()
-            self.status_label = QtWidgets.QLabel()
-            statusbar.addWidget(self.status_label)
-        self.status_label.setText(text)
+        statusbar = self.statusBar()
+        statusbar.showMessage(text)
 
     def restore_layers(self, layers, context):
         pass

@@ -38,6 +38,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+from distutils.version import LooseVersion
 from collections import defaultdict
 
 import numpy as np
@@ -51,6 +52,8 @@ from ..extern.vispy.color import get_colormap, Color
 from ..extern.vispy.scene.visuals import create_visual_node
 
 from .shaders import get_shaders
+
+NUMPY_LT_1_13 = LooseVersion(np.__version__) < LooseVersion('1.13')
 
 
 class MultiVolumeVisual(VolumeVisual):
@@ -74,7 +77,7 @@ class MultiVolumeVisual(VolumeVisual):
         Absolute maximum number of volumes that can be shown.
     """
 
-    def __init__(self, n_volume_max=10, threshold=None, relative_step_size=0.8,
+    def __init__(self, n_volume_max=10, relative_step_size=0.8,
                  emulate_texture=False, bgcolor='white'):
 
         # Choose texture class
@@ -123,6 +126,8 @@ class MultiVolumeVisual(VolumeVisual):
         self.shared_program['a_texcoord'] = self._texcoord
         self.shared_program['u_shape'] = self._vol_shape[::-1]
 
+        self.shared_program['u_downsample'] = 1.
+
         self._draw_mode = 'triangle_strip'
         self._index_buffer = IndexBuffer()
 
@@ -137,6 +142,7 @@ class MultiVolumeVisual(VolumeVisual):
         self.set_gl_state('translucent', cull_face=False)
 
         self.relative_step_size = relative_step_size
+        self.relative_step_size_orig = self.relative_step_size
 
         self.volumes = defaultdict(dict)
 
@@ -147,6 +153,15 @@ class MultiVolumeVisual(VolumeVisual):
             self.freeze()
         except AttributeError:  # Older versions of VisPy
             pass
+
+    def downsample(self):
+        if self._data_shape is None:
+            return
+        min_dimension = min(self._data_shape)
+        self.shared_program['u_downsample'] = min_dimension / 20
+
+    def upsample(self):
+        self.shared_program['u_downsample'] = 1.
 
     def set_background(self, color):
         self.shared_program['u_bgcolor'] = Color(color).rgba
@@ -186,6 +201,9 @@ class MultiVolumeVisual(VolumeVisual):
         self.shared_program.frag['cmap{0:d}'.format(index)] = Function(cmap.glsl_map)
 
     def set_clim(self, label, clim):
+        # Avoid setting the same limits again
+        if 'clim' in self.volumes[label] and self.volumes[label]['clim'] == clim:
+            return
         self.volumes[label]['clim'] = clim
         if 'data' in self.volumes[label]:
             self._update_scaled_data(label)
@@ -194,13 +212,22 @@ class MultiVolumeVisual(VolumeVisual):
         index = self.volumes[label]['index']
         self.shared_program['u_weight_{0:d}'.format(index)] = weight
 
-    def set_data(self, label, data):
+    def set_data(self, label, data, inplace_ok=False):
 
         if 'clim' not in self.volumes[label]:
             raise ValueError("set_clim should be called before set_data")
 
-        # Get rid of NaN values
-        data = np.nan_to_num(data)
+        # Avoid adding the same data again
+        if 'data' in self.volumes[label] and self.volumes[label]['data'] is data:
+            return
+
+        # Since outside this class we sometimes need to already copy the data
+        # before passing it here, we allow the caller to specify inplace_ok=True
+        # which means that it's ok to do the limits scaling in-place to avoid
+        # another copy.
+
+        if inplace_ok and data.dtype != np.float32:
+            raise TypeError('data should be float32 if inplace_ok is set')
 
         # VisPy can't handle dimensions larger than 2048 so we need to reduce
         # the array on-the-fly if needed
@@ -213,16 +240,26 @@ class MultiVolumeVisual(VolumeVisual):
                 data = block_reduce(data, self._block_size, func=np.mean)
 
         self.volumes[label]['data'] = data
+        self.volumes[label]['inplace_ok'] = inplace_ok
         self._update_scaled_data(label)
 
     def _update_scaled_data(self, label):
+
         index = self.volumes[label]['index']
         clim = self.volumes[label]['clim']
         data = self.volumes[label]['data']
+        inplace_ok = self.volumes[label]['inplace_ok']
 
-        data = data.astype(np.float32)
+        if not inplace_ok:
+            data = data.astype(np.float32)
+
         data -= clim[0]
-        data /= (clim[1] - clim[0])
+        data *= 1 / (clim[1] - clim[0])
+
+        if NUMPY_LT_1_13:
+            data[np.isnan(data)] = 0.
+        else:
+            np.nan_to_num(data, copy=False)
 
         self.shared_program['u_volumetex_{0:d}'.format(index)].set_data(data)
 

@@ -1,3 +1,8 @@
+0.9 (unreleased)
+----------------
+
+- Improve performance for volume rendering. [#274]
+
 0.8 (2017-08-22)
 ----------------
 

@@ -27,4 +27,7 @@ class VispyOptionsWidget(QtWidgets.QWidget):
                           'valuetext_y_stretch': dict(fmt='{:6.2f}'),
                           'valuetext_z_stretch': dict(fmt='{:6.2f}')}
 
+        if not hasattr(viewer_state, 'downsample'):
+            self.ui.bool_downsample.hide()
+
         autoconnect_callbacks_to_qt(viewer_state, self.ui, connect_kwargs)
