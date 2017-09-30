@@ -172,12 +172,21 @@ class VolumeLayerArtist(VispyLayerArtist):
             else:
                 self._enabled = True
 
+            # If there are no valid values in the mask, no point in sending the
+            # mask array to OpenGL - we can simply disable the layer silently
+            # though note that this doesn't change the 'official' visibility of
+            # the layer.
             if not np.any(mask):
                 self._multivol.disable(self.id)
                 return
             else:
                 self._multivol.enable(self.id)
 
+            # We convert to 32-bit floating point arrays here because that is
+            # what is needed to send to OpenGL. Since we need to do a copy here
+            # we might as well convert straight to the right datatype then we
+            # can specify inplace_ok lower down which means the array can be
+            # modified/scaled if needed.
             if self.state.subset_mode == 'outline':
                 data = mask.astype(np.astype32)
             else:

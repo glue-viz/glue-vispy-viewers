@@ -69,6 +69,15 @@ class VispyMouseMode(CheckableTool):
 
 
 class MultiMaskSubsetState(SubsetState):
+    """
+    A subset state that can include a different mask for different datasets.
+
+    This is useful when doing 3D selections with multiple datasets. This used
+    to be a class called MultiElementSubsetState but it is more efficient to
+    store masks than element lists. However, for backward-compatibility,
+    values of the mask_dict dictionary can be index lists (recognzied because
+    they don't have a boolean type).
+    """
 
     def __init__(self, mask_dict=None):
         super(MultiMaskSubsetState, self).__init__()

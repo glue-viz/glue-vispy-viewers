@@ -221,6 +221,11 @@ class MultiVolumeVisual(VolumeVisual):
         if 'data' in self.volumes[label] and self.volumes[label]['data'] is data:
             return
 
+        # Since outside this class we sometimes need to already copy the data
+        # before passing it here, we allow the caller to specify inplace_ok=True
+        # which means that it's ok to do the limits scaling in-place to avoid
+        # another copy.
+
         if inplace_ok and data.dtype != np.float32:
             raise TypeError('data should be float32 if inplace_ok is set')
 
@@ -276,7 +281,10 @@ class MultiVolumeVisual(VolumeVisual):
         if not any(self.enabled):
             return
         else:
-            super(MultiVolumeVisual, self).draw()
+            try:
+                super(MultiVolumeVisual, self).draw()
+            except:
+                pass
 
 
 MultiVolume = create_visual_node(MultiVolumeVisual)

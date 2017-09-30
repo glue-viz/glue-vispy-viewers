@@ -87,7 +87,9 @@ class PointSelectionMode(VispyMouseMode):
                 n_neighbors = int(drag_distance / canvas_diag * self.active_layer_artist.layer.shape[0])
                 if n_neighbors >= 1:
 
-                    # TODO: this has to be applied in one go, not in chunks
+                    # TODO: this has to be applied in one go, not in chunks. For
+                    # now this is definitely the case since the scatter selection
+                    # is not done in chunks.
                     def selection(x, y):
                         mask = np.zeros(x.shape, dtype=bool)
                         neigh = NearestNeighbors(n_neighbors=n_neighbors)

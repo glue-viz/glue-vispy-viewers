@@ -48,11 +48,19 @@ class VispyVolumeViewer(BaseVispyViewer):
                                  "3D volume rendering viewer",
                                  buttons=QMessageBox.Ok)
 
+        # We now make it so that is the user clicks to drag or uses the
+        # mouse wheel (or scroll on a trackpad), we downsample the volume
+        # rendering temporarily.
+
         self._vispy_widget.canvas.events.mouse_press.connect(self.mouse_press)
         self._vispy_widget.canvas.events.mouse_wheel.connect(self.mouse_wheel)
         self._vispy_widget.canvas.events.mouse_release.connect(self.mouse_release)
 
         self._downsampled = False
+
+        # For the mouse wheel, we receive discrete events so we need to have
+        # a buffer (for now 250ms) before which we consider the mouse wheel
+        # event to have stopped.
 
         self._downsample_timer = QTimer()
         self._downsample_timer.setInterval(250)

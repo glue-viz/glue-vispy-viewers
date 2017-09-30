@@ -125,6 +125,10 @@ void main() {{
 
     if (u_downsample > 1.) {{
 
+        // In the case where we are downsampling we use a step size that is
+        // random to avoid artifacts in the output. This appears to be fast
+        // enough to still make the downsampling worth it.
+
         while (iter < nsteps) {{
             for (iter=iter; iter<nsteps; iter++)
             {{
