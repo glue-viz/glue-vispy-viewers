@@ -120,6 +120,7 @@ class MultiMaskSubsetState(SubsetState):
         state = cls(mask_dict=mask_dict)
         return state
 
+
 # Backward-compatibility for reading files
 MultiElementSubsetState = MultiMaskSubsetState
 
@@ -260,7 +261,8 @@ class LassoSelectionMode(VispyMouseMode):
                     def selection(x, y):
                         return points_inside_poly(x, y, vx, vy)
 
-                    mask = get_mask_for_layer_artist(layer_artist, self.viewer, selection, progress=self.set_progress)
+                    mask = get_mask_for_layer_artist(layer_artist, self.viewer,
+                                                     selection, progress=self.set_progress)
 
                     mask_dict[layer_artist.layer] = mask
 
@@ -329,7 +331,8 @@ class RectangleSelectionMode(VispyMouseMode):
                     def selection(x, y):
                         return r.contains(x, y)
 
-                    mask = get_mask_for_layer_artist(layer_artist, self.viewer, selection, progress=self.set_progress)
+                    mask = get_mask_for_layer_artist(layer_artist, self.viewer,
+                                                     selection, progress=self.set_progress)
 
                     mask_dict[layer_artist.layer] = mask
 
@@ -389,7 +392,8 @@ class CircleSelectionMode(VispyMouseMode):
                     def selection(x, y):
                         return c.contains(x, y)
 
-                    mask = get_mask_for_layer_artist(layer_artist, self.viewer, selection, progress=self.set_progress)
+                    mask = get_mask_for_layer_artist(layer_artist, self.viewer,
+                                                     selection, progress=self.set_progress)
 
                     mask_dict[layer_artist.layer] = mask
 

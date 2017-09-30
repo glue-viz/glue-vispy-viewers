@@ -84,7 +84,8 @@ class PointSelectionMode(VispyMouseMode):
                                         self._vispy_widget.canvas.size[1]**2)
 
                 # neighbor num proportioned to mouse moving distance
-                n_neighbors = int(drag_distance / canvas_diag * self.active_layer_artist.layer.shape[0])
+                n_neighbors = int(drag_distance / canvas_diag *
+                                  self.active_layer_artist.layer.shape[0])
                 if n_neighbors >= 1:
 
                     # TODO: this has to be applied in one go, not in chunks. For
@@ -98,6 +99,7 @@ class PointSelectionMode(VispyMouseMode):
                         mask[select_index] = 1
                         return mask
 
-                    mask = get_mask_for_layer_artist(self.active_layer_artist, self.viewer, selection)
+                    mask = get_mask_for_layer_artist(self.active_layer_artist,
+                                                     self.viewer, selection)
 
                     self.mark_selected(mask, self.active_layer_artist.layer)
