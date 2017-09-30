@@ -83,6 +83,10 @@ class MultiMaskSubsetState(SubsetState):
     def to_mask(self, data, view=None):
         if data.uuid in self._mask_dict:
             mask = self._mask_dict[data.uuid]
+            if mask.dtype is not bool:  # backward-compatibility with indices_dict
+                indices = mask
+                mask = np.zeros(data.shape, dtype=bool)
+                mask.flat[indices] = True
             if view is not None:
                 mask = mask[view]
             return mask
@@ -99,9 +103,16 @@ class MultiMaskSubsetState(SubsetState):
 
     @classmethod
     def __setgluestate__(cls, rec, context):
-        unserialized = {key: context.object(value) for key, value in rec['mask_dict'].items()}
-        state = cls(mask_dict=unserialized)
+        # For backward-compatibility reasons we recognize indices_dict
+        if 'indices_dict' in rec:
+            mask_dict = {key: context.object(value) for key, value in rec['indices_dict'].items()}
+        else:
+            mask_dict = {key: context.object(value) for key, value in rec['mask_dict'].items()}
+        state = cls(mask_dict=mask_dict)
         return state
+
+# Backward-compatibility for reading files
+MultiElementSubsetState = MultiMaskSubsetState
 
 
 def get_mask_from_scatter(data, visual, vispy_widget, selection, progress=None):
