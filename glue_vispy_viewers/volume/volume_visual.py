@@ -38,6 +38,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+from distutils.version import LooseVersion
 from collections import defaultdict
 
 import numpy as np
@@ -51,6 +52,8 @@ from ..extern.vispy.color import get_colormap, Color
 from ..extern.vispy.scene.visuals import create_visual_node
 
 from .shaders import get_shaders
+
+NUMPY_LT_1_13 = LooseVersion(np.__version__) < LooseVersion('1.13')
 
 
 class MultiVolumeVisual(VolumeVisual):
@@ -247,7 +250,11 @@ class MultiVolumeVisual(VolumeVisual):
 
         data -= clim[0]
         data *= 1 / (clim[1] - clim[0])
-        np.nan_to_num(data, copy=False)
+
+        if NUMPY_LT_1_13:
+            data[np.isnan(data)] = 0.
+        else:
+            np.nan_to_num(data, copy=False)
 
         self.shared_program['u_volumetex_{0:d}'.format(index)].set_data(data)
 
