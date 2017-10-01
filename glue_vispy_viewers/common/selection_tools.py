@@ -92,7 +92,7 @@ class MultiMaskSubsetState(SubsetState):
     def to_mask(self, data, view=None):
         if data.uuid in self._mask_dict:
             mask = self._mask_dict[data.uuid]
-            if mask.dtype is not bool:  # backward-compatibility with indices_dict
+            if mask.dtype.kind != 'b':  # backward-compatibility with indices_dict
                 indices = mask
                 mask = np.zeros(data.shape, dtype=bool)
                 mask.flat[indices] = True
