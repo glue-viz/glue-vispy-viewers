@@ -188,7 +188,7 @@ class VolumeLayerArtist(VispyLayerArtist):
             # can specify inplace_ok lower down which means the array can be
             # modified/scaled if needed.
             if self.state.subset_mode == 'outline':
-                data = mask.astype(np.astype32)
+                data = mask.astype(np.float32)
             else:
                 data = self.layer.data[self.state.attribute].astype(np.float32)
                 data *= mask
