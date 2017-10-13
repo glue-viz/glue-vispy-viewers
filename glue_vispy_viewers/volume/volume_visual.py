@@ -235,15 +235,14 @@ class MultiVolumeVisual(VolumeVisual):
         shape = np.asarray(data.shape)
 
         if np.any(shape > 2048):
-            if self._initial_shape:
-                self._block_size = np.ceil(shape / 2048).astype(int)
-                data = block_reduce(data, self._block_size, func=np.mean)
+            self._block_size = np.ceil(shape / 2048).astype(int)
+            data = block_reduce(data, self._block_size, func=np.mean)
 
         self.volumes[label]['data'] = data
         self.volumes[label]['inplace_ok'] = inplace_ok
-        self._update_scaled_data(label)
+        self._update_scaled_data(label, initial_shape=True)
 
-    def _update_scaled_data(self, label):
+    def _update_scaled_data(self, label, initial_shape=False):
 
         index = self.volumes[label]['index']
         clim = self.volumes[label]['clim']
@@ -263,11 +262,10 @@ class MultiVolumeVisual(VolumeVisual):
 
         self.shared_program['u_volumetex_{0:d}'.format(index)].set_data(data)
 
-        if self._initial_shape:
+        if initial_shape:
             self._data_shape = np.asarray(data.shape, dtype=int)
             self._vol_shape = self._data_shape * self._block_size
             self.shared_program['u_shape'] = self._vol_shape[::-1]
-            self._initial_shape = False
         elif np.any(data.shape != self._data_shape):
             raise ValueError("Shape of arrays should be {0} instead "
                              "of {1}".format(self._vol_shape, data.shape))
