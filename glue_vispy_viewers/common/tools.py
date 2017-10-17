@@ -40,7 +40,8 @@ class SaveTool(Tool):
         outfile, file_filter = compat.getsavefilename(caption='Save File',
                                                       filters='PNG Files (*.png);;'
                                                               'JPEG Files (*.jpeg);;'
-                                                              'TIFF Files (*.tiff);;')
+                                                              'TIFF Files (*.tiff);;',
+                                                      selectedfilter='PNG Files (*.png);;')
 
         # This indicates that the user cancelled
         if not outfile:
