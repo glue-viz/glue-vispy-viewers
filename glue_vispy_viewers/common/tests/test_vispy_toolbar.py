@@ -2,7 +2,8 @@
 
 from __future__ import absolute_import, division, print_function
 
-import warnings
+import os
+import pytest
 from mock import patch
 
 from .util import simple_session
@@ -11,10 +12,12 @@ from ..vispy_data_viewer import BaseVispyViewer
 
 from .. import tools  # noqa:
 
-# we need to test both toolbar and tool here
-# solve the viewer test bug first
-
-# similar to glue/viewers/common/qt/tests/test_toolbar.py
+try:
+    import imageio  # noqa
+except ImportError:
+    IMAGEIO_INSTALLED = False
+else:
+    IMAGEIO_INSTALLED = True
 
 
 class ExampleViewer(BaseVispyViewer):
@@ -27,32 +30,58 @@ class ExampleViewer(BaseVispyViewer):
         self._called_back = True
 
 
-def test_toolbar(tmpdir):
-    session = simple_session()
-    with warnings.catch_warnings(record=True) as w:
-        viewer = ExampleViewer(session)
-        toolbar = viewer.toolbar
+class TestToolbar(object):
 
-        # test save tool
+    def setup_method(self):
+
+        self.session = simple_session()
+        self.viewer = ExampleViewer(self.session)
+        self.toolbar = self.viewer.toolbar
+
+    def test_save(self, tmpdir, capsys):
+
+        self.viewer.show()
+
+        filename = tmpdir.join('test.png').strpath
+
         with patch('qtpy.compat.getsavefilename') as fd:
-            fd.return_value = tmpdir.join('test.png').strpath, 'jnk'
-            toolbar.actions['vispy:save'].trigger()
+            fd.return_value = filename, 'png'
+            self.toolbar.actions['vispy:save'].trigger()
 
-        # test rotate tool
-        toolbar.actions['vispy:rotate'].toggle()
-        assert toolbar.active_tool.tool_id == 'vispy:rotate'
-        # TODO: assert a mode here
-        toolbar.actions['vispy:rotate'].toggle()
-        assert toolbar.active_tool is None
+        assert os.path.exists(filename)
 
-        # test record tool
-        try:
-            import imageio  # noqa
-            toolbar.actions['vispy:record'].toggle()
-            assert toolbar.active_tool.tool_id == 'vispy:record'
-            toolbar.actions['vispy:record'].toggle()
-            assert toolbar.active_tool.tool_id is None
-        except ImportError:
-            print('Imageio package needed')
+        out, err = capsys.readouterr()
+        assert out.strip() == ""
+        assert err.strip() == ""
 
-    assert len(w) == 0
+    def test_rotate(self, capsys):
+
+        self.toolbar.actions['vispy:rotate'].toggle()
+        assert self.toolbar.active_tool.tool_id == 'vispy:rotate'
+
+        self.toolbar.actions['vispy:rotate'].toggle()
+        assert self.toolbar.active_tool is None
+
+        out, err = capsys.readouterr()
+        assert out.strip() == ""
+        assert err.strip() == ""
+
+    @pytest.mark.skipif('not IMAGEIO_INSTALLED')
+    def test_record(self, tmpdir, capsys):
+
+        filename = tmpdir.join('test.gif').strpath
+
+        with patch('qtpy.compat.getsavefilename') as fd:
+            fd.return_value = filename, 'gif'
+            self.toolbar.actions['vispy:record'].toggle()
+
+        assert self.toolbar.active_tool.tool_id == 'vispy:record'
+
+        self.toolbar.actions['vispy:record'].toggle()
+        assert self.toolbar.active_tool is None
+
+        assert os.path.exists(filename)
+
+        out, err = capsys.readouterr()
+        assert out.strip() == ""
+        assert err.strip() == ""
