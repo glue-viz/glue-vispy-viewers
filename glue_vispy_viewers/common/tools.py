@@ -26,6 +26,7 @@ class ResetTool(Tool):
         self.viewer._vispy_widget.view.camera.reset()
         self.viewer._vispy_widget._toggle_perspective()
 
+
 @viewer_tool
 class SaveTool(Tool):
 
