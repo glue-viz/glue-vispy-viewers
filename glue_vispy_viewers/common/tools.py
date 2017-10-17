@@ -57,7 +57,7 @@ class SaveTool(Tool):
 
 
 @viewer_tool
-class RecordTool(Tool):
+class RecordTool(CheckableTool):
 
     icon = RECORD_START_ICON
     tool_id = 'vispy:record'
@@ -72,27 +72,23 @@ class RecordTool(Tool):
 
     def activate(self):
 
-        if self.next_action == 'start':
+        # pop up a window for file saving
+        outfile, file_filter = compat.getsavefilename(caption='Save Animation',
+                                                      filters='GIF Files (*.gif);;')
 
-            # pop up a window for file saving
-            outfile, file_filter = compat.getsavefilename(caption='Save Animation',
-                                                          filters='GIF Files (*.gif);;')
+        # if outfile is not set, the user cancelled
+        if outfile:
+            import imageio
+            self.set_icon(RECORD_STOP_ICON)
+            self.writer = imageio.get_writer(outfile)
+            self.record_timer.start(0.1)
 
-            # if outfile is not set, the user cancelled
-            if outfile:
-                import imageio
-                self.set_icon(RECORD_STOP_ICON)
-                self.writer = imageio.get_writer(outfile)
-                self.record_timer.start(0.1)
-                self.next_action = 'stop'
+    def deactivate(self):
 
-        else:
-
-            self.record_timer.stop()
-            if self.writer is not None:
-                self.writer.close()
-            self.set_icon(RECORD_START_ICON)
-            self.next_action = 'start'
+        self.record_timer.stop()
+        if self.writer is not None:
+            self.writer.close()
+        self.set_icon(RECORD_START_ICON)
 
     def set_icon(self, icon):
         self.viewer.toolbar.actions[self.tool_id].setIcon(QtGui.QIcon(icon))
