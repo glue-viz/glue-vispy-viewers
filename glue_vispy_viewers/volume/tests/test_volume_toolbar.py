@@ -70,3 +70,15 @@ def test_volumeviewer_toolbar():
     point.move(MouseEvent('mouse_move'))
     point.release(MouseEvent('mouse_release'))
     assert toolbar.tools['volume3d:point'] == point
+
+    # test dendrogram
+    toolbar.actions['volume3d:dendro'].toggle()
+    assert 'volume3d:dendro' in toolbar.active_tool.tool_id
+    point = toolbar.active_tool
+    # event = QTest.mouseMove(viewer._vispy_widget)
+
+    # TODO: add a real mouse move event so content in lasso.move() is called
+    point.press(MouseEvent('mouse_press'))
+    point.move(MouseEvent('mouse_move'))
+    point.release(MouseEvent('mouse_release'))
+    assert toolbar.tools['volume3d:dendro'] == point

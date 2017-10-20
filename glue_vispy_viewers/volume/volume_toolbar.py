@@ -5,6 +5,7 @@ This is for 3D selection in Glue 3d volume rendering viewer, with shape selectio
 selection (not available now).
 """
 
+import os
 import math
 
 import numpy as np
@@ -16,6 +17,8 @@ from ..common.toolbar import VispyMouseMode
 from ..extern.vispy.scene import Markers
 from .layer_artist import VolumeLayerArtist
 from .floodfill_scipy import floodfill_scipy
+
+GLUE_DENDROGRAM_ICON = os.path.join(os.path.dirname(__file__), 'glue_dendrogram.png')
 
 
 # TODO: replace by dendrogram and floodfill mode
@@ -214,3 +217,116 @@ class PointSelectionMode(VispyMouseMode):
         end_point = end_point[:3] / end_point[3]
 
         return np.array([end_point, start_point[:3]])
+
+
+@viewer_tool
+class DendroSelectionMode(VispyMouseMode):
+
+    icon = GLUE_DENDROGRAM_ICON
+    tool_id = 'volume3d:dendro'
+    action_text = 'Select volume using a dendrogram selection'
+
+    def __init__(self, viewer):
+        super(DendroSelectionMode, self).__init__(viewer)
+        self.markers = Markers(parent=self._vispy_widget.view.scene)
+        self.max_value_pos = None
+        self.max_value = None
+
+    def release(self, event):
+        pass
+
+    def deactivate(self):
+        self.markers.visible = False
+
+    def press(self, event):
+        """
+        Assign mouse position and do point selection.
+        :param event:
+        """
+
+        if event.button == 1:
+
+            self.selection_origin = event.pos
+
+            self.visible_data, self.visual = self.get_visible_data()
+
+            # Get the values of the currently active layer artist - we
+            # specifically pick the layer artist that is selected in the layer
+            # artist view in the left since we have to pick one.
+            layer_artist = self.viewer._view.layer_list.current_artist()
+
+            # If the layer artist is for a Subset not Data, pick the first Data
+            # one instead (where the layer artist is a volume artist)
+            if isinstance(layer_artist.layer, Subset):
+                for layer_artist in self.iter_data_layer_artists():
+                    if isinstance(layer_artist, VolumeLayerArtist):
+                        break
+                else:
+                    return
+
+            # TODO: figure out how to make the above choice more sensible. How
+            #       does the user know which data layer will be used? Can we use
+            #       all of them in this mode?
+
+            values = layer_artist.layer[layer_artist.attribute]
+            self.active_layer_artist = layer_artist
+            self.current_visible_array = np.nan_to_num(values).astype(float)
+
+            # get start and end point of ray line
+            pos = self.get_ray_line()
+
+            max_value_pos, max_value = self.get_inter_value(pos)
+            self.max_value_pos = max_value_pos
+            self.max_value = max_value
+
+            # set marker and status text
+            if max_value:
+                self.markers.set_data(pos=np.array(max_value_pos),
+                                      face_color='yellow')
+                self.markers.visible = True
+
+            # Get dendrogram structure data
+            for each_data in self.parent().session.data_collection:
+                if each_data.label == 'Dendrogram':
+                    d = each_data
+
+            max_value_pos = self.max_value_pos[0]
+            trans = self.visual_tr.translate
+            scale = self.visual_tr.scale
+            # xyz index in volume array
+            x = (max_value_pos[0] - trans[0])/scale[0]
+            y = (max_value_pos[1] - trans[1])/scale[1]
+            z = (max_value_pos[2] - trans[2])/scale[2]
+
+            try:
+                branch_label = self.visible_data[0]['structure'][(z, y, x)]
+            except IndexError:
+                print('No dendrogram structure found on this position.')
+                return None
+
+            if self.max_value_pos:
+                status_text = 'x=%.2f, y=%.2f, z=%.2f' % (x, y, z) \
+                              + ' value=%.2f' % self.max_value
+                self._vispy_data_viewer.show_status(status_text)
+
+            # no structure found
+            if branch_label == -1:
+                return None
+
+            # similar to DFS to find children
+            def get_all_branch(d, branch_label, ini_mask):
+                mask = np.logical_or(ini_mask, self.visible_data[0]['structure'] == branch_label)
+                child_label = np.where(d['parent'] == branch_label)
+
+                if len(child_label[0]) != 0:
+                    for each_child in child_label[0]:
+                        mask = get_all_branch(d, each_child, mask)
+                return mask
+
+            # structure and intensity is the same shape
+            ini_mask = np.zeros(self.current_visible_array.shape, dtype=bool)
+            mask = get_all_branch(d, branch_label, ini_mask)
+            self.mark_selected(np.ravel(mask), self.visible_data)
+
+            self._vispy_widget.canvas.update()
+
