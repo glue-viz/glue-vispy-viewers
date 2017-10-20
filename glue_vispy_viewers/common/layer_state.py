@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 from glue.external.echo import CallbackProperty, keep_in_sync
 from glue.core.state_objects import State
+from glue.core.message import LayerArtistUpdatedMessage
 
 __all__ = ['VispyLayerState']
 
@@ -26,6 +27,13 @@ class VispyLayerState(State):
 
         self.add_callback('layer', self._layer_changed)
         self._layer_changed()
+
+        self.add_global_callback(self._notify_layer_update)
+
+    def _notify_layer_update(self, **kwargs):
+        message = LayerArtistUpdatedMessage(self)
+        if self.layer is not None and self.layer.hub is not None:
+            self.layer.hub.broadcast(message)
 
     def _layer_changed(self):
 
