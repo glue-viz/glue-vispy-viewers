@@ -8,6 +8,8 @@ from glue.utils import nonpartial
 from glue.utils.qt import load_ui
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
 
+from glue_vispy_viewers.utils import fix_tab_widget_fontsize
+
 
 class ScatterLayerStyleWidget(QtWidgets.QWidget):
 
@@ -17,6 +19,8 @@ class ScatterLayerStyleWidget(QtWidgets.QWidget):
 
         self.ui = load_ui('layer_style_widget.ui', self,
                           directory=os.path.dirname(__file__))
+
+        fix_tab_widget_fontsize(self.ui.tab_widget)
 
         self.state = layer_artist.state
 

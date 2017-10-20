@@ -88,6 +88,12 @@ class ScatterLayerArtist(VispyLayerArtist):
     def get_zorder(self):
         return self.zorder
 
+    def get_layer_color(self):
+        if self.state.color_mode == 'Fixed':
+            return self.state.color
+        else:
+            return self.state.cmap
+
     def redraw(self):
         """
         Redraw the Vispy canvas

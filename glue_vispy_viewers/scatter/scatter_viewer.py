@@ -11,7 +11,7 @@ from . import scatter_toolbar  # noqa
 
 class VispyScatterViewer(BaseVispyViewer):
 
-    LABEL = "3D Scatter Plot"
+    LABEL = "3D Scatter"
 
     _state_cls = Vispy3DScatterViewerState
     _layer_style_widget_cls = ScatterLayerStyleWidget
