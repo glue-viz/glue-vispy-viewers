@@ -9,7 +9,7 @@ import numpy as np
 from glue.core import Data
 from glue.config import viewer_tool
 from glue.core.roi import RectangularROI, CircularROI
-from glue.viewers.common.qt.tool import CheckableTool
+from glue.viewers.common.qt.tool import CheckableTool, Tool
 from glue.core.subset import SubsetState, ElementSubsetState
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.edit_subset_mode import EditSubsetMode
@@ -271,7 +271,7 @@ class LassoSelectionMode(VispyMouseMode):
                 self.set_progress(-1)
 
             self.reset()
-
+            self.viewer.toolbar.actions[self.tool_id].setChecked(False)
 
 @viewer_tool
 class RectangleSelectionMode(VispyMouseMode):
@@ -341,6 +341,8 @@ class RectangleSelectionMode(VispyMouseMode):
                 self.set_progress(-1)
 
             self.reset()
+            self.viewer.toolbar.actions[self.tool_id].setChecked(False)
+
 
 
 @viewer_tool
@@ -402,3 +404,5 @@ class CircleSelectionMode(VispyMouseMode):
                 self.set_progress(-1)
 
             self.reset()
+        self.viewer.toolbar.actions[self.tool_id].setChecked(False)
+
