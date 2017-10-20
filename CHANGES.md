@@ -3,6 +3,8 @@
 
 - Improve performance for volume rendering. [#274]
 
+- Fix layer artist icon when using colormaps. [#283]
+
 0.8 (2017-08-22)
 ----------------
 
