@@ -1,9 +1,12 @@
-0.9 (unreleased)
+0.9 (2017-10-25)
 ----------------
 
 - Improve performance for volume rendering. [#274]
 
 - Fix layer artist icon when using colormaps. [#283]
+
+- Fix bug that occurred when downsampling cubes with more than 2048 elements
+  in one or more dimensions. [#277]
 
 0.8 (2017-08-22)
 ----------------
