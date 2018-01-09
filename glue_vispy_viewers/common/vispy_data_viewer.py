@@ -1,7 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-import sys
-
 try:
     from glue.viewers.common.qt.data_viewer import DataViewer
 except ImportError:
@@ -20,8 +18,10 @@ from .viewer_state import Vispy3DViewerState
 from .compat import update_viewer_state
 
 BROKEN_PYQT5_MESSAGE = ("The version of PyQt5 you are using does not appear to "
-                        "support OpenGL. See <a href='http://docs.glueviz.org/en/stable/known_issues.html#d-viewers-not-working-on-linux-with-pyqt5'>"
-                        "here</a> for more information about fixing this issue.")
+                        "support OpenGL. See <a href='http://docs.glueviz.org/en"
+                        "/stable/known_issues.html#d-viewers-not-working-on-linux"
+                        "-with-pyqt5'>here</a> for more information about fixing "
+                        "this issue.")
 
 
 class BaseVispyViewer(DataViewer):
