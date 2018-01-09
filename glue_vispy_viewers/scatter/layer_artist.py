@@ -4,7 +4,6 @@ import uuid
 
 import numpy as np
 
-from glue.utils import nonpartial
 from glue.core.exceptions import IncompatibleAttribute
 
 from .multi_scatter import MultiColorScatter
@@ -62,16 +61,13 @@ class ScatterLayerArtist(VispyLayerArtist):
         self._multiscat.allocate(self.id)
         self._multiscat.set_zorder(self.id, self.get_zorder)
 
-        try:
-            self.state.add_callback('*', self._update_from_state, as_kwargs=True)
-        except TypeError:  # glue-core >= 0.11
-            self.state.add_global_callback(self._update_from_state)
+        self.state.add_global_callback(self._update_from_state)
 
         self._update_from_state(**self.state.as_dict())
 
-        self._viewer_state.add_callback('x_att', nonpartial(self._update_data))
-        self._viewer_state.add_callback('y_att', nonpartial(self._update_data))
-        self._viewer_state.add_callback('z_att', nonpartial(self._update_data))
+        self._viewer_state.add_callback('x_att', self._update_data)
+        self._viewer_state.add_callback('y_att', self._update_data)
+        self._viewer_state.add_callback('z_att', self._update_data)
 
         self._update_data()
 
@@ -98,14 +94,32 @@ class ScatterLayerArtist(VispyLayerArtist):
         """
         Redraw the Vispy canvas
         """
-        self._multiscat._update()
+        if self._multiscat is not None:
+            self._multiscat._update()
         self.vispy_widget.canvas.update()
 
     def clear(self):
         """
-        Remove the layer artist from the visualization
+        Clear the visualization for this layer
         """
         self._multiscat.set_data_values(self.id, [], [], [])
+
+    def remove(self):
+        """
+        Remove the layer artist from the visualization
+        """
+
+        if self._multiscat is None:
+            return
+
+        self._multiscat.deallocate(self.id)
+        self._multiscat = None
+
+        self.state.remove_global_callback(self._update_from_state)
+
+        self._viewer_state.remove_callback('x_att', self._update_data)
+        self._viewer_state.remove_callback('y_att', self._update_data)
+        self._viewer_state.remove_callback('z_att', self._update_data)
 
     def update(self):
         """
@@ -160,7 +174,7 @@ class ScatterLayerArtist(VispyLayerArtist):
     def _update_alpha(self):
         self._multiscat.set_alpha(self.id, self.state.alpha)
 
-    def _update_data(self):
+    def _update_data(self, event=None):
 
         try:
             x = self.layer[self._viewer_state.x_att].ravel()
