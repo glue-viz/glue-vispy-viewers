@@ -153,7 +153,7 @@ class MultiColorScatter(scene.visuals.Markers):
         else:
             try:
                 super(MultiColorScatter, self).draw(*args, **kwargs)
-            except:
+            except Exception:
                 pass
 
 

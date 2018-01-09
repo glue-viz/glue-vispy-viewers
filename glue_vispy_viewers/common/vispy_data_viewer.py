@@ -1,7 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-import sys
-
 try:
     from glue.viewers.common.qt.data_viewer import DataViewer
 except ImportError:
@@ -19,14 +17,11 @@ from .toolbar import VispyViewerToolbar
 from .viewer_state import Vispy3DViewerState
 from .compat import update_viewer_state
 
-# The following detects whether we are using PyQt5 with Anaconda on Linux, which
-# is currently broken. Once https://github.com/ContinuumIO/anaconda-issues/issues/1267
-# is fixed, we will no longer need BROKEN_CONDA_PYQT5.
-
-BROKEN_CONDA_PYQT5 = (PYQT5 and sys.platform == 'linux' and
-                      'Continuum Analytics' in sys.version)
-
-BROKEN_CONDA_PYQT5_MESSAGE = "The conda version of PyQt5 on Linux does not include OpenGL support, which means that the 3D viewers will not work. The easiest way to solve this is to manually downgrade to PyQt4. This can normally be done with 'conda install pyqt=4'."  # noqa
+BROKEN_PYQT5_MESSAGE = ("The version of PyQt5 you are using does not appear to "
+                        "support OpenGL. See <a href='http://docs.glueviz.org/en"
+                        "/stable/known_issues.html#d-viewers-not-working-on-linux"
+                        "-with-pyqt5'>here</a> for more information about fixing "
+                        "this issue.")
 
 
 class BaseVispyViewer(DataViewer):
@@ -50,11 +45,8 @@ class BaseVispyViewer(DataViewer):
 
         self.state = viewer_state or self._state_cls()
 
-        if BROKEN_CONDA_PYQT5:
-            QtWidgets.QMessageBox.critical(self, "Error", BROKEN_CONDA_PYQT5_MESSAGE)
-            raise Exception(BROKEN_CONDA_PYQT5_MESSAGE)
-
         self._vispy_widget = VispyWidgetHelper(viewer_state=self.state)
+
         self.setCentralWidget(self._vispy_widget.canvas.native)
 
         self._options_widget = VispyOptionsWidget(parent=self, viewer_state=self.state)
@@ -63,11 +55,21 @@ class BaseVispyViewer(DataViewer):
 
         self.status_label = None
         self.client = None
+        self._opengl_ok = None
 
         # When layer artists are removed from the layer artist container, we need
         # to make sure we remove matching layer states in the viewer state
         # layers attribute.
         self._layer_artist_container.on_changed(nonpartial(self._sync_state_layers))
+
+    def paintEvent(self, *args, **kwargs):
+        super(BaseVispyViewer, self).paintEvent(*args, **kwargs)
+        if self._opengl_ok is None:
+            self._opengl_ok = self._vispy_widget.canvas.native.context() is not None
+            if not self._opengl_ok:
+                QtWidgets.QMessageBox.critical(self, "Error", BROKEN_PYQT5_MESSAGE)
+                self.close(warn=False)
+                self._vispy_widget.canvas.native.close()
 
     def _sync_state_layers(self):
         # Remove layer state objects that no longer have a matching layer

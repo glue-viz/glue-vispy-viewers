@@ -281,7 +281,7 @@ class MultiVolumeVisual(VolumeVisual):
         else:
             try:
                 super(MultiVolumeVisual, self).draw()
-            except:
+            except Exception:
                 pass
 
 
