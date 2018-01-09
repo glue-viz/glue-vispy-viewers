@@ -3,6 +3,11 @@
 
 - No changes yet.
 
+0.9.1 (2018-01-09)
+------------------
+
+- Fix compatibility of 3D viewers with PyQt5 on Linux. [#287]
+
 0.9 (2017-10-25)
 ----------------
 
