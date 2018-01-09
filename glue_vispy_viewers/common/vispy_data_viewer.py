@@ -68,7 +68,7 @@ class BaseVispyViewer(DataViewer):
             self._opengl_ok = self._vispy_widget.canvas.native.context() is not None
             if not self._opengl_ok:
                 QtWidgets.QMessageBox.critical(self, "Error", BROKEN_PYQT5_MESSAGE)
-                self.close()
+                self.close(warn=False)
 
     def _sync_state_layers(self):
         # Remove layer state objects that no longer have a matching layer
