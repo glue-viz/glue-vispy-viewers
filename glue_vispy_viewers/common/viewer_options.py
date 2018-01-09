@@ -11,11 +11,11 @@ __all__ = ["VispyOptionsWidget"]
 
 class VispyOptionsWidget(QtWidgets.QWidget):
 
-    def __init__(self, parent=None, viewer_state=None):
+    def __init__(self, viewer_state=None, session=None, parent=None):
 
         super(VispyOptionsWidget, self).__init__(parent=parent)
 
-        self._data_collection = self.parent()._data
+        self._data_collection = session.data_collection
 
         self.ui = load_ui('viewer_options.ui', self,
                           directory=os.path.dirname(__file__))

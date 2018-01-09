@@ -19,6 +19,9 @@ class VispyScatterViewer(BaseVispyViewer):
     tools = BaseVispyViewer.tools + ['vispy:lasso', 'vispy:rectangle',
                                      'vispy:circle', 'scatter3d:point']
 
+    _data_artist_cls = ScatterLayerArtist
+    _subset_artist_cls = ScatterLayerArtist
+
     def add_data(self, data):
 
         if data in self._layer_artist_container:
@@ -26,26 +29,10 @@ class VispyScatterViewer(BaseVispyViewer):
 
         first_layer_artist = len(self._layer_artist_container) == 0
 
-        layer_artist = ScatterLayerArtist(layer=data, vispy_viewer=self)
+        added = super(VispyScatterViewer, self).add_data(data)
 
-        self._layer_artist_container.append(layer_artist)
+        if added:
+            if first_layer_artist:
+                self.state.set_limits(*self._layer_artist_container[0].default_limits)
 
-        if first_layer_artist:
-            self.state.set_limits(*layer_artist.default_limits)
-
-        for subset in data.subsets:
-            self.add_subset(subset)
-
-        return True
-
-    def add_subset(self, subset):
-
-        if subset in self._layer_artist_container:
-            return
-
-        layer_artist = ScatterLayerArtist(layer=subset, vispy_viewer=self)
-
-        self._layer_artist_container.append(layer_artist)
-
-    def _add_subset(self, message):
-        self.add_subset(message.subset)
+        return added
