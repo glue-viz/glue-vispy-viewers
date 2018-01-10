@@ -34,6 +34,7 @@ def test_volumeviewer_toolbar():
     session = simple_session()
     v = VispyVolumeViewer(session)
     data = make_test_data()
+    session.data_collection.append(data)
     v.add_data(data)
     assert v.toolbar is not None
 

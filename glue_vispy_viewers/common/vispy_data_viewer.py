@@ -10,6 +10,7 @@ from .vispy_widget import VispyWidgetHelper
 from .viewer_options import VispyOptionsWidget
 from .toolbar import VispyViewerToolbar
 from .viewer_state import Vispy3DViewerState
+from .compat import update_viewer_state
 
 BROKEN_PYQT5_MESSAGE = ("The version of PyQt5 you are using does not appear to "
                         "support OpenGL. See <a href='http://docs.glueviz.org/en"
@@ -45,6 +46,7 @@ class BaseVispyViewer(DataViewerWithState):
 
         self.status_label = None
         self._opengl_ok = None
+        self._ready_draw = False
 
     def paintEvent(self, *args, **kwargs):
         super(BaseVispyViewer, self).paintEvent(*args, **kwargs)
@@ -59,7 +61,8 @@ class BaseVispyViewer(DataViewerWithState):
         self._vispy_widget._update_appearance_from_settings()
 
     def redraw(self):
-        self._vispy_widget.canvas.render()
+        if self._ready_draw:
+            self._vispy_widget.canvas.render()
 
     def get_layer_artist(self, cls, layer=None, layer_state=None):
         return cls(self, layer=layer, layer_state=layer_state)
@@ -74,6 +77,10 @@ class BaseVispyViewer(DataViewerWithState):
                 layer_artist.set_clip(self.state.clip_limits)
             else:
                 layer_artist.set_clip(None)
+
+    @staticmethod
+    def update_viewer_state(rec, context):
+        return update_viewer_state(rec, context)
 
     if PYQT5:
 

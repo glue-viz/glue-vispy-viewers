@@ -25,7 +25,7 @@ def make_test_data():
     return data
 
 
-def test_volume_viewer(tmpdir):
+def test_isosurface_viewer(tmpdir):
 
     # Create fake data
     data = make_test_data()

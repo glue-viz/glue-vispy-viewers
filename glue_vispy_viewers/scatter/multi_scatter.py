@@ -145,8 +145,6 @@ class MultiColorScatter(scene.visuals.Markers):
         colors = np.vstack(colors)
         sizes = np.hstack(sizes)
 
-        print("LEN", len(colors), len(sizes))
-
         self.set_data(data, edge_color=colors, face_color=colors, size=sizes)
 
     def draw(self, *args, **kwargs):

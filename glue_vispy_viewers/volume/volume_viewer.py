@@ -1,8 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.core.state import lookup_class_with_patches
 from glue.config import settings
-from glue.core import message as msg
 
 from qtpy.QtWidgets import QMessageBox
 from qtpy.QtCore import QTimer
@@ -16,16 +14,8 @@ from .viewer_state import Vispy3DVolumeViewerState
 from ..scatter.layer_artist import ScatterLayerArtist
 from ..scatter.layer_style_widget import ScatterLayerStyleWidget
 
-from ..common import tools  # noqa
-from ..common import selection_tools  # noqa
+from ..common import tools, selection_tools  # noqa
 from . import volume_toolbar  # noqa
-
-try:
-    import OpenGL  # flake8: noqa
-except ImportError:
-    OPENGL_INSTALLED = False
-else:
-    OPENGL_INSTALLED = True
 
 
 class VispyVolumeViewer(BaseVispyViewer):
@@ -40,13 +30,8 @@ class VispyVolumeViewer(BaseVispyViewer):
                                      'vispy:circle', 'volume3d:point']
 
     def __init__(self, *args, **kwargs):
+
         super(VispyVolumeViewer, self).__init__(*args, **kwargs)
-        if not OPENGL_INSTALLED:
-            self.close()
-            QMessageBox.critical(self, "Error",
-                                 "The PyOpenGL package is required for the "
-                                 "3D volume rendering viewer",
-                                 buttons=QMessageBox.Ok)
 
         # We now make it so that is the user clicks to drag or uses the
         # mouse wheel (or scroll on a trackpad), we downsample the volume
@@ -91,26 +76,33 @@ class VispyVolumeViewer(BaseVispyViewer):
         self.mouse_wheel()
         super(VispyVolumeViewer, self).resizeEvent(event)
 
+    def get_data_layer_artist(self, layer=None, layer_state=None):
+        if layer.ndim == 1:
+            cls = ScatterLayerArtist
+        else:
+            cls = VolumeLayerArtist
+        return self.get_layer_artist(cls, layer=layer, layer_state=layer_state)
+
+    def get_subset_layer_artist(self, layer=None, layer_state=None):
+        if layer.ndim == 1:
+            cls = ScatterLayerArtist
+        else:
+            cls = VolumeLayerArtist
+        return self.get_layer_artist(cls, layer=layer, layer_state=layer_state)
+
     def add_data(self, data):
 
-        if data in self._layer_artist_container:
-            return True
+        first_layer_artist = len(self._layer_artist_container) == 0
 
         if data.ndim == 1:
-
-            if len(self._layer_artist_container) == 0:
+            if first_layer_artist:
                 QMessageBox.critical(self, "Error",
-                                     "Can only add a scatter plot overlay once a volume is present".format(data.ndim),
+                                     "Can only add a scatter plot overlay once "
+                                     "a volume is present".format(data.ndim),
                                      buttons=QMessageBox.Ok)
-
-            # Assume that the user wants a scatter plot overlay
-
-            layer_artist = ScatterLayerArtist(layer=data, vispy_viewer=self)
-            self._vispy_widget._update_limits()
-
+                return False
         elif data.ndim == 3:
-
-            if len(self._layer_artist_container) > 0:
+            if not first_layer_artist:
                 required_shape = self._layer_artist_container[0].shape
                 if data.shape != required_shape:
                     QMessageBox.critical(self, "Error",
@@ -119,47 +111,24 @@ class VispyVolumeViewer(BaseVispyViewer):
                                          "rendering ({1})".format(data.shape, required_shape),
                                          buttons=QMessageBox.Ok)
                     return False
-
-            layer_artist = VolumeLayerArtist(layer=data, vispy_viewer=self)
-
         else:
-
             QMessageBox.critical(self, "Error",
-                                 "Data should be 1- or 3-dimensional ({0} dimensions found)".format(data.ndim),
+                                 "Data should be 1- or 3-dimensional ({0} dimensions "
+                                 "found)".format(data.ndim),
                                  buttons=QMessageBox.Ok)
             return False
 
-        if len(self._layer_artist_container) == 0:
-            self.state.set_limits(*layer_artist.bbox)
+        added = super(VispyVolumeViewer, self).add_data(data)
 
-        self._layer_artist_container.append(layer_artist)
+        if data.ndim == 1:
+            self._vispy_widget._update_limits()
 
-        for subset in data.subsets:
-            self.add_subset(subset)
+        if added:
+            if first_layer_artist:
+                self.state.set_limits(*self._layer_artist_container[0].bbox)
+                self._ready_draw = True
 
-        return True
-
-    def add_subset(self, subset):
-
-        if subset in self._layer_artist_container:
-            return
-
-        if subset.ndim == 1:
-            layer_artist = ScatterLayerArtist(layer=subset, vispy_viewer=self)
-        elif subset.ndim == 3:
-            layer_artist = VolumeLayerArtist(layer=subset, vispy_viewer=self)
-        else:
-            return
-
-        self._layer_artist_container.append(layer_artist)
-
-    def _add_subset(self, message):
-        self.add_subset(message.subset)
-
-    @classmethod
-    def __setgluestate__(cls, rec, context):
-        viewer = super(VispyVolumeViewer, cls).__setgluestate__(rec, context)
-        return viewer
+        return added
 
     def _update_appearance_from_settings(self, message):
         super(VispyVolumeViewer, self)._update_appearance_from_settings(message)

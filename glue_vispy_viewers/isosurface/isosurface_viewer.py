@@ -5,8 +5,7 @@ from .layer_artist import IsosurfaceLayerArtist
 from .layer_style_widget import IsosurfaceLayerStyleWidget
 from .viewer_state import Vispy3DIsosurfaceViewerState
 
-from ..common import tools  # noqa
-from ..common import selection_tools  # noqa
+from ..common import tools, selection_tools  # noqa
 
 
 class VispyIsosurfaceViewer(BaseVispyViewer):
@@ -16,32 +15,20 @@ class VispyIsosurfaceViewer(BaseVispyViewer):
     _state_cls = Vispy3DIsosurfaceViewerState
     _layer_style_widget_cls = IsosurfaceLayerStyleWidget
 
+    tools = BaseVispyViewer.tools
+
+    _data_artist_cls = IsosurfaceLayerArtist
+    _subset_artist_cls = IsosurfaceLayerArtist
+
     def add_data(self, data):
 
-        if data in self._layer_artist_container:
-            return True
+        first_layer_artist = len(self._layer_artist_container) == 0
 
-        layer_artist = IsosurfaceLayerArtist(layer=data, vispy_viewer=self)
+        added = super(VispyIsosurfaceViewer, self).add_data(data)
 
-        if len(self._layer_artist_container) == 0:
-            self.state.set_limits(*layer_artist.bbox)
+        if added:
+            if first_layer_artist:
+                self.state.set_limits(*self._layer_artist_container[0].bbox)
+                self._ready_draw = True
 
-        self._layer_artist_container.append(layer_artist)
-
-        for subset in data.subsets:
-            self.add_subset(subset)
-
-        return True
-
-    def add_subset(self, subset):
-        if subset in self._layer_artist_container:
-            return
-
-        if subset.to_mask().ndim != 3:
-            return
-
-        layer_artist = IsosurfaceLayerArtist(layer=subset, vispy_viewer=self)
-        self._layer_artist_container.append(layer_artist)
-
-    def _add_subset(self, message):
-        self.add_subset(message.subset)
+        return added
