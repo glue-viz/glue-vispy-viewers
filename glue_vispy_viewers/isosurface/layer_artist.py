@@ -13,6 +13,11 @@ from ..extern.vispy.color import BaseColormap
 
 from .multi_iso_visual import MultiIsoVisual
 
+DATA_PROPERTIES = set(['attribute', 'level_low', 'level_high'])
+LEVEL_PROPERTIES = set(['step_value'])
+COLOR_PROPERTIES = set(['color', 'alpha', 'cmap'])
+STEP_PROPERTIES = set(['step'])
+
 
 # TODO: create colormaps that is prettier
 class TransFire(BaseColormap):
@@ -80,17 +85,14 @@ class IsosurfaceLayerArtist(VispyLayerArtist):
         # relative_step_size: ray casting performance, recommond 0.5~1.5)
         self.vispy_widget.add_data_visual(self._iso_visual)
 
-        # Set up connections so that when any of the properties are
-        # modified, we update the appropriate part of the visualization
+        self._viewer_state.add_global_callback(self._update_volume)
+        self.state.add_global_callback(self._update_volume)
 
-        try:
-            self.state.add_callback('*', self._update_from_state, as_kwargs=True)
-        except TypeError:  # glue-core >= 0.11
-            self.state.add_global_callback(self._update_from_state)
+        self.reset_cache()
 
-        self._update_from_state(**self.state.as_dict())
-
-        self.visible = True
+    def reset_cache(self):
+        self._last_viewer_state = {}
+        self._last_layer_state = {}
 
     @property
     def bbox(self):
@@ -109,23 +111,6 @@ class IsosurfaceLayerArtist(VispyLayerArtist):
         Remove the layer artist from the visualization
         """
         self._iso_visual.parent = None
-
-    def update(self):
-        """
-        Update the visualization to reflect the underlying data
-        """
-        self.redraw()
-        self._changed = False
-
-    def _update_from_state(self, **props):
-        if any(prop in props for prop in ('attribute', 'level_low', 'level_high')):
-            self._update_data()
-        if 'step_value' in props:
-            self._update_level()
-        if any(prop in props for prop in ('color', 'alpha', 'cmap')):
-            self._update_color()
-        if 'step' in props:
-            self._update_step()
 
     def _update_level(self):
         # TODO: set iso clim
@@ -146,9 +131,6 @@ class IsosurfaceLayerArtist(VispyLayerArtist):
         self.redraw()
 
     def _update_data(self):
-
-        if self.state.attribute is None:
-            return
 
         if isinstance(self.layer, Subset):
             try:
@@ -195,3 +177,46 @@ class IsosurfaceLayerArtist(VispyLayerArtist):
     def set_clip(self, limits):
         self._clip_limits = limits
         self._update_data()
+
+    def _update_volume(self, force=False, **kwargs):
+
+        if self.state.attribute is None or self.state.layer is None:
+            return
+
+        # Figure out which attributes are different from before. Ideally we shouldn't
+        # need this but currently this method is called multiple times if an
+        # attribute is changed due to x_att changing then hist_x_min, hist_x_max, etc.
+        # If we can solve this so that _update_histogram is really only called once
+        # then we could consider simplifying this. Until then, we manually keep track
+        # of which properties have changed.
+
+        changed = set()
+
+        if not force:
+
+            for key, value in self._viewer_state.as_dict().items():
+                if value != self._last_viewer_state.get(key, None):
+                    changed.add(key)
+
+            for key, value in self.state.as_dict().items():
+                if value != self._last_layer_state.get(key, None):
+                    changed.add(key)
+
+        self._last_viewer_state.update(self._viewer_state.as_dict())
+        self._last_layer_state.update(self.state.as_dict())
+
+        if force or len(changed & DATA_PROPERTIES) > 0:
+            self._update_data()
+
+        if force or len(changed & LEVEL_PROPERTIES) > 0:
+            self._update_level()
+
+        if force or len(changed & COLOR_PROPERTIES) > 0:
+            self._update_color()
+
+        if force or len(changed & STEP_PROPERTIES) > 0:
+            self._update_step()
+
+    def update(self):
+        self._update_volume(force=True)
+        self.redraw()

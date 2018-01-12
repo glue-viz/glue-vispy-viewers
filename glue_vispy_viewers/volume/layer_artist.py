@@ -135,8 +135,6 @@ class VolumeLayerArtist(VispyLayerArtist):
             if not np.any(mask):
                 self._multivol.disable(self.id)
                 return
-            else:
-                self._multivol.enable(self.id)
 
             # We convert to 32-bit floating point arrays here because that is
             # what is needed to send to OpenGL. Since we need to do a copy here
@@ -167,6 +165,7 @@ class VolumeLayerArtist(VispyLayerArtist):
             data[kmax:] = invalid
 
         self._multivol.set_data(self.id, data, inplace_ok=isinstance(self.layer, Subset))
+        self._multivol.enable(self.id)
         self.redraw()
 
     def _update_visibility(self):
@@ -216,7 +215,7 @@ class VolumeLayerArtist(VispyLayerArtist):
         if force or 'alpha' in changed:
             self._update_alpha()
 
-        if force or 'attribute' in changed or 'subset_mode' in changed:
+        if force or 'layer' in changed or 'attribute' in changed or 'subset_mode' in changed:
             self._update_data()
 
     def update(self):
