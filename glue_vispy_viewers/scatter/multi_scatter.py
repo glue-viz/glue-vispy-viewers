@@ -44,6 +44,7 @@ class MultiColorScatter(scene.visuals.Markers):
 
     def deallocate(self, label):
         self.layers.pop(label)
+        self._update()
 
     def set_data_values(self, label, x, y, z):
         """
