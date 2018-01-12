@@ -66,8 +66,6 @@ class ScatterLayerArtist(VispyLayerArtist):
         self._multiscat.allocate(self.id)
         self._multiscat.set_zorder(self.id, self.get_zorder)
 
-        # self._update_from_state(**self.state.as_dict())
-
         # Watch for changes in the viewer state which would require the
         # layers to be redrawn
         self._viewer_state.add_global_callback(self._update_scatter)

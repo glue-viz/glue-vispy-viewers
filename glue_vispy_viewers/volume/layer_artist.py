@@ -65,18 +65,13 @@ class VolumeLayerArtist(VispyLayerArtist):
         self._multivol = self.vispy_widget._multivol
         self._multivol.allocate(self.id)
 
-        try:
-            self.state.add_callback('*', self._update_from_state, as_kwargs=True)
-        except TypeError:  # glue-core >= 0.11
-            self.state.add_global_callback(self._update_from_state)
+        self._viewer_state.add_global_callback(self._update_volume)
+        self.state.add_global_callback(self._update_volume)
 
         self.reset_cache()
 
-        self._update_from_state(**self.state.as_dict())
-
-        self.visible = True
-
     def reset_cache(self):
+        self._last_viewer_state = {}
         self._last_layer_state = {}
 
     @property
@@ -107,42 +102,6 @@ class VolumeLayerArtist(VispyLayerArtist):
         # disable the layer due to incompatible attributes
         self._multivol.set_data(self.id, np.zeros(self._multivol._data_shape))
 
-    def update(self):
-        """
-        Update the visualization to reflect the underlying data
-        """
-        self.redraw()
-        self._changed = False
-
-    def _update_from_state(self, **props):
-
-        # Figure out which attributes are different from before. Ideally we shouldn't
-        # need this but currently this method is called multiple times if an
-        # attribute is changed due to x_att changing then hist_x_min, hist_x_max, etc.
-        # If we can solve this so that _update_histogram is really only called once
-        # then we could consider simplifying this. Until then, we manually keep track
-        # of which properties have changed.
-
-        changed = set()
-
-        for key, value in self.state.as_dict().items():
-            if value != self._last_layer_state.get(key, None):
-                changed.add(key)
-
-        self._last_layer_state.update(self.state.as_dict())
-
-        if 'color' in changed:
-            self._update_cmap_from_color()
-
-        if 'vmin' in changed or 'vmax' in changed:
-            self._update_limits()
-
-        if 'alpha' in changed:
-            self._update_alpha()
-
-        if 'attribute' in changed or 'subset_mode' in changed:
-            self._update_data()
-
     def _update_cmap_from_color(self):
         cmap = get_translucent_cmap(*ColorConverter().to_rgb(self.state.color))
         self._multivol.set_cmap(self.id, cmap)
@@ -157,9 +116,6 @@ class VolumeLayerArtist(VispyLayerArtist):
         self.redraw()
 
     def _update_data(self):
-
-        if self.state.attribute is None:
-            return
 
         if isinstance(self.layer, Subset):
 
@@ -223,3 +179,46 @@ class VolumeLayerArtist(VispyLayerArtist):
     def set_clip(self, limits):
         self._clip_limits = limits
         self._update_data()
+
+    def _update_volume(self, force=False, **kwargs):
+
+        if self.state.attribute is None or self.state.layer is None:
+            return
+
+        # Figure out which attributes are different from before. Ideally we shouldn't
+        # need this but currently this method is called multiple times if an
+        # attribute is changed due to x_att changing then hist_x_min, hist_x_max, etc.
+        # If we can solve this so that _update_histogram is really only called once
+        # then we could consider simplifying this. Until then, we manually keep track
+        # of which properties have changed.
+
+        changed = set()
+
+        if not force:
+
+            for key, value in self._viewer_state.as_dict().items():
+                if value != self._last_viewer_state.get(key, None):
+                    changed.add(key)
+
+            for key, value in self.state.as_dict().items():
+                if value != self._last_layer_state.get(key, None):
+                    changed.add(key)
+
+        self._last_viewer_state.update(self._viewer_state.as_dict())
+        self._last_layer_state.update(self.state.as_dict())
+
+        if force or 'color' in changed:
+            self._update_cmap_from_color()
+
+        if force or 'vmin' in changed or 'vmax' in changed:
+            self._update_limits()
+
+        if force or 'alpha' in changed:
+            self._update_alpha()
+
+        if force or 'attribute' in changed or 'subset_mode' in changed:
+            self._update_data()
+
+    def update(self):
+        self._update_volume(force=True)
+        self.redraw()
