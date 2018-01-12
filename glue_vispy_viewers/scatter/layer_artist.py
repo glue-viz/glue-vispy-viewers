@@ -11,7 +11,8 @@ from .layer_state import ScatterLayerState
 from ..common.layer_artist import VispyLayerArtist
 
 COLOR_PROPERTIES = set(['color_mode', 'cmap_attribute', 'cmap_vmin', 'cmap_vmax', 'cmap', 'color'])
-SIZE_PROPERTIES = set(['size_mode', 'size_attribute', 'size_vmin', 'size_vmax', 'size_scaling', 'size'])
+SIZE_PROPERTIES = set(['size_mode', 'size_attribute', 'size_vmin', 'size_vmax',
+                       'size_scaling', 'size'])
 ALPHA_PROPERTIES = set(['alpha'])
 DATA_PROPERTIES = set(['layer', 'x_att', 'y_att', 'z_att'])
 

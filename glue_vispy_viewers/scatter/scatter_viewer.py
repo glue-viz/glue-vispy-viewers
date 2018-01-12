@@ -5,7 +5,7 @@ from .layer_artist import ScatterLayerArtist
 from .layer_style_widget import ScatterLayerStyleWidget
 from .viewer_state import Vispy3DScatterViewerState
 
-from ..common import tools, selection_tools  # noqa
+from ..common import tools as _tools, selection_tools  # noqa
 from . import scatter_toolbar  # noqa
 
 

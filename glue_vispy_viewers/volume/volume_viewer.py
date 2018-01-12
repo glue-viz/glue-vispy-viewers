@@ -14,7 +14,7 @@ from .viewer_state import Vispy3DVolumeViewerState
 from ..scatter.layer_artist import ScatterLayerArtist
 from ..scatter.layer_style_widget import ScatterLayerStyleWidget
 
-from ..common import tools, selection_tools  # noqa
+from ..common import tools as _tools, selection_tools  # noqa
 from . import volume_toolbar  # noqa
 
 
