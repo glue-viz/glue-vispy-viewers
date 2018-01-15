@@ -4,12 +4,17 @@ import uuid
 
 import numpy as np
 
-from glue.utils import nonpartial
 from glue.core.exceptions import IncompatibleAttribute
 
 from .multi_scatter import MultiColorScatter
 from .layer_state import ScatterLayerState
 from ..common.layer_artist import VispyLayerArtist
+
+COLOR_PROPERTIES = set(['color_mode', 'cmap_attribute', 'cmap_vmin', 'cmap_vmax', 'cmap', 'color'])
+SIZE_PROPERTIES = set(['size_mode', 'size_attribute', 'size_vmin', 'size_vmax',
+                       'size_scaling', 'size'])
+ALPHA_PROPERTIES = set(['alpha'])
+DATA_PROPERTIES = set(['layer', 'x_att', 'y_att', 'z_att'])
 
 
 class ScatterLayerArtist(VispyLayerArtist):
@@ -62,20 +67,16 @@ class ScatterLayerArtist(VispyLayerArtist):
         self._multiscat.allocate(self.id)
         self._multiscat.set_zorder(self.id, self.get_zorder)
 
-        try:
-            self.state.add_callback('*', self._update_from_state, as_kwargs=True)
-        except TypeError:  # glue-core >= 0.11
-            self.state.add_global_callback(self._update_from_state)
+        # Watch for changes in the viewer state which would require the
+        # layers to be redrawn
+        self._viewer_state.add_global_callback(self._update_scatter)
+        self.state.add_global_callback(self._update_scatter)
 
-        self._update_from_state(**self.state.as_dict())
+        self.reset_cache()
 
-        self._viewer_state.add_callback('x_att', nonpartial(self._update_data))
-        self._viewer_state.add_callback('y_att', nonpartial(self._update_data))
-        self._viewer_state.add_callback('z_att', nonpartial(self._update_data))
-
-        self._update_data()
-
-        self.visible = True
+    def reset_cache(self):
+        self._last_viewer_state = {}
+        self._last_layer_state = {}
 
     @property
     def visual(self):
@@ -98,30 +99,29 @@ class ScatterLayerArtist(VispyLayerArtist):
         """
         Redraw the Vispy canvas
         """
-        self._multiscat._update()
+        if self._multiscat is not None:
+            self._multiscat._update()
         self.vispy_widget.canvas.update()
 
     def clear(self):
         """
-        Remove the layer artist from the visualization
+        Clear the visualization for this layer
         """
         self._multiscat.set_data_values(self.id, [], [], [])
 
-    def update(self):
+    def remove(self):
         """
-        Update the visualization to reflect the underlying data
+        Remove the layer artist from the visualization
         """
-        self.redraw()
-        self._changed = False
 
-    def _update_from_state(self, **props):
-        if any('size' in prop for prop in props):
-            self._update_sizes()
-        if any('color' in prop or 'cmap' in prop for prop in props):
-            self._update_colors()
-        if 'alpha' in props:
-            self._update_alpha()
-        self.redraw()
+        if self._multiscat is None:
+            return
+
+        self._multiscat.deallocate(self.id)
+        self._multiscat = None
+
+        self._viewer_state.remove_global_callback(self._update_scatter)
+        self.state.remove_global_callback(self._update_scatter)
 
     def _update_sizes(self):
         if self.state.size_mode is None:
@@ -160,7 +160,7 @@ class ScatterLayerArtist(VispyLayerArtist):
     def _update_alpha(self):
         self._multiscat.set_alpha(self.id, self.state.alpha)
 
-    def _update_data(self):
+    def _update_data(self, event=None):
 
         try:
             x = self.layer[self._viewer_state.x_att].ravel()
@@ -191,10 +191,7 @@ class ScatterLayerArtist(VispyLayerArtist):
         # these were set as arrays, since the size of the data might have
         # changed (in the case of subsets)
 
-        with self._multiscat.delay_update():
-            self._multiscat.set_data_values(self.id, x, y, z)
-            self._update_sizes()
-            self._update_colors()
+        self._multiscat.set_data_values(self.id, x, y, z)
 
         self.redraw()
 
@@ -210,3 +207,51 @@ class ScatterLayerArtist(VispyLayerArtist):
     def set_clip(self, limits):
         self._clip_limits = limits
         self._update_data()
+
+    def _update_scatter(self, force=False, **kwargs):
+
+        if (self._viewer_state.x_att is None or
+            self._viewer_state.y_att is None or
+            self._viewer_state.z_att is None or
+                self.state.layer is None):
+            return
+
+        # Figure out which attributes are different from before. Ideally we shouldn't
+        # need this but currently this method is called multiple times if an
+        # attribute is changed due to x_att changing then hist_x_min, hist_x_max, etc.
+        # If we can solve this so that _update_histogram is really only called once
+        # then we could consider simplifying this. Until then, we manually keep track
+        # of which properties have changed.
+
+        changed = set()
+
+        if not force:
+
+            for key, value in self._viewer_state.as_dict().items():
+                if value != self._last_viewer_state.get(key, None):
+                    changed.add(key)
+
+            for key, value in self.state.as_dict().items():
+                if value != self._last_layer_state.get(key, None):
+                    changed.add(key)
+
+        self._last_viewer_state.update(self._viewer_state.as_dict())
+        self._last_layer_state.update(self.state.as_dict())
+
+        if force or len(changed & DATA_PROPERTIES) > 0:
+            self._update_data()
+            force = True
+
+        if force or len(changed & SIZE_PROPERTIES) > 0:
+            self._update_sizes()
+
+        if force or len(changed & COLOR_PROPERTIES) > 0:
+            self._update_colors()
+
+        if force or len(changed & ALPHA_PROPERTIES) > 0:
+            self._update_alpha()
+
+    def update(self):
+        with self._multiscat.delay_update():
+            self._update_scatter(force=True)
+        self.redraw()
