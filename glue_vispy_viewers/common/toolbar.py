@@ -13,8 +13,8 @@ from .selection_tools import VispyMouseMode
 
 class VispyViewerToolbar(BasicToolbar):
 
-    def __init__(self, viewer=None):
-        BasicToolbar.__init__(self, viewer)
+    def __init__(self, viewer=None, **kwargs):
+        BasicToolbar.__init__(self, viewer, **kwargs)
         self._vispy_widget = viewer._vispy_widget
         self.canvas = self._vispy_widget.canvas
 
