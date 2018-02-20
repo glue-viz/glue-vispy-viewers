@@ -10,10 +10,12 @@ from glue.core import Data
 from glue.config import viewer_tool
 from glue.core.roi import RectangularROI, CircularROI
 from glue.viewers.common.qt.tool import CheckableTool
-from glue.core.subset import SubsetState, ElementSubsetState
+from glue.core.subset import SubsetState
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.edit_subset_mode import EditSubsetMode
-from glue.utils.geometry import points_inside_poly
+
+from glue.core.roi import PolygonalProjected3dROI
+from glue.core.subset import RoiSubsetState3d
 
 from ..utils import as_matrix_transform
 from ..extern.vispy.scene import Rectangle, Line, Ellipse
@@ -44,28 +46,16 @@ class VispyMouseMode(CheckableTool):
             if isinstance(layer_artist.layer, Data):
                 yield layer_artist
 
-    def mark_selected(self, mask, data):
-        # We now make a subset state. For scatter plots we'll want to use an
-        # ElementSubsetState, while for cubes, we'll need to change to a
-        # MaskSubsetState.
-        subset_state = ElementSubsetState(indices=np.where(mask)[0], data=data)
-
-        # We now check what the selection mode is, and update the selection as
-        # needed (this is delegated to the correct subset mode).
+    def apply_roi(self, roi):
+        x_att = self.viewer.state.x_att
+        y_att = self.viewer.state.y_att
+        z_att = self.viewer.state.z_att
+        subset_state = RoiSubsetState3d(x_att, y_att, z_att, roi)
         try:
             mode = self.viewer.session.edit_subset_mode
         except AttributeError:  # old versisons of glue
             mode = EditSubsetMode()
-        mode.update(self.viewer._data, subset_state, focus_data=data)
-
-    def mark_selected_dict(self, mask_dict):
-        subset_state = MultiMaskSubsetState(mask_dict=mask_dict)
-        if len(mask_dict) > 0:
-            try:
-                mode = self.viewer.session.edit_subset_mode
-            except AttributeError:  # old versisons of glue
-                mode = EditSubsetMode()
-            mode.update(self.viewer._data, subset_state, focus_data=list(mask_dict)[0])
+        mode.update(self.viewer._data, subset_state)
 
     def set_progress(self, value):
         if value < 0:
@@ -131,94 +121,6 @@ class MultiMaskSubsetState(SubsetState):
 MultiElementSubsetState = MultiMaskSubsetState
 
 
-def get_mask_from_scatter(data, visual, vispy_widget, selection, progress=None):
-
-    # Get the component IDs
-    x_att = vispy_widget.viewer_state.x_att
-    y_att = vispy_widget.viewer_state.y_att
-    z_att = vispy_widget.viewer_state.z_att
-
-    # Get the visible data
-    layer_data = np.nan_to_num([data[x_att],
-                                data[y_att],
-                                data[z_att]]).transpose()
-
-    tr = as_matrix_transform(visual.get_transform(map_from='visual', map_to='canvas'))
-    data = tr.map(layer_data)
-    data /= data[:, 3:]  # normalize with homogeneous coordinates
-
-    return selection(data[:, 0], data[:, 1])
-
-
-def get_mask_from_volume(data, visual, selection, progress=None):
-    """
-    Get the mapped buffer from self.visual to canvas.
-
-    :return: Mapped data position on canvas.
-    """
-
-    # For large volumes, the code in this function would take up very large
-    # amounts of memory, so we need to proceed in chunks. The chunk size is
-    # chosen so that the chunking has negligeable performance implications.
-
-    chunk_size = 1000000
-
-    tr = as_matrix_transform(visual.get_transform(map_from='visual',
-                                                  map_to='canvas'))
-
-    # We chunk by selecting C-contiguous sets of data slices. We do this by
-    # first finding the number of elements along each slice then finding the
-    # numbe of slices we can fit in the chunk size
-
-    values_per_slice = data.shape[1] * data.shape[2]
-    slices_per_chunk = max(chunk_size // values_per_slice, 1)
-    n_chunks = max(data.shape[0] // slices_per_chunk, 1)
-
-    mask = np.zeros(data.shape, dtype=bool)
-
-    for chunk in range(n_chunks):
-
-        imin = chunk * slices_per_chunk
-        imax = min((chunk + 1) * slices_per_chunk, data.shape[0])
-
-        chunk_shape = (imax - imin,) + data.shape[1:]
-
-        pos_data = np.indices(chunk_shape[::-1], dtype=float)
-        pos_data[2] += imin
-        pos_data = pos_data.reshape(3, -1).transpose()
-
-        data_sub = tr.map(pos_data)
-
-        data_sub /= data_sub[:, 3:]   # normalize with homogeneous coordinates
-
-        mask_sub = selection(data_sub[:, 0], data_sub[:, 1])
-
-        mask_sub = np.reshape(mask_sub, chunk_shape[::-1])
-        mask_sub = np.transpose(mask_sub)
-
-        mask[imin:imax] = mask_sub
-
-        if progress is not None:
-            progress(100. * (chunk + 1) / n_chunks)
-
-    return mask
-
-
-def get_mask_for_layer_artist(layer_artist, viewer, selection, progress=None):
-
-    from ..scatter.layer_artist import ScatterLayerArtist
-    from ..volume.layer_artist import VolumeLayerArtist
-
-    if isinstance(layer_artist, ScatterLayerArtist):
-        return get_mask_from_scatter(layer_artist.layer, layer_artist.visual,
-                                     viewer._vispy_widget, selection, progress=progress)
-    elif isinstance(layer_artist, VolumeLayerArtist):
-        return get_mask_from_volume(layer_artist.layer, layer_artist.visual,
-                                    selection, progress=progress)
-    else:
-        raise Exception("Unknown layer type: {0}".format(type(layer_artist)))
-
-
 @viewer_tool
 class LassoSelectionMode(VispyMouseMode):
 
@@ -256,25 +158,21 @@ class LassoSelectionMode(VispyMouseMode):
 
             if len(self.line_pos) > 0:
 
-                mask_dict = {}
+                # Get polygon
+                vx, vy = np.array(self.line_pos).transpose()
 
-                self.set_progress(0)
+                # Get first layer (maybe just get from viewer directly in future)
+                layer_artist = next(self.iter_data_layer_artists())
 
-                for layer_artist in self.iter_data_layer_artists():
+                # Get transformation matrix and transpose
+                transform = layer_artist.visual.get_transform(map_from='visual', map_to='canvas')
+                projection_matrix = as_matrix_transform(transform).matrix.T
 
-                    vx, vy = np.array(self.line_pos).transpose()
+                # Create ROI
+                roi = PolygonalProjected3dROI(vx, vy, projection_matrix)
 
-                    def selection(x, y):
-                        return points_inside_poly(x, y, vx, vy)
-
-                    mask = get_mask_for_layer_artist(layer_artist, self.viewer,
-                                                     selection, progress=self.set_progress)
-
-                    mask_dict[layer_artist.layer] = mask
-
-                self.mark_selected_dict(mask_dict)
-
-                self.set_progress(-1)
+                # Apply ROI to do selection
+                self.apply_roi(roi)
 
             self.reset()
 
@@ -326,25 +224,9 @@ class RectangleSelectionMode(VispyMouseMode):
 
             if self.corner2 is not None:
 
+                # To implement
                 r = RectangularROI(*self.bounds)
-
-                mask_dict = {}
-
-                self.set_progress(0)
-
-                for layer_artist in self.iter_data_layer_artists():
-
-                    def selection(x, y):
-                        return r.contains(x, y)
-
-                    mask = get_mask_for_layer_artist(layer_artist, self.viewer,
-                                                     selection, progress=self.set_progress)
-
-                    mask_dict[layer_artist.layer] = mask
-
-                self.mark_selected_dict(mask_dict)
-
-                self.set_progress(-1)
+                raise NotImplementedError()
 
             self.reset()
 
@@ -388,23 +270,6 @@ class CircleSelectionMode(VispyMouseMode):
 
             if self.radius > 0:
                 c = CircularROI(self.center[0], self.center[1], self.radius)
-
-                mask_dict = {}
-
-                self.set_progress(0)
-
-                for layer_artist in self.iter_data_layer_artists():
-
-                    def selection(x, y):
-                        return c.contains(x, y)
-
-                    mask = get_mask_for_layer_artist(layer_artist, self.viewer,
-                                                     selection, progress=self.set_progress)
-
-                    mask_dict[layer_artist.layer] = mask
-
-                self.mark_selected_dict(mask_dict)
-
-                self.set_progress(-1)
+                raise NotImplementedError()
 
             self.reset()
