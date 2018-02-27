@@ -3,6 +3,12 @@
 
 - No changes yet.
 
+0.9.2 (unreleased)
+------------------
+
+- Fix bug that caused a crash when adding a volume to a viewer that
+  already had a viewer and scatter layer. [#291]
+
 0.9.1 (2018-01-09)
 ------------------
 

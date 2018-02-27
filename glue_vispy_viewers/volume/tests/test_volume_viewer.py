@@ -6,6 +6,7 @@ import glue
 from glue.core import DataCollection, Data
 from glue.app.qt.application import GlueApplication
 from glue.core.component import Component
+from glue.core.link_helpers import LinkSame
 
 from ..volume_viewer import VispyVolumeViewer
 
@@ -121,3 +122,41 @@ def test_array_shape(tmpdir):
     layer_state = viewer_state.layers[0]
 
     layer_state.attribute = data.id['b']
+
+
+def test_scatter_on_volume(tmpdir):
+
+    data1 = Data(a=np.arange(60).reshape((3, 4, 5)))
+    data2 = Data(x=[1, 2, 3], y=[2, 3, 4], z=[3, 4, 5])
+    data3 = Data(b=np.arange(60).reshape((3, 4, 5)))
+
+    dc = DataCollection([data1, data2, data3])
+
+    dc.add_link(LinkSame(data1.pixel_component_ids[2], data2.id['x']))
+    dc.add_link(LinkSame(data1.pixel_component_ids[1], data2.id['y']))
+    dc.add_link(LinkSame(data1.pixel_component_ids[0], data2.id['z']))
+
+    ga = GlueApplication(dc)
+    ga.show()
+
+    volume = ga.new_data_viewer(VispyVolumeViewer)
+    volume.add_data(data1)
+    volume.add_data(data2)
+    volume.add_data(data3)
+
+    # Check that writing a session works as expected.
+
+    session_file = tmpdir.join('test_scatter_on_volume.glu').strpath
+    ga.save_session(session_file)
+    ga.close()
+
+    # Now we can check that everything is restored correctly
+
+    ga2 = GlueApplication.restore_session(session_file)
+    ga2.show()
+
+    volume_r = ga2.viewers[0][0]
+
+    assert len(volume_r.layers) == 3
+
+    ga2.close()
