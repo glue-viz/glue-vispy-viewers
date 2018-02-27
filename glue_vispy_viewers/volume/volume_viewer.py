@@ -103,7 +103,7 @@ class VispyVolumeViewer(BaseVispyViewer):
                 return False
         elif data.ndim == 3:
             if not first_layer_artist:
-                required_shape = self._layer_artist_container[0].shape
+                required_shape = self.layers[0].shape
                 if data.shape != required_shape:
                     QMessageBox.critical(self, "Error",
                                          "Shape of dataset ({0}) does not agree "
