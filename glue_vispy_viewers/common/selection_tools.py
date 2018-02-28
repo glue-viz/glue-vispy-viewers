@@ -52,13 +52,19 @@ class VispyMouseMode(CheckableTool):
 
         # We now check what the selection mode is, and update the selection as
         # needed (this is delegated to the correct subset mode).
-        mode = EditSubsetMode()
+        try:
+            mode = self.viewer.session.edit_subset_mode
+        except AttributeError:  # old versisons of glue
+            mode = EditSubsetMode()
         mode.update(self.viewer._data, subset_state, focus_data=data)
 
     def mark_selected_dict(self, mask_dict):
         subset_state = MultiMaskSubsetState(mask_dict=mask_dict)
-        mode = EditSubsetMode()
         if len(mask_dict) > 0:
+            try:
+                mode = self.viewer.session.edit_subset_mode
+            except AttributeError:  # old versisons of glue
+                mode = EditSubsetMode()
             mode.update(self.viewer._data, subset_state, focus_data=list(mask_dict)[0])
 
     def set_progress(self, value):
