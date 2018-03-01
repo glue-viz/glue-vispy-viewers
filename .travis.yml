@@ -10,7 +10,7 @@ env:
     - COMMAND="pytest glue_vispy_viewers --cov glue_vispy_viewers"
     - SETUP_XVFB=True
     - CONDA_CHANNELS="glueviz"
-    - CONDA_DEPENDENCIES="glueviz mock pyopengl pyqt=4.11.3 pytest-cov qtpy scipy"
+    - CONDA_DEPENDENCIES="glueviz mock pyopengl pyqt=4.11.3 pytest-cov qtpy scipy attrs=17.3"
     - CONDA_CHANNEL_PRIORITY=True
   matrix:
     - PYTHON_VERSION=3.5 CONDA_DEPENDENCIES="" PIP_DEPENDENCIES="flake8" COMMAND="flake8 --max-line-length=100 --exclude=extern glue_vispy_viewers"
