@@ -12,10 +12,13 @@ from ..color.colormap import _normalize, get_colormap
 from ..geometry.isocurve import isocurve
 from ..testing import has_matplotlib
 
-# checking for matplotlib
-_HAS_MPL = has_matplotlib()
-if _HAS_MPL:
-    from matplotlib import _cntr as cntr
+# NOTE: setting this to False to avoid importing _cntr which no longer works
+# on Matplotlib 2.2
+_HAS_MPL = False
+
+# _HAS_MPL = has_matplotlib()
+# if _HAS_MPL:
+#     from matplotlib import _cntr as cntr
 
 
 class IsocurveVisual(LineVisual):
