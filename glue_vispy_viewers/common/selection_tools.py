@@ -8,13 +8,12 @@ import numpy as np
 
 from glue.core import Data
 from glue.config import viewer_tool
-from glue.core.roi import RectangularROI, CircularROI
 from glue.viewers.common.qt.tool import CheckableTool
 from glue.core.subset import SubsetState
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.edit_subset_mode import EditSubsetMode
 
-from glue.core.roi import PolygonalProjected3dROI
+from glue.core.roi import RectangularROI, CircularROI, PolygonalROI, Projected3dROI
 from glue.core.subset import RoiSubsetState3d
 
 from ..utils import as_matrix_transform
@@ -169,7 +168,8 @@ class LassoSelectionMode(VispyMouseMode):
                 projection_matrix = as_matrix_transform(transform).matrix.T
 
                 # Create ROI
-                roi = PolygonalProjected3dROI(vx, vy, projection_matrix)
+                roi_2d = PolygonalROI(vx, vy)
+                roi = Projected3dROI(roi_2d=roi_2d, projection_matrix=projection_matrix)
 
                 # Apply ROI to do selection
                 self.apply_roi(roi)
@@ -224,10 +224,19 @@ class RectangleSelectionMode(VispyMouseMode):
 
             if self.corner2 is not None:
 
-                # To implement
-                r = RectangularROI(*self.bounds)
-                raise NotImplementedError()
+                # Get first layer (maybe just get from viewer directly in future)
+                layer_artist = next(self.iter_data_layer_artists())
 
+                # Get transformation matrix and transpose
+                transform = layer_artist.visual.get_transform(map_from='visual', map_to='canvas')
+                projection_matrix = as_matrix_transform(transform).matrix.T
+
+                # Create ROI
+                roi_2d = RectangularROI(*self.bounds)
+                roi = Projected3dROI(roi_2d=roi_2d, projection_matrix=projection_matrix)
+
+                # Apply ROI to do selection
+                self.apply_roi(roi)
             self.reset()
 
 
@@ -269,7 +278,18 @@ class CircleSelectionMode(VispyMouseMode):
         if event.button == 1:
 
             if self.radius > 0:
-                c = CircularROI(self.center[0], self.center[1], self.radius)
-                raise NotImplementedError()
+
+                # Get first layer (maybe just get from viewer directly in future)
+                layer_artist = next(self.iter_data_layer_artists())
+
+                # Get transformation matrix and transpose
+                transform = layer_artist.visual.get_transform(map_from='visual', map_to='canvas')
+                projection_matrix = as_matrix_transform(transform).matrix.T
+
+                # Create ROI
+                roi_2d = CircularROI(self.center[0], self.center[1], self.radius)
+                roi = Projected3dROI(roi_2d=roi_2d, projection_matrix=projection_matrix)
+
+                self.apply_roi(roi)
 
             self.reset()
