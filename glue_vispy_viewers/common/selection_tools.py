@@ -9,8 +9,6 @@ import numpy as np
 from glue.core import Data
 from glue.config import viewer_tool
 from glue.viewers.common.qt.tool import CheckableTool
-from glue.core.subset import SubsetState
-from glue.core.exceptions import IncompatibleAttribute
 from glue.core.edit_subset_mode import EditSubsetMode
 
 from glue.core.roi import RectangularROI, CircularROI, PolygonalROI, Projected3dROI
@@ -18,6 +16,10 @@ from glue.core.subset import RoiSubsetState3d
 
 from ..utils import as_matrix_transform
 from ..extern.vispy.scene import Rectangle, Line, Ellipse
+
+# Backward-compatibility for reading files
+from .compat import MultiMaskSubsetState  # noqa
+MultiElementSubsetState = MultiMaskSubsetState
 
 
 class VispyMouseMode(CheckableTool):
@@ -62,62 +64,15 @@ class VispyMouseMode(CheckableTool):
         else:
             self.viewer.show_status('Calculating selection - {0}%'.format(int(value)))
 
+    @property
+    def projection_matrix(self):
 
-class MultiMaskSubsetState(SubsetState):
-    """
-    A subset state that can include a different mask for different datasets.
+        # Get first layer (maybe just get from viewer directly in future)
+        layer_artist = next(self.iter_data_layer_artists())
 
-    This is useful when doing 3D selections with multiple datasets. This used
-    to be a class called MultiElementSubsetState but it is more efficient to
-    store masks than element lists. However, for backward-compatibility,
-    values of the mask_dict dictionary can be index lists (recognzied because
-    they don't have a boolean type).
-    """
-
-    def __init__(self, mask_dict=None):
-        super(MultiMaskSubsetState, self).__init__()
-        mask_dict_uuid = {}
-        for key in mask_dict:
-            if isinstance(key, Data):
-                mask_dict_uuid[key.uuid] = mask_dict[key]
-            else:
-                mask_dict_uuid[key] = mask_dict[key]
-        self._mask_dict = mask_dict_uuid
-
-    def to_mask(self, data, view=None):
-        if data.uuid in self._mask_dict:
-            mask = self._mask_dict[data.uuid]
-            if mask.dtype.kind != 'b':  # backward-compatibility with indices_dict
-                indices = mask
-                mask = np.zeros(data.shape, dtype=bool)
-                mask.flat[indices] = True
-            if view is not None:
-                mask = mask[view]
-            return mask
-        else:
-            raise IncompatibleAttribute()
-
-    def copy(self):
-        state = MultiMaskSubsetState(mask_dict=self._mask_dict)
-        return state
-
-    def __gluestate__(self, context):
-        serialized = {key: context.do(value) for key, value in self._mask_dict.items()}
-        return {'mask_dict': serialized}
-
-    @classmethod
-    def __setgluestate__(cls, rec, context):
-        # For backward-compatibility reasons we recognize indices_dict
-        if 'indices_dict' in rec:
-            mask_dict = {key: context.object(value) for key, value in rec['indices_dict'].items()}
-        else:
-            mask_dict = {key: context.object(value) for key, value in rec['mask_dict'].items()}
-        state = cls(mask_dict=mask_dict)
-        return state
-
-
-# Backward-compatibility for reading files
-MultiElementSubsetState = MultiMaskSubsetState
+        # Get transformation matrix and transpose
+        transform = layer_artist.visual.get_transform(map_from='visual', map_to='canvas')
+        return as_matrix_transform(transform).matrix.T
 
 
 @viewer_tool
@@ -156,22 +111,9 @@ class LassoSelectionMode(VispyMouseMode):
         if event.button == 1:
 
             if len(self.line_pos) > 0:
-
-                # Get polygon
                 vx, vy = np.array(self.line_pos).transpose()
-
-                # Get first layer (maybe just get from viewer directly in future)
-                layer_artist = next(self.iter_data_layer_artists())
-
-                # Get transformation matrix and transpose
-                transform = layer_artist.visual.get_transform(map_from='visual', map_to='canvas')
-                projection_matrix = as_matrix_transform(transform).matrix.T
-
-                # Create ROI
-                roi_2d = PolygonalROI(vx, vy)
-                roi = Projected3dROI(roi_2d=roi_2d, projection_matrix=projection_matrix)
-
-                # Apply ROI to do selection
+                roi = Projected3dROI(roi_2d=PolygonalROI(vx, vy),
+                                     projection_matrix=self.projection_matrix)
                 self.apply_roi(roi)
 
             self.reset()
@@ -223,20 +165,10 @@ class RectangleSelectionMode(VispyMouseMode):
         if event.button == 1:
 
             if self.corner2 is not None:
-
-                # Get first layer (maybe just get from viewer directly in future)
-                layer_artist = next(self.iter_data_layer_artists())
-
-                # Get transformation matrix and transpose
-                transform = layer_artist.visual.get_transform(map_from='visual', map_to='canvas')
-                projection_matrix = as_matrix_transform(transform).matrix.T
-
-                # Create ROI
-                roi_2d = RectangularROI(*self.bounds)
-                roi = Projected3dROI(roi_2d=roi_2d, projection_matrix=projection_matrix)
-
-                # Apply ROI to do selection
+                roi = Projected3dROI(roi_2d=RectangularROI(*self.bounds),
+                                     projection_matrix=self.projection_matrix)
                 self.apply_roi(roi)
+
             self.reset()
 
 
@@ -278,18 +210,10 @@ class CircleSelectionMode(VispyMouseMode):
         if event.button == 1:
 
             if self.radius > 0:
-
-                # Get first layer (maybe just get from viewer directly in future)
-                layer_artist = next(self.iter_data_layer_artists())
-
-                # Get transformation matrix and transpose
-                transform = layer_artist.visual.get_transform(map_from='visual', map_to='canvas')
-                projection_matrix = as_matrix_transform(transform).matrix.T
-
-                # Create ROI
-                roi_2d = CircularROI(self.center[0], self.center[1], self.radius)
-                roi = Projected3dROI(roi_2d=roi_2d, projection_matrix=projection_matrix)
-
+                roi = Projected3dROI(roi_2d=CircularROI(self.center[0],
+                                                        self.center[1],
+                                                        self.radius),
+                                     projection_matrix=self.projection_matrix)
                 self.apply_roi(roi)
 
             self.reset()
