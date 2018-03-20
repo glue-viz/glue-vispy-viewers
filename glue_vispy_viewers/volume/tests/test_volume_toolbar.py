@@ -61,8 +61,8 @@ def test_volumeviewer_toolbar():
 
     # add point selection test
     # set to perspective mode
-    toolbar.actions['volume3d:point'].toggle()
-    assert 'volume3d:point' in toolbar.active_tool.tool_id
+    toolbar.actions['volume3d:floodfill'].toggle()
+    assert 'volume3d:floodfill' in toolbar.active_tool.tool_id
     point = toolbar.active_tool
     # event = QTest.mouseMove(viewer._vispy_widget)
 
@@ -70,4 +70,4 @@ def test_volumeviewer_toolbar():
     point.press(MouseEvent('mouse_press'))
     point.move(MouseEvent('mouse_move'))
     point.release(MouseEvent('mouse_release'))
-    assert toolbar.tools['volume3d:point'] == point
+    assert toolbar.tools['volume3d:floodfill'] == point

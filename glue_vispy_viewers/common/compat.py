@@ -3,6 +3,7 @@ import uuid
 import numpy as np
 
 from glue.external import six
+from glue.core import Data
 from glue.core.subset import SubsetState
 from glue.core.exceptions import IncompatibleAttribute
 
