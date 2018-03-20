@@ -10,12 +10,12 @@ import math
 import numpy as np
 
 from glue.core import Subset
+from glue.core.subset import MaskSubsetState, FloodFillSubsetState
 from glue.config import viewer_tool
 
 from ..common.toolbar import VispyMouseMode
 from ..extern.vispy.scene import Markers
 from .layer_artist import VolumeLayerArtist
-from .floodfill_scipy import floodfill_scipy
 
 
 # TODO: replace by dendrogram and floodfill mode
@@ -72,6 +72,7 @@ class PointSelectionMode(VispyMouseMode):
             values = layer_artist.layer[layer_artist.state.attribute]
             self.active_layer_artist = layer_artist
             self.current_visible_array = np.nan_to_num(values).astype(float)
+            self.current_visible_layer = layer_artist.layer
 
             # get start and end point of ray line
             pos = self.get_ray_line()
@@ -101,45 +102,31 @@ class PointSelectionMode(VispyMouseMode):
             canvas_diag = math.sqrt(self._vispy_widget.canvas.size[0]**2 +
                                     self._vispy_widget.canvas.size[1]**2)
 
-            mask = self.draw_floodfill_visual(drag_distance / canvas_diag)
+            if self.max_value_pos:
 
-            if mask is not None:
-                # Smart selection mask has the same shape as data shape.
-                smart_mask = np.reshape(mask, self.current_visible_array.shape)
-                smart_mask = np.ravel(smart_mask)
-                self.mark_selected(smart_mask, self.active_layer_artist.layer)
+                # Normalize the threshold so that it returns values in the range 1.01
+                # to 101 (since it can currently be between 0 and 1)
 
-    def draw_floodfill_visual(self, threshold):
+                threshold = drag_distance / canvas_diag
+                threshold = 1 + 10 ** (threshold * 4 - 2)
 
-        formate_data = np.asarray(self.current_visible_array, np.float64)
+                tr_visual = self._vispy_widget.limit_transforms[self.visual]
 
-        # Normalize the threshold so that it returns values in the range 1.01
-        # to 101 (since it can currently be between 0 and 1)
+                trans = tr_visual.translate
+                scale = tr_visual.scale
 
-        threshold = 1 + 10 ** (threshold * 4 - 2)
+                max_value_pos = self.max_value_pos[0]
 
-        tr_visual = self._vispy_widget.limit_transforms[self.visual]
+                # xyz index in volume array
+                x = int(round((max_value_pos[0] - trans[0]) / scale[0]))
+                y = int(round((max_value_pos[1] - trans[1]) / scale[1]))
+                z = int(round((max_value_pos[2] - trans[2]) / scale[2]))
 
-        trans = tr_visual.translate
-        scale = tr_visual.scale
+                subset_state = FloodFillSubsetState(self.current_visible_layer,
+                                                    self.active_layer_artist.state.attribute,
+                                                    (z, y, x), threshold)
 
-        max_value_pos = self.max_value_pos[0]
-
-        # xyz index in volume array
-        x = int(round((max_value_pos[0] - trans[0]) / scale[0]))
-        y = int(round((max_value_pos[1] - trans[1]) / scale[1]))
-        z = int(round((max_value_pos[2] - trans[2]) / scale[2]))
-
-        if self.max_value_pos:
-            select_mask = floodfill_scipy(formate_data, (z, y, x), threshold)
-
-            status_text = ('x=%.2f, y=%.2f, z=%.2f' % (x, y, z) +
-                           ' value=%.2f' % self.max_value)
-            self.viewer.show_status(status_text)
-
-            return select_mask
-        else:
-            return None
+                self.apply_subset_state(subset_state)
 
     def get_inter_value(self, pos):
 

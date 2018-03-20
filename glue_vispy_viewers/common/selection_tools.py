@@ -51,7 +51,9 @@ class VispyMouseMode(CheckableTool):
         x_att = self.viewer.state.x_att
         y_att = self.viewer.state.y_att
         z_att = self.viewer.state.z_att
-        subset_state = RoiSubsetState3d(x_att, y_att, z_att, roi)
+        self.apply_subset_state(RoiSubsetState3d(x_att, y_att, z_att, roi))
+
+    def apply_subset_state(self, subset_state):
         try:
             mode = self.viewer.session.edit_subset_mode
         except AttributeError:  # old versisons of glue
