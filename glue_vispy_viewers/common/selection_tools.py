@@ -9,7 +9,7 @@ import numpy as np
 from glue.core import Data
 from glue.config import viewer_tool
 from glue.viewers.common.qt.tool import CheckableTool
-from glue.core.edit_subset_mode import EditSubsetMode
+from glue.core.command import ApplySubsetState
 
 from glue.core.roi import RectangularROI, CircularROI, PolygonalROI, Projected3dROI
 from glue.core.subset import RoiSubsetState3d
@@ -54,11 +54,10 @@ class VispyMouseMode(CheckableTool):
         self.apply_subset_state(RoiSubsetState3d(x_att, y_att, z_att, roi))
 
     def apply_subset_state(self, subset_state):
-        try:
-            mode = self.viewer.session.edit_subset_mode
-        except AttributeError:  # old versisons of glue
-            mode = EditSubsetMode()
-        mode.update(self.viewer._data, subset_state)
+        cmd = ApplySubsetState(data_collection=self.viewer._data,
+                               subset_state=subset_state,
+                               use_current=False)
+        self.viewer.session.command_stack.do(cmd)
 
     def set_progress(self, value):
         if value < 0:
