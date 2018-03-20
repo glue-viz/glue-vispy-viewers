@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from qtpy import QtGui, compat
+from qtpy import QtGui, compat, QtWidgets
 from glue.viewers.common.qt.tool import Tool, CheckableTool
 from glue.config import viewer_tool
 
@@ -106,16 +106,61 @@ class RotateTool(CheckableTool):
     tool_id = 'vispy:rotate'
     action_text = 'Continuously rotate view'
     tool_tip = 'Start/Stop rotation'
-
     timer = None
 
-    def activate(self):
+    def activate(self):  # init to z axis
+        # switch axis not trigger this function
         if self.timer is None:
-            self.timer = app.Timer(connect=self.rotate)
+            self.timer = app.Timer(connect=self.timmer_z)
         self.timer.start(0.1)
 
     def deactivate(self):
         self.timer.stop()
+        self.timer = None
 
-    def rotate(self, event):
-        self.viewer._vispy_widget.view.camera.azimuth -= 1.  # set speed as constant first
+    def rotate_x(self):
+        if self.timer is not None:
+            self.timer.stop()
+        self.timer = app.Timer(connect=self.timmer_x)
+        self.timer.start(0.1)
+
+    def rotate_y(self):
+        if self.timer is not None:
+            self.timer.stop()
+        self.timer = app.Timer(connect=self.timmer_y)
+        self.timer.start(0.1)
+
+    def rotate_z(self):
+        if self.timer is not None:
+            self.timer.stop()
+        self.timer = app.Timer(connect=self.timmer_z)
+        self.timer.start(0.1)
+
+    def menu_actions(self):
+        # return a list of QActions which can include e.g. icons, text, and callbacks.
+        result = []
+        a = QtWidgets.QAction("X", None)
+        a.triggered.connect(self.rotate_x)
+        result.append(a)
+
+        b = QtWidgets.QAction("y", None)
+        b.triggered.connect(self.rotate_y)
+        result.append(b)
+
+        c = QtWidgets.QAction("z", None)
+        c.triggered.connect(self.rotate_z)
+        result.append(c)
+
+        return result
+
+    def timmer_x(self, event):
+        print('rotate x')
+        self.viewer._vispy_widget.view.camera.roll -= 1.  # set speed as constant first
+
+    def timmer_y(self, event):
+        print('rotate y')
+        self.viewer._vispy_widget.view.camera.elevation -= 1.
+
+    def timmer_z(self, event):
+        print('rotate z')
+        self.viewer._vispy_widget.view.camera.azimuth -= 1.
