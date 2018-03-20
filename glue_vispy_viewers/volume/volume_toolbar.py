@@ -87,7 +87,31 @@ class PointSelectionMode(VispyMouseMode):
                                       face_color='yellow')
                 self.markers.visible = True
 
+            self.subset_state = FloodFillSubsetState(self.current_visible_layer,
+                                                     self.active_layer_artist.state.attribute,
+                                                     self.max_position, -np.inf)
+
             self._vispy_widget.canvas.update()
+
+    @property
+    def max_position(self):
+
+        # Normalize the threshold so that it returns values in the range 1.01
+        # to 101 (since it can currently be between 0 and 1)
+
+        tr_visual = self._vispy_widget.limit_transforms[self.visual]
+
+        trans = tr_visual.translate
+        scale = tr_visual.scale
+
+        max_value_pos = self.max_value_pos[0]
+
+        # xyz index in volume array
+        x = int(round((max_value_pos[0] - trans[0]) / scale[0]))
+        y = int(round((max_value_pos[1] - trans[1]) / scale[1]))
+        z = int(round((max_value_pos[2] - trans[2]) / scale[2]))
+
+        return z, y, x
 
     def move(self, event):
 
@@ -110,23 +134,10 @@ class PointSelectionMode(VispyMouseMode):
                 threshold = drag_distance / canvas_diag
                 threshold = 1 + 10 ** (threshold * 4 - 2)
 
-                tr_visual = self._vispy_widget.limit_transforms[self.visual]
+                self.subset_state.threshold = threshold
+                self.subset_state.start_coord = threshold
 
-                trans = tr_visual.translate
-                scale = tr_visual.scale
-
-                max_value_pos = self.max_value_pos[0]
-
-                # xyz index in volume array
-                x = int(round((max_value_pos[0] - trans[0]) / scale[0]))
-                y = int(round((max_value_pos[1] - trans[1]) / scale[1]))
-                z = int(round((max_value_pos[2] - trans[2]) / scale[2]))
-
-                subset_state = FloodFillSubsetState(self.current_visible_layer,
-                                                    self.active_layer_artist.state.attribute,
-                                                    (z, y, x), threshold)
-
-                self.apply_subset_state(subset_state)
+                self.apply_subset_state(self.subset_state)
 
     def get_inter_value(self, pos):
 
