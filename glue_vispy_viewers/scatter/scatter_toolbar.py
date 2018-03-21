@@ -43,6 +43,14 @@ class NearestNeighborROI(Roi):
     def reset(self):
         self.x = self.y = self.max_radius = None
 
+    def __gluestate__(self, context):
+        return dict(x=float(self.x), y=float(self.y),
+                    max_radius=float(self.max_radius))
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(rec['x'], rec['y'], rec['max_radius'])
+
 
 @viewer_tool
 class PointSelectionMode(VispyMouseMode):
