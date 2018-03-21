@@ -2,7 +2,7 @@
 -----------------
 
 - Use new 3D and flood fill subset state classes from glue to make storing
-  subsets much more efficient.
+  subsets much more efficient. [#301]
 
 0.9.2 (unreleased)
 ------------------
