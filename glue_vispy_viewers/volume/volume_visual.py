@@ -231,13 +231,21 @@ class MultiVolumeVisual(VolumeVisual):
             raise TypeError('data should be float32 if inplace_ok is set')
 
         # VisPy can't handle dimensions larger than 2048 so we need to reduce
-        # the array on-the-fly if needed
+        # the array on-the-fly if needed. We do this using slicing rather than
+        # e.g. block_reduce as we want to avoid storing the array in memory.
 
-        shape = np.asarray(data.shape)
-
-        if np.any(shape > 2048):
-            self._block_size = np.ceil(shape / 2048).astype(int)
-            data = block_reduce(data, self._block_size, func=np.mean)
+        if any(size > 2048 for size in data.shape):
+            view = []
+            self._block_size = []
+            for size in data.shape:
+                if size > 2048:
+                    block = int(np.ceil(size / 2048))
+                    view.append(slice(None, None, block))
+                else:
+                    block = 1
+                    view.append(slice(None))
+                self._block_size.append(block)
+            data = data[view]
 
         self.volumes[label]['data'] = data
         self.volumes[label]['inplace_ok'] = inplace_ok
