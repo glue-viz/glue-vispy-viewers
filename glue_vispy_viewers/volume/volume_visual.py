@@ -43,7 +43,7 @@ from collections import defaultdict
 
 import numpy as np
 from glue.external import six
-from astropy.nddata.utils import block_reduce
+from glue.utils import iterate_chunks
 
 from ..extern.vispy.gloo import Texture3D, TextureEmulated3D, VertexBuffer, IndexBuffer
 from ..extern.vispy.visuals import VolumeVisual, Visual
@@ -230,13 +230,21 @@ class MultiVolumeVisual(VolumeVisual):
             raise TypeError('data should be float32 if inplace_ok is set')
 
         # VisPy can't handle dimensions larger than 2048 so we need to reduce
-        # the array on-the-fly if needed
+        # the array on-the-fly if needed. We do this using slicing rather than
+        # e.g. block_reduce as we want to avoid storing the array in memory.
 
-        shape = np.asarray(data.shape)
-
-        if np.any(shape > 2048):
-            self._block_size = np.ceil(shape / 2048).astype(int)
-            data = block_reduce(data, self._block_size, func=np.mean)
+        if any(size > 2048 for size in data.shape):
+            view = []
+            self._block_size = []
+            for size in data.shape:
+                if size > 2048:
+                    block = int(np.ceil(size / 2048))
+                    view.append(slice(None, None, block))
+                else:
+                    block = 1
+                    view.append(slice(None))
+                self._block_size.append(block)
+            data = data[view]
 
         self.volumes[label]['data'] = data
         self.volumes[label]['inplace_ok'] = inplace_ok
@@ -249,18 +257,40 @@ class MultiVolumeVisual(VolumeVisual):
         data = self.volumes[label]['data']
         inplace_ok = self.volumes[label]['inplace_ok']
 
-        if not inplace_ok:
-            data = data.astype(np.float32)
+        # With certain graphics cards, sending the data in one chunk to OpenGL
+        # causes artifacts in the rendering - see e.g.
+        # https://github.com/vispy/vispy/issues/1412
+        # To avoid this, we process the data in chunks. Since we need to do
+        # this, we can also do the copy and renormalization on the chunk to
+        # avoid excessive memory usage.
 
-        data -= clim[0]
-        data *= 1 / (clim[1] - clim[0])
+        # To start off we need to tell the texture about the new shape
+        self.shared_program['u_volumetex_{0:d}'.format(index)].resize(data.shape)
 
-        if NUMPY_LT_1_13:
-            data[np.isnan(data)] = 0.
-        else:
-            np.nan_to_num(data, copy=False)
+        # Determine the chunk shape - the value of 100 as the minimum value
+        # is arbitrary but appears to work nicely. We can reduce that in future
+        # if needed.
+        chunk_shape = [min(x, 100) for x in data.shape]
 
-        self.shared_program['u_volumetex_{0:d}'.format(index)].set_data(data)
+        # Now loop over chunks
+        for view in iterate_chunks(data.shape, chunk_shape=chunk_shape):
+
+            chunk = data[view]
+
+            if not inplace_ok:
+                chunk = chunk.astype(np.float32)
+
+            chunk -= clim[0]
+            chunk *= 1 / (clim[1] - clim[0])
+
+            if NUMPY_LT_1_13:
+                chunk[np.isnan(chunk)] = 0.
+            else:
+                np.nan_to_num(chunk, copy=False)
+
+            offset = tuple([s.start for s in view])
+
+            self.shared_program['u_volumetex_{0:d}'.format(index)].set_data(chunk, offset=offset)
 
         if initial_shape:
             self._data_shape = np.asarray(data.shape, dtype=int)

@@ -61,7 +61,8 @@ class PointSelectionMode(VispyMouseMode):
 
     def press(self, event):
         if event.button == 1:
-            roi = Projected3dROI(roi_2d=NearestNeighborROI(event.pos[0], event.pos[1], max_radius=5),
+            roi = Projected3dROI(roi_2d=NearestNeighborROI(event.pos[0], event.pos[1],
+                                                           max_radius=5),
                                  projection_matrix=self.projection_matrix)
             self.apply_roi(roi)
 

@@ -4,6 +4,12 @@
 - Use new 3D and flood fill subset state classes from glue to make storing
   subsets much more efficient. [#301]
 
+- Work around an issue on certain graphics cards which causes volume
+  renderings to not appear correctly but instead of have stripe artifacts. [#303]
+
+- Improve performance for volume rendering for arrays larger than 2048
+  along one or more dimensions. [#303]
+
 0.9.2 (unreleased)
 ------------------
 
