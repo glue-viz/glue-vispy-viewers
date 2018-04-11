@@ -44,7 +44,6 @@ from collections import defaultdict
 import numpy as np
 from glue.external import six
 from glue.utils import iterate_chunks
-from astropy.nddata.utils import block_reduce
 
 from ..extern.vispy.gloo import Texture3D, TextureEmulated3D, VertexBuffer, IndexBuffer
 from ..extern.vispy.visuals import VolumeVisual, Visual
