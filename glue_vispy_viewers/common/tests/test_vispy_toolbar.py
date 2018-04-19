@@ -6,7 +6,7 @@ import os
 import pytest
 from mock import patch
 
-from .util import simple_session
+from glue.core.tests.util import simple_session
 
 from ..vispy_data_viewer import BaseVispyViewer
 

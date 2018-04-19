@@ -8,7 +8,7 @@ from mock import patch
 from glue.core import Data, DataCollection
 from glue.app.qt import GlueApplication
 
-from .util import simple_session
+from glue.core.tests.util import simple_session
 
 from ..vispy_data_viewer import BaseVispyViewer
 from ...volume.volume_viewer import VispyVolumeViewer

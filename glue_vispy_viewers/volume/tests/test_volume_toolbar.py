@@ -6,7 +6,7 @@ import numpy as np
 import glue
 from glue.core import Data
 from glue.core.component import Component
-from ...common.tests.util import simple_session
+from glue.core.tests.util import simple_session
 
 from ..volume_viewer import VispyVolumeViewer
 from ...extern.vispy.app import MouseEvent
