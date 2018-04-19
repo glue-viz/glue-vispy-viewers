@@ -13,6 +13,8 @@
 - Improve performance when closing a session that has large volume
   visualizations. [#307]
 
+- Improve performance when clipping the data outside the box. [#307]
+
 - Fixed a bug that caused layers to be shown/hidden out of sync with
   checkboxes. [#307]
 
