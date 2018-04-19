@@ -158,6 +158,12 @@ class VolumeLayerArtist(VispyLayerArtist):
             data = self.layer[self.state.attribute]
 
         self._multivol.set_data(self.id, data, inplace_ok=isinstance(self.layer, Subset))
+        # We do this here in addition to in the volume viewer itself as for
+        # some situations e.g. reloading from session files, a clip_data event
+        # isn't emitted.
+        self._multivol.set_clip(self._viewer_state.clip_data,
+                                self._viewer_state.clip_limits_relative)
+
         self._update_visibility()
 
     def _update_visibility(self):
