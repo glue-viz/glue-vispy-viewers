@@ -182,7 +182,10 @@ def test_layer_visibility_clip():
     assert volume.layers[0].visible
     assert volume.layers[0]._multivol.enabled[0]
 
-    volume.layers[0].state.visible = False
+    volume.layers[0].visible = False
+
+    assert not volume.layers[0].visible
+    assert not volume.layers[0]._multivol.enabled[0]
 
     volume.state.clip_data = True
 
