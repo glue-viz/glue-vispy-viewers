@@ -9,6 +9,7 @@ from matplotlib.colors import ColorConverter
 from glue.core.data import Subset
 from glue.config import settings
 from glue.core.exceptions import IncompatibleAttribute
+from glue.utils import broadcast_to
 from .volume_visual import MultiVolume
 from .colors import get_translucent_cmap
 from .layer_state import VolumeLayerState
@@ -100,7 +101,13 @@ class VolumeLayerArtist(VispyLayerArtist):
         """
         # We don't want to deallocate here because this can be called if we
         # disable the layer due to incompatible attributes
-        self._multivol.set_data(self.id, np.zeros(self._multivol._data_shape))
+        self._multivol.set_data(self.id, broadcast_to(0, self._multivol._data_shape))
+
+    def remove(self):
+        """
+        Remove the layer artist for good
+        """
+        self._multivol.deallocate(self.id)
 
     def _update_cmap_from_color(self):
         cmap = get_translucent_cmap(*ColorConverter().to_rgb(self.state.color))

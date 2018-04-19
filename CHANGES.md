@@ -10,6 +10,12 @@
 - Improve performance for volume rendering for arrays larger than 2048
   along one or more dimensions. [#303]
 
+- Improve performance when closing a session that has large volume
+  visualizations. [#307]
+
+- Fixed a bug that caused layers to be shown/hidden out of sync with
+  checkboxes. [#307]
+
 0.9.2 (unreleased)
 ------------------
 
