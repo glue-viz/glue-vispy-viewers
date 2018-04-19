@@ -5,6 +5,7 @@ from glue.viewers.common.qt.data_viewer_with_state import DataViewerWithState
 from glue.utils import nonpartial
 
 from qtpy import PYQT5, QtWidgets
+from qtpy.QtCore import Qt
 
 from .vispy_widget import VispyWidgetHelper
 from .viewer_options import VispyOptionsWidget
@@ -95,14 +96,14 @@ class BaseVispyViewer(DataViewerWithState):
 
             # tbar.setAllowedAreas(Qt.NoToolBarArea)
 
-            from qtpy.QtCore import Qt
-
-            tbar = self._session.application._mode_toolbar
-            hidden = tbar.isHidden()
-
-            if hidden:
-                original_flags = tbar.windowFlags()
-                tbar.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
+            if self._session.application is not None:
+                tbar = self._session.application._mode_toolbar
+                hidden = tbar.isHidden()
+                if hidden:
+                    original_flags = tbar.windowFlags()
+                    tbar.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
+            else:
+                hidden = False
 
             super(BaseVispyViewer, self).show()
 
