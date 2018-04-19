@@ -44,6 +44,12 @@ class BaseVispyViewer(DataViewerWithState):
         self.setCentralWidget(self._vispy_widget.canvas.native)
 
         self.state.add_callback('clip_data', nonpartial(self._toggle_clip))
+        self.state.add_callback('x_min', nonpartial(self._toggle_clip))
+        self.state.add_callback('x_max', nonpartial(self._toggle_clip))
+        self.state.add_callback('y_min', nonpartial(self._toggle_clip))
+        self.state.add_callback('y_max', nonpartial(self._toggle_clip))
+        self.state.add_callback('z_min', nonpartial(self._toggle_clip))
+        self.state.add_callback('z_max', nonpartial(self._toggle_clip))
 
         self.status_label = None
         self._opengl_ok = None

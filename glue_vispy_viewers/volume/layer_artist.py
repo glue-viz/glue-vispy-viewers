@@ -157,20 +157,6 @@ class VolumeLayerArtist(VispyLayerArtist):
 
             data = self.layer[self.state.attribute]
 
-        if self._clip_limits is not None:
-            xmin, xmax, ymin, ymax, zmin, zmax = self._clip_limits
-            imin, imax = int(np.ceil(xmin)), int(np.ceil(xmax))
-            jmin, jmax = int(np.ceil(ymin)), int(np.ceil(ymax))
-            kmin, kmax = int(np.ceil(zmin)), int(np.ceil(zmax))
-            invalid = -np.inf
-            data = data.copy()
-            data[:, :, :imin] = invalid
-            data[:, :, imax:] = invalid
-            data[:, :jmin] = invalid
-            data[:, jmax:] = invalid
-            data[:kmin] = invalid
-            data[kmax:] = invalid
-
         self._multivol.set_data(self.id, data, inplace_ok=isinstance(self.layer, Subset))
         self._update_visibility()
 
@@ -182,8 +168,7 @@ class VolumeLayerArtist(VispyLayerArtist):
         self.redraw()
 
     def set_clip(self, limits):
-        self._clip_limits = limits
-        self._update_data()
+        pass
 
     def _update_volume(self, force=False, **kwargs):
 

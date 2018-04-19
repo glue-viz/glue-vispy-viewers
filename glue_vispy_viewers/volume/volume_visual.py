@@ -126,6 +126,10 @@ class MultiVolumeVisual(VolumeVisual):
         self.shared_program['a_texcoord'] = self._texcoord
         self.shared_program['u_shape'] = self._vol_shape[::-1]
 
+        self.shared_program['u_clipped'] = 0
+        self.shared_program['u_clip_min'] = [0, 0, 0]
+        self.shared_program['u_clip_max'] = [1, 1, 1]
+
         self.shared_program['u_downsample'] = 1.
 
         self._draw_mode = 'triangle_strip'
@@ -153,6 +157,12 @@ class MultiVolumeVisual(VolumeVisual):
             self.freeze()
         except AttributeError:  # Older versions of VisPy
             pass
+
+    def set_clip(self, clip_data, clip_limits):
+        self.shared_program['u_clipped'] = int(clip_data)
+        if clip_data:
+            self.shared_program['u_clip_min'] = clip_limits[::2]
+            self.shared_program['u_clip_max'] = clip_limits[1::2]
 
     def downsample(self):
         if self._data_shape is None:

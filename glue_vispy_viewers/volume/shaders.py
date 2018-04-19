@@ -54,6 +54,10 @@ uniform float u_downsample;
 uniform float u_relative_step_size;
 uniform vec4 u_bgcolor;
 
+uniform int u_clipped = 0;
+uniform vec3 u_clip_min;
+uniform vec3 u_clip_max;
+
 //varyings
 // varying vec3 v_texcoord;
 varying vec3 v_position;
@@ -133,7 +137,15 @@ void main() {{
             for (iter=iter; iter<nsteps; iter++)
             {{
 
-                {in_loop}
+                if (u_clipped == 1) {{
+                    if(loc.r > u_clip_min.r && loc.r < u_clip_max.r &&
+                       loc.g > u_clip_min.g && loc.g < u_clip_max.g &&
+                       loc.b > u_clip_min.b && loc.b < u_clip_max.b) {{
+                   {in_loop}
+                    }}
+                }} else {{
+                    {in_loop}
+                }}
 
                 // Advance location deeper into the volume
                 loc += (0.5 + rand(loc)) * step;
@@ -147,7 +159,15 @@ void main() {{
             for (iter=iter; iter<nsteps; iter++)
             {{
 
-                {in_loop}
+                if (u_clipped == 1) {{
+                    if(loc.r > u_clip_min.r && loc.r < u_clip_max.r &&
+                       loc.g > u_clip_min.g && loc.g < u_clip_max.g &&
+                       loc.b > u_clip_min.b && loc.b < u_clip_max.b) {{
+                   {in_loop}
+                    }}
+                }} else {{
+                    {in_loop}
+                }}
 
                 // Advance location deeper into the volume
                 loc += step;
