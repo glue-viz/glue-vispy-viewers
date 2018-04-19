@@ -90,7 +90,8 @@ class VispyWidgetHelper(object):
         if force or any(key in props for key in ('x_att', 'y_att', 'z_att')):
             self._update_attributes()
 
-        if force or any(key in props for key in ('x_stretch', 'y_stretch', 'z_stretch', 'native_aspect')):
+        if force or any(key in props for key in ('x_stretch', 'y_stretch',
+                                                 'z_stretch', 'native_aspect')):
             self._update_stretch()
 
         if force or any(p in props for p in LIMITS_PROPS) or 'native_aspect' in props:
