@@ -283,10 +283,10 @@ class MultiVolumeVisual(VolumeVisual):
             chunk -= clim[0]
             chunk *= 1 / (clim[1] - clim[0])
 
-            if NUMPY_LT_1_13:
-                chunk[np.isnan(chunk)] = 0.
-            else:
-                np.nan_to_num(chunk, copy=False)
+            # PERF: nan_to_num doesn't actually help memory usage as it runs
+            # isnan internally, and it's slower, so we just use the following
+            # methind. In future we could do this directly with a C extension.
+            chunk[np.isnan(chunk)] = 0.
 
             offset = tuple([s.start for s in view])
 
