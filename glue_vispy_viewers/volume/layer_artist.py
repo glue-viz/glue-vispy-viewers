@@ -165,8 +165,7 @@ class VolumeLayerArtist(VispyLayerArtist):
             data[kmax:] = invalid
 
         self._multivol.set_data(self.id, data, inplace_ok=isinstance(self.layer, Subset))
-        self._multivol.enable(self.id)
-        self.redraw()
+        self._update_visibility()
 
     def _update_visibility(self):
         if self.visible:
