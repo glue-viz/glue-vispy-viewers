@@ -18,6 +18,9 @@
 - Fixed a bug that caused layers to be shown/hidden out of sync with
   checkboxes. [#307]
 
+- Fixed a bug that caused circular references to viewers to cause issues
+  after the viewers were closed. [#307]
+
 0.9.2 (unreleased)
 ------------------
 
