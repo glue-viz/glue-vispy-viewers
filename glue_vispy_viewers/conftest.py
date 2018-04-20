@@ -25,6 +25,11 @@ def pytest_configure(config):
     app = get_qapp()
 
 
+def pytest_unconfigure(config):
+    global app
+    app = None
+
+
 VIEWER_CLASSES = ['VispyScatterViewer', 'VispyIsosurfaceViewer', 'VispyVolumeViewer']
 
 
