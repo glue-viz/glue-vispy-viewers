@@ -35,10 +35,10 @@ class ScatterLayerStyleWidget(QtWidgets.QWidget):
         self._update_size_mode()
         self._update_color_mode()
 
-        self.state.add_callback('color_mode', nonpartial(self._update_color_mode))
-        self.state.add_callback('size_mode', nonpartial(self._update_size_mode))
+        self.state.add_callback('color_mode', self._update_color_mode)
+        self.state.add_callback('size_mode', self._update_size_mode)
 
-    def _update_size_mode(self):
+    def _update_size_mode(self, *args):
 
         if self.state.size_mode == "Fixed":
             self.ui.size_row_2.hide()
@@ -49,7 +49,7 @@ class ScatterLayerStyleWidget(QtWidgets.QWidget):
             self.ui.combosel_size_attribute.show()
             self.ui.size_row_2.show()
 
-    def _update_color_mode(self):
+    def _update_color_mode(self, *args):
 
         if self.state.color_mode == "Fixed":
             self.ui.color_row_2.hide()

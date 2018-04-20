@@ -70,7 +70,6 @@ class IsosurfaceLayerArtist(VispyLayerArtist):
         self._clip_limits = None
 
         self.layer = layer or layer_state.layer
-        self.vispy_viewer = vispy_viewer
         self.vispy_widget = vispy_viewer._vispy_widget
 
         # TODO: need to remove layers when layer artist is removed

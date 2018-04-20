@@ -43,13 +43,13 @@ class BaseVispyViewer(DataViewerWithState):
         self._vispy_widget = VispyWidgetHelper(viewer_state=self.state)
         self.setCentralWidget(self._vispy_widget.canvas.native)
 
-        self.state.add_callback('clip_data', nonpartial(self._toggle_clip))
-        self.state.add_callback('x_min', nonpartial(self._toggle_clip))
-        self.state.add_callback('x_max', nonpartial(self._toggle_clip))
-        self.state.add_callback('y_min', nonpartial(self._toggle_clip))
-        self.state.add_callback('y_max', nonpartial(self._toggle_clip))
-        self.state.add_callback('z_min', nonpartial(self._toggle_clip))
-        self.state.add_callback('z_max', nonpartial(self._toggle_clip))
+        self.state.add_callback('clip_data', self._toggle_clip)
+        self.state.add_callback('x_min', self._toggle_clip)
+        self.state.add_callback('x_max', self._toggle_clip)
+        self.state.add_callback('y_min', self._toggle_clip)
+        self.state.add_callback('y_max', self._toggle_clip)
+        self.state.add_callback('z_min', self._toggle_clip)
+        self.state.add_callback('z_max', self._toggle_clip)
 
         self.status_label = None
         self._opengl_ok = None
@@ -78,7 +78,7 @@ class BaseVispyViewer(DataViewerWithState):
         statusbar = self.statusBar()
         statusbar.showMessage(text)
 
-    def _toggle_clip(self):
+    def _toggle_clip(self, *args):
         for layer_artist in self._layer_artist_container:
             if self.state.clip_data:
                 layer_artist.set_clip(self.state.clip_limits)

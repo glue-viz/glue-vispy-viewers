@@ -108,6 +108,8 @@ def test_scatter_volume(protocol):
     assert layer_state.color == '#e60010'
     assert layer_state.alpha == 0.36
 
+    ga.close()
+
 
 def test_scatter_volume_selection():
 
@@ -148,3 +150,5 @@ def test_scatter_volume_selection():
 
     assert_equal(dc[0].subsets[0].to_mask(), expected_array)
     assert_equal(dc[1].subsets[0].to_mask(), expected_table)
+
+    ga.close()

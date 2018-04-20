@@ -75,6 +75,8 @@ class BaseTestDataViewer(object):
 
         w.state.visible_axes = False
 
+        app.close()
+
 
 class TestDataViewerVolume(BaseTestDataViewer):
     widget_cls = VispyVolumeViewer

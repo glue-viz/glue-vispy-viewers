@@ -123,6 +123,8 @@ def test_array_shape(tmpdir):
 
     layer_state.attribute = data.id['b']
 
+    ga.close()
+
 
 def test_scatter_on_volume(tmpdir):
 
@@ -191,3 +193,5 @@ def test_layer_visibility_clip():
 
     assert not volume.layers[0].visible
     assert not volume.layers[0]._multivol.enabled[0]
+
+    ga.close()

@@ -33,10 +33,15 @@ class ExampleViewer(BaseVispyViewer):
 class TestToolbar(object):
 
     def setup_method(self):
-
         self.session = simple_session()
         self.viewer = ExampleViewer(self.session)
         self.toolbar = self.viewer.toolbar
+
+    def teardown_method(self):
+        self.session = None
+        self.viewer.close()
+        self.viewer = None
+        self.toolbar = None
 
     def test_save(self, tmpdir, capsys):
 

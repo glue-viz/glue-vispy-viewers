@@ -71,3 +71,5 @@ def test_volumeviewer_toolbar():
     point.move(MouseEvent('mouse_move'))
     point.release(MouseEvent('mouse_release'))
     assert toolbar.tools['volume3d:floodfill'] == point
+
+    v.close()
