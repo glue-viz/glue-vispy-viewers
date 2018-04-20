@@ -123,6 +123,8 @@ def test_array_shape(tmpdir):
 
     layer_state.attribute = data.id['b']
 
+    ga.close()
+
 
 def test_scatter_on_volume(tmpdir):
 
@@ -160,3 +162,36 @@ def test_scatter_on_volume(tmpdir):
     assert len(volume_r.layers) == 3
 
     ga2.close()
+
+
+def test_layer_visibility_clip():
+
+    # Regression test for a bug that meant that updating the clip data setting
+    # caused a layer to become visible even if it shouldn't be
+
+    # Create fake data
+    data = make_test_data()
+
+    # Create fake session
+
+    dc = DataCollection([data])
+    ga = GlueApplication(dc)
+    ga.show()
+
+    volume = ga.new_data_viewer(VispyVolumeViewer)
+    volume.add_data(data)
+
+    assert volume.layers[0].visible
+    assert volume.layers[0]._multivol.enabled[0]
+
+    volume.layers[0].visible = False
+
+    assert not volume.layers[0].visible
+    assert not volume.layers[0]._multivol.enabled[0]
+
+    volume.state.clip_data = True
+
+    assert not volume.layers[0].visible
+    assert not volume.layers[0]._multivol.enabled[0]
+
+    ga.close()

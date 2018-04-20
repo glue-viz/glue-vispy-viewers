@@ -126,6 +126,10 @@ class MultiVolumeVisual(VolumeVisual):
         self.shared_program['a_texcoord'] = self._texcoord
         self.shared_program['u_shape'] = self._vol_shape[::-1]
 
+        self.shared_program['u_clipped'] = 0
+        self.shared_program['u_clip_min'] = [0, 0, 0]
+        self.shared_program['u_clip_max'] = [1, 1, 1]
+
         self.shared_program['u_downsample'] = 1.
 
         self._draw_mode = 'triangle_strip'
@@ -153,6 +157,12 @@ class MultiVolumeVisual(VolumeVisual):
             self.freeze()
         except AttributeError:  # Older versions of VisPy
             pass
+
+    def set_clip(self, clip_data, clip_limits):
+        self.shared_program['u_clipped'] = int(clip_data)
+        if clip_data:
+            self.shared_program['u_clip_min'] = clip_limits[::2]
+            self.shared_program['u_clip_max'] = clip_limits[1::2]
 
     def downsample(self):
         if self._data_shape is None:
@@ -283,10 +293,10 @@ class MultiVolumeVisual(VolumeVisual):
             chunk -= clim[0]
             chunk *= 1 / (clim[1] - clim[0])
 
-            if NUMPY_LT_1_13:
-                chunk[np.isnan(chunk)] = 0.
-            else:
-                np.nan_to_num(chunk, copy=False)
+            # PERF: nan_to_num doesn't actually help memory usage as it runs
+            # isnan internally, and it's slower, so we just use the following
+            # methind. In future we could do this directly with a C extension.
+            chunk[np.isnan(chunk)] = 0.
 
             offset = tuple([s.start for s in view])
 

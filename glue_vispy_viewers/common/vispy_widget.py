@@ -65,6 +65,7 @@ class VispyWidgetHelper(object):
             self.viewer_state.add_callback('*', self._update_from_state, as_kwargs=True)
         except TypeError:  # glue-core >= 0.11
             self.viewer_state.add_global_callback(self._update_from_state)
+        self._update_from_state(force=True)
 
     def _update_appearance_from_settings(self):
         self.canvas.bgcolor = rgb(settings.BACKGROUND_COLOR)
@@ -78,21 +79,22 @@ class VispyWidgetHelper(object):
         visual.transform = self.limit_transforms[visual]
         self.view.add(visual)
 
-    def _update_from_state(self, **props):
+    def _update_from_state(self, force=False, **props):
 
-        if 'visible_axes' in props:
+        if force or 'visible_axes' in props:
             self._toggle_axes()
 
-        if 'perspective_view' in props:
+        if force or 'perspective_view' in props:
             self._toggle_perspective()
 
-        if any(key in props for key in ('x_att', 'y_att', 'z_att')):
+        if force or any(key in props for key in ('x_att', 'y_att', 'z_att')):
             self._update_attributes()
 
-        if any(key in props for key in ('x_stretch', 'y_stretch', 'z_stretch', 'native_aspect')):
+        if force or any(key in props for key in ('x_stretch', 'y_stretch',
+                                                 'z_stretch', 'native_aspect')):
             self._update_stretch()
 
-        if any(p in props for p in LIMITS_PROPS) or 'native_aspect' in props:
+        if force or any(p in props for p in LIMITS_PROPS) or 'native_aspect' in props:
             self._update_limits()
 
         self.canvas.update()

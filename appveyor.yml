@@ -11,7 +11,7 @@ environment:
                         # of 32 bit and 64 bit builds are needed, move this
                         # to the matrix section.
       CONDA_CHANNELS: "glueviz"
-      CONDA_DEPENDENCIES: "glueviz scikit-image mock pyqt=4 pyopengl qtpy"
+      CONDA_DEPENDENCIES: "glueviz scikit-image mock pyqt pyopengl qtpy"
       CONDA_CHANNEL_PRIORITY: "True"
 
   matrix:

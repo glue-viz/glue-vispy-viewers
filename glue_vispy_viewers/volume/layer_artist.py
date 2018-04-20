@@ -9,6 +9,7 @@ from matplotlib.colors import ColorConverter
 from glue.core.data import Subset
 from glue.config import settings
 from glue.core.exceptions import IncompatibleAttribute
+from glue.utils import broadcast_to
 from .volume_visual import MultiVolume
 from .colors import get_translucent_cmap
 from .layer_state import VolumeLayerState
@@ -31,7 +32,6 @@ class VolumeLayerArtist(VispyLayerArtist):
         self._clip_limits = None
 
         self.layer = layer or layer_state.layer
-        self.vispy_viewer = vispy_viewer
         self.vispy_widget = vispy_viewer._vispy_widget
 
         # TODO: need to remove layers when layer artist is removed
@@ -100,7 +100,13 @@ class VolumeLayerArtist(VispyLayerArtist):
         """
         # We don't want to deallocate here because this can be called if we
         # disable the layer due to incompatible attributes
-        self._multivol.set_data(self.id, np.zeros(self._multivol._data_shape))
+        self._multivol.set_data(self.id, broadcast_to(0, self._multivol._data_shape))
+
+    def remove(self):
+        """
+        Remove the layer artist for good
+        """
+        self._multivol.deallocate(self.id)
 
     def _update_cmap_from_color(self):
         cmap = get_translucent_cmap(*ColorConverter().to_rgb(self.state.color))
@@ -150,23 +156,14 @@ class VolumeLayerArtist(VispyLayerArtist):
 
             data = self.layer[self.state.attribute]
 
-        if self._clip_limits is not None:
-            xmin, xmax, ymin, ymax, zmin, zmax = self._clip_limits
-            imin, imax = int(np.ceil(xmin)), int(np.ceil(xmax))
-            jmin, jmax = int(np.ceil(ymin)), int(np.ceil(ymax))
-            kmin, kmax = int(np.ceil(zmin)), int(np.ceil(zmax))
-            invalid = -np.inf
-            data = data.copy()
-            data[:, :, :imin] = invalid
-            data[:, :, imax:] = invalid
-            data[:, :jmin] = invalid
-            data[:, jmax:] = invalid
-            data[:kmin] = invalid
-            data[kmax:] = invalid
-
         self._multivol.set_data(self.id, data, inplace_ok=isinstance(self.layer, Subset))
-        self._multivol.enable(self.id)
-        self.redraw()
+        # We do this here in addition to in the volume viewer itself as for
+        # some situations e.g. reloading from session files, a clip_data event
+        # isn't emitted.
+        self._multivol.set_clip(self._viewer_state.clip_data,
+                                self._viewer_state.clip_limits_relative)
+
+        self._update_visibility()
 
     def _update_visibility(self):
         if self.visible:
@@ -176,8 +173,7 @@ class VolumeLayerArtist(VispyLayerArtist):
         self.redraw()
 
     def set_clip(self, limits):
-        self._clip_limits = limits
-        self._update_data()
+        pass
 
     def _update_volume(self, force=False, **kwargs):
 

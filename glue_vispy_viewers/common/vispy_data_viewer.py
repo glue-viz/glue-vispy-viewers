@@ -2,9 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 from glue.viewers.common.qt.data_viewer_with_state import DataViewerWithState
 
-from glue.utils import nonpartial
-
 from qtpy import PYQT5, QtWidgets
+from qtpy.QtCore import Qt
 
 from .vispy_widget import VispyWidgetHelper
 from .viewer_options import VispyOptionsWidget
@@ -42,7 +41,13 @@ class BaseVispyViewer(DataViewerWithState):
         self._vispy_widget = VispyWidgetHelper(viewer_state=self.state)
         self.setCentralWidget(self._vispy_widget.canvas.native)
 
-        self.state.add_callback('clip_data', nonpartial(self._toggle_clip))
+        self.state.add_callback('clip_data', self._toggle_clip)
+        self.state.add_callback('x_min', self._toggle_clip)
+        self.state.add_callback('x_max', self._toggle_clip)
+        self.state.add_callback('y_min', self._toggle_clip)
+        self.state.add_callback('y_max', self._toggle_clip)
+        self.state.add_callback('z_min', self._toggle_clip)
+        self.state.add_callback('z_max', self._toggle_clip)
 
         self.status_label = None
         self._opengl_ok = None
@@ -71,7 +76,7 @@ class BaseVispyViewer(DataViewerWithState):
         statusbar = self.statusBar()
         statusbar.showMessage(text)
 
-    def _toggle_clip(self):
+    def _toggle_clip(self, *args):
         for layer_artist in self._layer_artist_container:
             if self.state.clip_data:
                 layer_artist.set_clip(self.state.clip_limits)
@@ -95,14 +100,14 @@ class BaseVispyViewer(DataViewerWithState):
 
             # tbar.setAllowedAreas(Qt.NoToolBarArea)
 
-            from qtpy.QtCore import Qt
-
-            tbar = self._session.application._mode_toolbar
-            hidden = tbar.isHidden()
-
-            if hidden:
-                original_flags = tbar.windowFlags()
-                tbar.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
+            if self._session.application is not None:
+                tbar = self._session.application._mode_toolbar
+                hidden = tbar.isHidden()
+                if hidden:
+                    original_flags = tbar.windowFlags()
+                    tbar.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
+            else:
+                hidden = False
 
             super(BaseVispyViewer, self).show()
 

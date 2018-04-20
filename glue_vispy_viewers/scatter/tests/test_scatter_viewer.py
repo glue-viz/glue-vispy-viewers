@@ -124,6 +124,8 @@ def test_scatter_viewer(tmpdir):
     assert layer_state.cmap_vmax == 0.9
     assert layer_state.cmap is cm.BuGn
 
+    ga2.close()
+
 
 def test_n_dimensional_data():
 
@@ -150,6 +152,8 @@ def test_n_dimensional_data():
     style_widget.color_mode = 'Linear'
     style_widget.cmap_attribute = data.id['y']
     style_widget.cmap = cm.BuGn
+
+    ga.close()
 
 
 def test_scatter_remove_layer_artists(tmpdir):
@@ -192,3 +196,4 @@ def test_scatter_remove_layer_artists(tmpdir):
 
     ga2 = GlueApplication.restore_session(session_file)
     ga2.show()
+    ga2.close()

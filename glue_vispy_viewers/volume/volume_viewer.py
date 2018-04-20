@@ -134,3 +134,8 @@ class VispyVolumeViewer(BaseVispyViewer):
         super(VispyVolumeViewer, self)._update_appearance_from_settings(message)
         if hasattr(self._vispy_widget, '_multivol'):
             self._vispy_widget._multivol.set_background(settings.BACKGROUND_COLOR)
+
+    def _toggle_clip(self, *args):
+        if hasattr(self._vispy_widget, '_multivol'):
+            self._vispy_widget._multivol.set_clip(self.state.clip_data,
+                                                  self.state.clip_limits_relative)

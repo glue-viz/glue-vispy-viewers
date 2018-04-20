@@ -11,3 +11,5 @@ def test_3d_axis_visual():
                                                 fov=0., distance=4.0)
     AxesVisual3D(view=view, axis_color='red', transform=scene_transform)
     canvas.render()
+
+    canvas.close()
