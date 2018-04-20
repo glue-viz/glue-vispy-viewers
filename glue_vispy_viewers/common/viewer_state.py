@@ -5,8 +5,6 @@ import numpy as np
 from glue.external.echo import (CallbackProperty, SelectionCallbackProperty,
                                 delay_callback, ListCallbackProperty)
 from glue.core.state_objects import State, StateAttributeLimitsHelper
-from glue.utils import nonpartial
-
 
 __all__ = ['Vispy3DViewerState']
 
@@ -72,9 +70,9 @@ class Vispy3DViewerState(State):
         # into a smart dictionary that can call callbacks when elements are
         # changed then we shouldn't always call this. It'd also be nice to
         # avoid this altogether and make it more clean.
-        self.add_callback('limits_cache', nonpartial(self._update_limits_cache))
+        self.add_callback('limits_cache', self._update_limits_cache)
 
-    def _update_limits_cache(self):
+    def _update_limits_cache(self, *args):
         self.x_lim_helper._cache = self.limits_cache
         self.x_lim_helper._update_attribute()
         self.y_lim_helper._cache = self.limits_cache

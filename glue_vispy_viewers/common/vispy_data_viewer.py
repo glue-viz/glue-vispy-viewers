@@ -2,8 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 from glue.viewers.common.qt.data_viewer_with_state import DataViewerWithState
 
-from glue.utils import nonpartial
-
 from qtpy import PYQT5, QtWidgets
 from qtpy.QtCore import Qt
 
