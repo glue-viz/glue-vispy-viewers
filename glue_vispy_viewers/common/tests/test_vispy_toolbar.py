@@ -51,7 +51,7 @@ class TestToolbar(object):
 
         with patch('qtpy.compat.getsavefilename') as fd:
             fd.return_value = filename, 'png'
-            self.toolbar.actions['vispy:save'].trigger()
+            self.toolbar.tools['save'].subtools[0].activate()
 
         assert os.path.exists(filename)
 
