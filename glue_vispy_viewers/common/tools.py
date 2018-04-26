@@ -32,9 +32,8 @@ class SaveTool(Tool):
 
     icon = 'glue_filesave'
     tool_id = 'vispy:save'
-    action_text = 'Save the figure'
-    tool_tip = 'Save the figure'
-    shortcut = 'Ctrl+Shift+S'
+    action_text = 'Save the figure to a file'
+    tool_tip = 'Save the figure to a file'
 
     def activate(self):
         outfile, file_filter = compat.getsavefilename(caption='Save File',
