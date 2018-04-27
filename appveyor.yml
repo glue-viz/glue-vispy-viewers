@@ -15,7 +15,7 @@ environment:
       CONDA_CHANNEL_PRIORITY: "True"
 
   matrix:
-      #- PYTHON_VERSION: "3.5"
+      - PYTHON_VERSION: "3.5"
       - PYTHON_VERSION: "3.5"
         CONDA_CHANNELS: "glueviz/label/dev"
 
