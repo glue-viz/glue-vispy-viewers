@@ -1,4 +1,4 @@
-0.10 (unreleased)
+0.10 (2018-04-27)
 -----------------
 
 - Use new 3D and flood fill subset state classes from glue to make storing
@@ -21,7 +21,7 @@
 - Fixed a bug that caused circular references to viewers to cause issues
   after the viewers were closed. [#307]
 
-0.9.2 (unreleased)
+0.9.2 (2018-03-08)
 ------------------
 
 - Fix bug that caused a crash when adding a volume to a viewer that
