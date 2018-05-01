@@ -40,7 +40,9 @@ class VolumeLayerStyleWidget(QtWidgets.QWidget):
             self._radio_size.addButton(self.ui.radio_subset_data)
             self.ui.radio_subset_outline.toggled.connect(self._update_subset_mode)
             self.ui.radio_subset_data.toggled.connect(self._update_subset_mode)
-            self.ui.valuetext_vmin.setEnabled(False)
+            self.ui.valuetext_vmin.hide()
+            self.ui.valuetext_vmax.hide()
+            self.ui.label_limits.hide()
         else:
             self.ui.radio_subset_outline.hide()
             self.ui.radio_subset_data.hide()
@@ -49,9 +51,5 @@ class VolumeLayerStyleWidget(QtWidgets.QWidget):
     def _update_subset_mode(self):
         if self.ui.radio_subset_outline.isChecked():
             self.state.subset_mode = 'outline'
-            self.ui.valuetext_vmin.hide()
-            self.ui.valuetext_vmax.hide()
         else:
             self.state.subset_mode = 'data'
-            self.ui.valuetext_vmin.show()
-            self.ui.valuetext_vmax.show()

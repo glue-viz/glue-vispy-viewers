@@ -244,7 +244,7 @@ def get_shaders(n_volume_max):
 
         # Calculation inside the main raytracing loop
 
-        multiply_code = "  if (u_multiply_{0:d} >= 0) {{\n".format(i)
+        multiply_code = "  if (val != 0 && u_multiply_{0:d} >= 0) {{\n".format(i)
         for j in range(n_volume_max):
             multiply_code += "    if (u_multiply_{0:d} == {1:d}) {{ val *= $sample(u_volumetex_{1:d}, loc).g; }}\n".format(i, j)
         multiply_code += "  }\n"
