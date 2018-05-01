@@ -237,16 +237,16 @@ def get_shaders(n_volume_max):
         declarations += "uniform $sampler_type u_volumetex_{0:d};\n".format(i)
         declarations += "uniform int u_enabled_{0:d};\n".format(i)
         declarations += "uniform float u_weight_{0:d};\n".format(i)
-        declarations += "uniform float u_multiply_{0:d};\n".format(i)
+        declarations += "uniform int u_multiply_{0:d};\n".format(i)
 
         # Declarations before the raytracing loop
         before_loop += "float max_val_{0:d} = 0;\n".format(i)
 
         # Calculation inside the main raytracing loop
 
-        multiply_code = "  if (u_multiply_{0:d} > 0) {{\n".format(i)
+        multiply_code = "  if (u_multiply_{0:d} >= 0) {{\n".format(i)
         for j in range(n_volume_max):
-            multiply_code += "    if (u_multiply_{0:d} == {0:d}) {{ val *= $sample(u_volumetex_{0:d}, loc).g; }}\n".format(j)
+            multiply_code += "    if (u_multiply_{0:d} == {1:d}) {{ val *= $sample(u_volumetex_{1:d}, loc).g; }}\n".format(i, j)
         multiply_code += "  }\n"
 
         in_loop += ("if (u_enabled_{i:d} == 1) {{\n"

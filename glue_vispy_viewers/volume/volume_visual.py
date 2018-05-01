@@ -121,7 +121,7 @@ class MultiVolumeVisual(VolumeVisual):
             # Make sure all textures are disbaled
             self.shared_program['u_enabled_{0}'.format(i)] = 0
             self.shared_program['u_weight_{0}'.format(i)] = 1
-            self.shared_program['u_multiply_{0}'.format(i)] = 0
+            self.shared_program['u_multiply_{0}'.format(i)] = -1
 
         self.shared_program['a_position'] = self._vertices
         self.shared_program['a_texcoord'] = self._texcoord
@@ -223,7 +223,12 @@ class MultiVolumeVisual(VolumeVisual):
         index = self.volumes[label]['index']
         self.shared_program['u_weight_{0:d}'.format(index)] = weight
 
-    def set_data(self, label, data, inplace_ok=False):
+    def set_multiply(self, label, label_other):
+        index = self.volumes[label]['index']
+        index_other = -1 if label_other is None else self.volumes[label_other]['index']
+        self.shared_program['u_multiply_{0:d}'.format(index)] = index_other
+
+    def set_data(self, label, data, inplace_ok=False, layer=None):
 
         if 'clim' not in self.volumes[label]:
             raise ValueError("set_clim should be called before set_data")
@@ -259,7 +264,14 @@ class MultiVolumeVisual(VolumeVisual):
 
         self.volumes[label]['data'] = data
         self.volumes[label]['inplace_ok'] = inplace_ok
+        self.volumes[label]['layer'] = layer
         self._update_scaled_data(label, initial_shape=True)
+
+    def label_for_layer(self, layer):
+        for label in self.volumes:
+            if 'layer' in self.volumes[label]:
+                if self.volumes[label]['layer'] is layer:
+                    return label
 
     def _update_scaled_data(self, label, initial_shape=False):
 

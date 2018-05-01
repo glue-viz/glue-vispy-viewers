@@ -6,7 +6,7 @@ import uuid
 import numpy as np
 from matplotlib.colors import ColorConverter
 
-from glue.core.data import Subset
+from glue.core.data import Subset, Data
 from glue.config import settings
 from glue.core.exceptions import IncompatibleAttribute
 from glue.utils import broadcast_to
@@ -121,6 +121,13 @@ class VolumeLayerArtist(VispyLayerArtist):
         self._multivol.set_weight(self.id, self.state.alpha)
         self.redraw()
 
+    def _update_subset_mode(self):
+        if isinstance(self.state.layer, Data) or self.state.subset_mode == 'outline':
+            self._multivol.set_multiply(self.id, None)
+        else:
+            self._multivol.set_multiply(self.id, self._multivol.label_for_layer(self.state.layer.data))
+        self.redraw()
+
     def _update_data(self):
 
         if isinstance(self.layer, Subset):
@@ -147,22 +154,20 @@ class VolumeLayerArtist(VispyLayerArtist):
             # we might as well convert straight to the right datatype then we
             # can specify inplace_ok lower down which means the array can be
             # modified/scaled if needed.
-            if self.state.subset_mode == 'outline':
-                data = mask.astype(np.float32)
-            else:
-                data = self.layer.data[self.state.attribute].astype(np.float32)
-                data *= mask
+            data = mask.astype(np.float32)
+
         else:
 
             data = self.layer[self.state.attribute]
 
-        self._multivol.set_data(self.id, data, inplace_ok=isinstance(self.layer, Subset))
+        self._multivol.set_data(self.id, data, inplace_ok=isinstance(self.layer, Subset), layer=self.layer)
         # We do this here in addition to in the volume viewer itself as for
         # some situations e.g. reloading from session files, a clip_data event
         # isn't emitted.
         self._multivol.set_clip(self._viewer_state.clip_data,
                                 self._viewer_state.clip_limits_relative)
 
+        self._update_subset_mode()
         self._update_visibility()
 
     def _update_visibility(self):
@@ -211,8 +216,11 @@ class VolumeLayerArtist(VispyLayerArtist):
         if force or 'alpha' in changed:
             self._update_alpha()
 
-        if force or 'layer' in changed or 'attribute' in changed or 'subset_mode' in changed:
+        if force or 'layer' in changed or 'attribute' in changed:
             self._update_data()
+
+        if force or 'subset_mode' in changed:
+            self._update_subset_mode()
 
     def update(self):
         self._update_volume(force=True)
