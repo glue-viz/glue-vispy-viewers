@@ -121,6 +121,7 @@ class MultiVolumeVisual(VolumeVisual):
             # Make sure all textures are disbaled
             self.shared_program['u_enabled_{0}'.format(i)] = 0
             self.shared_program['u_weight_{0}'.format(i)] = 1
+            self.shared_program['u_multiply_{0}'.format(i)] = 0
 
         self.shared_program['a_position'] = self._vertices
         self.shared_program['a_texcoord'] = self._texcoord
