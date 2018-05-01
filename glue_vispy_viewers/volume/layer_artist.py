@@ -149,18 +149,13 @@ class VolumeLayerArtist(VispyLayerArtist):
                 self._multivol.disable(self.id)
                 return
 
-            # We convert to 32-bit floating point arrays here because that is
-            # what is needed to send to OpenGL. Since we need to do a copy here
-            # we might as well convert straight to the right datatype then we
-            # can specify inplace_ok lower down which means the array can be
-            # modified/scaled if needed.
-            data = mask.astype(np.float32)
+            data = mask
 
         else:
 
             data = self.layer[self.state.attribute]
 
-        self._multivol.set_data(self.id, data, inplace_ok=isinstance(self.layer, Subset), layer=self.layer)
+        self._multivol.set_data(self.id, data, layer=self.layer)
         # We do this here in addition to in the volume viewer itself as for
         # some situations e.g. reloading from session files, a clip_data event
         # isn't emitted.

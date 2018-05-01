@@ -228,7 +228,7 @@ class MultiVolumeVisual(VolumeVisual):
         index_other = -1 if label_other is None else self.volumes[label_other]['index']
         self.shared_program['u_multiply_{0:d}'.format(index)] = index_other
 
-    def set_data(self, label, data, inplace_ok=False, layer=None):
+    def set_data(self, label, data, layer=None):
 
         if 'clim' not in self.volumes[label]:
             raise ValueError("set_clim should be called before set_data")
@@ -236,14 +236,6 @@ class MultiVolumeVisual(VolumeVisual):
         # Avoid adding the same data again
         if 'data' in self.volumes[label] and self.volumes[label]['data'] is data:
             return
-
-        # Since outside this class we sometimes need to already copy the data
-        # before passing it here, we allow the caller to specify inplace_ok=True
-        # which means that it's ok to do the limits scaling in-place to avoid
-        # another copy.
-
-        if inplace_ok and data.dtype != np.float32:
-            raise TypeError('data should be float32 if inplace_ok is set')
 
         # VisPy can't handle dimensions larger than 2048 so we need to reduce
         # the array on-the-fly if needed. We do this using slicing rather than
@@ -263,7 +255,6 @@ class MultiVolumeVisual(VolumeVisual):
             data = data[view]
 
         self.volumes[label]['data'] = data
-        self.volumes[label]['inplace_ok'] = inplace_ok
         self.volumes[label]['layer'] = layer
         self._update_scaled_data(label, initial_shape=True)
 
@@ -278,7 +269,6 @@ class MultiVolumeVisual(VolumeVisual):
         index = self.volumes[label]['index']
         clim = self.volumes[label]['clim']
         data = self.volumes[label]['data']
-        inplace_ok = self.volumes[label]['inplace_ok']
 
         # With certain graphics cards, sending the data in one chunk to OpenGL
         # causes artifacts in the rendering - see e.g.
@@ -299,10 +289,7 @@ class MultiVolumeVisual(VolumeVisual):
         for view in iterate_chunks(data.shape, chunk_shape=chunk_shape):
 
             chunk = data[view]
-
-            if not inplace_ok:
-                chunk = chunk.astype(np.float32)
-
+            chunk = chunk.astype(np.float32)
             chunk -= clim[0]
             chunk *= 1 / (clim[1] - clim[0])
 
