@@ -125,7 +125,8 @@ class VolumeLayerArtist(VispyLayerArtist):
         if isinstance(self.state.layer, Data) or self.state.subset_mode == 'outline':
             self._multivol.set_multiply(self.id, None)
         else:
-            self._multivol.set_multiply(self.id, self._multivol.label_for_layer(self.state.layer.data))
+            label = self._multivol.label_for_layer(self.state.layer.data)
+            self._multivol.set_multiply(self.id, label)
         self.redraw()
 
     def _update_data(self):

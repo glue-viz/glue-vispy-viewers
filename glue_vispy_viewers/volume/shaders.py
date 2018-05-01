@@ -246,13 +246,15 @@ def get_shaders(n_volume_max):
 
         multiply_code = "  if (val != 0 && u_multiply_{0:d} >= 0) {{\n".format(i)
         for j in range(n_volume_max):
-            multiply_code += "    if (u_multiply_{0:d} == {1:d}) {{ val *= $sample(u_volumetex_{1:d}, loc).g; }}\n".format(i, j)
+            multiply_code += ("    if (u_multiply_{0:d} == {1:d}) {{ "
+                              "val *= $sample(u_volumetex_{1:d}, loc).g; }}\n".format(i, j))
         multiply_code += "  }\n"
 
-        in_loop += ("if (u_enabled_{i:d} == 1) {{\n"
-                    "  val = $sample(u_volumetex_{i:d}, loc).g;\n"
-                    "{multiply_code}"
-                    "  max_val_{i:d} = max(val, max_val_{i:d});\n}}\n").format(i=i, multiply_code=multiply_code)
+        in_loop += (("if (u_enabled_{i:d} == 1) {{\n"
+                     "  val = $sample(u_volumetex_{i:d}, loc).g;\n"
+                     "{multiply_code}"
+                     "  max_val_{i:d} = max(val, max_val_{i:d});\n}}\n")
+                    .format(i=i, multiply_code=multiply_code))
 
         # Calculation after the main loop
 
