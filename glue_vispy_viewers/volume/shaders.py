@@ -54,7 +54,6 @@ uniform float u_downsample;
 uniform float u_relative_step_size;
 uniform vec4 u_bgcolor;
 
-uniform int u_clipped = 0;
 uniform vec3 u_clip_min;
 uniform vec3 u_clip_max;
 
@@ -118,12 +117,12 @@ void main() {{
 
     float val;
 
-    {before_loop}
-
     // This outer loop seems necessary on some systems for large
     // datasets. Ugly, but it works ...
     vec3 loc = start_loc;
     int iter = 0;
+
+    {before_loop}
 
     // We avoid putting this if statement in the loop for performance
 
@@ -137,15 +136,7 @@ void main() {{
             for (iter=iter; iter<nsteps; iter++)
             {{
 
-                if (u_clipped == 1) {{
-                    if(loc.r > u_clip_min.r && loc.r < u_clip_max.r &&
-                       loc.g > u_clip_min.g && loc.g < u_clip_max.g &&
-                       loc.b > u_clip_min.b && loc.b < u_clip_max.b) {{
-                   {in_loop}
-                    }}
-                }} else {{
-                    {in_loop}
-                }}
+                {in_loop}
 
                 // Advance location deeper into the volume
                 loc += (0.5 + rand(loc)) * step;
@@ -159,15 +150,7 @@ void main() {{
             for (iter=iter; iter<nsteps; iter++)
             {{
 
-                if (u_clipped == 1) {{
-                    if(loc.r > u_clip_min.r && loc.r < u_clip_max.r &&
-                       loc.g > u_clip_min.g && loc.g < u_clip_max.g &&
-                       loc.b > u_clip_min.b && loc.b < u_clip_max.b) {{
-                   {in_loop}
-                    }}
-                }} else {{
-                    {in_loop}
-                }}
+                {in_loop}
 
                 // Advance location deeper into the volume
                 loc += step;
@@ -220,10 +203,10 @@ void main() {{
 """
 
 
-def get_shaders(n_volume_max):
+def get_frag_shader(volumes, clipped=False, n_volume_max=5):
     """
-    Get the fragment shader code, supporting a maximum of ``n_volume_max``
-    simultaneous textures and colormaps.
+    Get the fragment shader code - we use the shader_program object to determine
+    which layers are enabled and therefore what to include in the shader code.
     """
 
     declarations = ""
@@ -231,50 +214,73 @@ def get_shaders(n_volume_max):
     in_loop = ""
     after_loop = ""
 
-    for i in range(n_volume_max):
+    for index in range(n_volume_max):
+        declarations += "uniform $sampler_type u_volumetex_{0:d};\n".format(index)
+        before_loop += "dummy = $sample(u_volumetex_{0:d}, loc).g;\n".format(index)
+
+    declarations += "uniform $sampler_type dummy1;\n"
+    declarations += "float dummy;\n"
+
+    for label in sorted(volumes):
+
+        index = volumes[label]['index']
 
         # Global declarations
-        declarations += "uniform $sampler_type u_volumetex_{0:d};\n".format(i)
-        declarations += "uniform int u_enabled_{0:d};\n".format(i)
-        declarations += "uniform float u_weight_{0:d};\n".format(i)
-        declarations += "uniform int u_multiply_{0:d};\n".format(i)
+        declarations += "uniform float u_weight_{0:d};\n".format(index)
 
         # Declarations before the raytracing loop
-        before_loop += "float max_val_{0:d} = 0;\n".format(i)
+        before_loop += "float max_val_{0:d} = 0;\n".format(index)
 
         # Calculation inside the main raytracing loop
 
-        multiply_code = "  if (val != 0 && u_multiply_{0:d} >= 0) {{\n".format(i)
-        for j in range(n_volume_max):
-            multiply_code += ("    if (u_multiply_{0:d} == {1:d}) {{ "
-                              "val *= $sample(u_volumetex_{1:d}, loc).g; }}\n".format(i, j))
-        multiply_code += "  }\n"
+        if clipped:
+            in_loop += ("if(loc.r > u_clip_min.r && loc.r < u_clip_max.r &&\n"
+                        "   loc.g > u_clip_min.g && loc.g < u_clip_max.g &&\n"
+                        "   loc.b > u_clip_min.b && loc.b < u_clip_max.b) {\n\n")
 
-        in_loop += (("if (u_enabled_{i:d} == 1) {{\n"
-                     "  val = $sample(u_volumetex_{i:d}, loc).g;\n"
-                     "{multiply_code}"
-                     "  max_val_{i:d} = max(val, max_val_{i:d});\n}}\n")
-                    .format(i=i, multiply_code=multiply_code))
+        in_loop += "// Sample texture for layer {0}\n".format(label)
+        in_loop += "val = $sample(u_volumetex_{0:d}, loc).g;\n".format(index)
+
+        if volumes[label].get('multiply') is not None:
+            index_other = volumes[volumes[label]['multiply']]['index']
+            in_loop += "if (val != 0) {{ val *= $sample(u_volumetex_{0:d}, loc).g; }}\n".format(index_other)
+
+        in_loop += "max_val_{0:d} = max(val, max_val_{0:d});\n\n".format(index)
+
+        if clipped:
+            in_loop += "}\n\n"
 
         # Calculation after the main loop
 
-        after_loop += ("if (u_enabled_{0:d} == 1) {{\n"
-                       "  color = $cmap{0:d}(max_val_{0:d});\n"
-                       "  color.a *= u_weight_{0:d};\n"
-                       "  total_color += color.a * color;\n"
-                       "  max_alpha = max(color.a, max_alpha);\n"
-                       "  count += color.a;\n}}\n").format(i)
+        after_loop += "// Compute final color for layer {0}\n".format(label)
+        after_loop += ("color = $cmap{0:d}(max_val_{0:d});\n"
+                       "color.a *= u_weight_{0:d};\n"
+                       "total_color += color.a * color;\n"
+                       "max_alpha = max(color.a, max_alpha);\n"
+                       "count += color.a;\n\n").format(index)
+
+    if not clipped:
+        before_loop += "\nfloat val3 = u_clip_min.g + u_clip_max.g;\n\n"
 
     # Code esthetics
     before_loop = indent(before_loop, " " * 4).strip()
-    in_loop = indent(in_loop, " " * 12).strip()
+    in_loop = indent(in_loop, " " * 16).strip()
     after_loop = indent(after_loop, " " * 4).strip()
 
-    return VERT_SHADER, FRAG_SHADER.format(declarations=declarations,
-                                           before_loop=before_loop,
-                                           in_loop=in_loop,
-                                           after_loop=after_loop)
+    return FRAG_SHADER.format(declarations=declarations,
+                              before_loop=before_loop,
+                              in_loop=in_loop,
+                              after_loop=after_loop)
 
+
+def main():
+
+    volumes = {}
+    volumes['banana'] = {'index': 3, 'enabled': True}
+    volumes['apple'] = {'index': 1, 'multiply': None, 'enabled': True}
+    volumes['apple'] = {'index': 1, 'multiply': 'banana', 'enabled': True}
+
+    print(get_frag_shader(volumes))
 
 if __name__ == "__main__":  # pragma: nocover
-    print(get_shaders(6)[1])
+    main()
