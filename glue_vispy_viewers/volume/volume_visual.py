@@ -160,10 +160,9 @@ class MultiVolumeVisual(VolumeVisual):
         shader = get_frag_shader(self.volumes, clipped=self._clip_data, n_volume_max=self._n_volume_max)
         self.shared_program.frag = shader
         for label in self.volumes:
-            if self.volumes[label].get('enabled'):
-                index = self.volumes[label]['index']
-                cmap = self.volumes[label]['cmap']
-                self.shared_program.frag['cmap{0:d}'.format(index)] = Function(cmap.glsl_map)
+            index = self.volumes[label]['index']
+            cmap = self.volumes[label]['cmap']
+            self.shared_program.frag['cmap{0:d}'.format(index)] = Function(cmap.glsl_map)
 
     def set_clip(self, clip_data, clip_limits):
         self._clip_data = int(clip_data)
