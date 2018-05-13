@@ -1,9 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
+import numpy as np
+
 from glue.config import settings
 
 from qtpy.QtWidgets import QMessageBox
 from qtpy.QtCore import QTimer
+from glue.external.echo import delay_callback
 
 from ..common.vispy_data_viewer import BaseVispyViewer
 from .layer_artist import VolumeLayerArtist
@@ -54,12 +57,34 @@ class VispyVolumeViewer(BaseVispyViewer):
         self._downsample_timer.setSingleShot(True)
         self._downsample_timer.timeout.connect(self.mouse_release)
 
+        # We do this here in addition to in the volume viewer itself as for
+        # some situations e.g. reloading from session files, a clip_data event
+        # isn't emitted.
+        self._update_clip(force=True)
+
     def camera_mouse_wheel(self, event=None):
+
         scale = (1.1 ** - event.delta[1])
-        xmid = 0.5 * (self.state.x_min + self.state.x_max)
-        dx = (self.state.x_max - xmid) * scale
-        self.state.x_min = xmid - dx
-        self.state.x_max = xmid + dx
+
+        with delay_callback(self.state, 'x_min', 'x_max', 'y_min', 'y_max', 'z_min', 'z_max'):
+
+            xmid = 0.5 * (self.state.x_min + self.state.x_max)
+            dx = (self.state.x_max - xmid) * scale
+            self.state.x_min = xmid - dx
+            self.state.x_max = xmid + dx
+
+            ymid = 0.5 * (self.state.y_min + self.state.y_max)
+            dy = (self.state.y_max - xmid) * scale
+            self.state.y_min = ymid - dy
+            self.state.y_max = ymid + dy
+
+            zmid = 0.5 * (self.state.z_min + self.state.z_max)
+            dz = (self.state.z_max - zmid) * scale
+            self.state.z_min = zmid - dz
+            self.state.z_max = zmid + dz
+
+        self._update_clip()
+
         event.handled = True
 
     def mouse_press(self, event=None):
@@ -74,6 +99,21 @@ class VispyVolumeViewer(BaseVispyViewer):
                 self._vispy_widget._multivol.upsample()
                 self._downsampled = False
                 self._vispy_widget.canvas.render()
+
+        self._update_slice_transform()
+        self._update_clip()
+
+    def _update_clip(self, force=False):
+        if self.state.clip_data or force:
+            coords = np.array([[-1, -1, -1], [1, 1, 1]])
+            coords = self._vispy_widget._multivol.transform.imap(coords)[:,:3] / 128.
+            self._vispy_widget._multivol.set_clip(self.state.clip_data, coords.ravel())
+
+    def _update_slice_transform(self):
+
+        self._vispy_widget._multivol._update_slice_transform(self.state.x_min, self.state.x_max,
+                                               self.state.y_min, self.state.y_max,
+                                               self.state.z_min, self.state.z_max)
 
     def mouse_wheel(self, event=None):
         if self.state.downsample:
@@ -137,6 +177,7 @@ class VispyVolumeViewer(BaseVispyViewer):
             if first_layer_artist:
                 self.state.set_limits(*self._layer_artist_container[0].bbox)
                 self._ready_draw = True
+                self._update_slice_transform()
 
         return added
 
@@ -147,5 +188,4 @@ class VispyVolumeViewer(BaseVispyViewer):
 
     def _toggle_clip(self, *args):
         if hasattr(self._vispy_widget, '_multivol'):
-            self._vispy_widget._multivol.set_clip(self.state.clip_data,
-                                                  self.state.clip_limits_relative)
+            self._update_clip()
