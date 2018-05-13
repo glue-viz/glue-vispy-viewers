@@ -60,7 +60,8 @@ class VispyVolumeViewer(BaseVispyViewer):
         # We do this here in addition to in the volume viewer itself as for
         # some situations e.g. reloading from session files, a clip_data event
         # isn't emitted.
-        self._update_clip(force=True)
+        # FIXME: needs to be done after first layer added
+        # self._update_clip(force=True)
 
     def camera_mouse_wheel(self, event=None):
 
@@ -110,7 +111,6 @@ class VispyVolumeViewer(BaseVispyViewer):
             self._vispy_widget._multivol.set_clip(self.state.clip_data, coords.ravel())
 
     def _update_slice_transform(self):
-
         self._vispy_widget._multivol._update_slice_transform(self.state.x_min, self.state.x_max,
                                                self.state.y_min, self.state.y_max,
                                                self.state.z_min, self.state.z_max)
@@ -120,7 +120,9 @@ class VispyVolumeViewer(BaseVispyViewer):
             if hasattr(self._vispy_widget, '_multivol'):
                 if not self._downsampled:
                     self.mouse_press()
-                self._downsample_timer.start()
+        if event is not None:
+            self._downsample_timer.start()
+            event.handled = True
 
     def resizeEvent(self, event=None):
         self.mouse_wheel()
