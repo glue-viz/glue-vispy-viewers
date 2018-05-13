@@ -51,6 +51,8 @@ from ..extern.vispy.visuals.shaders import Function
 from ..extern.vispy.color import get_colormap, Color
 from ..extern.vispy.scene.visuals import create_visual_node
 
+from ..utils import NestedSTTransform
+
 from .shaders import get_frag_shader, VERT_SHADER
 
 NUMPY_LT_1_13 = LooseVersion(np.__version__) < LooseVersion('1.13')
@@ -78,14 +80,14 @@ class MultiVolumeVisual(VolumeVisual):
     """
 
     def __init__(self, n_volume_max=10, relative_step_size=0.8,
-                 emulate_texture=False, bgcolor='white'):
+                 emulate_texture=False, bgcolor='white', resolution=128):
 
         # Choose texture class
         tex_cls = TextureEmulated3D if emulate_texture else Texture3D
 
         self._n_volume_max = n_volume_max
         self._initial_shape = True
-        self._vol_shape = (10, 10, 10)
+        self._vol_shape = (resolution, resolution, resolution)
         self._need_vertex_update = True
 
         # We deliberately don't use super here because we don't want to call

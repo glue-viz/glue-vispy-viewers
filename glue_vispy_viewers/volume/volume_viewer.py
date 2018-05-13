@@ -41,6 +41,8 @@ class VispyVolumeViewer(BaseVispyViewer):
         self._vispy_widget.canvas.events.mouse_wheel.connect(self.mouse_wheel)
         self._vispy_widget.canvas.events.mouse_release.connect(self.mouse_release)
 
+        self._vispy_widget.view.camera.viewbox.events.mouse_wheel.connect(self.camera_mouse_wheel)
+
         self._downsampled = False
 
         # For the mouse wheel, we receive discrete events so we need to have
@@ -51,6 +53,14 @@ class VispyVolumeViewer(BaseVispyViewer):
         self._downsample_timer.setInterval(250)
         self._downsample_timer.setSingleShot(True)
         self._downsample_timer.timeout.connect(self.mouse_release)
+
+    def camera_mouse_wheel(self, event=None):
+        scale = (1.1 ** - event.delta[1])
+        xmid = 0.5 * (self.state.x_min + self.state.x_max)
+        dx = (self.state.x_max - xmid) * scale
+        self.state.x_min = xmid - dx
+        self.state.x_max = xmid + dx
+        event.handled = True
 
     def mouse_press(self, event=None):
         if self.state.downsample:

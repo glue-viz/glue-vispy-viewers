@@ -5,6 +5,7 @@ import numpy as np
 from glue_vispy_viewers.extern.vispy.visuals.transforms import (ChainTransform, NullTransform,
                                                                 MatrixTransform, STTransform)
 from glue_vispy_viewers.extern.vispy.visuals.transforms.base_transform import InverseTransform
+from glue_vispy_viewers.extern.vispy.visuals.transforms._util import arg_to_vec4
 
 
 def as_matrix_transform(transform):
@@ -53,3 +54,43 @@ except ImportError:
             app = get_qapp()
             app_font = app.font()
             tab_widget.setStyleSheet('font-size: {0}px'.format(app_font.pointSize()))
+
+
+class NestedSTTransform(STTransform):
+
+	glsl_map = """
+		vec4 st_transform_map(vec4 pos) {
+			return vec4((pos.xyz * $innerscale.xyz + $innertranslate.xyz * pos.w).xyz * $scale.xyz + $translate.xyz * pos.w, pos.w);
+		}
+	"""
+
+	glsl_imap = """
+		vec4 st_transform_imap(vec4 pos) {
+			return vec4((((pos.xyz - $innertranslate.xyz * pos.w) / $innerscale.xyz) - $translate.xyz * pos.w) / $scale.xyz, pos.w);
+		}
+	"""
+	def __init__(self):
+		self.inner = STTransform()
+		super(NestedSTTransform, self).__init__()
+
+	@arg_to_vec4
+	def map(self, coords):
+		coords = self.inner.map(coords)
+		coords = super(NestedSTTransform, self).map(coords)
+		return coords
+
+	@arg_to_vec4
+	def imap(self, coords):
+		coords = super(NestedSTTransform, self).imap(coords)
+		coords = self.inner.imap(coords)
+		return coords
+
+	def _update_shaders(self):
+		self._shader_map['scale'] = self.scale
+		self._shader_map['translate'] = self.translate
+		self._shader_imap['scale'] = self.scale
+		self._shader_imap['translate'] = self.translate
+		self._shader_map['innerscale'] = self.inner.scale
+		self._shader_map['innertranslate'] = self.inner.translate
+		self._shader_imap['innerscale'] = self.inner.scale
+		self._shader_imap['innertranslate'] = self.inner.translate
