@@ -157,7 +157,8 @@ class MultiVolumeVisual(VolumeVisual):
             pass
 
     def _update_shader(self):
-        shader = get_frag_shader(self.volumes, clipped=self._clip_data, n_volume_max=self._n_volume_max)
+        shader = get_frag_shader(self.volumes, clipped=self._clip_data,
+                                 n_volume_max=self._n_volume_max)
         self.shared_program.frag = shader
         for label in self.volumes:
             index = self.volumes[label]['index']

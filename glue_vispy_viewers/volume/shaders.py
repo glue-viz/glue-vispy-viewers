@@ -43,7 +43,7 @@ except ImportError:  # Python < 3.5
     def indent(text, prefix):
         return '\n'.join(prefix + line for line in text.splitlines())
 
-from ..extern.vispy.visuals.volume import VERT_SHADER
+from ..extern.vispy.visuals.volume import VERT_SHADER  # noqa
 
 # Fragment shader
 FRAG_SHADER = """
@@ -243,7 +243,8 @@ def get_frag_shader(volumes, clipped=False, n_volume_max=5):
 
         if volumes[label].get('multiply') is not None:
             index_other = volumes[volumes[label]['multiply']]['index']
-            in_loop += "if (val != 0) {{ val *= $sample(u_volumetex_{0:d}, loc).g; }}\n".format(index_other)
+            in_loop += ("if (val != 0) {{ val *= $sample(u_volumetex_{0:d}, loc).g; }}\n"
+                        .format(index_other))
 
         in_loop += "max_val_{0:d} = max(val, max_val_{0:d});\n\n".format(index)
 
@@ -281,6 +282,7 @@ def main():
     volumes['apple'] = {'index': 1, 'multiply': 'banana', 'enabled': True}
 
     print(get_frag_shader(volumes))
+
 
 if __name__ == "__main__":  # pragma: nocover
     main()
