@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import sys
 import uuid
+import weakref
 
 import numpy as np
 from matplotlib.colors import ColorConverter
@@ -14,6 +15,49 @@ from .volume_visual import MultiVolume
 from .colors import get_translucent_cmap
 from .layer_state import VolumeLayerState
 from ..common.layer_artist import VispyLayerArtist
+
+
+
+class SubsetArray(object):
+
+    def __init__(self, viewer_state, layer_artist):
+        self._viewer_state = weakref.ref(viewer_state)
+        self._layer_artist = weakref.ref(layer_artist)
+
+    @property
+    def layer_artist(self):
+        return self._layer_artist()
+
+    @property
+    def viewer_state(self):
+        return self._viewer_state()
+
+    @property
+    def shape(self):
+
+        x_axis = self.viewer_state.x_att.axis
+        y_axis = self.viewer_state.y_att.axis
+        z_axis = self.viewer_state.y_att.axis
+
+        full_shape = self.layer_artist.layer.data.shape
+
+        return full_shape[z_axis], full_shape[y_axis], full_shape[x_axis]
+
+    def __getitem__(self, view=None):
+
+        if (self.layer_artist is None or
+                self.viewer_state is None):
+            return broadcast_to(np.nan, self.shape)
+
+        try:
+            mask = self.layer_artist.layer.to_mask(view=view)
+        except IncompatibleAttribute:
+            self.layer_artist.disable_incompatible_subset()
+            return broadcast_to(np.nan, self.shape)
+        else:
+            self.layer_artist.enable()
+
+        return mask
 
 
 class VolumeLayerArtist(VispyLayerArtist):
@@ -132,28 +176,8 @@ class VolumeLayerArtist(VispyLayerArtist):
     def _update_data(self):
 
         if isinstance(self.layer, Subset):
-
-            try:
-                mask = self.layer.to_mask()
-            except IncompatibleAttribute:
-                # The following includes a call to self.clear()
-                self.disable("Subset cannot be applied to this data")
-                return
-            else:
-                self._enabled = True
-
-            # If there are no valid values in the mask, no point in sending the
-            # mask array to OpenGL - we can simply disable the layer silently
-            # though note that this doesn't change the 'official' visibility of
-            # the layer.
-            if not np.any(mask):
-                self._multivol.disable(self.id)
-                return
-
-            data = mask
-
+            data = SubsetArray(self._viewer_state, self)
         else:
-
             data = self.layer[self.state.attribute]
 
         self._multivol.set_data(self.id, data, layer=self.layer)
