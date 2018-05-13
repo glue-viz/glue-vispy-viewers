@@ -13,6 +13,7 @@ from .layer_artist import VolumeLayerArtist
 from .layer_style_widget import VolumeLayerStyleWidget
 from .viewer_state import Vispy3DVolumeViewerState
 
+from ..extern.vispy.util import keys
 
 from ..scatter.layer_artist import ScatterLayerArtist
 from ..scatter.layer_style_widget import ScatterLayerStyleWidget
@@ -45,6 +46,9 @@ class VispyVolumeViewer(BaseVispyViewer):
         self._vispy_widget.canvas.events.mouse_release.connect(self.mouse_release)
 
         self._vispy_widget.view.camera.viewbox.events.mouse_wheel.connect(self.camera_mouse_wheel)
+        self._vispy_widget.view.camera.viewbox.events.mouse_move.connect(self.camera_mouse_move)
+        self._vispy_widget.view.camera.viewbox.events.mouse_press.connect(self.camera_mouse_press)
+        self._vispy_widget.view.camera.viewbox.events.mouse_release.connect(self.camera_mouse_release)
 
         self._downsampled = False
 
@@ -75,7 +79,7 @@ class VispyVolumeViewer(BaseVispyViewer):
             self.state.x_max = xmid + dx
 
             ymid = 0.5 * (self.state.y_min + self.state.y_max)
-            dy = (self.state.y_max - xmid) * scale
+            dy = (self.state.y_max - ymid) * scale
             self.state.y_min = ymid - dy
             self.state.y_max = ymid + dy
 
@@ -87,6 +91,48 @@ class VispyVolumeViewer(BaseVispyViewer):
         self._update_clip()
 
         event.handled = True
+
+    def camera_mouse_press(self, event=None):
+
+        self._initial_position = (self.state.x_min, self.state.x_max,
+                                  self.state.y_min, self.state.y_max,
+                                  self.state.z_min, self.state.z_max)
+
+        self._width = (self.state.x_max - self.state.x_min,
+                       self.state.y_max - self.state.y_min,
+                       self.state.z_max - self.state.z_min)
+
+    def camera_mouse_release(self, event=None):
+        self._initial_position = None
+        self._width = None
+
+    def camera_mouse_move(self, event=None):
+
+      if 1 in event.buttons and keys.SHIFT in event.mouse_event.modifiers:
+
+          camera = self._vispy_widget.view.camera
+
+          norm = np.mean(camera._viewbox.size)
+
+          p1 = event.mouse_event.press_event.pos
+          p2 = event.mouse_event.pos
+          d = p2 - p1
+
+          dist = (p1 - p2) / norm * camera._scale_factor
+          dist[1] *= -1
+          dx, dy, dz = camera._dist_to_trans(dist)
+
+          with delay_callback(self.state, 'x_min', 'x_max', 'y_min', 'y_max', 'z_min', 'z_max'):
+
+              self.state.x_min = self._initial_position[0] + self._width[0] * dx
+              self.state.x_max = self._initial_position[1] + self._width[0] * dx
+              self.state.y_min = self._initial_position[2] + self._width[1] * dy
+              self.state.y_max = self._initial_position[3] + self._width[1] * dy
+              self.state.z_min = self._initial_position[4] + self._width[2] * dz
+              self.state.z_max = self._initial_position[5] + self._width[2] * dz
+
+          event.handled = True
+
 
     def mouse_press(self, event=None):
         if self.state.downsample:
@@ -106,7 +152,10 @@ class VispyVolumeViewer(BaseVispyViewer):
 
     def _update_clip(self, force=False):
         if self.state.clip_data or force:
-            coords = np.array([[-1, -1, -1], [1, 1, 1]])
+            dx = self.state.x_stretch * self.state.aspect[0]
+            dy = self.state.y_stretch * self.state.aspect[1]
+            dz = self.state.z_stretch * self.state.aspect[2]
+            coords = np.array([[-dx, -dy, -dz], [dx, dy, dz]])
             coords = self._vispy_widget._multivol.transform.imap(coords)[:,:3] / 128.
             self._vispy_widget._multivol.set_clip(self.state.clip_data, coords.ravel())
 

@@ -329,8 +329,8 @@ class MultiVolumeVisual(VolumeVisual):
         z_step, z_start = self._get_step_start(z_min, z_max)
 
         self._data_slice = [slice(z_start, z_start + self.resolution * z_step, z_step),
-                           slice(y_start, y_start + self.resolution * z_step, y_step),
-                           slice(x_start, x_start + self.resolution * z_step, x_step)]
+                           slice(y_start, y_start + self.resolution * y_step, y_step),
+                           slice(x_start, x_start + self.resolution * x_step, x_step)]
 
         self.transform.inner.scale = [x_step, y_step, z_step]
         self.transform.inner.translate = [x_start, y_start, z_start]
