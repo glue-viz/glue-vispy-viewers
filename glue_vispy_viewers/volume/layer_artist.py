@@ -47,13 +47,13 @@ class SubsetArray(object):
 
         if (self.layer_artist is None or
                 self.viewer_state is None):
-            return broadcast_to(np.nan, self.shape)
+            return broadcast_to(0, self.shape)
 
         try:
             mask = self.layer_artist.layer.to_mask(view=view)
         except IncompatibleAttribute:
             self.layer_artist.disable_incompatible_subset()
-            return broadcast_to(np.nan, self.shape)
+            return broadcast_to(0, self.shape)
         else:
             self.layer_artist.enable()
 
@@ -144,7 +144,7 @@ class VolumeLayerArtist(VispyLayerArtist):
         """
         # We don't want to deallocate here because this can be called if we
         # disable the layer due to incompatible attributes
-        self._multivol.set_data(self.id, broadcast_to(0, self._multivol._data_shape))
+        self._multivol.set_data(self.id, broadcast_to(0, self._multivol._vol_shape))
 
     def remove(self):
         """

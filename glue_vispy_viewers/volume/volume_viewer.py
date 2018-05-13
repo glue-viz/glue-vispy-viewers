@@ -6,14 +6,11 @@ from glue.config import settings
 
 from qtpy.QtWidgets import QMessageBox
 from qtpy.QtCore import QTimer
-from glue.external.echo import delay_callback
 
 from ..common.vispy_data_viewer import BaseVispyViewer
 from .layer_artist import VolumeLayerArtist
 from .layer_style_widget import VolumeLayerStyleWidget
 from .viewer_state import Vispy3DVolumeViewerState
-
-from ..extern.vispy.util import keys
 
 from ..scatter.layer_artist import ScatterLayerArtist
 from ..scatter.layer_style_widget import ScatterLayerStyleWidget
@@ -84,13 +81,16 @@ class VispyVolumeViewer(BaseVispyViewer):
         self._update_clip()
 
     def _update_clip(self, force=False):
-        if self.state.clip_data or force:
-            dx = self.state.x_stretch * self.state.aspect[0]
-            dy = self.state.y_stretch * self.state.aspect[1]
-            dz = self.state.z_stretch * self.state.aspect[2]
-            coords = np.array([[-dx, -dy, -dz], [dx, dy, dz]])
-            coords = self._vispy_widget._multivol.transform.imap(coords)[:,:3] / 128.
-            self._vispy_widget._multivol.set_clip(self.state.clip_data, coords.ravel())
+        if hasattr(self._vispy_widget, '_multivol'):
+            if (self.state.clip_data or force):
+                dx = self.state.x_stretch * self.state.aspect[0]
+                dy = self.state.y_stretch * self.state.aspect[1]
+                dz = self.state.z_stretch * self.state.aspect[2]
+                coords = np.array([[-dx, -dy, -dz], [dx, dy, dz]])
+                coords = self._vispy_widget._multivol.transform.imap(coords)[:,:3] / 128.
+                self._vispy_widget._multivol.set_clip(self.state.clip_data, coords.ravel())
+            else:
+                self._vispy_widget._multivol.set_clip(False, [0, 0, 0, 1, 1, 1])
 
     def _update_slice_transform(self):
         self._vispy_widget._multivol._update_slice_transform(self.state.x_min, self.state.x_max,
