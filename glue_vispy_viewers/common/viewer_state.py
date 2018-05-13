@@ -31,7 +31,7 @@ class Vispy3DViewerState(State):
 
     visible_axes = CallbackProperty(True)
     perspective_view = CallbackProperty(False)
-    clip_data = CallbackProperty(False)
+    clip_data = CallbackProperty(True)
     native_aspect = CallbackProperty(False)
 
     layers = ListCallbackProperty()
