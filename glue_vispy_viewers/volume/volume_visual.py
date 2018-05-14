@@ -159,7 +159,10 @@ class MultiVolumeVisual(VolumeVisual):
     def _update_shader(self):
         shader = get_frag_shader(self.volumes, clipped=self._clip_data,
                                  n_volume_max=self._n_volume_max)
+        if getattr(self, '_shader_cache', None) == shader:
+            return
         self.shared_program.frag = shader
+        self._shader_cache = shader
         for label in self.volumes:
             index = self.volumes[label]['index']
             cmap = self.volumes[label]['cmap']
