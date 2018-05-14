@@ -87,7 +87,7 @@ class VispyVolumeViewer(BaseVispyViewer):
                 dy = self.state.y_stretch * self.state.aspect[1]
                 dz = self.state.z_stretch * self.state.aspect[2]
                 coords = np.array([[-dx, -dy, -dz], [dx, dy, dz]])
-                coords = self._vispy_widget._multivol.transform.imap(coords)[:,:3] / 128.
+                coords = self._vispy_widget._multivol.transform.imap(coords)[:,:3] / self._vispy_widget._multivol.resolution
                 self._vispy_widget._multivol.set_clip(self.state.clip_data, coords.ravel())
             else:
                 self._vispy_widget._multivol.set_clip(False, [0, 0, 0, 1, 1, 1])

@@ -80,7 +80,7 @@ class MultiVolumeVisual(VolumeVisual):
     """
 
     def __init__(self, n_volume_max=10, relative_step_size=0.8,
-                 emulate_texture=False, bgcolor='white', resolution=128):
+                 emulate_texture=False, bgcolor='white', resolution=256):
 
         # Choose texture class
         tex_cls = TextureEmulated3D if emulate_texture else Texture3D
