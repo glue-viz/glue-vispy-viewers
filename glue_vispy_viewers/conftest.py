@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 # Import vispy.gloo first when on Windows otherwise there are strange
 # side-effects when PyQt4.Qt is imported first (which it now is in QtPy)
+import os
 import sys
 if sys.platform.startswith('win'):
     import glue_vispy_viewers.extern.vispy.gloo.gl  # noqa
@@ -21,11 +22,13 @@ app = None
 
 
 def pytest_configure(config):
+    os.environ['GLUE_TESTING'] = 'True'
     global app
     app = get_qapp()
 
 
 def pytest_unconfigure(config):
+    os.environ.pop('GLUE_TESTING')
     global app
     app = None
 

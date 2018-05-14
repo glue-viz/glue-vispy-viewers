@@ -1,7 +1,8 @@
 0.11 (unreleased)
 -----------------
 
-- No changes yet.
+- Implement the 'data' and 'outline' modes for volume rendering of subsets
+  directly in the OpenGL shader. [#310]
 
 0.10 (2018-04-27)
 -----------------

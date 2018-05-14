@@ -51,7 +51,7 @@ from ..extern.vispy.visuals.shaders import Function
 from ..extern.vispy.color import get_colormap, Color
 from ..extern.vispy.scene.visuals import create_visual_node
 
-from .shaders import get_shaders
+from .shaders import get_frag_shader, VERT_SHADER
 
 NUMPY_LT_1_13 = LooseVersion(np.__version__) < LooseVersion('1.13')
 
@@ -88,12 +88,14 @@ class MultiVolumeVisual(VolumeVisual):
         self._vol_shape = (10, 10, 10)
         self._need_vertex_update = True
 
-        # Create OpenGL program
-        vert_shader, frag_shader = get_shaders(n_volume_max)
-
         # We deliberately don't use super here because we don't want to call
         # VolumeVisual.__init__
-        Visual.__init__(self, vcode=vert_shader, fcode=frag_shader)
+        Visual.__init__(self, vcode=VERT_SHADER, fcode="")
+
+        self.volumes = defaultdict(dict)
+
+        self._clip_data = False
+        self._update_shader()
 
         # Create gloo objects
         self._vertices = VertexBuffer()
@@ -116,7 +118,6 @@ class MultiVolumeVisual(VolumeVisual):
 
             # Pass texture object and default colormap to shader program
             self.shared_program['u_volumetex_{0}'.format(i)] = self.textures[i]
-            self.shared_program.frag['cmap{0:d}'.format(i)] = Function(get_colormap('grays').glsl_map)  # noqa
 
             # Make sure all textures are disbaled
             self.shared_program['u_enabled_{0}'.format(i)] = 0
@@ -126,7 +127,6 @@ class MultiVolumeVisual(VolumeVisual):
         self.shared_program['a_texcoord'] = self._texcoord
         self.shared_program['u_shape'] = self._vol_shape[::-1]
 
-        self.shared_program['u_clipped'] = 0
         self.shared_program['u_clip_min'] = [0, 0, 0]
         self.shared_program['u_clip_max'] = [1, 1, 1]
 
@@ -148,8 +148,6 @@ class MultiVolumeVisual(VolumeVisual):
         self.relative_step_size = relative_step_size
         self.relative_step_size_orig = self.relative_step_size
 
-        self.volumes = defaultdict(dict)
-
         self._data_shape = None
         self._block_size = np.array([1, 1, 1])
 
@@ -158,8 +156,20 @@ class MultiVolumeVisual(VolumeVisual):
         except AttributeError:  # Older versions of VisPy
             pass
 
+    def _update_shader(self):
+        shader = get_frag_shader(self.volumes, clipped=self._clip_data,
+                                 n_volume_max=self._n_volume_max)
+        if getattr(self, '_shader_cache', None) == shader:
+            return
+        self.shared_program.frag = shader
+        self._shader_cache = shader
+        for label in self.volumes:
+            index = self.volumes[label]['index']
+            cmap = self.volumes[label]['cmap']
+            self.shared_program.frag['cmap{0:d}'.format(index)] = Function(cmap.glsl_map)
+
     def set_clip(self, clip_data, clip_limits):
-        self.shared_program['u_clipped'] = int(clip_data)
+        self._clip_data = int(clip_data)
         if clip_data:
             self.shared_program['u_clip_min'] = clip_limits[::2]
             self.shared_program['u_clip_max'] = clip_limits[1::2]
@@ -192,23 +202,25 @@ class MultiVolumeVisual(VolumeVisual):
 
     def enable(self, label):
         index = self.volumes[label]['index']
+        self.volumes[label]['enabled'] = True
         self.shared_program['u_enabled_{0}'.format(index)] = 1
+        self._update_shader()
 
     def disable(self, label):
         index = self.volumes[label]['index']
+        self.volumes[label]['enabled'] = False
         self.shared_program['u_enabled_{0}'.format(index)] = 0
+        self._update_shader()
 
     def deallocate(self, label):
-        index = self.volumes[label]['index']
-        self.shared_program['u_enabled_{0}'.format(index)] = 0
+        self.disable(label)
         self.volumes.pop(label)
 
     def set_cmap(self, label, cmap):
-        index = self.volumes[label]['index']
-        self.volumes[label]['cmap'] = cmap
         if isinstance(cmap, six.string_types):
             cmap = get_colormap(cmap)
-        self.shared_program.frag['cmap{0:d}'.format(index)] = Function(cmap.glsl_map)
+        self.volumes[label]['cmap'] = cmap
+        self._update_shader()
 
     def set_clim(self, label, clim):
         # Avoid setting the same limits again
@@ -222,7 +234,11 @@ class MultiVolumeVisual(VolumeVisual):
         index = self.volumes[label]['index']
         self.shared_program['u_weight_{0:d}'.format(index)] = weight
 
-    def set_data(self, label, data, inplace_ok=False):
+    def set_multiply(self, label, label_other):
+        self.volumes[label]['multiply'] = label_other
+        self._update_shader()
+
+    def set_data(self, label, data, layer=None):
 
         if 'clim' not in self.volumes[label]:
             raise ValueError("set_clim should be called before set_data")
@@ -230,14 +246,6 @@ class MultiVolumeVisual(VolumeVisual):
         # Avoid adding the same data again
         if 'data' in self.volumes[label] and self.volumes[label]['data'] is data:
             return
-
-        # Since outside this class we sometimes need to already copy the data
-        # before passing it here, we allow the caller to specify inplace_ok=True
-        # which means that it's ok to do the limits scaling in-place to avoid
-        # another copy.
-
-        if inplace_ok and data.dtype != np.float32:
-            raise TypeError('data should be float32 if inplace_ok is set')
 
         # VisPy can't handle dimensions larger than 2048 so we need to reduce
         # the array on-the-fly if needed. We do this using slicing rather than
@@ -257,15 +265,20 @@ class MultiVolumeVisual(VolumeVisual):
             data = data[view]
 
         self.volumes[label]['data'] = data
-        self.volumes[label]['inplace_ok'] = inplace_ok
+        self.volumes[label]['layer'] = layer
         self._update_scaled_data(label, initial_shape=True)
+
+    def label_for_layer(self, layer):
+        for label in self.volumes:
+            if 'layer' in self.volumes[label]:
+                if self.volumes[label]['layer'] is layer:
+                    return label
 
     def _update_scaled_data(self, label, initial_shape=False):
 
         index = self.volumes[label]['index']
         clim = self.volumes[label]['clim']
         data = self.volumes[label]['data']
-        inplace_ok = self.volumes[label]['inplace_ok']
 
         # With certain graphics cards, sending the data in one chunk to OpenGL
         # causes artifacts in the rendering - see e.g.
@@ -286,10 +299,7 @@ class MultiVolumeVisual(VolumeVisual):
         for view in iterate_chunks(data.shape, chunk_shape=chunk_shape):
 
             chunk = data[view]
-
-            if not inplace_ok:
-                chunk = chunk.astype(np.float32)
-
+            chunk = chunk.astype(np.float32)
             chunk -= clim[0]
             chunk *= 1 / (clim[1] - clim[0])
 
