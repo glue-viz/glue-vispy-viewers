@@ -176,6 +176,7 @@ class MultiVolumeVisual(VolumeVisual):
         if clip_data:
             self.shared_program['u_clip_min'] = clip_limits[:3]
             self.shared_program['u_clip_max'] = clip_limits[3:]
+        self._update_shader()
 
     def downsample(self):
         if self._vol_shape is None:
