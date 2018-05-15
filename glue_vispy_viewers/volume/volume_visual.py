@@ -51,8 +51,6 @@ from ..extern.vispy.visuals.shaders import Function
 from ..extern.vispy.color import get_colormap, Color
 from ..extern.vispy.scene.visuals import create_visual_node
 
-from ..utils import NestedSTTransform
-
 from .shaders import get_frag_shader, VERT_SHADER
 
 NUMPY_LT_1_13 = LooseVersion(np.__version__) < LooseVersion('1.13')
@@ -286,7 +284,8 @@ class MultiVolumeVisual(VolumeVisual):
         chunk_shape = [min(x, 100) for x in sliced_data.shape]
 
         # FIXME: shouldn't be needed!
-        self.shared_program['u_volumetex_{0:d}'.format(index)].set_data(np.zeros(self._vol_shape, dtype=np.float32))
+        zeros = np.zeros(self._vol_shape, dtype=np.float32)
+        self.shared_program['u_volumetex_{0:d}'.format(index)].set_data(zeros)
 
         # Now loop over chunks
         for view in iterate_chunks(self._vol_shape, chunk_shape=chunk_shape):
@@ -312,11 +311,11 @@ class MultiVolumeVisual(VolumeVisual):
 
         size = vmax - vmin
         if size < self.resolution:
-             step = 1
-             start = int(vmin)
+            step = 1
+            start = int(vmin)
         else:
-             step = int(np.ceil(size / self.resolution))
-             start = int(vmin)
+            step = int(np.ceil(size / self.resolution))
+            start = int(vmin)
 
         if start < 0:
             start = 0
@@ -330,8 +329,8 @@ class MultiVolumeVisual(VolumeVisual):
         z_step, z_start = self._get_step_start(z_min, z_max)
 
         self._data_slice = [slice(z_start, z_start + self.resolution * z_step, z_step),
-                           slice(y_start, y_start + self.resolution * y_step, y_step),
-                           slice(x_start, x_start + self.resolution * x_step, x_step)]
+                            slice(y_start, y_start + self.resolution * y_step, y_step),
+                            slice(x_start, x_start + self.resolution * x_step, x_step)]
 
         self.transform.inner.scale = [x_step, y_step, z_step]
         self.transform.inner.translate = [x_start, y_start, z_start]
@@ -341,7 +340,6 @@ class MultiVolumeVisual(VolumeVisual):
 
         self.transform._update_shaders()
         self.transform.update()
-
 
     @property
     def enabled(self):

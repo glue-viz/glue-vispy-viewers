@@ -38,14 +38,18 @@ class VispyVolumeViewer(BaseVispyViewer):
         # mouse wheel (or scroll on a trackpad), we downsample the volume
         # rendering temporarily.
 
-        self._vispy_widget.canvas.events.mouse_press.connect(self.mouse_press)
-        self._vispy_widget.canvas.events.mouse_wheel.connect(self.mouse_wheel)
-        self._vispy_widget.canvas.events.mouse_release.connect(self.mouse_release)
+        canvas = self._vispy_widget.canvas
 
-        self._vispy_widget.view.camera.viewbox.events.mouse_wheel.connect(self.camera_mouse_wheel)
-        self._vispy_widget.view.camera.viewbox.events.mouse_move.connect(self.camera_mouse_move)
-        self._vispy_widget.view.camera.viewbox.events.mouse_press.connect(self.camera_mouse_press)
-        self._vispy_widget.view.camera.viewbox.events.mouse_release.connect(self.camera_mouse_release)
+        canvas.events.mouse_press.connect(self.mouse_press)
+        canvas.events.mouse_wheel.connect(self.mouse_wheel)
+        canvas.events.mouse_release.connect(self.mouse_release)
+
+        viewbox = self._vispy_widget.view.camera.viewbox
+
+        viewbox.events.mouse_wheel.connect(self.camera_mouse_wheel)
+        viewbox.events.mouse_move.connect(self.camera_mouse_move)
+        viewbox.events.mouse_press.connect(self.camera_mouse_press)
+        viewbox.events.mouse_release.connect(self.camera_mouse_release)
 
         self._downsampled = False
 
@@ -87,15 +91,16 @@ class VispyVolumeViewer(BaseVispyViewer):
                 dy = self.state.y_stretch * self.state.aspect[1]
                 dz = self.state.z_stretch * self.state.aspect[2]
                 coords = np.array([[-dx, -dy, -dz], [dx, dy, dz]])
-                coords = self._vispy_widget._multivol.transform.imap(coords)[:,:3] / self._vispy_widget._multivol.resolution
+                coords = (self._vispy_widget._multivol.transform.imap(coords)[:, :3] /
+                          self._vispy_widget._multivol.resolution)
                 self._vispy_widget._multivol.set_clip(self.state.clip_data, coords.ravel())
             else:
                 self._vispy_widget._multivol.set_clip(False, [0, 0, 0, 1, 1, 1])
 
     def _update_slice_transform(self):
         self._vispy_widget._multivol._update_slice_transform(self.state.x_min, self.state.x_max,
-                                               self.state.y_min, self.state.y_max,
-                                               self.state.z_min, self.state.z_max)
+                                                             self.state.y_min, self.state.y_max,
+                                                             self.state.z_min, self.state.z_max)
 
     def mouse_wheel(self, event=None):
         if self.state.downsample:

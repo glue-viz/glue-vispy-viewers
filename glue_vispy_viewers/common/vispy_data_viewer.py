@@ -5,7 +5,7 @@ import numpy as np
 from glue.viewers.common.qt.data_viewer_with_state import DataViewerWithState
 from glue.external.echo import delay_callback
 
-from qtpy import PYQT5, QtWidgets
+from qtpy import QtWidgets
 from qtpy.QtCore import Qt
 
 from ..extern.vispy.util import keys
@@ -59,11 +59,12 @@ class BaseVispyViewer(DataViewerWithState):
         self._opengl_ok = None
         self._ready_draw = False
 
-        self._vispy_widget.view.camera.viewbox.events.mouse_wheel.connect(self.camera_mouse_wheel)
-        self._vispy_widget.view.camera.viewbox.events.mouse_move.connect(self.camera_mouse_move)
-        self._vispy_widget.view.camera.viewbox.events.mouse_press.connect(self.camera_mouse_press)
-        self._vispy_widget.view.camera.viewbox.events.mouse_release.connect(self.camera_mouse_release)
+        viewbox = self._vispy_widget.view.camera.viewbox
 
+        viewbox.events.mouse_wheel.connect(self.camera_mouse_wheel)
+        viewbox.events.mouse_move.connect(self.camera_mouse_move)
+        viewbox.events.mouse_press.connect(self.camera_mouse_press)
+        viewbox.events.mouse_release.connect(self.camera_mouse_release)
 
     def paintEvent(self, *args, **kwargs):
         super(BaseVispyViewer, self).paintEvent(*args, **kwargs)
@@ -140,30 +141,29 @@ class BaseVispyViewer(DataViewerWithState):
 
     def camera_mouse_move(self, event=None):
 
-      if 1 in event.buttons and keys.SHIFT in event.mouse_event.modifiers:
+        if 1 in event.buttons and keys.SHIFT in event.mouse_event.modifiers:
 
-          camera = self._vispy_widget.view.camera
+            camera = self._vispy_widget.view.camera
 
-          norm = np.mean(camera._viewbox.size)
+            norm = np.mean(camera._viewbox.size)
 
-          p1 = event.mouse_event.press_event.pos
-          p2 = event.mouse_event.pos
-          d = p2 - p1
+            p1 = event.mouse_event.press_event.pos
+            p2 = event.mouse_event.pos
 
-          dist = (p1 - p2) / norm * camera._scale_factor
-          dist[1] *= -1
-          dx, dy, dz = camera._dist_to_trans(dist)
+            dist = (p1 - p2) / norm * camera._scale_factor
+            dist[1] *= -1
+            dx, dy, dz = camera._dist_to_trans(dist)
 
-          with delay_callback(self.state, 'x_min', 'x_max', 'y_min', 'y_max', 'z_min', 'z_max'):
+            with delay_callback(self.state, 'x_min', 'x_max', 'y_min', 'y_max', 'z_min', 'z_max'):
 
-              self.state.x_min = self._initial_position[0] + self._width[0] * dx
-              self.state.x_max = self._initial_position[1] + self._width[0] * dx
-              self.state.y_min = self._initial_position[2] + self._width[1] * dy
-              self.state.y_max = self._initial_position[3] + self._width[1] * dy
-              self.state.z_min = self._initial_position[4] + self._width[2] * dz
-              self.state.z_max = self._initial_position[5] + self._width[2] * dz
+                self.state.x_min = self._initial_position[0] + self._width[0] * dx
+                self.state.x_max = self._initial_position[1] + self._width[0] * dx
+                self.state.y_min = self._initial_position[2] + self._width[1] * dy
+                self.state.y_max = self._initial_position[3] + self._width[1] * dy
+                self.state.z_min = self._initial_position[4] + self._width[2] * dz
+                self.state.z_max = self._initial_position[5] + self._width[2] * dz
 
-          event.handled = True
+            event.handled = True
 
     def show(self):
 

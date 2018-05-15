@@ -4,7 +4,6 @@ import sys
 import uuid
 import weakref
 
-import numpy as np
 from matplotlib.colors import ColorConverter
 
 from glue.core.data import Subset, Data
@@ -15,7 +14,6 @@ from .volume_visual import MultiVolume
 from .colors import get_translucent_cmap
 from .layer_state import VolumeLayerState
 from ..common.layer_artist import VispyLayerArtist
-
 
 
 class SubsetArray(object):
