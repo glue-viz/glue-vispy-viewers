@@ -62,6 +62,8 @@ class VispyVolumeViewer(BaseVispyViewer):
         self._downsample_timer.setSingleShot(True)
         self._downsample_timer.timeout.connect(self.mouse_release)
 
+        self.state.add_callback('resolution', self._update_resolution)
+
         # We do this here in addition to in the volume viewer itself as for
         # some situations e.g. reloading from session files, a clip_data event
         # isn't emitted.
@@ -101,6 +103,11 @@ class VispyVolumeViewer(BaseVispyViewer):
         self._vispy_widget._multivol._update_slice_transform(self.state.x_min, self.state.x_max,
                                                              self.state.y_min, self.state.y_max,
                                                              self.state.z_min, self.state.z_max)
+
+    def _update_resolution(self, *event):
+        self._vispy_widget._multivol.set_resolution(self.state.resolution)
+        self._update_slice_transform()
+        self._update_clip()
 
     def mouse_wheel(self, event=None):
         if self.state.downsample:

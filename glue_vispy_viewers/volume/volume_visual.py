@@ -157,10 +157,10 @@ class MultiVolumeVisual(VolumeVisual):
         except AttributeError:  # Older versions of VisPy
             pass
 
-    def _update_shader(self):
+    def _update_shader(self, force=False):
         shader = get_frag_shader(self.volumes, clipped=self._clip_data,
                                  n_volume_max=self._n_volume_max)
-        if getattr(self, '_shader_cache', None) == shader:
+        if not force and getattr(self, '_shader_cache', None) == shader:
             return
         self.shared_program.frag = shader
         self._shader_cache = shader
@@ -187,6 +187,13 @@ class MultiVolumeVisual(VolumeVisual):
 
     def set_background(self, color):
         self.shared_program['u_bgcolor'] = Color(color).rgba
+
+    def set_resolution(self, resolution):
+        self.resolution = resolution
+        self._vol_shape = (resolution, resolution, resolution)
+        self.shared_program['u_shape'] = self._vol_shape[::-1]
+        for label in self.volumes:
+            self._update_scaled_data(label)
 
     @property
     def _free_slot_index(self):
@@ -222,7 +229,7 @@ class MultiVolumeVisual(VolumeVisual):
         if isinstance(cmap, six.string_types):
             cmap = get_colormap(cmap)
         self.volumes[label]['cmap'] = cmap
-        self._update_shader()
+        self._update_shader(force=True)
 
     def set_clim(self, label, clim):
         # Avoid setting the same limits again
@@ -281,7 +288,7 @@ class MultiVolumeVisual(VolumeVisual):
 
         sliced_data = data[self._data_slice]
 
-        chunk_shape = [min(x, 128) for x in sliced_data.shape]
+        chunk_shape = [min(x, 128, self.resolution) for x in sliced_data.shape]
 
         # FIXME: shouldn't be needed!
         zeros = np.zeros(self._vol_shape, dtype=np.float32)

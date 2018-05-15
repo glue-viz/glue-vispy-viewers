@@ -30,4 +30,8 @@ class VispyOptionsWidget(QtWidgets.QWidget):
         if not hasattr(viewer_state, 'downsample'):
             self.ui.bool_downsample.hide()
 
+        if not hasattr(viewer_state, 'resolution'):
+            self.ui.label_resolution.hide()
+            self.ui.combosel_resolution.hide()
+
         autoconnect_callbacks_to_qt(viewer_state, self.ui, connect_kwargs)

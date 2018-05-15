@@ -1,4 +1,4 @@
-from glue.external.echo import CallbackProperty
+from glue.external.echo import CallbackProperty, SelectionCallbackProperty
 from glue_vispy_viewers.common.viewer_state import Vispy3DViewerState
 
 __all__ = ['Vispy3DVolumeViewerState']
@@ -7,12 +7,15 @@ __all__ = ['Vispy3DVolumeViewerState']
 class Vispy3DVolumeViewerState(Vispy3DViewerState):
 
     downsample = CallbackProperty(True)
+    resolution = SelectionCallbackProperty(4)
 
     def __init__(self, **kwargs):
 
         super(Vispy3DVolumeViewerState, self).__init__()
 
         self.add_callback('layers', self._update_attributes)
+
+        Vispy3DVolumeViewerState.resolution.set_choices(self, [2**i for i in range(4, 12)])
 
         self.update_from_dict(kwargs)
 
