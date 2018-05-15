@@ -168,6 +168,7 @@ class MultiVolumeVisual(VolumeVisual):
             index = self.volumes[label]['index']
             cmap = self.volumes[label]['cmap']
             self.shared_program.frag['cmap{0:d}'.format(index)] = Function(cmap.glsl_map)
+        self.shared_program['u_downsample'] = 1.
 
     def set_clip(self, clip_data, clip_limits):
         self._clip_data = int(clip_data)
