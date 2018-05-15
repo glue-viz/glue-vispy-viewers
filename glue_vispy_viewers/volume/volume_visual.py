@@ -86,7 +86,7 @@ class MultiVolumeVisual(VolumeVisual):
         self._n_volume_max = n_volume_max
         self._vol_shape = (resolution, resolution, resolution)
         self._need_vertex_update = True
-        self._data_slice = Ellipsis
+        self._data_slice = None
 
         self.resolution = resolution
 
@@ -265,6 +265,9 @@ class MultiVolumeVisual(VolumeVisual):
                     return label
 
     def _update_scaled_data(self, label, initial_shape=False):
+
+        if self._data_slice is None:
+            return
 
         index = self.volumes[label]['index']
         clim = self.volumes[label]['clim']
