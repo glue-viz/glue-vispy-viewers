@@ -66,10 +66,6 @@ class MultiVolumeVisual(VolumeVisual):
         The volumes to show. Each tuple should contain three elements: the data
         array, the clim values, and the colormap to use. The clim values should
         be either a 2-element tuple, or None.
-    relative_step_size : float
-        The relative step size to step through the volume. Default 0.8.
-        Increase to e.g. 1.5 to increase performance, at the cost of
-        quality.
     emulate_texture : bool
         Use 2D textures to emulate a 3D texture. OpenGL ES 2.0 compatible,
         but has lower performance on desktop platforms.
@@ -77,8 +73,7 @@ class MultiVolumeVisual(VolumeVisual):
         Absolute maximum number of volumes that can be shown.
     """
 
-    def __init__(self, n_volume_max=10, relative_step_size=0.8,
-                 emulate_texture=False, bgcolor='white', resolution=256):
+    def __init__(self, n_volume_max=10, emulate_texture=False, bgcolor='white', resolution=256):
 
         # Choose texture class
         tex_cls = TextureEmulated3D if emulate_texture else Texture3D
@@ -146,9 +141,6 @@ class MultiVolumeVisual(VolumeVisual):
         # inside the volume, then the front faces are outside of the clipping
         # box and will not be drawn.
         self.set_gl_state('translucent', cull_face=False)
-
-        self.relative_step_size = relative_step_size
-        self.relative_step_size_orig = self.relative_step_size
 
         self.volumes = defaultdict(dict)
 

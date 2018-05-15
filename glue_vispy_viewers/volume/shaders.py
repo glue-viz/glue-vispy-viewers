@@ -51,7 +51,6 @@ FRAG_SHADER = """
 {declarations}
 uniform vec3 u_shape;
 uniform float u_downsample;
-uniform float u_relative_step_size;
 uniform vec4 u_bgcolor;
 
 uniform vec3 u_clip_min;
@@ -108,7 +107,7 @@ void main() {{
     vec3 front = v_position + view_ray * distance;
 
     // Decide how many steps to take
-    int nsteps = int(-distance / (u_relative_step_size * u_downsample) + 0.5);
+    int nsteps = int(-distance / u_downsample + 0.5);
     if(nsteps < 1) discard;
 
     // Get starting location and step vector in texture coordinates
