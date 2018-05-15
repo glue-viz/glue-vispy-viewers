@@ -271,7 +271,7 @@ class MultiVolumeVisual(VolumeVisual):
             return
 
         index = self.volumes[label]['index']
-        clim = self.volumes[label]['clim']
+        clim = self.volumes[label].get('clim', None)
         data = self.volumes[label]['data']
 
         # With certain graphics cards, sending the data in one chunk to OpenGL
@@ -302,8 +302,9 @@ class MultiVolumeVisual(VolumeVisual):
 
             chunk = sliced_data[view]
             chunk = chunk.astype(np.float32)
-            chunk -= clim[0]
-            chunk *= 1 / (clim[1] - clim[0])
+            if clim is not None:
+                chunk -= clim[0]
+                chunk *= 1 / (clim[1] - clim[0])
 
             # PERF: nan_to_num doesn't actually help memory usage as it runs
             # isnan internally, and it's slower, so we just use the following

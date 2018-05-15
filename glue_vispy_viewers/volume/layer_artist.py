@@ -156,7 +156,10 @@ class VolumeLayerArtist(VispyLayerArtist):
         self.redraw()
 
     def _update_limits(self):
-        self._multivol.set_clim(self.id, (self.state.vmin, self.state.vmax))
+        if isinstance(self.layer, Subset):
+            self._multivol.set_clim(self.id, None)
+        else:
+            self._multivol.set_clim(self.id, (self.state.vmin, self.state.vmax))
         self.redraw()
 
     def _update_alpha(self):

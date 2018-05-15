@@ -42,7 +42,7 @@ class VolumeLayerState(VispyLayerState):
 
         if isinstance(self.layer, Subset):
             self.vmin = 0
-            self.lim_helper.lower_frozen = True
+            self.vmin = 1
 
         self.update_from_dict(kwargs)
 
