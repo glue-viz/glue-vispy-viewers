@@ -114,8 +114,8 @@ class VispyVolumeViewer(BaseVispyViewer):
             if hasattr(self._vispy_widget, '_multivol'):
                 if not self._downsampled:
                     self.mouse_press()
+        self._downsample_timer.start()
         if event is not None:
-            self._downsample_timer.start()
             event.handled = True
 
     def resizeEvent(self, event=None):
