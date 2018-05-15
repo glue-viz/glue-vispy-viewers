@@ -275,13 +275,13 @@ class MultiVolumeVisual(VolumeVisual):
         # To start off we need to tell the texture about the new shape
         self.shared_program['u_volumetex_{0:d}'.format(index)].resize(data.shape)
 
-        # Determine the chunk shape - the value of 100 as the minimum value
+        # Determine the chunk shape - the value of 128 as the minimum value
         # is arbitrary but appears to work nicely. We can reduce that in future
         # if needed.
 
         sliced_data = data[self._data_slice]
 
-        chunk_shape = [min(x, 100) for x in sliced_data.shape]
+        chunk_shape = [min(x, 128) for x in sliced_data.shape]
 
         # FIXME: shouldn't be needed!
         zeros = np.zeros(self._vol_shape, dtype=np.float32)
