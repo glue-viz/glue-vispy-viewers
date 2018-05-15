@@ -45,13 +45,13 @@ class SubsetArray(object):
 
         if (self.layer_artist is None or
                 self.viewer_state is None):
-            return broadcast_to(0, self.shape)
+            return broadcast_to(0, self.shape)[view]
 
         try:
             mask = self.layer_artist.layer.to_mask(view=view)
         except IncompatibleAttribute:
             self.layer_artist.disable_incompatible_subset()
-            return broadcast_to(0, self.shape)
+            return broadcast_to(0, self.shape)[view]
         else:
             self.layer_artist.enable()
 
