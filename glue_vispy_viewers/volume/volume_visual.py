@@ -192,8 +192,6 @@ class MultiVolumeVisual(VolumeVisual):
         self.resolution = resolution
         self._vol_shape = (resolution, resolution, resolution)
         self.shared_program['u_shape'] = self._vol_shape[::-1]
-        for label in self.volumes:
-            self._update_scaled_data(label)
 
     @property
     def _free_slot_index(self):
@@ -295,7 +293,8 @@ class MultiVolumeVisual(VolumeVisual):
         self.shared_program['u_volumetex_{0:d}'.format(index)].set_data(zeros)
 
         # Now loop over chunks
-        for view in iterate_chunks(self._vol_shape, chunk_shape=chunk_shape):
+
+        for view in iterate_chunks(sliced_data.shape, chunk_shape=chunk_shape):
 
             chunk = sliced_data[view]
             chunk = chunk.astype(np.float32)
