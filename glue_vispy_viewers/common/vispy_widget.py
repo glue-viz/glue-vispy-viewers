@@ -6,6 +6,7 @@ import numpy as np
 
 from ..extern.vispy import scene
 from .axes import AxesVisual3D
+from ..utils import NestedSTTransform
 
 from matplotlib.colors import ColorConverter
 
@@ -74,7 +75,7 @@ class VispyWidgetHelper(object):
         self.axis.label_color = rgb(settings.FOREGROUND_COLOR)
 
     def add_data_visual(self, visual):
-        self.limit_transforms[visual] = scene.STTransform()
+        self.limit_transforms[visual] = NestedSTTransform()
         self._update_limits()
         visual.transform = self.limit_transforms[visual]
         self.view.add(visual)

@@ -183,7 +183,9 @@ void main() {{
 
     }} else {{
 
-        total_color = u_bgcolor;
+        // For this it seems we can get away with using transparency (which we need
+        // to make sure axes/ticks/labels aren't hidden)
+        total_color = vec4(0, 0, 0, 0);
 
     }}
 

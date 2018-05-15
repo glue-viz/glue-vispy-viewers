@@ -1,9 +1,14 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.viewers.common.qt.data_viewer_with_state import DataViewerWithState
+import numpy as np
 
-from qtpy import PYQT5, QtWidgets
+from glue.viewers.common.qt.data_viewer_with_state import DataViewerWithState
+from glue.external.echo import delay_callback
+
+from qtpy import QtWidgets
 from qtpy.QtCore import Qt
+
+from ..extern.vispy.util import keys
 
 from .vispy_widget import VispyWidgetHelper
 from .viewer_options import VispyOptionsWidget
@@ -42,17 +47,24 @@ class BaseVispyViewer(DataViewerWithState):
         self._vispy_widget = VispyWidgetHelper(viewer_state=self.state)
         self.setCentralWidget(self._vispy_widget.canvas.native)
 
-        self.state.add_callback('clip_data', self._toggle_clip)
-        self.state.add_callback('x_min', self._toggle_clip)
-        self.state.add_callback('x_max', self._toggle_clip)
-        self.state.add_callback('y_min', self._toggle_clip)
-        self.state.add_callback('y_max', self._toggle_clip)
-        self.state.add_callback('z_min', self._toggle_clip)
-        self.state.add_callback('z_max', self._toggle_clip)
+        self.state.add_callback('clip_data', self._update_clip)
+        self.state.add_callback('x_min', self._update_clip)
+        self.state.add_callback('x_max', self._update_clip)
+        self.state.add_callback('y_min', self._update_clip)
+        self.state.add_callback('y_max', self._update_clip)
+        self.state.add_callback('z_min', self._update_clip)
+        self.state.add_callback('z_max', self._update_clip)
 
         self.status_label = None
         self._opengl_ok = None
         self._ready_draw = False
+
+        viewbox = self._vispy_widget.view.camera.viewbox
+
+        viewbox.events.mouse_wheel.connect(self.camera_mouse_wheel)
+        viewbox.events.mouse_move.connect(self.camera_mouse_move)
+        viewbox.events.mouse_press.connect(self.camera_mouse_press)
+        viewbox.events.mouse_release.connect(self.camera_mouse_release)
 
     def paintEvent(self, *args, **kwargs):
         super(BaseVispyViewer, self).paintEvent(*args, **kwargs)
@@ -77,7 +89,7 @@ class BaseVispyViewer(DataViewerWithState):
         statusbar = self.statusBar()
         statusbar.showMessage(text)
 
-    def _toggle_clip(self, *args):
+    def _update_clip(self, *args):
         for layer_artist in self._layer_artist_container:
             if self.state.clip_data:
                 layer_artist.set_clip(self.state.clip_limits)
@@ -88,30 +100,93 @@ class BaseVispyViewer(DataViewerWithState):
     def update_viewer_state(rec, context):
         return update_viewer_state(rec, context)
 
-    if PYQT5:
+    def camera_mouse_wheel(self, event=None):
 
-        def show(self):
+        scale = (1.1 ** - event.delta[1])
 
-            # WORKAROUND:
-            # Due to a bug in Qt5, a hidden toolbar in glue causes a grey
-            # rectangle to be overlaid on top of the glue window. Therefore
-            # we check if the toolbar is hidden, and if so we make it into a
-            # floating toolbar temporarily - still hidden, so this will not
-            # be noticeable to the user.
+        with delay_callback(self.state, 'x_min', 'x_max', 'y_min', 'y_max', 'z_min', 'z_max'):
 
-            # tbar.setAllowedAreas(Qt.NoToolBarArea)
+            xmid = 0.5 * (self.state.x_min + self.state.x_max)
+            dx = (self.state.x_max - xmid) * scale
+            self.state.x_min = xmid - dx
+            self.state.x_max = xmid + dx
 
-            if self._session.application is not None:
-                tbar = self._session.application._mode_toolbar
-                hidden = tbar.isHidden()
-                if hidden:
-                    original_flags = tbar.windowFlags()
-                    tbar.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
-            else:
-                hidden = False
+            ymid = 0.5 * (self.state.y_min + self.state.y_max)
+            dy = (self.state.y_max - ymid) * scale
+            self.state.y_min = ymid - dy
+            self.state.y_max = ymid + dy
 
-            super(BaseVispyViewer, self).show()
+            zmid = 0.5 * (self.state.z_min + self.state.z_max)
+            dz = (self.state.z_max - zmid) * scale
+            self.state.z_min = zmid - dz
+            self.state.z_max = zmid + dz
 
+        self._update_clip()
+
+        event.handled = True
+
+    def camera_mouse_press(self, event=None):
+
+        self._initial_position = (self.state.x_min, self.state.x_max,
+                                  self.state.y_min, self.state.y_max,
+                                  self.state.z_min, self.state.z_max)
+
+        self._width = (self.state.x_max - self.state.x_min,
+                       self.state.y_max - self.state.y_min,
+                       self.state.z_max - self.state.z_min)
+
+    def camera_mouse_release(self, event=None):
+        self._initial_position = None
+        self._width = None
+
+    def camera_mouse_move(self, event=None):
+
+        if 1 in event.buttons and keys.SHIFT in event.mouse_event.modifiers:
+
+            camera = self._vispy_widget.view.camera
+
+            norm = np.mean(camera._viewbox.size)
+
+            p1 = event.mouse_event.press_event.pos
+            p2 = event.mouse_event.pos
+
+            dist = (p1 - p2) / norm * camera._scale_factor
+            dist[1] *= -1
+            dx, dy, dz = camera._dist_to_trans(dist)
+
+            with delay_callback(self.state, 'x_min', 'x_max', 'y_min', 'y_max', 'z_min', 'z_max'):
+
+                self.state.x_min = self._initial_position[0] + self._width[0] * dx
+                self.state.x_max = self._initial_position[1] + self._width[0] * dx
+                self.state.y_min = self._initial_position[2] + self._width[1] * dy
+                self.state.y_max = self._initial_position[3] + self._width[1] * dy
+                self.state.z_min = self._initial_position[4] + self._width[2] * dz
+                self.state.z_max = self._initial_position[5] + self._width[2] * dz
+
+            event.handled = True
+
+    def show(self):
+
+        # WORKAROUND:
+        # Due to a bug in Qt5, a hidden toolbar in glue causes a grey
+        # rectangle to be overlaid on top of the glue window. Therefore
+        # we check if the toolbar is hidden, and if so we make it into a
+        # floating toolbar temporarily - still hidden, so this will not
+        # be noticeable to the user.
+
+        # tbar.setAllowedAreas(Qt.NoToolBarArea)
+
+        if self._session.application is not None:
+            tbar = self._session.application._mode_toolbar
+            hidden = tbar.isHidden()
             if hidden:
-                tbar.setWindowFlags(original_flags)
-                tbar.hide()
+                original_flags = tbar.windowFlags()
+                tbar.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
+        else:
+            hidden = False
+
+        super(BaseVispyViewer, self).show()
+
+        if hidden:
+            tbar.setWindowFlags(original_flags)
+            tbar.hide()

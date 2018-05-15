@@ -39,13 +39,7 @@ class VispyViewerToolbar(BasicToolbar):
         return self._vispy_widget.view.camera
 
     def enable_camera_events(self):
-        self.camera._viewbox.events.mouse_move.connect(self.camera.viewbox_mouse_event)
-        self.camera._viewbox.events.mouse_press.connect(self.camera.viewbox_mouse_event)
-        self.camera._viewbox.events.mouse_release.connect(self.camera.viewbox_mouse_event)
-        self.camera._viewbox.events.mouse_wheel.connect(self.camera.viewbox_mouse_event)
+        self.camera.interactive = True
 
     def disable_camera_events(self):
-        self.camera._viewbox.events.mouse_move.disconnect(self.camera.viewbox_mouse_event)
-        self.camera._viewbox.events.mouse_press.disconnect(self.camera.viewbox_mouse_event)
-        self.camera._viewbox.events.mouse_release.disconnect(self.camera.viewbox_mouse_event)
-        self.camera._viewbox.events.mouse_wheel.disconnect(self.camera.viewbox_mouse_event)
+        self.camera.interactive = False

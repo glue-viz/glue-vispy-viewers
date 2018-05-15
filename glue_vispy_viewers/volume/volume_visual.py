@@ -78,15 +78,17 @@ class MultiVolumeVisual(VolumeVisual):
     """
 
     def __init__(self, n_volume_max=10, relative_step_size=0.8,
-                 emulate_texture=False, bgcolor='white'):
+                 emulate_texture=False, bgcolor='white', resolution=256):
 
         # Choose texture class
         tex_cls = TextureEmulated3D if emulate_texture else Texture3D
 
         self._n_volume_max = n_volume_max
-        self._initial_shape = True
-        self._vol_shape = (10, 10, 10)
+        self._vol_shape = (resolution, resolution, resolution)
         self._need_vertex_update = True
+        self._data_slice = None
+
+        self.resolution = resolution
 
         # We deliberately don't use super here because we don't want to call
         # VolumeVisual.__init__
@@ -148,18 +150,17 @@ class MultiVolumeVisual(VolumeVisual):
         self.relative_step_size = relative_step_size
         self.relative_step_size_orig = self.relative_step_size
 
-        self._data_shape = None
-        self._block_size = np.array([1, 1, 1])
+        self.volumes = defaultdict(dict)
 
         try:
             self.freeze()
         except AttributeError:  # Older versions of VisPy
             pass
 
-    def _update_shader(self):
+    def _update_shader(self, force=False):
         shader = get_frag_shader(self.volumes, clipped=self._clip_data,
                                  n_volume_max=self._n_volume_max)
-        if getattr(self, '_shader_cache', None) == shader:
+        if not force and getattr(self, '_shader_cache', None) == shader:
             return
         self.shared_program.frag = shader
         self._shader_cache = shader
@@ -167,17 +168,19 @@ class MultiVolumeVisual(VolumeVisual):
             index = self.volumes[label]['index']
             cmap = self.volumes[label]['cmap']
             self.shared_program.frag['cmap{0:d}'.format(index)] = Function(cmap.glsl_map)
+        self.shared_program['u_downsample'] = 1.
 
     def set_clip(self, clip_data, clip_limits):
         self._clip_data = int(clip_data)
         if clip_data:
-            self.shared_program['u_clip_min'] = clip_limits[::2]
-            self.shared_program['u_clip_max'] = clip_limits[1::2]
+            self.shared_program['u_clip_min'] = clip_limits[:3]
+            self.shared_program['u_clip_max'] = clip_limits[3:]
+        self._update_shader()
 
     def downsample(self):
-        if self._data_shape is None:
+        if self._vol_shape is None:
             return
-        min_dimension = min(self._data_shape)
+        min_dimension = min(self._vol_shape)
         self.shared_program['u_downsample'] = min_dimension / 20
 
     def upsample(self):
@@ -185,6 +188,11 @@ class MultiVolumeVisual(VolumeVisual):
 
     def set_background(self, color):
         self.shared_program['u_bgcolor'] = Color(color).rgba
+
+    def set_resolution(self, resolution):
+        self.resolution = resolution
+        self._vol_shape = (resolution, resolution, resolution)
+        self.shared_program['u_shape'] = self._vol_shape[::-1]
 
     @property
     def _free_slot_index(self):
@@ -220,7 +228,7 @@ class MultiVolumeVisual(VolumeVisual):
         if isinstance(cmap, six.string_types):
             cmap = get_colormap(cmap)
         self.volumes[label]['cmap'] = cmap
-        self._update_shader()
+        self._update_shader(force=True)
 
     def set_clim(self, label, clim):
         # Avoid setting the same limits again
@@ -247,23 +255,6 @@ class MultiVolumeVisual(VolumeVisual):
         if 'data' in self.volumes[label] and self.volumes[label]['data'] is data:
             return
 
-        # VisPy can't handle dimensions larger than 2048 so we need to reduce
-        # the array on-the-fly if needed. We do this using slicing rather than
-        # e.g. block_reduce as we want to avoid storing the array in memory.
-
-        if any(size > 2048 for size in data.shape):
-            view = []
-            self._block_size = []
-            for size in data.shape:
-                if size > 2048:
-                    block = int(np.ceil(size / 2048))
-                    view.append(slice(None, None, block))
-                else:
-                    block = 1
-                    view.append(slice(None))
-                self._block_size.append(block)
-            data = data[view]
-
         self.volumes[label]['data'] = data
         self.volumes[label]['layer'] = layer
         self._update_scaled_data(label, initial_shape=True)
@@ -275,6 +266,9 @@ class MultiVolumeVisual(VolumeVisual):
                     return label
 
     def _update_scaled_data(self, label, initial_shape=False):
+
+        if self._data_slice is None:
+            return
 
         index = self.volumes[label]['index']
         clim = self.volumes[label]['clim']
@@ -290,15 +284,23 @@ class MultiVolumeVisual(VolumeVisual):
         # To start off we need to tell the texture about the new shape
         self.shared_program['u_volumetex_{0:d}'.format(index)].resize(data.shape)
 
-        # Determine the chunk shape - the value of 100 as the minimum value
+        # Determine the chunk shape - the value of 128 as the minimum value
         # is arbitrary but appears to work nicely. We can reduce that in future
         # if needed.
-        chunk_shape = [min(x, 100) for x in data.shape]
+
+        sliced_data = data[self._data_slice]
+
+        chunk_shape = [min(x, 128, self.resolution) for x in sliced_data.shape]
+
+        # FIXME: shouldn't be needed!
+        zeros = np.zeros(self._vol_shape, dtype=np.float32)
+        self.shared_program['u_volumetex_{0:d}'.format(index)].set_data(zeros)
 
         # Now loop over chunks
-        for view in iterate_chunks(data.shape, chunk_shape=chunk_shape):
 
-            chunk = data[view]
+        for view in iterate_chunks(sliced_data.shape, chunk_shape=chunk_shape):
+
+            chunk = sliced_data[view]
             chunk = chunk.astype(np.float32)
             chunk -= clim[0]
             chunk *= 1 / (clim[1] - clim[0])
@@ -310,15 +312,44 @@ class MultiVolumeVisual(VolumeVisual):
 
             offset = tuple([s.start for s in view])
 
+            if chunk.size == 0:
+                continue
+
             self.shared_program['u_volumetex_{0:d}'.format(index)].set_data(chunk, offset=offset)
 
-        if initial_shape:
-            self._data_shape = np.asarray(data.shape, dtype=int)
-            self._vol_shape = self._data_shape * self._block_size
-            self.shared_program['u_shape'] = self._vol_shape[::-1]
-        elif np.any(data.shape != self._data_shape):
-            raise ValueError("Shape of arrays should be {0} instead "
-                             "of {1}".format(self._vol_shape, data.shape))
+    def _get_step_start(self, vmin, vmax):
+
+        size = vmax - vmin
+        if size < self.resolution:
+            step = 1
+            start = int(vmin)
+        else:
+            step = int(np.ceil(size / self.resolution))
+            start = int(vmin)
+
+        if start < 0:
+            start = 0
+
+        return step, start
+
+    def _update_slice_transform(self, x_min, x_max, y_min, y_max, z_min, z_max):
+
+        x_step, x_start = self._get_step_start(x_min, x_max)
+        y_step, y_start = self._get_step_start(y_min, y_max)
+        z_step, z_start = self._get_step_start(z_min, z_max)
+
+        self._data_slice = [slice(z_start, z_start + self.resolution * z_step, z_step),
+                            slice(y_start, y_start + self.resolution * y_step, y_step),
+                            slice(x_start, x_start + self.resolution * x_step, x_step)]
+
+        self.transform.inner.scale = [x_step, y_step, z_step]
+        self.transform.inner.translate = [x_start, y_start, z_start]
+
+        for label in self.volumes:
+            self._update_scaled_data(label)
+
+        self.transform._update_shaders()
+        self.transform.update()
 
     @property
     def enabled(self):

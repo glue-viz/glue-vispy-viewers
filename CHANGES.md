@@ -4,6 +4,10 @@
 - Implement the 'data' and 'outline' modes for volume rendering of subsets
   directly in the OpenGL shader. [#310]
 
+- Make volume rendering be adaptive in terms of resolution - the buffer used
+  for the rendering is a fixed size and the data in the buffer is updated as
+  the user zooms in/out and pans around. [#312]
+
 0.10 (2018-04-27)
 -----------------
 

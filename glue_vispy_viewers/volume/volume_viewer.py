@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+import numpy as np
+
 from glue.config import settings
 
 from qtpy.QtWidgets import QMessageBox
@@ -9,7 +11,6 @@ from ..common.vispy_data_viewer import BaseVispyViewer
 from .layer_artist import VolumeLayerArtist
 from .layer_style_widget import VolumeLayerStyleWidget
 from .viewer_state import Vispy3DVolumeViewerState
-
 
 from ..scatter.layer_artist import ScatterLayerArtist
 from ..scatter.layer_style_widget import ScatterLayerStyleWidget
@@ -37,9 +38,18 @@ class VispyVolumeViewer(BaseVispyViewer):
         # mouse wheel (or scroll on a trackpad), we downsample the volume
         # rendering temporarily.
 
-        self._vispy_widget.canvas.events.mouse_press.connect(self.mouse_press)
-        self._vispy_widget.canvas.events.mouse_wheel.connect(self.mouse_wheel)
-        self._vispy_widget.canvas.events.mouse_release.connect(self.mouse_release)
+        canvas = self._vispy_widget.canvas
+
+        canvas.events.mouse_press.connect(self.mouse_press)
+        canvas.events.mouse_wheel.connect(self.mouse_wheel)
+        canvas.events.mouse_release.connect(self.mouse_release)
+
+        viewbox = self._vispy_widget.view.camera.viewbox
+
+        viewbox.events.mouse_wheel.connect(self.camera_mouse_wheel)
+        viewbox.events.mouse_move.connect(self.camera_mouse_move)
+        viewbox.events.mouse_press.connect(self.camera_mouse_press)
+        viewbox.events.mouse_release.connect(self.camera_mouse_release)
 
         self._downsampled = False
 
@@ -51,6 +61,14 @@ class VispyVolumeViewer(BaseVispyViewer):
         self._downsample_timer.setInterval(250)
         self._downsample_timer.setSingleShot(True)
         self._downsample_timer.timeout.connect(self.mouse_release)
+
+        self.state.add_callback('resolution', self._update_resolution)
+
+        # We do this here in addition to in the volume viewer itself as for
+        # some situations e.g. reloading from session files, a clip_data event
+        # isn't emitted.
+        # FIXME: needs to be done after first layer added
+        # self._update_clip(force=True)
 
     def mouse_press(self, event=None):
         if self.state.downsample:
@@ -65,12 +83,40 @@ class VispyVolumeViewer(BaseVispyViewer):
                 self._downsampled = False
                 self._vispy_widget.canvas.render()
 
+        self._update_slice_transform()
+        self._update_clip()
+
+    def _update_clip(self, force=False):
+        if hasattr(self._vispy_widget, '_multivol'):
+            if (self.state.clip_data or force):
+                dx = self.state.x_stretch * self.state.aspect[0]
+                dy = self.state.y_stretch * self.state.aspect[1]
+                dz = self.state.z_stretch * self.state.aspect[2]
+                coords = np.array([[-dx, -dy, -dz], [dx, dy, dz]])
+                coords = (self._vispy_widget._multivol.transform.imap(coords)[:, :3] /
+                          self._vispy_widget._multivol.resolution)
+                self._vispy_widget._multivol.set_clip(self.state.clip_data, coords.ravel())
+            else:
+                self._vispy_widget._multivol.set_clip(False, [0, 0, 0, 1, 1, 1])
+
+    def _update_slice_transform(self):
+        self._vispy_widget._multivol._update_slice_transform(self.state.x_min, self.state.x_max,
+                                                             self.state.y_min, self.state.y_max,
+                                                             self.state.z_min, self.state.z_max)
+
+    def _update_resolution(self, *event):
+        self._vispy_widget._multivol.set_resolution(self.state.resolution)
+        self._update_slice_transform()
+        self._update_clip()
+
     def mouse_wheel(self, event=None):
         if self.state.downsample:
             if hasattr(self._vispy_widget, '_multivol'):
                 if not self._downsampled:
                     self.mouse_press()
-                self._downsample_timer.start()
+        if event is not None:
+            self._downsample_timer.start()
+            event.handled = True
 
     def resizeEvent(self, event=None):
         self.mouse_wheel()
@@ -127,6 +173,7 @@ class VispyVolumeViewer(BaseVispyViewer):
             if first_layer_artist:
                 self.state.set_limits(*self._layer_artist_container[0].bbox)
                 self._ready_draw = True
+                self._update_slice_transform()
 
         return added
 
@@ -137,5 +184,4 @@ class VispyVolumeViewer(BaseVispyViewer):
 
     def _toggle_clip(self, *args):
         if hasattr(self._vispy_widget, '_multivol'):
-            self._vispy_widget._multivol.set_clip(self.state.clip_data,
-                                                  self.state.clip_limits_relative)
+            self._update_clip()
