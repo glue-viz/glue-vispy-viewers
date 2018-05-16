@@ -51,7 +51,6 @@ FRAG_SHADER = """
 {declarations}
 uniform vec3 u_shape;
 uniform float u_downsample;
-uniform float u_relative_step_size;
 uniform vec4 u_bgcolor;
 
 uniform vec3 u_clip_min;
@@ -108,7 +107,7 @@ void main() {{
     vec3 front = v_position + view_ray * distance;
 
     // Decide how many steps to take
-    int nsteps = int(-distance / (u_relative_step_size * u_downsample) + 0.5);
+    int nsteps = int(-distance / u_downsample + 0.5);
     if(nsteps < 1) discard;
 
     // Get starting location and step vector in texture coordinates
@@ -229,11 +228,14 @@ def get_frag_shader(volumes, clipped=False, n_volume_max=5):
 
         # Global declarations
         declarations += "uniform float u_weight_{0:d};\n".format(index)
+        declarations += "uniform int u_enabled_{0:d};\n".format(index)
 
         # Declarations before the raytracing loop
         before_loop += "float max_val_{0:d} = 0;\n".format(index)
 
         # Calculation inside the main raytracing loop
+
+        in_loop += "if(u_enabled_{0:d} == 1) {{\n\n".format(index)
 
         if clipped:
             in_loop += ("if(loc.r > u_clip_min.r && loc.r < u_clip_max.r &&\n"
@@ -252,6 +254,8 @@ def get_frag_shader(volumes, clipped=False, n_volume_max=5):
 
         if clipped:
             in_loop += "}\n\n"
+
+        in_loop += "}\n\n"
 
         # Calculation after the main loop
 

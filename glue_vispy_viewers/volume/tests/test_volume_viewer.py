@@ -195,3 +195,29 @@ def test_layer_visibility_clip():
     assert not volume.layers[0]._multivol.enabled[0]
 
     ga.close()
+
+
+def test_remove_subset_group():
+
+    # Regression test for a bug that meant that removing a subset caused an
+    # error when multiple viewers were present.
+
+    # Create fake data
+    data = make_test_data()
+
+    # Create fake session
+
+    dc = DataCollection([data])
+    ga = GlueApplication(dc)
+    ga.show()
+
+    volume1 = ga.new_data_viewer(VispyVolumeViewer)
+    volume1.add_data(data)
+
+    volume2 = ga.new_data_viewer(VispyVolumeViewer)
+    volume2.add_data(data)
+
+    dc.new_subset_group(subset_state=data.id['a'] > 0, label='Subset 1')
+    dc.remove_subset_group(dc.subset_groups[0])
+
+    ga.close()
