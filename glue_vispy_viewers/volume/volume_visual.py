@@ -321,9 +321,10 @@ class MultiVolumeVisual(VolumeVisual):
 
     @property
     def _free_slot_index(self):
-        for i in range(self._n_volume_max):
-            if self.shared_program['u_enabled_{0}'.format(i)] == 0:
-                return i
+        indices = [self.volumes[label]['index'] for label in self.volumes]
+        for index in range(self._n_volume_max):
+            if index not in indices:
+                return index
         raise ValueError("No free slots")
 
     def _get_step_start(self, vmin, vmax):
