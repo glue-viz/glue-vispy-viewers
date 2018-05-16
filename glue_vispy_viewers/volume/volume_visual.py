@@ -73,7 +73,7 @@ class MultiVolumeVisual(VolumeVisual):
         Absolute maximum number of volumes that can be shown.
     """
 
-    def __init__(self, n_volume_max=10, emulate_texture=False, bgcolor='white', resolution=256):
+    def __init__(self, n_volume_max=16, emulate_texture=False, bgcolor='white', resolution=256):
 
         # Choose texture class
         tex_cls = TextureEmulated3D if emulate_texture else Texture3D
@@ -321,9 +321,10 @@ class MultiVolumeVisual(VolumeVisual):
 
     @property
     def _free_slot_index(self):
-        for i in range(self._n_volume_max):
-            if self.shared_program['u_enabled_{0}'.format(i)] == 0:
-                return i
+        indices = [self.volumes[label]['index'] for label in self.volumes]
+        for index in range(self._n_volume_max):
+            if index not in indices:
+                return index
         raise ValueError("No free slots")
 
     def _get_step_start(self, vmin, vmax):

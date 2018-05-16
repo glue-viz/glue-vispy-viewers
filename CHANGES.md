@@ -1,6 +1,9 @@
 0.11 (unreleased)
 -----------------
 
+- Fixed a bug that caused layers to sometimes non-deterministically be
+  shown/hidden and/or not disappear correctly. [#314]
+
 - Implement the 'data' and 'outline' modes for volume rendering of subsets
   directly in the OpenGL shader. [#310]
 
