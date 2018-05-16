@@ -73,7 +73,7 @@ class MultiVolumeVisual(VolumeVisual):
         Absolute maximum number of volumes that can be shown.
     """
 
-    def __init__(self, n_volume_max=10, emulate_texture=False, bgcolor='white', resolution=256):
+    def __init__(self, n_volume_max=16, emulate_texture=False, bgcolor='white', resolution=256):
 
         # Choose texture class
         tex_cls = TextureEmulated3D if emulate_texture else Texture3D
