@@ -56,6 +56,10 @@ from .shaders import get_frag_shader, VERT_SHADER
 NUMPY_LT_1_13 = LooseVersion(np.__version__) < LooseVersion('1.13')
 
 
+class NoFreeSlotsError(Exception):
+    pass
+
+
 class MultiVolumeVisual(VolumeVisual):
     """
     Displays multiple 3D volumes simultaneously.
@@ -320,12 +324,21 @@ class MultiVolumeVisual(VolumeVisual):
                     return label
 
     @property
+    def has_free_slots(self):
+        try:
+            self._free_slot_index
+        except NoFreeSlotsError:
+            return False
+        else:
+            return True
+
+    @property
     def _free_slot_index(self):
         indices = [self.volumes[label]['index'] for label in self.volumes]
         for index in range(self._n_volume_max):
             if index not in indices:
                 return index
-        raise ValueError("No free slots")
+        raise NoFreeSlotsError("No free slots")
 
     def _get_step_start(self, vmin, vmax):
 

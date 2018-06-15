@@ -157,6 +157,9 @@ class VispyVolumeViewer(BaseVispyViewer):
                                          "rendering ({1})".format(data.shape, required_shape),
                                          buttons=QMessageBox.Ok)
                     return False
+            if not self._has_free_volume_layers:
+                self._warn_no_free_volume_layers()
+                return False
         else:
             QMessageBox.critical(self, "Error",
                                  "Data should be 1- or 3-dimensional ({0} dimensions "
@@ -166,16 +169,48 @@ class VispyVolumeViewer(BaseVispyViewer):
 
         added = super(VispyVolumeViewer, self).add_data(data)
 
-        if data.ndim == 1:
-            self._vispy_widget._update_limits()
-
         if added:
+
+            if data.ndim == 1:
+                self._vispy_widget._update_limits()
+
             if first_layer_artist:
                 self.state.set_limits(*self._layer_artist_container[0].bbox)
                 self._ready_draw = True
                 self._update_slice_transform()
 
+            self._show_free_layer_warning = True
+
         return added
+
+    def add_subset(self, subset):
+
+        if not self._has_free_volume_layers:
+            self._warn_no_free_volume_layers()
+            return False
+
+        added = super(VispyVolumeViewer, self).add_subset(subset)
+
+        if added:
+            self._show_free_layer_warning = True
+
+        return added
+
+    @property
+    def _has_free_volume_layers(self):
+        return (not hasattr(self._vispy_widget, '_multivol') or
+                self._vispy_widget._multivol.has_free_slots)
+
+    def _warn_no_free_volume_layers(self):
+        if getattr(self, '_show_free_layer_warning', True):
+            QMessageBox.critical(self, "Error",
+                                 "The volume viewer has reached the maximum number "
+                                 "of volume layers. To show more volume layers, remove "
+                                 "existing layers and try again. This error will not "
+                                 "be shown again unless the limit is reached again in "
+                                 "the future.",
+                                 buttons=QMessageBox.Ok)
+            self._show_free_layer_warning = False
 
     def _update_appearance_from_settings(self, message):
         super(VispyVolumeViewer, self)._update_appearance_from_settings(message)

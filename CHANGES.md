@@ -1,6 +1,9 @@
 0.11 (unreleased)
 -----------------
 
+- Improve how we deal with reaching the limit of the number of free slots
+  in the volume viewer. [#321]
+
 - Make it so that selection tools are de-selected after use, to be
   consistent with the core glue behavior. [#320]
 
