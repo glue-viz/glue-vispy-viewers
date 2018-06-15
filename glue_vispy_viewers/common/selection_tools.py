@@ -119,6 +119,8 @@ class LassoSelectionMode(VispyMouseMode):
 
             self.reset()
 
+            self.viewer.toolbar.active_tool = None
+
 
 @viewer_tool
 class RectangleSelectionMode(VispyMouseMode):
@@ -172,6 +174,8 @@ class RectangleSelectionMode(VispyMouseMode):
 
             self.reset()
 
+            self.viewer.toolbar.active_tool = None
+
 
 @viewer_tool
 class CircleSelectionMode(VispyMouseMode):
@@ -218,3 +222,5 @@ class CircleSelectionMode(VispyMouseMode):
                 self.apply_roi(roi)
 
             self.reset()
+
+            self.viewer.toolbar.active_tool = None

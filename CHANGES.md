@@ -1,6 +1,9 @@
 0.11 (unreleased)
 -----------------
 
+- Make it so that selection tools are de-selected after use, to be
+  consistent with the core glue behavior. [#320]
+
 - Fixed a bug that caused layers to sometimes non-deterministically be
   shown/hidden and/or not disappear correctly. [#314]
 
