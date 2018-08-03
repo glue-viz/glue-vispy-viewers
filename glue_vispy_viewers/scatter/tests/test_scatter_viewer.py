@@ -199,7 +199,7 @@ def test_scatter_remove_layer_artists(tmpdir):
     ga2.close()
 
 
-def test_scatter_add_data_with_incompatible_subsets(tmpdir):
+def test_add_data_with_incompatible_subsets(tmpdir):
 
     # Regression test for a bug that an error when adding a dataset with an
     # incompatible subset to a 3D scatter viewer.

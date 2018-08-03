@@ -33,7 +33,8 @@ class VispyScatterViewer(BaseVispyViewer):
                 # The above call to add_data may have added subset layers, some
                 # of which may be incompatible with the data, so we need to now
                 # explicitly use the layer for the actual data object.
-                self.state.set_limits(*self._layer_artist_container[data][0].default_limits)
+                layer = self._layer_artist_container[data][0]
+                self.state.set_limits(*layer.default_limits)
                 self._ready_draw = True
 
         return added
