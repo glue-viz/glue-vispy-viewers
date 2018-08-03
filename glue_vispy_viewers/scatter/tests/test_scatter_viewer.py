@@ -197,3 +197,25 @@ def test_scatter_remove_layer_artists(tmpdir):
     ga2 = GlueApplication.restore_session(session_file)
     ga2.show()
     ga2.close()
+
+
+def test_scatter_add_data_with_incompatible_subsets(tmpdir):
+
+    # Regression test for a bug that an error when adding a dataset with an
+    # incompatible subset to a 3D scatter viewer.
+
+    data1 = Data(label="Data 1", x=[1, 2, 3])
+    data2 = Data(label="Data 2", y=[4, 5, 6])
+
+    dc = DataCollection([data1, data2])
+    ga = GlueApplication(dc)
+    ga.show()
+
+    # Subset is defined in terms of data2, so it's an incompatible subset
+    # for data1
+    dc.new_subset_group(subset_state=data2.id['y'] > 0.5, label='subset 1')
+
+    scatter = ga.new_data_viewer(VispyScatterViewer)
+    scatter.add_data(data1)
+
+    ga.close()
