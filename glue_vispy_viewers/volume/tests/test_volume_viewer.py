@@ -221,3 +221,22 @@ def test_remove_subset_group():
     dc.remove_subset_group(dc.subset_groups[0])
 
     ga.close()
+
+
+def test_add_data_with_incompatible_subsets(tmpdir):
+
+    data1 = Data(label="Data 1", x=np.arange(24).reshape((4, 3, 2)))
+    data2 = Data(label="Data 2", y=np.arange(24).reshape((4, 3, 2)))
+
+    dc = DataCollection([data1, data2])
+    ga = GlueApplication(dc)
+    ga.show()
+
+    # Subset is defined in terms of data2, so it's an incompatible subset
+    # for data1
+    dc.new_subset_group(subset_state=data2.id['y'] > 0.5, label='subset 1')
+
+    volume = ga.new_data_viewer(VispyVolumeViewer)
+    volume.add_data(data1)
+
+    ga.close()

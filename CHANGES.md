@@ -1,6 +1,9 @@
 0.11 (unreleased)
 -----------------
 
+- Fix a bug that caused an error when adding a dataset with an incompatible
+  subset to a new 3D scatter viewer. [#323]
+
 - Improve how we deal with reaching the limit of the number of free slots
   in the volume viewer. [#321]
 
