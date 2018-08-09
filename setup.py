@@ -43,17 +43,26 @@ install_requires = ['numpy',
                     'glue-core>=0.12',
                     'qtpy',
                     'scipy',
-                    'astropy>=1.1']
+                    'astropy>=1.1',
+                    'pillow']
+
+test_requires = ['pytest>=3.5,<3.7',
+                 'pytest-cov',
+                 'pytest-qt',
+                 'pytest-faulthandler',
+                 'objgraph',
+                 'mock']
 
 setup(name='glue-vispy-viewers',
-      version=__version__,
+      version=__version__,  # noqa
       description='Vispy-based viewers for Glue',
       long_description=LONG_DESCRIPTION,
       url="https://github.com/glue-viz/glue-3d-viewer",
       author='Penny Qian, Maxwell Tsai, and Thomas Robitaille',
       author_email='glueviz@gmail.com',
-      packages = find_packages(),
+      packages=find_packages(),
       package_data=package_data,
       entry_points=entry_points,
+      extras_require={'test': test_requires},
       install_requires=install_requires
     )
