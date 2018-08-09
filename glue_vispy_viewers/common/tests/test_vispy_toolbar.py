@@ -6,7 +6,6 @@ import os
 import pytest
 from mock import patch
 
-from glue.utils.qt import get_qapp
 from glue.app.qt import GlueApplication
 from glue.core import Data
 
