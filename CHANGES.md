@@ -1,6 +1,10 @@
 0.11 (unreleased)
 -----------------
 
+- Fix a bug that caused crashes when not all scatter points were inside the
+  3D scatter viewer box (due e.g. to panning and/or zooming) and color-coding
+  of points was used. [#326]
+
 - Fix a bug that caused an error when adding a dataset with an incompatible
   subset to a new 3D scatter viewer. [#323]
 

@@ -28,8 +28,6 @@ class ScatterLayerArtist(VispyLayerArtist):
 
         self._clip_limits = None
 
-        self._marker_keep = Ellipsis
-
         # Set data caches
         self._marker_data = None
         self._color_data = None
@@ -129,7 +127,6 @@ class ScatterLayerArtist(VispyLayerArtist):
             self._multiscat.set_size(self.id, self.state.size * self.state.size_scaling)
         else:
             data = self.layer[self.state.size_attribute].ravel()
-            data = data[self._marker_keep]
             if self.state.size_vmax == self.state.size_vmin:
                 size = np.ones(data.shape) * 10
             else:
@@ -146,7 +143,6 @@ class ScatterLayerArtist(VispyLayerArtist):
             self._multiscat.set_color(self.id, self.state.color)
         else:
             data = self.layer[self.state.cmap_attribute].ravel()
-            data = data[self._marker_keep]
             if self.state.cmap_vmax == self.state.cmap_vmin:
                 cmap_data = np.ones(data.shape) * 0.5
             else:
@@ -176,21 +172,21 @@ class ScatterLayerArtist(VispyLayerArtist):
         else:
             self._enabled = True
 
-        if self._clip_limits is None:
-            keep = Ellipsis
-        else:
-            xmin, xmax, ymin, ymax, zmin, zmax = self._clip_limits
-            keep = (x >= xmin) & (x <= xmax) & (y >= ymin) & (y <= ymax) & (z >= zmin) & (z <= zmax)
-            x, y, z = x[keep], y[keep], z[keep]
-
         self._marker_data = np.array([x, y, z]).transpose()
-        self._marker_keep = keep
 
         # We need to make sure we update the sizes and colors in case
         # these were set as arrays, since the size of the data might have
         # changed (in the case of subsets)
 
         self._multiscat.set_data_values(self.id, x, y, z)
+
+        # Mask points outside the clip limits
+        if self._clip_limits is None:
+            self._multiscat.set_mask(self.id, None)
+        else:
+            xmin, xmax, ymin, ymax, zmin, zmax = self._clip_limits
+            keep = (x >= xmin) & (x <= xmax) & (y >= ymin) & (y <= ymax) & (z >= zmin) & (z <= zmax)
+            self._multiscat.set_mask(self.id, keep)
 
         self.redraw()
 

@@ -118,7 +118,10 @@ class MultiColorScatter(scene.visuals.Markers):
                     rgba = np.hstack([layer['color'], 1])
                     rgba = np.repeat(rgba, n_points).reshape(4, -1).transpose()
                 else:
-                    rgba = layer['color'].copy()
+                    if layer['mask'] is None:
+                        rgba = layer['color'].copy()
+                    else:
+                        rgba = layer['color'][layer['mask']]
 
                 rgba[:, 3] *= layer['alpha']
 
