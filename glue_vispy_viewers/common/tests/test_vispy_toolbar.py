@@ -6,9 +6,11 @@ import os
 import pytest
 from mock import patch
 
-from glue.core.tests.util import simple_session
+from glue.utils.qt import get_qapp
+from glue.app.qt import GlueApplication
+from glue.core import Data
 
-from ..vispy_data_viewer import BaseVispyViewer
+from ...scatter.scatter_viewer import VispyScatterViewer
 
 from .. import tools  # noqa:
 
@@ -20,73 +22,111 @@ else:
     IMAGEIO_INSTALLED = True
 
 
-class ExampleViewer(BaseVispyViewer):
+def test_save(tmpdir, capsys):
 
-    def __init__(self, session, parent=None):
+    app = GlueApplication()
+    viewer = app.new_data_viewer(VispyScatterViewer)
+    data = Data(x=[1, 2, 3], label='Data')
+    app.data_collection.append(data)
+    app.show()
+    viewer.add_data(data)
 
-        super(ExampleViewer, self).__init__(session, parent=parent)
+    filename = tmpdir.join('test.png').strpath
 
-    def callback(self, mode):
-        self._called_back = True
+    with patch('qtpy.compat.getsavefilename') as fd:
+        fd.return_value = filename, 'png'
+        viewer.toolbar.tools['save'].subtools[0].activate()
+
+    assert os.path.exists(filename)
+
+    out, err = capsys.readouterr()
+    assert out.strip() == ""
+    assert err.strip() == ""
+
+    app.close()
 
 
-class TestToolbar(object):
+def test_rotate(capsys):
 
-    def setup_method(self):
-        self.session = simple_session()
-        self.viewer = ExampleViewer(self.session)
-        self.toolbar = self.viewer.toolbar
+    app = GlueApplication()
+    viewer = app.new_data_viewer(VispyScatterViewer)
 
-    def teardown_method(self):
-        self.session = None
-        self.viewer.close()
-        self.viewer = None
-        self.toolbar = None
+    viewer.toolbar.actions['vispy:rotate'].toggle()
+    assert viewer.toolbar.active_tool.tool_id == 'vispy:rotate'
 
-    def test_save(self, tmpdir, capsys):
+    viewer.toolbar.actions['vispy:rotate'].toggle()
+    assert viewer.toolbar.active_tool is None
 
-        self.viewer.show()
+    out, err = capsys.readouterr()
+    assert out.strip() == ""
+    assert err.strip() == ""
 
-        filename = tmpdir.join('test.png').strpath
+    app.close()
 
-        with patch('qtpy.compat.getsavefilename') as fd:
-            fd.return_value = filename, 'png'
-            self.toolbar.tools['save'].subtools[0].activate()
 
-        assert os.path.exists(filename)
+def test_reset(tmpdir, capsys):
 
-        out, err = capsys.readouterr()
-        assert out.strip() == ""
-        assert err.strip() == ""
+    app = GlueApplication()
+    viewer = app.new_data_viewer(VispyScatterViewer)
+    data = Data(x=[1, 2, 3], label='Data')
+    app.data_collection.append(data)
+    app.show()
+    viewer.add_data(data)
 
-    def test_rotate(self, capsys):
+    assert viewer.state.x_min == 1.
+    assert viewer.state.y_min == 1.
+    assert viewer.state.z_min == 1.
 
-        self.toolbar.actions['vispy:rotate'].toggle()
-        assert self.toolbar.active_tool.tool_id == 'vispy:rotate'
+    assert viewer.state.x_max == 3.
+    assert viewer.state.y_max == 3.
+    assert viewer.state.z_max == 3.
 
-        self.toolbar.actions['vispy:rotate'].toggle()
-        assert self.toolbar.active_tool is None
+    viewer.state.x_min = 2
+    viewer.state.y_min = 3
+    viewer.state.z_min = 5
 
-        out, err = capsys.readouterr()
-        assert out.strip() == ""
-        assert err.strip() == ""
+    viewer.state.x_max = 6
+    viewer.state.y_max = 7
+    viewer.state.z_max = 8
 
-    @pytest.mark.skipif('not IMAGEIO_INSTALLED')
-    def test_record(self, tmpdir, capsys):
+    viewer.toolbar.actions['vispy:reset'].trigger()
 
-        filename = tmpdir.join('test.gif').strpath
+    assert viewer.state.x_min == 1.
+    assert viewer.state.y_min == 1.
+    assert viewer.state.z_min == 1.
 
-        with patch('qtpy.compat.getsavefilename') as fd:
-            fd.return_value = filename, 'gif'
-            self.toolbar.actions['vispy:record'].toggle()
+    assert viewer.state.x_max == 3.
+    assert viewer.state.y_max == 3.
+    assert viewer.state.z_max == 3.
 
-        assert self.toolbar.active_tool.tool_id == 'vispy:record'
+    out, err = capsys.readouterr()
+    assert out.strip() == ""
+    assert err.strip() == ""
 
-        self.toolbar.actions['vispy:record'].toggle()
-        assert self.toolbar.active_tool is None
+    app.close()
 
-        assert os.path.exists(filename)
 
-        out, err = capsys.readouterr()
-        assert out.strip() == ""
-        assert err.strip() == ""
+@pytest.mark.skipif('not IMAGEIO_INSTALLED')
+def test_record(tmpdir, capsys):
+
+    app = GlueApplication()
+    viewer = app.new_data_viewer(VispyScatterViewer)
+
+    filename = tmpdir.join('test.gif').strpath
+
+    with patch('qtpy.compat.getsavefilename') as fd:
+        fd.return_value = filename, 'gif'
+        viewer.toolbar.actions['vispy:record'].toggle()
+
+    assert viewer.toolbar.active_tool.tool_id == 'vispy:record'
+
+    viewer.toolbar.actions['vispy:record'].toggle()
+    assert viewer.toolbar.active_tool is None
+
+    assert os.path.exists(filename)
+
+    out, err = capsys.readouterr()
+    assert out.strip() == ""
+    assert err.strip() == ""
+
+    app.close()

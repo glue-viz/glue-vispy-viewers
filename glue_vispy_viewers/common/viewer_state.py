@@ -72,6 +72,17 @@ class Vispy3DViewerState(State):
         # avoid this altogether and make it more clean.
         self.add_callback('limits_cache', self._update_limits_cache)
 
+    def reset_limits(self):
+        self.x_lim_helper.log = False
+        self.x_lim_helper.percentile = 100.
+        self.x_lim_helper.update_values(force=True)
+        self.y_lim_helper.log = False
+        self.y_lim_helper.percentile = 100.
+        self.y_lim_helper.update_values(force=True)
+        self.z_lim_helper.log = False
+        self.z_lim_helper.percentile = 100.
+        self.z_lim_helper.update_values(force=True)
+
     def _update_limits_cache(self, *args):
         self.x_lim_helper._cache = self.limits_cache
         self.x_lim_helper._update_attribute()

@@ -25,6 +25,7 @@ class ResetTool(Tool):
     def activate(self):
         self.viewer._vispy_widget.view.camera.reset()
         self.viewer._vispy_widget._toggle_perspective()
+        self.viewer.state.reset_limits()
 
 
 @viewer_tool
