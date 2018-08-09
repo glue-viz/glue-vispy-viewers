@@ -219,3 +219,26 @@ def test_add_data_with_incompatible_subsets(tmpdir):
     scatter.add_data(data1)
 
     ga.close()
+
+
+def test_not_all_points_inside_limits(tmpdir):
+
+    # Regression test for a bug that occurred when not all points were inside
+    # the visible limits and the color or size mode is linear.
+
+    data1 = Data(label="Data", x=[1, 2, 3])
+
+    dc = DataCollection([data1])
+    ga = GlueApplication(dc)
+    ga.show()
+
+    scatter = ga.new_data_viewer(VispyScatterViewer)
+    scatter.add_data(data1)
+
+    scatter.state.layers[0].color_mode = 'Linear'
+    scatter.state.layers[0].size_mode = 'Linear'
+
+    scatter.state.x_min = -0.1
+    scatter.state.x_max = 2.1
+
+    ga.close()
