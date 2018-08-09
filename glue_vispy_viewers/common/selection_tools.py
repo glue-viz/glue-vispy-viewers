@@ -55,8 +55,7 @@ class VispyMouseMode(CheckableTool):
 
     def apply_subset_state(self, subset_state):
         cmd = ApplySubsetState(data_collection=self.viewer._data,
-                               subset_state=subset_state,
-                               use_current=False)
+                               subset_state=subset_state)
         self.viewer.session.command_stack.do(cmd)
 
     def set_progress(self, value):
