@@ -1,6 +1,9 @@
 0.11 (unreleased)
 -----------------
 
+- Fixed the home button in the toolbar to reset limits in addition to the
+  viewing angle. [#327]
+
 - Fix a bug that caused crashes when not all scatter points were inside the
   3D scatter viewer box (due e.g. to panning and/or zooming) and color-coding
   of points was used. [#326]
