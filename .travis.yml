@@ -39,7 +39,7 @@ install:
   - if [[ $COMMAND == pytest* ]]; then pip install coveralls; fi
 
 script:
-  - python test.py
+  #- python test.py
   - $COMMAND
 
 after_success:
