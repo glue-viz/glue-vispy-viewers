@@ -13,7 +13,7 @@ qapp = None
 def get_qapp(icon_path=None):
 
     import platform
-    from qtpy import QtWidgets, QtGui
+    from qtpy import QtWidgets, QtGui, QtCore
 
     global qapp
 
