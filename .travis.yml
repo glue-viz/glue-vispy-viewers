@@ -9,24 +9,25 @@ addons:
   apt:
     packages:
     - libgtk2.0-dev
-    - libgl1-mesa-glx
-    - libegl1-mesa
-    - libxrandr2
-    - libxss1
     - libxcursor1
-    - libxcomposite1
-    - libasound2
-    - libxi6
-    - libxtst6
-    - libnss3
-    - libxslt1.1
+    # - libgl1-mesa-glx
+    # - libegl1-mesa
+    # - libxrandr2
+    # - libxss1
+    # - libxcursor1
+    # - libxcomposite1
+    # - libasound2
+    # - libxi6
+    # - libxtst6
+    # - libnss3
+    # - libxslt1.1
 
 env:
   global:
     - COMMAND="pytest glue_vispy_viewers --cov glue_vispy_viewers"
     - SETUP_XVFB=True
     - CONDA_CHANNELS="glueviz"
-    - CONDA_DEPENDENCIES="glueviz mock pyopengl pyqt pytest-cov qtpy scipy"
+    - CONDA_DEPENDENCIES="glueviz mock pyopengl pyqt pytest-cov qtpy scipy nomkl"
     - CONDA_CHANNEL_PRIORITY=True
     - PIP_DEPENDENCIES="pytest-faulthandler pytest-qt objgraph"
   matrix:
@@ -38,7 +39,8 @@ install:
   - if [[ $COMMAND == pytest* ]]; then pip install coveralls; fi
 
 script:
-  - $COMMAND
+  - python test.py
+  # - $COMMAND
 
 after_success:
   - if [[ $COMMAND == pytest* ]]; then coveralls; fi
