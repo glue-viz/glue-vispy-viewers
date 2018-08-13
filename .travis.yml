@@ -40,7 +40,7 @@ install:
 
 script:
   - python test.py
-  # - $COMMAND
+  - $COMMAND
 
 after_success:
   - if [[ $COMMAND == pytest* ]]; then coveralls; fi
