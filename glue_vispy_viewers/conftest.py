@@ -13,7 +13,7 @@ qapp = None
 def get_qapp(icon_path=None):
 
     import platform
-    from qtpy import QtWidgets, QtGui
+    from qtpy import QtWidgets, QtGui, QtCore
 
     global qapp
 
@@ -23,7 +23,7 @@ def get_qapp(icon_path=None):
 
         # Some Qt modules are picky in terms of being imported before the
         # application is set up, so we import them here.
-        # from qtpy import QtWebEngineWidgets  # noqa
+        from qtpy import QtWebEngineWidgets  # noqa
 
         qapp = QtWidgets.QApplication([''])
         qapp.setQuitOnLastWindowClosed(True)
