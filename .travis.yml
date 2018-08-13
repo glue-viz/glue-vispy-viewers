@@ -29,7 +29,7 @@ env:
     - CONDA_CHANNELS="glueviz"
     - CONDA_DEPENDENCIES="glueviz mock pyopengl pyqt pytest-cov qtpy scipy nomkl"
     - CONDA_CHANNEL_PRIORITY=True
-    - PIP_DEPENDENCIES="pytest-faulthandler pytest-qt objgraph"
+    - PIP_DEPENDENCIES="pytest-faulthandler objgraph"
   matrix:
     - PYTHON_VERSION=2.7 CONDA_CHANNELS="glueviz/label/dev"
 
