@@ -250,7 +250,7 @@ class MultiVolumeVisual(VolumeVisual):
         index = self.volumes[label]['index']
         self.shared_program['u_weight_{0:d}'.format(index)] = weight
 
-    def set_data(self, label, data, layer=None):
+    def set_data(self, label, data=None, attribute=None, layer=None):
 
         if 'clim' not in self.volumes[label]:
             raise ValueError("set_clim should be called before set_data")
@@ -259,7 +259,10 @@ class MultiVolumeVisual(VolumeVisual):
         if 'data' in self.volumes[label] and self.volumes[label]['data'] is data:
             return
 
-        self.volumes[label]['data'] = data
+        if data is not None:
+            self.volumes[label]['data'] = data
+        if attribute is not None:
+            self.volumes[label]['attribute'] = attribute
         self.volumes[label]['layer'] = layer
         self._update_scaled_data(label)
 
@@ -271,7 +274,9 @@ class MultiVolumeVisual(VolumeVisual):
 
         index = self.volumes[label]['index']
         clim = self.volumes[label].get('clim', None)
-        data = self.volumes[label]['data']
+        data = self.volumes[label].get('data', None)
+        attribute = self.volumes[label].get('attribute', None)
+        layer = self.volumes[label]['layer']
 
         # With certain graphics cards, sending the data in one chunk to OpenGL
         # causes artifacts in the rendering - see e.g.
@@ -281,13 +286,15 @@ class MultiVolumeVisual(VolumeVisual):
         # avoid excessive memory usage.
 
         # To start off we need to tell the texture about the new shape
-        self.shared_program['u_volumetex_{0:d}'.format(index)].resize(data.shape)
+        self.shared_program['u_volumetex_{0:d}'.format(index)].resize(layer.shape)
 
         # Determine the chunk shape - the value of 128 as the minimum value
         # is arbitrary but appears to work nicely. We can reduce that in future
         # if needed.
-
-        sliced_data = data[self._data_slice]
+        if data is not None:
+            sliced_data = data[self._data_slice]
+        else:
+            sliced_data = layer.get_data(attribute, self._data_slice)
 
         chunk_shape = [min(x, 128, self.resolution) for x in sliced_data.shape]
 
@@ -298,7 +305,6 @@ class MultiVolumeVisual(VolumeVisual):
         # Now loop over chunks
 
         for view in iterate_chunks(sliced_data.shape, chunk_shape=chunk_shape):
-
             chunk = sliced_data[view]
             chunk = chunk.astype(np.float32)
             if clim is not None:

@@ -178,10 +178,13 @@ class VolumeLayerArtist(VispyLayerArtist):
 
         if isinstance(self.layer, Subset):
             data = SubsetArray(self._viewer_state, self)
+            attribute = None
         else:
-            data = self.layer[self.state.attribute]
+            data = None
+            attribute = self.state.attribute
 
-        self._multivol.set_data(self.id, data, layer=self.layer)
+        self._multivol.set_data(self.id, data=data, attribute=attribute,
+                                layer=self.layer)
 
         self._update_subset_mode()
         self._update_visibility()
