@@ -16,7 +16,7 @@ from .layer_state import VolumeLayerState
 from ..common.layer_artist import VispyLayerArtist
 
 
-class SubsetArray(object):
+class DataProxy(object):
 
     def __init__(self, viewer_state, layer_artist):
         self._viewer_state = weakref.ref(viewer_state)
@@ -37,7 +37,10 @@ class SubsetArray(object):
         y_axis = self.viewer_state.y_att.axis
         z_axis = self.viewer_state.y_att.axis
 
-        full_shape = self.layer_artist.layer.data.shape
+        if isinstance(self.layer_artist.layer, Subset):
+            full_shape = self.layer_artist.layer.data.shape
+        else:
+            full_shape = self.layer_artist.layer.shape
 
         return full_shape[z_axis], full_shape[y_axis], full_shape[x_axis]
 
@@ -47,15 +50,21 @@ class SubsetArray(object):
                 self.viewer_state is None):
             return broadcast_to(0, self.shape)[view]
 
-        try:
-            mask = self.layer_artist.layer.to_mask(view=view)
-        except IncompatibleAttribute:
-            self.layer_artist.disable_incompatible_subset()
-            return broadcast_to(0, self.shape)[view]
+        if isinstance(self.layer_artist.layer, Subset):
+            try:
+                subset_state = self.layer_artist.layer.subset_state
+                result = self.layer_artist.layer.data.get_mask(view=view,
+                                                               subset_state=subset_state)
+            except IncompatibleAttribute:
+                self.layer_artist.disable_incompatible_subset()
+                return broadcast_to(0, self.shape)[view]
+            else:
+                self.layer_artist.enable()
         else:
-            self.layer_artist.enable()
+            result = self.layer_artist.layer.get_data(self.layer_artist.state.attribute,
+                                                      view=view)
 
-        return mask
+        return result
 
 
 class VolumeLayerArtist(VispyLayerArtist):
@@ -176,15 +185,9 @@ class VolumeLayerArtist(VispyLayerArtist):
 
     def _update_data(self):
 
-        if isinstance(self.layer, Subset):
-            data = SubsetArray(self._viewer_state, self)
-            attribute = None
-        else:
-            data = None
-            attribute = self.state.attribute
+        data = DataProxy(self._viewer_state, self)
 
-        self._multivol.set_data(self.id, data=data, attribute=attribute,
-                                layer=self.layer)
+        self._multivol.set_data(self.id, data, layer=self.layer)
 
         self._update_subset_mode()
         self._update_visibility()
