@@ -1,4 +1,4 @@
-0.11 (unreleased)
+0.11 (2018-11-14)
 -----------------
 
 - Fixed the home button in the toolbar to reset limits in addition to the
