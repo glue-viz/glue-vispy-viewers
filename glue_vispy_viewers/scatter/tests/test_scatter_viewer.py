@@ -242,3 +242,35 @@ def test_not_all_points_inside_limits(tmpdir):
     scatter.state.x_max = 2.1
 
     ga.close()
+
+
+def test_categorical_color_size(tmpdir):
+
+    # Create fake data
+    data = make_test_data()
+
+    # Add categorical component
+    data['categorical'] = ['a', 'b'] * 50
+
+    dc = DataCollection([data])
+    ga = GlueApplication(dc)
+    ga.show()
+
+    scatter = ga.new_data_viewer(VispyScatterViewer)
+    scatter.add_data(data)
+
+    viewer_state = scatter.state
+
+    viewer_state.x_att = data.id['a']
+    viewer_state.y_att = data.id['b']
+    viewer_state.z_att = data.id['z']
+
+    layer_state = viewer_state.layers[0]
+
+    layer_state.size_mode = 'Linear'
+    layer_state.size_attribute = data.id['categorical']
+
+    layer_state.color_mode = 'Linear'
+    layer_state.cmap_attribute = data.id['categorical']
+
+    ga.close()

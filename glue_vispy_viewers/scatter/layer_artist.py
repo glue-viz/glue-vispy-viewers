@@ -5,6 +5,7 @@ import uuid
 import numpy as np
 
 from glue.core.exceptions import IncompatibleAttribute
+from glue.utils import categorical_ndarray
 
 from .multi_scatter import MultiColorScatter
 from .layer_state import ScatterLayerState
@@ -127,6 +128,8 @@ class ScatterLayerArtist(VispyLayerArtist):
             self._multiscat.set_size(self.id, self.state.size * self.state.size_scaling)
         else:
             data = self.layer[self.state.size_attribute].ravel()
+            if isinstance(data, categorical_ndarray):
+                data = data.codes
             if self.state.size_vmax == self.state.size_vmin:
                 size = np.ones(data.shape) * 10
             else:
@@ -143,6 +146,8 @@ class ScatterLayerArtist(VispyLayerArtist):
             self._multiscat.set_color(self.id, self.state.color)
         else:
             data = self.layer[self.state.cmap_attribute].ravel()
+            if isinstance(data, categorical_ndarray):
+                data = data.codes
             if self.state.cmap_vmax == self.state.cmap_vmin:
                 cmap_data = np.ones(data.shape) * 0.5
             else:
