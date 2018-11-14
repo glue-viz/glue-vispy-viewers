@@ -272,3 +272,5 @@ def test_categorical_color_size(tmpdir):
 
     layer_state.color_mode = 'Linear'
     layer_state.cmap_attribute = data.id['categorical']
+
+    ga.close()
