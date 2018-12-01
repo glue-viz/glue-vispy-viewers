@@ -1,16 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
-import sys
 import uuid
 import weakref
 
 from matplotlib.colors import ColorConverter
 
 from glue.core.data import Subset, Data
-from glue.config import settings
 from glue.core.exceptions import IncompatibleAttribute
 from glue.utils import broadcast_to
-from .volume_visual import MultiVolume
 from .colors import get_translucent_cmap
 from .layer_state import VolumeLayerState
 from ..common.layer_artist import VispyLayerArtist
@@ -56,14 +53,16 @@ class DataProxy(object):
         if isinstance(self.layer_artist.layer, Subset):
             try:
                 subset_state = self.layer_artist.layer.subset_state
-                result = self.layer_artist.layer.data.get_fixed_resolution_buffer(target_data=self.layer_artist._viewer_state.reference_data, bounds=bounds, subset_state=subset_state)
+                result = self.layer_artist.layer.data.get_fixed_resolution_buffer(target_data=self.layer_artist._viewer_state.reference_data,
+                                                                                  bounds=bounds, subset_state=subset_state, cache_id=self.layer_artist.id)
             except IncompatibleAttribute:
                 self.layer_artist.disable_incompatible_subset()
                 return broadcast_to(0, shape)
             else:
                 self.layer_artist.enable()
         else:
-            result = self.layer_artist.layer.get_fixed_resolution_buffer(target_data=self.layer_artist._viewer_state.reference_data, bounds=bounds, target_cid=self.layer_artist.state.attribute)
+            result = self.layer_artist.layer.get_fixed_resolution_buffer(target_data=self.layer_artist._viewer_state.reference_data,
+                                                                         bounds=bounds, target_cid=self.layer_artist.state.attribute, cache_id=self.layer_artist.id)
 
         return result
 
@@ -98,22 +97,6 @@ class VolumeLayerArtist(VispyLayerArtist):
         # unique.
         self.id = str(uuid.uuid4())
 
-        # We need to use MultiVolume instance to store volumes, but we should
-        # only have one per canvas. Therefore, we store the MultiVolume
-        # instance in the vispy viewer instance.
-        if not hasattr(self.vispy_widget, '_multivol'):
-
-            # Set whether we are emulating a 3D texture. This needs to be
-            # enabled as a workaround on Windows otherwise VisPy crashes.
-            emulate_texture = (sys.platform == 'win32' and
-                               sys.version_info[0] < 3)
-
-            multivol = MultiVolume(emulate_texture=emulate_texture,
-                                   bgcolor=settings.BACKGROUND_COLOR)
-
-            self.vispy_widget.add_data_visual(multivol)
-            self.vispy_widget._multivol = multivol
-
         self._multivol = self.vispy_widget._multivol
         self._multivol.allocate(self.id)
 
@@ -121,6 +104,8 @@ class VolumeLayerArtist(VispyLayerArtist):
         self.state.add_global_callback(self._update_volume)
 
         self.reset_cache()
+
+        self._data_proxy = None
 
     def reset_cache(self):
         self._last_viewer_state = {}
@@ -186,9 +171,11 @@ class VolumeLayerArtist(VispyLayerArtist):
 
     def _update_data(self):
 
-        data = DataProxy(self._viewer_state, self)
-
-        self._multivol.set_data(self.id, data, layer=self.layer)
+        if self._data_proxy is None:
+            self._data_proxy = DataProxy(self._viewer_state, self)
+            self._multivol.set_data(self.id, self._data_proxy, layer=self.layer)
+        else:
+            self._multivol._update_scaled_data(self.id)
 
         self._update_subset_mode()
         self._update_visibility()
