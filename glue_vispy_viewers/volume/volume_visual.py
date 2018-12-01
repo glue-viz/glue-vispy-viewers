@@ -85,7 +85,7 @@ class MultiVolumeVisual(VolumeVisual):
         self._n_volume_max = n_volume_max
         self._vol_shape = (resolution, resolution, resolution)
         self._need_vertex_update = True
-        self._data_slice = None
+        self._data_bounds = None
 
         self.resolution = resolution
 
@@ -266,7 +266,7 @@ class MultiVolumeVisual(VolumeVisual):
     def _update_scaled_data(self, label):
 
         # If the data slice hasn't been set yet, we should stop here
-        if self._data_slice is None:
+        if self._data_bounds is None:
             return
 
         index = self.volumes[label]['index']
@@ -287,7 +287,7 @@ class MultiVolumeVisual(VolumeVisual):
         # is arbitrary but appears to work nicely. We can reduce that in future
         # if needed.
 
-        sliced_data = data[self._data_slice]
+        sliced_data = data.get_fixed_resolution_buffer(self._data_bounds)
 
         chunk_shape = [min(x, 128, self.resolution) for x in sliced_data.shape]
 
@@ -340,39 +340,26 @@ class MultiVolumeVisual(VolumeVisual):
                 return index
         raise NoFreeSlotsError("No free slots")
 
-    def _get_step_start(self, vmin, vmax):
-
-        size = vmax - vmin
-        if size < self.resolution:
-            step = 1
-            start = int(vmin)
-        else:
-            step = int(np.ceil(size / self.resolution))
-            start = int(vmin)
-
-        if start < 0:
-            start = 0
-
-        return step, start
-
     def _update_slice_transform(self, x_min, x_max, y_min, y_max, z_min, z_max):
 
-        x_step, x_start = self._get_step_start(x_min, x_max)
-        y_step, y_start = self._get_step_start(y_min, y_max)
-        z_step, z_start = self._get_step_start(z_min, z_max)
+        # TODO: simplify this to get bounds, for FRB
 
-        data_slice = [slice(z_start, z_start + self.resolution * z_step, z_step),
-                      slice(y_start, y_start + self.resolution * y_step, y_step),
-                      slice(x_start, x_start + self.resolution * x_step, x_step)]
+        x_step = (x_max - x_min) / self.resolution
+        y_step = (y_max - y_min) / self.resolution
+        z_step = (z_max - z_min) / self.resolution
 
-        # We should stop at this point if the slice is the same as before
-        if data_slice == getattr(self, '_data_slice', None):
+        data_bounds = [(z_min, z_max, self.resolution),
+                       (y_min, y_max, self.resolution),
+                       (x_min, x_max, self.resolution)]
+
+        # We should stop at this point if the bounds are the same as before
+        if data_bounds == self._data_bounds:
             return
         else:
-            self._data_slice = data_slice
+            self._data_bounds = data_bounds
 
         self.transform.inner.scale = [x_step, y_step, z_step]
-        self.transform.inner.translate = [x_start, y_start, z_start]
+        self.transform.inner.translate = [x_min, y_min, z_min]
 
         # We need to update the data in OpenGL if the slice has changed
         for label in self.volumes:

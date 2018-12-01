@@ -148,15 +148,6 @@ class VispyVolumeViewer(BaseVispyViewer):
                                      buttons=QMessageBox.Ok)
                 return False
         elif data.ndim == 3:
-            if not first_layer_artist:
-                required_shape = self.layers[0].shape
-                if data.shape != required_shape:
-                    QMessageBox.critical(self, "Error",
-                                         "Shape of dataset ({0}) does not agree "
-                                         "with shape of existing datasets in volume "
-                                         "rendering ({1})".format(data.shape, required_shape),
-                                         buttons=QMessageBox.Ok)
-                    return False
             if not self._has_free_volume_layers:
                 self._warn_no_free_volume_layers()
                 return False

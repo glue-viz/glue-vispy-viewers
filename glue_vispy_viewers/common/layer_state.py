@@ -1,20 +1,17 @@
 from __future__ import absolute_import, division, print_function
 
 from glue.external.echo import CallbackProperty, keep_in_sync
-from glue.core.state_objects import State
 from glue.core.message import LayerArtistUpdatedMessage
+from glue.viewers.common.state import LayerState
 
 __all__ = ['VispyLayerState']
 
 
-class VispyLayerState(State):
+class VispyLayerState(LayerState):
     """
     A base state object for all Vispy layers
     """
 
-    layer = CallbackProperty()
-    visible = CallbackProperty(True)
-    zorder = CallbackProperty(0)
     color = CallbackProperty()
     alpha = CallbackProperty()
 

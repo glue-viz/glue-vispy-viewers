@@ -34,4 +34,8 @@ class VispyOptionsWidget(QtWidgets.QWidget):
             self.ui.label_resolution.hide()
             self.ui.combosel_resolution.hide()
 
+        if not hasattr(viewer_state, 'reference_data'):
+            self.ui.label_reference_data.hide()
+            self.ui.combosel_reference_data.hide()
+
         autoconnect_callbacks_to_qt(viewer_state, self.ui, connect_kwargs)

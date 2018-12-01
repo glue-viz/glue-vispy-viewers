@@ -35,7 +35,7 @@ class DataProxy(object):
 
         x_axis = self.viewer_state.x_att.axis
         y_axis = self.viewer_state.y_att.axis
-        z_axis = self.viewer_state.y_att.axis
+        z_axis = self.viewer_state.z_att.axis
 
         if isinstance(self.layer_artist.layer, Subset):
             full_shape = self.layer_artist.layer.data.shape
@@ -44,25 +44,26 @@ class DataProxy(object):
 
         return full_shape[z_axis], full_shape[y_axis], full_shape[x_axis]
 
-    def __getitem__(self, view=None):
+    def get_fixed_resolution_buffer(self, bounds=None):
 
-        if (self.layer_artist is None or
-                self.viewer_state is None):
-            return broadcast_to(0, self.shape)[view]
+        # TODO: need reference data
+
+        shape = [bound[2] for bound in bounds]
+
+        if self.layer_artist is None or self.viewer_state is None:
+            return broadcast_to(0, shape)
 
         if isinstance(self.layer_artist.layer, Subset):
             try:
                 subset_state = self.layer_artist.layer.subset_state
-                result = self.layer_artist.layer.data.get_mask(view=view,
-                                                               subset_state=subset_state)
+                result = self.layer_artist.layer.data.get_fixed_resolution_buffer(target_data=self.layer_artist._viewer_state.reference_data, bounds=bounds, subset_state=subset_state)
             except IncompatibleAttribute:
                 self.layer_artist.disable_incompatible_subset()
-                return broadcast_to(0, self.shape)[view]
+                return broadcast_to(0, shape)
             else:
                 self.layer_artist.enable()
         else:
-            result = self.layer_artist.layer.get_data(self.layer_artist.state.attribute,
-                                                      view=view)
+            result = self.layer_artist.layer.get_fixed_resolution_buffer(target_data=self.layer_artist._viewer_state.reference_data, bounds=bounds, target_cid=self.layer_artist.state.attribute)
 
         return result
 
