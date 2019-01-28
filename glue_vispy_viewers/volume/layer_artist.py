@@ -41,7 +41,7 @@ class DataProxy(object):
 
         return full_shape[z_axis], full_shape[y_axis], full_shape[x_axis]
 
-    def get_fixed_resolution_buffer(self, bounds=None):
+    def compute_fixed_resolution_buffer(self, bounds=None):
 
         # TODO: need reference data
 
@@ -53,7 +53,7 @@ class DataProxy(object):
         if isinstance(self.layer_artist.layer, Subset):
             try:
                 subset_state = self.layer_artist.layer.subset_state
-                result = self.layer_artist.layer.data.get_fixed_resolution_buffer(target_data=self.layer_artist._viewer_state.reference_data,
+                result = self.layer_artist.layer.data.compute_fixed_resolution_buffer(target_data=self.layer_artist._viewer_state.reference_data,
                                                                                   bounds=bounds, subset_state=subset_state, cache_id=self.layer_artist.id)
             except IncompatibleAttribute:
                 self.layer_artist.disable_incompatible_subset()
@@ -61,7 +61,7 @@ class DataProxy(object):
             else:
                 self.layer_artist.enable()
         else:
-            result = self.layer_artist.layer.get_fixed_resolution_buffer(target_data=self.layer_artist._viewer_state.reference_data,
+            result = self.layer_artist.layer.compute_fixed_resolution_buffer(target_data=self.layer_artist._viewer_state.reference_data,
                                                                          bounds=bounds, target_cid=self.layer_artist.state.attribute, cache_id=self.layer_artist.id)
 
         return result

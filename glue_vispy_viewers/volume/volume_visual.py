@@ -287,7 +287,7 @@ class MultiVolumeVisual(VolumeVisual):
         # is arbitrary but appears to work nicely. We can reduce that in future
         # if needed.
 
-        sliced_data = data.get_fixed_resolution_buffer(self._data_bounds)
+        sliced_data = data.compute_fixed_resolution_buffer(self._data_bounds)
 
         chunk_shape = [min(x, 128, self.resolution) for x in sliced_data.shape]
 
