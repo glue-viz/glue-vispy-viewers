@@ -53,8 +53,10 @@ class DataProxy(object):
         if isinstance(self.layer_artist.layer, Subset):
             try:
                 subset_state = self.layer_artist.layer.subset_state
-                result = self.layer_artist.layer.data.compute_fixed_resolution_buffer(target_data=self.layer_artist._viewer_state.reference_data,
-                                                                                  bounds=bounds, subset_state=subset_state, cache_id=self.layer_artist.id)
+                result = self.layer_artist.layer.data.compute_fixed_resolution_buffer(
+                    target_data=self.layer_artist._viewer_state.reference_data,
+                    bounds=bounds, subset_state=subset_state,
+                    cache_id=self.layer_artist.id)
             except IncompatibleAttribute:
                 self.layer_artist.disable_incompatible_subset()
                 return broadcast_to(0, shape)
@@ -62,8 +64,10 @@ class DataProxy(object):
                 self.layer_artist.enable()
         else:
             try:
-                result = self.layer_artist.layer.compute_fixed_resolution_buffer(target_data=self.layer_artist._viewer_state.reference_data,
-                                                                                 bounds=bounds, target_cid=self.layer_artist.state.attribute, cache_id=self.layer_artist.id)
+                result = self.layer_artist.layer.compute_fixed_resolution_buffer(
+                    target_data=self.layer_artist._viewer_state.reference_data,
+                    bounds=bounds, target_cid=self.layer_artist.state.attribute,
+                    cache_id=self.layer_artist.id)
             except IncompatibleAttribute:
                 self.layer_artist.disable('Layer data is not fully linked to reference data')
                 return broadcast_to(0, shape)
@@ -143,7 +147,7 @@ class VolumeLayerArtist(VispyLayerArtist):
         """
         # We don't want to deallocate here because this can be called if we
         # disable the layer due to incompatible attributes
-        self._multivol.set_data(self.id, broadcast_to(0, self._multivol._vol_shape))
+        self._multivol.disable(self.id)
 
     def remove(self):
         """
