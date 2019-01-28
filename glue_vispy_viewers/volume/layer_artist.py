@@ -61,8 +61,14 @@ class DataProxy(object):
             else:
                 self.layer_artist.enable()
         else:
-            result = self.layer_artist.layer.compute_fixed_resolution_buffer(target_data=self.layer_artist._viewer_state.reference_data,
-                                                                         bounds=bounds, target_cid=self.layer_artist.state.attribute, cache_id=self.layer_artist.id)
+            try:
+                result = self.layer_artist.layer.compute_fixed_resolution_buffer(target_data=self.layer_artist._viewer_state.reference_data,
+                                                                                 bounds=bounds, target_cid=self.layer_artist.state.attribute, cache_id=self.layer_artist.id)
+            except IncompatibleAttribute:
+                self.layer_artist.disable('Layer data is not fully linked to reference data')
+                return broadcast_to(0, shape)
+            else:
+                self.layer_artist.enable()
 
         return result
 
