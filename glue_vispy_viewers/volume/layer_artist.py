@@ -44,8 +44,6 @@ class DataProxy(object):
 
     def compute_fixed_resolution_buffer(self, bounds=None):
 
-        # TODO: need reference data
-
         shape = [bound[2] for bound in bounds]
 
         if self.layer_artist is None or self.viewer_state is None:
