@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import sys
 import numpy as np
 
 from glue.config import settings
@@ -11,6 +12,7 @@ from ..common.vispy_data_viewer import BaseVispyViewer
 from .layer_artist import VolumeLayerArtist
 from .layer_style_widget import VolumeLayerStyleWidget
 from .viewer_state import Vispy3DVolumeViewerState
+from .volume_visual import MultiVolume
 
 from ..scatter.layer_artist import ScatterLayerArtist
 from ..scatter.layer_style_widget import ScatterLayerStyleWidget
@@ -62,7 +64,23 @@ class VispyVolumeViewer(BaseVispyViewer):
         self._downsample_timer.setSingleShot(True)
         self._downsample_timer.timeout.connect(self.mouse_release)
 
+        # We need to use MultiVolume instance to store volumes, but we should
+        # only have one per canvas. Therefore, we store the MultiVolume
+        # instance in the vispy viewer instance.
+
+        # Set whether we are emulating a 3D texture. This needs to be
+        # enabled as a workaround on Windows otherwise VisPy crashes.
+        emulate_texture = (sys.platform == 'win32' and
+                           sys.version_info[0] < 3)
+
+        multivol = MultiVolume(emulate_texture=emulate_texture,
+                               bgcolor=settings.BACKGROUND_COLOR)
+
+        self._vispy_widget.add_data_visual(multivol)
+        self._vispy_widget._multivol = multivol
+
         self.state.add_callback('resolution', self._update_resolution)
+        self._update_resolution()
 
         # We do this here in addition to in the volume viewer itself as for
         # some situations e.g. reloading from session files, a clip_data event
@@ -148,15 +166,6 @@ class VispyVolumeViewer(BaseVispyViewer):
                                      buttons=QMessageBox.Ok)
                 return False
         elif data.ndim == 3:
-            if not first_layer_artist:
-                required_shape = self.layers[0].shape
-                if data.shape != required_shape:
-                    QMessageBox.critical(self, "Error",
-                                         "Shape of dataset ({0}) does not agree "
-                                         "with shape of existing datasets in volume "
-                                         "rendering ({1})".format(data.shape, required_shape),
-                                         buttons=QMessageBox.Ok)
-                    return False
             if not self._has_free_volume_layers:
                 self._warn_no_free_volume_layers()
                 return False

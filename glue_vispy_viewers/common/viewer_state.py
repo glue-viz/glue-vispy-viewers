@@ -4,12 +4,13 @@ import numpy as np
 
 from glue.external.echo import (CallbackProperty, SelectionCallbackProperty,
                                 delay_callback, ListCallbackProperty)
-from glue.core.state_objects import State, StateAttributeLimitsHelper
+from glue.core.state_objects import StateAttributeLimitsHelper
+from glue.viewers.common.state import ViewerState
 
 __all__ = ['Vispy3DViewerState']
 
 
-class Vispy3DViewerState(State):
+class Vispy3DViewerState(ViewerState):
     """
     A common state object for all vispy 3D viewers
     """

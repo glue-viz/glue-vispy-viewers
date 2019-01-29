@@ -1,7 +1,9 @@
 0.12 (unreleased)
 -----------------
 
-- No changes yet.
+- Make it possible to view datasets that are linked but not on the same
+  pixel grid together. Now also requires datasets to always be linked
+  in order to be shown in the same viewer. [#335]
 
 0.11 (2018-11-14)
 -----------------
