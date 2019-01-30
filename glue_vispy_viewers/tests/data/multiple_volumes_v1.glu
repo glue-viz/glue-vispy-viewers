@@ -389,7 +389,7 @@
         "limits_cache": "dict",
         "native_aspect": false,
         "perspective_view": false,
-        "resolution": 256,
+        "resolution": 64,
         "visible_axes": true,
         "x_att": "Pixel Axis 2 [x]",
         "x_max": 3.717543108943588,
