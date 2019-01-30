@@ -4,9 +4,12 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import pytest
+from mock import patch
 
 import numpy as np
 from numpy.testing import assert_equal
+
+from qtpy.QtWidgets import QMessageBox
 
 from glue.core.state import GlueUnSerializer
 
@@ -150,5 +153,34 @@ def test_scatter_volume_selection():
 
     assert_equal(dc[0].subsets[0].to_mask(), expected_array)
     assert_equal(dc[1].subsets[0].to_mask(), expected_table)
+
+    ga.close()
+
+
+@pytest.mark.parametrize('protocol', [1, 2])
+def test_multiple_volumes(protocol):
+
+    # Before glue-vispy-viewers 0.12, volumes could be shown together without
+    # being linked, so when loading old session files we should suggest to
+    # auto link.
+
+    filename = os.path.join(DATA, 'multiple_volumes_v{0}.glu'.format(protocol))
+
+    with open(filename, 'r') as f:
+        session = f.read()
+
+    with patch('glue_vispy_viewers.volume.volume_viewer.QMessageBox.question') as question:
+        question.return_value = QMessageBox.Yes
+        state = GlueUnSerializer.loads(session)
+        ga = state.object('__main__')
+
+    volume = ga.viewers[0][0]
+
+    assert volume.layers[0].enabled
+    assert volume.layers[1].enabled
+    assert volume.layers[2].enabled
+    assert volume.layers[3].enabled
+    assert volume.layers[4].enabled
+    assert volume.layers[5].enabled
 
     ga.close()
