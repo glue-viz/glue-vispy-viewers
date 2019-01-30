@@ -15,6 +15,7 @@ from ..common.vispy_data_viewer import BaseVispyViewer
 from .layer_artist import VolumeLayerArtist
 from .layer_style_widget import VolumeLayerStyleWidget
 from .viewer_state import Vispy3DVolumeViewerState
+from .layer_state import VolumeLayerState
 from .volume_visual import MultiVolume
 
 from ..scatter.layer_artist import ScatterLayerArtist
@@ -246,7 +247,8 @@ class VispyVolumeViewer(BaseVispyViewer):
 
             # Find all data objects in layers (not subsets)
             layer_data = [layer.layer for layer in viewer.state.layers
-                          if isinstance(layer.layer, BaseData)]
+                          if (isinstance(layer, VolumeLayerState) and
+                              isinstance(layer.layer, BaseData))]
 
             if len(layer_data) > 1:
                 reference = layer_data[0]

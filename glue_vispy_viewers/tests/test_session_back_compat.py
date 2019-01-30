@@ -9,9 +9,9 @@ from mock import patch
 import numpy as np
 from numpy.testing import assert_equal
 
-from qtpy.QtWidgets import QMessageBox
-
 from glue.core.state import GlueUnSerializer
+
+from ..volume.volume_viewer import QMessageBox
 
 DATA = os.path.join(os.path.dirname(__file__), 'data')
 
@@ -24,9 +24,10 @@ def test_scatter_volume(protocol):
     with open(filename, 'r') as f:
         session = f.read()
 
-    state = GlueUnSerializer.loads(session)
-
-    ga = state.object('__main__')
+    with patch.object(QMessageBox, 'question') as question:
+        question.return_value = QMessageBox.Yes
+        state = GlueUnSerializer.loads(session)
+        ga = state.object('__main__')
 
     dc = ga.session.data_collection
 
@@ -121,9 +122,10 @@ def test_scatter_volume_selection():
     with open(filename, 'r') as f:
         session = f.read()
 
-    state = GlueUnSerializer.loads(session)
-
-    ga = state.object('__main__')
+    with patch.object(QMessageBox, 'question') as question:
+        question.return_value = QMessageBox.Yes
+        state = GlueUnSerializer.loads(session)
+        ga = state.object('__main__')
 
     dc = ga.session.data_collection
 
@@ -169,7 +171,7 @@ def test_multiple_volumes(protocol):
     with open(filename, 'r') as f:
         session = f.read()
 
-    with patch('glue_vispy_viewers.volume.volume_viewer.QMessageBox.question') as question:
+    with patch.object(QMessageBox, 'question') as question:
         question.return_value = QMessageBox.Yes
         state = GlueUnSerializer.loads(session)
         ga = state.object('__main__')
