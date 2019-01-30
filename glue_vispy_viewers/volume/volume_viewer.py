@@ -8,6 +8,9 @@ from glue.config import settings
 from qtpy.QtWidgets import QMessageBox
 from qtpy.QtCore import QTimer
 
+from glue.core.data import BaseData
+from glue.core.link_helpers import LinkSame
+
 from ..common.vispy_data_viewer import BaseVispyViewer
 from .layer_artist import VolumeLayerArtist
 from .layer_style_widget import VolumeLayerStyleWidget
@@ -233,3 +236,46 @@ class VispyVolumeViewer(BaseVispyViewer):
     def _toggle_clip(self, *args):
         if hasattr(self._vispy_widget, '_multivol'):
             self._update_clip()
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+
+        viewer = super(VispyVolumeViewer, cls).__setgluestate__(rec, context)
+
+        if rec.get('_protocol', 0) < 2:
+
+            # Find all data objects in layers (not subsets)
+            layer_data = [layer.layer for layer in viewer.state.layers if isinstance(layer.layer, BaseData)]
+
+            if len(layer_data) > 1:
+                reference = layer_data[0]
+                for data in layer_data[1:]:
+                    if data not in reference.pixel_aligned_data:
+                        break
+                else:
+                    return viewer
+
+            buttons = QMessageBox.Yes | QMessageBox.No
+            message = ("The 3D volume rendering viewer now requires datasets to "
+                       "be linked in order to be shown at the same time. Are you "
+                       "happy for glue to automatically link your datasets by "
+                       "pixel coordinates?")
+
+            answer = QMessageBox.question(None, "Link data?", message,
+                                          buttons=buttons,
+                                          defaultButton=QMessageBox.Yes)
+
+            if answer == QMessageBox.Yes:
+                for data in layer_data[1:]:
+                    if data not in reference.pixel_aligned_data:
+                        for i in range(3):
+                            link = LinkSame(reference.pixel_component_ids[i],
+                                            data.pixel_component_ids[i])
+                            viewer.session.data_collection.add_link(link)
+
+        return viewer
+
+    def __gluestate__(self, context):
+        state = super(VispyVolumeViewer, self).__gluestate__(context)
+        state['_protocol'] = 2
+        return state
