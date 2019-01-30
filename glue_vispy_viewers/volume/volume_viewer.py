@@ -245,7 +245,8 @@ class VispyVolumeViewer(BaseVispyViewer):
         if rec.get('_protocol', 0) < 2:
 
             # Find all data objects in layers (not subsets)
-            layer_data = [layer.layer for layer in viewer.state.layers if isinstance(layer.layer, BaseData)]
+            layer_data = [layer.layer for layer in viewer.state.layers
+                          if isinstance(layer.layer, BaseData)]
 
             if len(layer_data) > 1:
                 reference = layer_data[0]
