@@ -274,3 +274,43 @@ def test_categorical_color_size(tmpdir):
     layer_state.cmap_attribute = data.id['categorical']
 
     ga.close()
+
+
+def test_layer_visibility_after_session(tmpdir):
+
+    # Regression test for a bug that caused layers to be incorrectly visible
+    # after saving and loading a session file.
+
+    # Create fake data
+    data = make_test_data()
+
+    # Create fake session
+
+    dc = DataCollection([data])
+    ga = GlueApplication(dc)
+    ga.show()
+
+    scatter = ga.new_data_viewer(VispyScatterViewer)
+    scatter.add_data(data)
+
+    viewer_state = scatter.state
+    layer_state = viewer_state.layers[0]
+    layer_state.visible = False
+
+    session_file = tmpdir.join('test_layer_visibility.glu').strpath
+    ga.save_session(session_file)
+    ga.close()
+
+    ga2 = GlueApplication.restore_session(session_file)
+    ga2.show()
+
+    scatter_r = ga2.viewers[0][0]
+    viewer_state = scatter_r.state
+    layer_state = viewer_state.layers[0]
+    assert not layer_state.visible
+
+    # Make sure the multiscat layer is also not visible (this was where the bug was)
+    layer_artist = scatter_r.layers[0]
+    assert not layer_artist._multiscat.layers[layer_artist.id]['visible']
+
+    ga2.close()
