@@ -189,10 +189,9 @@ class VolumeLayerArtist(VispyLayerArtist):
             self._multivol._update_scaled_data(self.id)
 
         self._update_subset_mode()
-        self._update_visibility()
 
     def _update_visibility(self):
-        if self.visible:
+        if self.state.visible:
             self._multivol.enable(self.id)
         else:
             self._multivol.disable(self.id)
@@ -242,6 +241,9 @@ class VolumeLayerArtist(VispyLayerArtist):
 
         if force or 'subset_mode' in changed:
             self._update_subset_mode()
+
+        if force or 'visible' in changed:
+            self._update_visibility()
 
     def update(self):
         self._update_volume(force=True)

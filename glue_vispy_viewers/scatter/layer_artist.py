@@ -16,6 +16,7 @@ SIZE_PROPERTIES = set(['size_mode', 'size_attribute', 'size_vmin', 'size_vmax',
                        'size_scaling', 'size'])
 ALPHA_PROPERTIES = set(['alpha'])
 DATA_PROPERTIES = set(['layer', 'x_att', 'y_att', 'z_att'])
+VISIBLE_PROPERTIES = set(['visible'])
 
 
 class ScatterLayerArtist(VispyLayerArtist):
@@ -79,10 +80,6 @@ class ScatterLayerArtist(VispyLayerArtist):
     @property
     def visual(self):
         return self._multiscat
-
-    def _update_visibility(self):
-        self._multiscat.set_visible(self.id, self.visible)
-        self.redraw()
 
     def get_zorder(self):
         return self.zorder
@@ -195,6 +192,10 @@ class ScatterLayerArtist(VispyLayerArtist):
 
         self.redraw()
 
+    def _update_visibility(self):
+        self._multiscat.set_visible(self.id, self.visible)
+        self.redraw()
+
     @property
     def default_limits(self):
         if self._marker_data is None:
@@ -250,6 +251,9 @@ class ScatterLayerArtist(VispyLayerArtist):
 
         if force or len(changed & ALPHA_PROPERTIES) > 0:
             self._update_alpha()
+
+        if force or len(changed & VISIBLE_PROPERTIES) > 0:
+            self._update_visibility()
 
     def update(self):
         with self._multiscat.delay_update():
