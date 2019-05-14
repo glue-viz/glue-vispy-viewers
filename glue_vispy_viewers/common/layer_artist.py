@@ -21,7 +21,6 @@ class VispyLayerArtist(LayerArtistBase):
     @visible.setter
     def visible(self, value):
         self.state.visible = value
-        self._update_visibility()
 
     def __gluestate__(self, context):
         return dict(state=context.id(self.state))
