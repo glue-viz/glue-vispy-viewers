@@ -5,6 +5,8 @@
   pixel grid together. Now also requires datasets to always be linked
   in order to be shown in the same viewer. [#335, #337]
 
+- Fix compatibility with the latest developer version of glue. [#339]
+
 0.11 (2018-11-14)
 -----------------
 
