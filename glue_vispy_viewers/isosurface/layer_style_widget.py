@@ -24,7 +24,7 @@ class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
 
         connect_kwargs = {'value_alpha': dict(value_range=(0., 1.)),
                           'value_step': dict(value_range=(1, 10))}
-        autoconnect_callbacks_to_qt(self.state, self.ui, connect_kwargs)
+        self._connections = autoconnect_callbacks_to_qt(self.state, self.ui, connect_kwargs)
 
 
 # if __name__ == "__main__":

@@ -31,7 +31,7 @@ class VolumeLayerStyleWidget(QtWidgets.QWidget):
 
         # autoconnect needs to come after setting up the component IDs
         connect_kwargs = {'value_alpha': dict(value_range=(0., 1.))}
-        autoconnect_callbacks_to_qt(self.state, self.ui, connect_kwargs)
+        self._connections = autoconnect_callbacks_to_qt(self.state, self.ui, connect_kwargs)
 
         # Set up radio buttons for subset mode selection if this is a subset
         if isinstance(self.layer, Subset):
