@@ -5,7 +5,7 @@
   pixel grid together. Now also requires datasets to always be linked
   in order to be shown in the same viewer. [#335, #337]
 
-- Fix compatibility with the latest developer version of glue. [#339]
+- Fix compatibility with the latest developer version of glue. [#339, #342]
 
 - Fix bug with hidden layers in the 3D scatter viewer becoming visible after
   saving and loading session file. [#340]

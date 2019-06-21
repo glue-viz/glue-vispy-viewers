@@ -3,7 +3,12 @@ from __future__ import absolute_import, division, print_function
 import os
 
 from qtpy import QtGui, compat
-from glue.viewers.common.qt.tool import Tool, CheckableTool
+
+try:
+    from glue.viewers.common.tool import Tool, CheckableTool
+except ImportError:  # glue-core <0.15
+    from glue.viewers.common.qt.tool import Tool, CheckableTool
+
 from glue.config import viewer_tool
 
 from ..extern.vispy import app, io
