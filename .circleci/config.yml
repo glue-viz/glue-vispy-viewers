@@ -34,7 +34,7 @@ default_steps: &steps
           source dev/bin/activate
           pip install pip --upgrade
           pip install git+https://github.com/glue-viz/glue@4eced4b3 --progress-bar off
-          pip install .[test] pytest-faulthandler --progress-bar off
+          pip install .[test] pytest-faulthandler==1.5.0 --progress-bar off
           pip freeze
           pytest glue_vispy_viewers
 

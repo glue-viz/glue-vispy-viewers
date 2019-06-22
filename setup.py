@@ -49,7 +49,7 @@ install_requires = ['numpy',
 test_requires = ['pytest>=3.5,<3.7',
                  'pytest-cov',
                  'pytest-qt',
-                 'pytest-faulthandler',
+                 'pytest-faulthandler==1.5.0',
                  'objgraph',
                  'mock']
 
