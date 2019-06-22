@@ -116,6 +116,6 @@ workflows:
       - py35_pyqt510
       - py36_pyqt511
       - py36_pyqt512
-      - py36_pyside511
-      - py36_pyside512
+      # - py36_pyside511
+      # - py36_pyside512
       - tox
