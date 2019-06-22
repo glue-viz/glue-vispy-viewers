@@ -33,7 +33,7 @@ default_steps: &steps
           virtualenv dev --system-site-packages
           source dev/bin/activate
           pip install pip --upgrade
-          pip install https://github.com/glue-viz/glue/archive/master.zip --progress-bar off
+          pip install git+https://github.com/glue-viz/glue.git --progress-bar off
           pip install .[test] --progress-bar off
           pip freeze
           pytest glue_vispy_viewers
