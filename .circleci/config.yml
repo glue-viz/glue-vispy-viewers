@@ -34,7 +34,7 @@ default_steps: &steps
           source dev/bin/activate
           pip install pip --upgrade
           pip install https://github.com/glue-viz/glue/archive/master.zip --progress-bar off
-          pip install .[test] pytest-faulthandler --progress-bar off
+          pip install .[test] --progress-bar off
           pip freeze
           pytest glue_vispy_viewers
 
@@ -42,37 +42,37 @@ jobs:
 
   py27_pyqt510:
     docker:
-      - image: glueviz/py27-pyqt510:1.1
+      - image: glueviz/py27-pyqt510:1.2
     <<: *steps
 
   py35_pyqt56:
     docker:
-      - image: glueviz/py35-pyqt56:1.1
+      - image: glueviz/py35-pyqt56:1.2
     <<: *steps
 
   py35_pyqt57:
     docker:
-      - image: glueviz/py35-pyqt57:1.1
+      - image: glueviz/py35-pyqt57:1.2
     <<: *steps
 
   py35_pyqt58:
     docker:
-      - image: glueviz/py35-pyqt58:1.1
+      - image: glueviz/py35-pyqt58:1.2
     <<: *steps
 
   py35_pyqt59:
     docker:
-      - image: glueviz/py35-pyqt59:1.1
+      - image: glueviz/py35-pyqt59:1.2
     <<: *steps
 
   py35_pyqt510:
     docker:
-      - image: glueviz/py35-pyqt510:1.1
+      - image: glueviz/py35-pyqt510:1.2
     <<: *steps
 
   py36_pyqt511:
     docker:
-      - image: glueviz/py36-pyqt511:1.1
+      - image: glueviz/py36-pyqt511:1.2
     <<: *steps
 
 

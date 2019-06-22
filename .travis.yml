@@ -12,7 +12,7 @@ env:
     - CONDA_CHANNELS="glueviz"
     - CONDA_DEPENDENCIES="glueviz mock pyopengl pyqt pytest-cov qtpy scipy"
     - CONDA_CHANNEL_PRIORITY=True
-    - PIP_DEPENDENCIES="pytest-faulthandler pytest-qt objgraph"
+    - PIP_DEPENDENCIES="pytest-qt objgraph"
   matrix:
     - PYTHON_VERSION=3.5 CONDA_DEPENDENCIES="" PIP_DEPENDENCIES="flake8" COMMAND="flake8 --max-line-length=100 --exclude=extern glue_vispy_viewers"
     # - PYTHON_VERSION=2.7
