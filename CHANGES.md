@@ -1,4 +1,4 @@
-0.12 (unreleased)
+0.12 (2019-06-23)
 -----------------
 
 - Make it possible to view datasets that are linked but not on the same
