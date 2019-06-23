@@ -8,7 +8,9 @@ import numpy as np
 
 from glue.core import Data
 from glue.config import viewer_tool
-from glue.viewers.common.qt.tool import CheckableTool
+
+from glue.viewers.common.tool import CheckableTool
+
 from glue.core.command import ApplySubsetState
 
 from glue.core.roi import RectangularROI, CircularROI, PolygonalROI, Projected3dROI

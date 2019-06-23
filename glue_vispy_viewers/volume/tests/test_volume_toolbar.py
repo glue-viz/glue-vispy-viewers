@@ -1,17 +1,11 @@
-
-from distutils.version import LooseVersion
-
 import numpy as np
 
-import glue
 from glue.core import Data
 from glue.core.component import Component
 from glue.core.tests.util import simple_session
 
 from ..volume_viewer import VispyVolumeViewer
 from ...extern.vispy.app import MouseEvent
-
-GLUE_LT_08 = LooseVersion(glue.__version__) < LooseVersion('0.8')
 
 
 def make_test_data():

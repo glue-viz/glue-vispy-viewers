@@ -24,10 +24,11 @@ else:
 def test_save(tmpdir, capsys):
 
     app = GlueApplication()
+    app.show()
+
     viewer = app.new_data_viewer(VispyScatterViewer)
     data = Data(x=[1, 2, 3], label='Data')
     app.data_collection.append(data)
-    app.show()
     viewer.add_data(data)
 
     filename = tmpdir.join('test.png').strpath

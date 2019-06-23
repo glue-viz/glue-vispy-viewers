@@ -1,8 +1,5 @@
-from distutils.version import LooseVersion
-
 import numpy as np
 
-import glue
 from glue.core import DataCollection, Data
 from glue.app.qt.application import GlueApplication
 from glue.core.component import Component
@@ -10,8 +7,6 @@ from glue.core.link_helpers import LinkSame
 from glue.core.fixed_resolution_buffer import PIXEL_CACHE, ARRAY_CACHE
 
 from ..volume_viewer import VispyVolumeViewer
-
-GLUE_LT_08 = LooseVersion(glue.__version__) < LooseVersion('0.8')
 
 
 def teardown_function(function):
