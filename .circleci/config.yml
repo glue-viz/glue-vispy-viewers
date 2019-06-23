@@ -18,15 +18,15 @@ default_steps: &steps
           pip install pip --upgrade
           pip install flake8 --progress-bar off
           flake8 --max-line-length=100 --exclude=extern glue_vispy_viewers
-    # - run:
-    #     name: Test against stable glue
-    #     command: |
-    #       virtualenv stable --system-site-packages
-    #       source stable/bin/activate
-    #       pip install pip --upgrade
-    #       pip install .[test] --progress-bar off
-    #       pip freeze
-    #       pytest glue_vispy_viewers
+    - run:
+        name: Test against stable glue
+        command: |
+          virtualenv stable --system-site-packages
+          source stable/bin/activate
+          pip install pip --upgrade
+          pip install .[test] --progress-bar off
+          pip freeze
+          pytest glue_vispy_viewers
     - run:
         name: Test against developer version of glue
         command: |

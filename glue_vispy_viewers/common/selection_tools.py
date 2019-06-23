@@ -9,10 +9,7 @@ import numpy as np
 from glue.core import Data
 from glue.config import viewer_tool
 
-try:
-    from glue.viewers.common.tool import CheckableTool
-except ImportError:  # glue-core <0.15
-    from glue.viewers.common.qt.tool import CheckableTool
+from glue.viewers.common.tool import CheckableTool
 
 from glue.core.command import ApplySubsetState
 

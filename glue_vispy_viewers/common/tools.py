@@ -4,10 +4,7 @@ import os
 
 from qtpy import QtGui, compat
 
-try:
-    from glue.viewers.common.tool import Tool, CheckableTool
-except ImportError:  # glue-core <0.15
-    from glue.viewers.common.qt.tool import Tool, CheckableTool
+from glue.viewers.common.tool import Tool, CheckableTool
 
 from glue.config import viewer_tool
 
