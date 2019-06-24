@@ -1,4 +1,4 @@
-0.12.2 (unreleased)
+0.12.2 (2019-06-24)
 -------------------
 
 - Fixed __version__ variable which was set to 'undefined'. [#344]
