@@ -1,7 +1,9 @@
-from .version import __version__  # noqa
+from pkg_resources import get_distribution, DistributionNotFound
 
-BACKGROUND_COLOR = 'black'
-FOREGROUND_COLOR = 'white'
+try:
+    __version__ = get_distribution(__name__).version
+except DistributionNotFound:
+    __version__ = 'undefined'
 
 try:
     import OpenGL  # noqa
