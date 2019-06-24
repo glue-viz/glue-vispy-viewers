@@ -3,6 +3,13 @@
 
 - No changes yet.
 
+0.12.2 (unreleased)
+-------------------
+
+- Fixed __version__ variable which was set to 'undefined'. [#344]
+
+- Fixed configuration for tox testing tool. [#344]
+
 0.12.1 (2019-06-23)
 -------------------
 
