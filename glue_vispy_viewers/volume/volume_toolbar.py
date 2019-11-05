@@ -14,7 +14,7 @@ from glue.core.subset import FloodFillSubsetState
 from glue.config import viewer_tool
 
 from ..common.toolbar import VispyMouseMode
-from ..extern.vispy.scene import Markers
+from vispy.scene import Markers
 from .layer_artist import VolumeLayerArtist
 
 

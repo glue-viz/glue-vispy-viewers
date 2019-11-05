@@ -45,11 +45,11 @@ import numpy as np
 from glue.external import six
 from glue.utils import iterate_chunks
 
-from ..extern.vispy.gloo import Texture3D, TextureEmulated3D, VertexBuffer, IndexBuffer
-from ..extern.vispy.visuals import VolumeVisual, Visual
-from ..extern.vispy.visuals.shaders import Function
-from ..extern.vispy.color import get_colormap, Color
-from ..extern.vispy.scene.visuals import create_visual_node
+from vispy.gloo import Texture3D, TextureEmulated3D, VertexBuffer, IndexBuffer
+from vispy.visuals import VolumeVisual, Visual
+from vispy.visuals.shaders import Function
+from vispy.color import get_colormap, Color
+from vispy.scene.visuals import create_visual_node
 
 from .shaders import get_frag_shader, VERT_SHADER
 

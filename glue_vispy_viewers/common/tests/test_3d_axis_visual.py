@@ -1,4 +1,4 @@
-from ...extern.vispy import scene
+from vispy import scene
 from ..axes import AxesVisual3D
 
 

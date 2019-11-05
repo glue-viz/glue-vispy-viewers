@@ -5,7 +5,7 @@ from glue.core.component import Component
 from glue.core.tests.util import simple_session
 
 from ..volume_viewer import VispyVolumeViewer
-from ...extern.vispy.app import MouseEvent
+from vispy.app import MouseEvent
 
 
 def make_test_data():

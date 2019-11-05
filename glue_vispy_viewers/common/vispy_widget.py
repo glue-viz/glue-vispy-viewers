@@ -4,7 +4,7 @@ import sys
 
 import numpy as np
 
-from ..extern.vispy import scene
+from vispy import scene
 from .axes import AxesVisual3D
 from ..utils import NestedSTTransform
 

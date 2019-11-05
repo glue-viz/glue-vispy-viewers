@@ -37,13 +37,13 @@
 # file in this repository.
 
 
-from ..extern.vispy.gloo import Texture3D, TextureEmulated3D, VertexBuffer, IndexBuffer
-from ..extern.vispy.visuals.volume import VolumeVisual, Visual
-from ..extern.vispy.scene.visuals import create_visual_node
+from vispy.gloo import Texture3D, TextureEmulated3D, VertexBuffer, IndexBuffer
+from vispy.visuals.volume import VolumeVisual, Visual
+from vispy.scene.visuals import create_visual_node
 
 import numpy as np
-from ..extern.vispy.visuals.volume import VERT_SHADER, frag_dict
-from ..extern.vispy.color import get_colormap
+from vispy.visuals.volume import VERT_SHADER, frag_dict
+from vispy.color import get_colormap
 
 # TODO: find a way to add a uniform variable instead of rewriting the whole shader code
 

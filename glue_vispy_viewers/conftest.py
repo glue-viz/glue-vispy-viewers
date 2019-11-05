@@ -5,7 +5,7 @@ from __future__ import absolute_import, division, print_function
 import os
 import sys
 if sys.platform.startswith('win'):
-    import glue_vispy_viewers.extern.vispy.gloo.gl  # noqa
+    import vispy.gloo.gl  # noqa
 
 from glue.utils.qt import get_qapp  # noqa
 

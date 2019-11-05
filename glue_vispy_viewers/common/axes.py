@@ -1,8 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
-from ..extern.vispy import scene
-from ..extern.vispy.geometry import create_cube
-from ..extern.vispy.visuals.transforms import STTransform, ChainTransform
+from vispy import scene
+from vispy.geometry import create_cube
+from vispy.visuals.transforms import STTransform, ChainTransform
 
 
 class AxesVisual3D(object):

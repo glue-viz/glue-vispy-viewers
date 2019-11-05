@@ -9,7 +9,7 @@ from glue.core.exceptions import IncompatibleAttribute
 from .layer_state import IsosurfaceLayerState
 from ..common.layer_artist import VispyLayerArtist
 
-from ..extern.vispy.color import BaseColormap
+from vispy.color import BaseColormap
 
 from .multi_iso_visual import MultiIsoVisual
 
