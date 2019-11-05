@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 
 from vispy.visuals.transforms import (ChainTransform, NullTransform,
-                                                                MatrixTransform, STTransform)
+                                      MatrixTransform, STTransform)
 from vispy.visuals.transforms.base_transform import InverseTransform
 from vispy.visuals.transforms._util import arg_to_vec4
 
