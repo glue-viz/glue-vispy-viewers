@@ -36,14 +36,7 @@ def pytest_unconfigure(config):
 VIEWER_CLASSES = ['VispyScatterViewer', 'VispyIsosurfaceViewer', 'VispyVolumeViewer']
 
 
-def pytest_runtest_teardown(item, nextitem):
-
-    # The following is a check to make sure that once the viewer and
-    # application have been closed, there are no leftover references to data
-    # viewers or application. This was introduced because there were
-    # previously circular references that meant that viewer instances were
-    # not properly garbage collected, which in turn meant they still reacted
-    # in some cases to events.
+def pytest_runtest_setup(item):
 
     if OBJGRAPH_INSTALLED:
 
@@ -53,6 +46,26 @@ def pytest_runtest_teardown(item, nextitem):
 
             obj = objgraph.by_type(viewer_cls)
 
-            if len(obj) > 0:
+            item._viewer_count = len(obj)
+
+
+def pytest_runtest_teardown(item, nextitem):
+
+    # The following is a check to make sure that once the viewer and
+    # application have been closed, there are no leftover references to data
+    # viewers or application. This was introduced because there were
+    # previously circular references that meant that viewer instances were
+    # not properly garbage collected, which in turn meant they still reacted
+    # in some cases to events.
+
+    if OBJGRAPH_INSTALLED and hasattr(item, '_viewer_count'):
+
+        app.processEvents()
+
+        for viewer_cls in VIEWER_CLASSES:
+
+            obj = objgraph.by_type(viewer_cls)
+
+            if len(obj) > item._viewer_count:
                 objgraph.show_backrefs(objgraph.by_type(viewer_cls))
                 raise ValueError("No net viewers should be created in tests")
