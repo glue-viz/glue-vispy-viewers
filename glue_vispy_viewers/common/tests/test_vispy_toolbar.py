@@ -21,10 +21,10 @@ except ImportError:
 else:
     IMAGEIO_INSTALLED = True
 
-IS_LINUX = sys.platform == 'linux'
+PY_LT_37 = sys.version_info[:2] < (3, 7)
 
 
-@pytest.mark.skipif('not IS_LINUX')
+@pytest.mark.skipif('PY_LT_37')
 def test_save(tmpdir, capsys):
 
     app = GlueApplication()
