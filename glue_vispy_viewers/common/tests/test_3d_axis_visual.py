@@ -12,3 +12,4 @@ def test_3d_axis_visual():
     AxesVisual3D(view=view, axis_color='red', transform=scene_transform)
 
     canvas.native.show()
+    canvas.native.close()
