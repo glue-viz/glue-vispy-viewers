@@ -19,18 +19,9 @@ jobs:
 
     envs:
 
-    - linux: pep8
-      libraries: {}
-      coverage: 'false'
 
-    - linux: py36-test
     - linux: py37-test
-    - linux: py37-test-dev
 
-    # - macos: py36-test
     - macos: py37-test
-    - macos: py37-test-dev
 
-    - windows: py36-test
     - windows: py37-test
-    - windows: py37-test-dev
