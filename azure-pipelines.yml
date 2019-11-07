@@ -27,7 +27,7 @@ jobs:
     - linux: py37-test
     - linux: py37-test-dev
 
-    - macos: py36-test
+    # - macos: py36-test
     - macos: py37-test
     - macos: py37-test-dev
 
