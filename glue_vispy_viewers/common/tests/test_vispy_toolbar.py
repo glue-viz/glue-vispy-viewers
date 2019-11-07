@@ -3,6 +3,7 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import sys
 import pytest
 from mock import patch
 
@@ -20,7 +21,10 @@ except ImportError:
 else:
     IMAGEIO_INSTALLED = True
 
+IS_LINUX = sys.platform == 'linux'
 
+
+@pytest.mark.skipif('not IS_LINUX')
 def test_save(tmpdir, capsys):
 
     app = GlueApplication()
