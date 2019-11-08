@@ -6,6 +6,7 @@ from vispy.visuals.transforms import STTransform, ChainTransform
 
 from glue_vispy_viewers.compat.axis import Axis
 
+
 class AxesVisual3D(object):
 
     def __init__(self, view=None, transform=None, **kwargs):
