@@ -1,27 +1,32 @@
-resources:
-  repositories:
-  - repository: OpenAstronomy
-    type: github
-    endpoint: glue-viz
-    name: OpenAstronomy/azure-pipelines-templates
-    ref: master
 
 jobs:
 
-- template: run-tox-env.yml@OpenAstronomy
-  parameters:
+  - job: MacOSX
+    pool:
+      vmImage: macOS 10.13
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: 3.7
+    - bash: pip install vispy
+    - bash: python test.py
 
-    xvfb: true
-    coverage: codecov
-    libraries:
-      apt:
-        - libxkbcommon-x11-0
+  - job: Windows
+    pool:
+      vmImage: vs2017-win2016
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: 3.7
+    - bash: pip install vispy
+    - bash: python test.py
 
-    envs:
-
-
-    - linux: py37-test
-
-    - macos: py37-test
-
-    - windows: py37-test
+  - job: Linux
+    pool:
+      vmImage: Ubuntu 16.04
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: 3.7
+    - bash: pip install vispy
+    - bash: python test.py

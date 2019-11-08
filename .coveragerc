@@ -1,3 +1,0 @@
-[report]
-
-omit = glue_vispy_viewers/extern/*

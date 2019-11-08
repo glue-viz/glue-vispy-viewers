@@ -1,4 +1,0 @@
-recursive-include *.ui
-include LICENSE
-include README.rst
-include CHANGES.md
