@@ -6,7 +6,7 @@ import numpy as np
 
 from matplotlib.colors import ColorConverter
 
-from ..extern.vispy import scene
+from vispy import scene
 
 from glue.external import six
 
@@ -163,7 +163,7 @@ class MultiColorScatter(scene.visuals.Markers):
 
 if __name__ == "__main__":  # pragma: nocover
 
-    from ..extern.vispy import app, scene
+    from vispy import app, scene
 
     canvas = scene.SceneCanvas(keys='interactive')
     view = canvas.central_widget.add_view()

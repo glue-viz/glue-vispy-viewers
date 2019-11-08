@@ -8,7 +8,7 @@ from glue.external.echo import delay_callback
 from qtpy import QtWidgets
 from qtpy.QtCore import Qt
 
-from ..extern.vispy.util import keys
+from vispy.util import keys
 
 from .vispy_widget import VispyWidgetHelper
 from .viewer_options import VispyOptionsWidget

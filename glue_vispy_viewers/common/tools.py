@@ -8,7 +8,7 @@ from glue.viewers.common.tool import Tool, CheckableTool
 
 from glue.config import viewer_tool
 
-from ..extern.vispy import app, io
+from vispy import app, io
 
 
 RECORD_START_ICON = os.path.join(os.path.dirname(__file__), 'glue_record_start.png')

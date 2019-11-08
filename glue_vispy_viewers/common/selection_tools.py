@@ -17,7 +17,7 @@ from glue.core.roi import RectangularROI, CircularROI, PolygonalROI, Projected3d
 from glue.core.subset import RoiSubsetState3d
 
 from ..utils import as_matrix_transform
-from ..extern.vispy.scene import Rectangle, Line, Ellipse
+from vispy.scene import Rectangle, Line, Ellipse
 
 # Backward-compatibility for reading files
 from .compat import MultiMaskSubsetState  # noqa

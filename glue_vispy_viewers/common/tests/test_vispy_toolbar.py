@@ -3,6 +3,7 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import sys
 import pytest
 from mock import patch
 
@@ -20,7 +21,11 @@ except ImportError:
 else:
     IMAGEIO_INSTALLED = True
 
+IS_WIN = sys.platform == 'win32'
+PY_LT_37 = sys.version_info[:2] < (3, 7)
 
+
+@pytest.mark.skipif('PY_LT_37 or IS_WIN')
 def test_save(tmpdir, capsys):
 
     app = GlueApplication()

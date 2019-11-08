@@ -1,8 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
-from ..extern.vispy import scene
-from ..extern.vispy.geometry import create_cube
-from ..extern.vispy.visuals.transforms import STTransform, ChainTransform
+from vispy import scene
+from vispy.geometry import create_cube
+from vispy.visuals.transforms import STTransform, ChainTransform
+
+from glue_vispy_viewers.compat.axis import Axis
 
 
 class AxesVisual3D(object):
@@ -21,20 +23,20 @@ class AxesVisual3D(object):
 
         self.axis.transform = transform
 
-        self.xax = scene.visuals.Axis(pos=[[-1.0, 0], [1.0, 0]],
-                                      tick_direction=(0, -1),
-                                      parent=self.view.scene, axis_label='X',
-                                      anchors=['center', 'middle'], **kwargs)
+        self.xax = Axis(pos=[[-1.0, 0], [1.0, 0]],
+                        tick_direction=(0, -1),
+                        parent=self.view.scene, axis_label='X',
+                        anchors=['center', 'middle'], **kwargs)
 
-        self.yax = scene.visuals.Axis(pos=[[0, -1.0], [0, 1.0]],
-                                      tick_direction=(-1, 0),
-                                      parent=self.view.scene, axis_label='Y',
-                                      anchors=['center', 'middle'], **kwargs)
+        self.yax = Axis(pos=[[0, -1.0], [0, 1.0]],
+                        tick_direction=(-1, 0),
+                        parent=self.view.scene, axis_label='Y',
+                        anchors=['center', 'middle'], **kwargs)
 
-        self.zax = scene.visuals.Axis(pos=[[0, -1.0], [0, 1.0]],
-                                      tick_direction=(-1, 0),
-                                      parent=self.view.scene, axis_label='Z',
-                                      anchors=['center', 'middle'], **kwargs)
+        self.zax = Axis(pos=[[0, -1.0], [0, 1.0]],
+                        tick_direction=(-1, 0),
+                        parent=self.view.scene, axis_label='Z',
+                        anchors=['center', 'middle'], **kwargs)
 
         self.xtr = STTransform()
         self.xtr = self.xtr.as_matrix()

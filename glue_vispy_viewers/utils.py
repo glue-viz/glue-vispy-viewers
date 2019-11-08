@@ -2,10 +2,10 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from glue_vispy_viewers.extern.vispy.visuals.transforms import (ChainTransform, NullTransform,
-                                                                MatrixTransform, STTransform)
-from glue_vispy_viewers.extern.vispy.visuals.transforms.base_transform import InverseTransform
-from glue_vispy_viewers.extern.vispy.visuals.transforms._util import arg_to_vec4
+from vispy.visuals.transforms import (ChainTransform, NullTransform,
+                                      MatrixTransform, STTransform)
+from vispy.visuals.transforms.base_transform import InverseTransform
+from vispy.visuals.transforms._util import arg_to_vec4
 
 
 def as_matrix_transform(transform):

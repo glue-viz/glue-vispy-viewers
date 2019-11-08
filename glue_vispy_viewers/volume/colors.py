@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from ..extern.vispy.color import BaseColormap
+from vispy.color import BaseColormap
 
 
 def get_translucent_cmap(r, g, b):

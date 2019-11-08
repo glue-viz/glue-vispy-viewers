@@ -1,6 +1,6 @@
 import numpy as np
 
-from ...extern.vispy import scene
+from vispy import scene
 
 from ..vispy_widget import VispyWidgetHelper
 from ..viewer_state import Vispy3DViewerState
