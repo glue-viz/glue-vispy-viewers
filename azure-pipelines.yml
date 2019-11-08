@@ -18,6 +18,7 @@ jobs:
     - task: UsePythonVersion@0
       inputs:
         versionSpec: 3.7
+    - powershell: .install-opengl.ps1
     - bash: pip install vispy PyQt5
     - bash: python test.py
 
