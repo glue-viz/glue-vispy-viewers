@@ -1,7 +1,9 @@
 0.13 (unreleased)
 -----------------
 
-- No changes yet.
+- Drop support for Python < 3.6. [#351]
+
+- No longer bundle vispy, and instead depend on the latest stable release. [#351]
 
 0.12.2 (unreleased)
 -------------------
