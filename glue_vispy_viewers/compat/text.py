@@ -639,7 +639,7 @@ class TextVisual(Visual):
 
     def _update_font(self):
         self._font = self._font_manager.get_font(self._face, self._bold, self._italic)
-
+        self.update()
 
 class SDFRendererCPU(object):
     """Render SDFs using the CPU."""
