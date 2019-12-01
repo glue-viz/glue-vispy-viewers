@@ -122,7 +122,7 @@ class AxisVisual(CompoundVisual):
 
         self._text = TextVisual(font_size=tick_font_size, color=text_color)
         self._axis_label = TextVisual(font_size=axis_font_size,
-                                      color=text_color)
+                                      color=text_color, bold=True)
         CompoundVisual.__init__(self, [self._line, self._text, self._ticks,
                                        self._axis_label])
         if pos is not None:

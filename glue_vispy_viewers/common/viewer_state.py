@@ -30,6 +30,22 @@ class Vispy3DViewerState(ViewerState):
     z_max = CallbackProperty(1)
     z_stretch = CallbackProperty(1.)
 
+    x_axislabel = CallbackProperty('', docstring='Label for the x-axis')
+    y_axislabel = CallbackProperty('', docstring='Label for the y-axis')
+    z_axislabel = CallbackProperty('', docstring='Label for the z-axis')
+
+    x_axislabel_size = CallbackProperty(10, docstring='Size of the x-axis label')
+    y_axislabel_size = CallbackProperty(10, docstring='Size of the y-axis label')
+    z_axislabel_size = CallbackProperty(10, docstring='Size of the z-axis label')
+
+    x_axislabel_bold = CallbackProperty(False, docstring='Weight of the x-axis label')
+    y_axislabel_bold = CallbackProperty(False, docstring='Weight of the y-axis label')
+    z_axislabel_bold = CallbackProperty(False, docstring='Weight of the z-axis label')
+
+    x_ticklabel_size = CallbackProperty(8, docstring='Size of the x-axis tick labels')
+    y_ticklabel_size = CallbackProperty(8, docstring='Size of the y-axis tick labels')
+    z_ticklabel_size = CallbackProperty(8, docstring='Size of the z-axis tick labels')
+
     visible_axes = CallbackProperty(True)
     perspective_view = CallbackProperty(False)
     clip_data = CallbackProperty(True)
@@ -72,6 +88,19 @@ class Vispy3DViewerState(ViewerState):
         # changed then we shouldn't always call this. It'd also be nice to
         # avoid this altogether and make it more clean.
         self.add_callback('limits_cache', self._update_limits_cache)
+
+        self.add_callback('x_att', self._on_x_att_change)
+        self.add_callback('y_att', self._on_y_att_change)
+        self.add_callback('z_att', self._on_z_att_change)
+
+    def _on_x_att_change(self, *args):
+        self.x_axislabel = '' if self.x_att is None else self.x_att.label
+
+    def _on_y_att_change(self, *args):
+        self.y_axislabel = '' if self.y_att is None else self.y_att.label
+
+    def _on_z_att_change(self, *args):
+        self.z_axislabel = '' if self.z_att is None else self.z_att.label
 
     def reset_limits(self):
         self.x_lim_helper.log = False
