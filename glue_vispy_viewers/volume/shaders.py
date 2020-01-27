@@ -35,8 +35,6 @@
 # This modified version is released under the BSD license given in the LICENSE
 # file in this repository.
 
-from __future__ import absolute_import, division, print_function
-
 try:
     from textwrap import indent
 except ImportError:  # Python < 3.5

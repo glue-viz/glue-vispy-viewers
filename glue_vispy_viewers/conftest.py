@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 # Import vispy.gloo first when on Windows otherwise there are strange
 # side-effects when PyQt4.Qt is imported first (which it now is in QtPy)
 import os

@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from glue.core import Subset
 from glue.external.echo import (CallbackProperty, SelectionCallbackProperty,
                                 delay_callback)

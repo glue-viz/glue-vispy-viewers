@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from glue.config import colormaps
 from glue.external.echo import CallbackProperty, SelectionCallbackProperty, delay_callback
 from glue.core.state_objects import StateAttributeLimitsHelper

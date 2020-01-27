@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 """
 This is for 3D selection in Glue 3d volume rendering viewer, with shape selection and advanced
 selection (not available now).

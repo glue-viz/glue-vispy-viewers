@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 """
 This is for 3D selection in Glue 3d scatter plot viewer.
 """

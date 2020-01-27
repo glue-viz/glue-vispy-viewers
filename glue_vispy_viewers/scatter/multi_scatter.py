@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from contextlib import contextmanager
 
 import numpy as np
@@ -7,8 +5,6 @@ import numpy as np
 from matplotlib.colors import ColorConverter
 
 from vispy import scene
-
-from glue.external import six
 
 
 class MultiColorScatter(scene.visuals.Markers):
@@ -69,7 +65,7 @@ class MultiColorScatter(scene.visuals.Markers):
         self._update()
 
     def set_color(self, label, rgb):
-        if isinstance(rgb, six.string_types):
+        if isinstance(rgb, str):
             rgb = ColorConverter().to_rgb(rgb)
         self.layers[label]['color'] = np.asarray(rgb)
         self._update()
