@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from vispy import scene
 from vispy.geometry import create_cube
 from vispy.visuals.transforms import STTransform, ChainTransform

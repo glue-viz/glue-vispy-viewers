@@ -36,13 +36,10 @@
 # This modified version is released under the BSD license given in the LICENSE
 # file in this repository.
 
-from __future__ import absolute_import, division, print_function
-
 from distutils.version import LooseVersion
 from collections import defaultdict
 
 import numpy as np
-from glue.external import six
 from glue.utils import iterate_chunks
 
 from vispy.gloo import Texture3D, TextureEmulated3D, VertexBuffer, IndexBuffer
@@ -232,7 +229,7 @@ class MultiVolumeVisual(VolumeVisual):
         self.shared_program['u_shape'] = self._vol_shape[::-1]
 
     def set_cmap(self, label, cmap):
-        if isinstance(cmap, six.string_types):
+        if isinstance(cmap, str):
             cmap = get_colormap(cmap)
         self.volumes[label]['cmap'] = cmap
         index = self.volumes[label]['index']

@@ -2,7 +2,6 @@ import uuid
 
 import numpy as np
 
-from glue.external import six
 from glue.core import Data
 from glue.core.subset import SubsetState
 from glue.core.exceptions import IncompatibleAttribute
@@ -39,9 +38,9 @@ def update_viewer_state(rec, context):
             for prop in sorted(properties, key=state.update_priority, reverse=True):
                 value = layer.pop(prop)
                 value = context.object(value)
-                if isinstance(value, six.string_types) and value == 'fixed':
+                if isinstance(value, str) and value == 'fixed':
                     value = 'Fixed'
-                if isinstance(value, six.string_types) and value == 'linear':
+                if isinstance(value, str) and value == 'linear':
                     value = 'Linear'
                 setattr(state, prop, value)
             context.register_object(state_id, state)

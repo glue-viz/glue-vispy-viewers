@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import numpy as np
 
 from vispy.visuals.transforms import (ChainTransform, NullTransform,
