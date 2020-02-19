@@ -19,7 +19,7 @@ jobs:
 
     envs:
 
-    - linux: pep8
+    - linux: codestyle
       libraries: {}
       coverage: 'false'
 
