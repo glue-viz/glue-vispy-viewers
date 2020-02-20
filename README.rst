@@ -20,24 +20,18 @@ Installing
 ----------
 
 If you use the Anaconda Python Distribution, you can install this plugin
-with:
-
-::
+with::
 
     conda install -c glueviz glue-vispy-viewers
 
-To install the latest stable version of the plugin, you can do:
-
-::
+To install the latest stable version of the plugin, you can do::
 
     pip install glue-vispy-viewers
 
 or you can install the latest developer version from the git repository
-using:
+using::
 
-::
-
-    pip install https://github.com/glue-viz/glue-3d-viewer/archive/master.zip
+    pip install git+https://github.com/glue-viz/glue-vispy-viewers.git
 
 This will auto-register the plugin with Glue. Now simply start up Glue,
 open a data cube, drag it onto the main canvas, then select '3D viewer'.
@@ -45,9 +39,7 @@ open a data cube, drag it onto the main canvas, then select '3D viewer'.
 Testing
 -------
 
-To run the tests, do:
-
-::
+To run the tests, do::
 
     py.test glue_vispy_viewers
 
@@ -59,9 +51,7 @@ Using the isosurface viewer
 
 The isosurface viewer is currently still unstable - to enable it, put
 the following in a file called ``config.py`` file in your current
-working directory:
-
-::
+working directory::
 
     from glue_vispy_viewers.isosurface import setup as setup_isosurface
     setup_isosurface()
