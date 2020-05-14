@@ -5,6 +5,9 @@
 
 - No longer bundle vispy, and instead depend on the latest stable release. [#351]
 
+- Make it possible to modify the axis labels, as well as the font size of
+  the axis and tick labels, and the weight of the axis labels. [#352]
+
 0.12.2 (unreleased)
 -------------------
 

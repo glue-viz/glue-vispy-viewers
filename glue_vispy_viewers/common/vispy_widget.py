@@ -14,7 +14,6 @@ rgb = ColorConverter().to_rgb
 
 LIMITS_PROPS = [coord + attribute for coord in 'xyz' for attribute in ['_min', '_max', '_stretch']]
 
-
 class VispyWidgetHelper(object):
 
     def __init__(self, parent=None, viewer_state=None):
@@ -86,15 +85,28 @@ class VispyWidgetHelper(object):
         if force or 'perspective_view' in props:
             self._toggle_perspective()
 
-        if force or any(key in props for key in ('x_att', 'y_att', 'z_att')):
-            self._update_attributes()
-
         if force or any(key in props for key in ('x_stretch', 'y_stretch',
                                                  'z_stretch', 'native_aspect')):
             self._update_stretch()
 
         if force or any(p in props for p in LIMITS_PROPS) or 'native_aspect' in props:
             self._update_limits()
+
+        for axis_name in 'xyz':
+
+            axis = getattr(self.axis, axis_name + 'ax')
+
+            if force or axis_name + '_axislabel' in props:
+                axis.axis_label = getattr(self.viewer_state, axis_name + '_axislabel')
+
+            if force or axis_name + '_axislabel_size' in props:
+                axis.axis_font_size = getattr(self.viewer_state, axis_name + '_axislabel_size')
+
+            if force or axis_name + '_axislabel_bold' in props:
+                axis._axis_label.bold = getattr(self.viewer_state, axis_name + '_axislabel_bold')
+
+            if force or axis_name + '_ticklabel_size' in props:
+                axis.tick_font_size = getattr(self.viewer_state, axis_name + '_ticklabel_size')
 
         self.canvas.update()
 
@@ -113,14 +125,6 @@ class VispyWidgetHelper(object):
             self.view.camera.fov = 0
             self.axis.tick_font_size = 6
             self.axis.axis_font_size = 8
-
-    def _update_attributes(self):
-        if self.viewer_state.x_att is not None:
-            self.axis.xlabel = self.viewer_state.x_att.label
-        if self.viewer_state.y_att is not None:
-            self.axis.ylabel = self.viewer_state.y_att.label
-        if self.viewer_state.z_att is not None:
-            self.axis.zlabel = self.viewer_state.z_att.label
 
     def _update_stretch(self):
         self.scene_transform.scale = (self.viewer_state.x_stretch * self.viewer_state.aspect[0],
