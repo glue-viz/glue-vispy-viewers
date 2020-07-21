@@ -26,6 +26,13 @@ class ScatterLayerState(VispyLayerState):
     cmap_vmax = CallbackProperty()
     cmap = CallbackProperty()
 
+    xerr_visible = CallbackProperty(False)
+    xerr_attribute = SelectionCallbackProperty()
+    yerr_visible = CallbackProperty(False)
+    yerr_attribute = SelectionCallbackProperty()
+    zerr_visible = CallbackProperty(False)
+    zerr_attribute = SelectionCallbackProperty()
+
     size_limits_cache = CallbackProperty({})
     cmap_limits_cache = CallbackProperty({})
 
@@ -43,6 +50,9 @@ class ScatterLayerState(VispyLayerState):
 
         self.size_att_helper = ComponentIDComboHelper(self, 'size_attribute')
         self.cmap_att_helper = ComponentIDComboHelper(self, 'cmap_attribute')
+        self.xerr_att_helper = ComponentIDComboHelper(self, 'xerr_attribute')
+        self.yerr_att_helper = ComponentIDComboHelper(self, 'yerr_attribute')
+        self.zerr_att_helper = ComponentIDComboHelper(self, 'zerr_attribute')
 
         self.size_lim_helper = StateAttributeLimitsHelper(self, attribute='size_attribute',
                                                           lower='size_vmin', upper='size_vmax',
@@ -63,13 +73,14 @@ class ScatterLayerState(VispyLayerState):
     def _on_layer_change(self, layer=None):
 
         with delay_callback(self, 'cmap_vmin', 'cmap_vmax', 'size_vmin', 'size_vmax'):
-
+            helpers = [self.size_att_helper, self.cmap_att_helper, self.xerr_att_helper,
+                       self.yerr_att_helper, self.zerr_att_helper]
             if self.layer is None:
-                self.cmap_att_helper.set_multiple_data([])
-                self.size_att_helper.set_multiple_data([])
+                for helper in helpers:
+                    helper.set_multiple_data([])
             else:
-                self.cmap_att_helper.set_multiple_data([self.layer])
-                self.size_att_helper.set_multiple_data([self.layer])
+                for helper in helpers:
+                    helper.set_multiple_data([self.layer])
 
     def update_priority(self, name):
         return 0 if name.endswith(('vmin', 'vmax')) else 1

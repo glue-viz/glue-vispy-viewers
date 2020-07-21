@@ -31,9 +31,14 @@ class ScatterLayerStyleWidget(QtWidgets.QWidget):
         # Set initial values
         self._update_size_mode()
         self._update_color_mode()
+        self._update_error_vis()
 
         self.state.add_callback('color_mode', self._update_color_mode)
         self.state.add_callback('size_mode', self._update_size_mode)
+        self.state.add_callback('xerr_visible', self._update_error_vis)
+        self.state.add_callback('yerr_visible', self._update_error_vis)
+        self.state.add_callback('zerr_visible', self._update_error_vis)
+
 
     def _update_size_mode(self, *args):
 
@@ -60,3 +65,8 @@ class ScatterLayerStyleWidget(QtWidgets.QWidget):
             self.ui.spacer_color_label.hide()
             self.ui.color_row_2.show()
             self.ui.color_row_3.show()
+
+    def _update_error_vis(self, *args):
+        self.ui.combosel_xerr_attribute.setEnabled(self.state.xerr_visible)
+        self.ui.combosel_yerr_attribute.setEnabled(self.state.yerr_visible)
+        self.ui.combosel_zerr_attribute.setEnabled(self.state.zerr_visible)

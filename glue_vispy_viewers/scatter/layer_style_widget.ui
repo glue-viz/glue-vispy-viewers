@@ -446,7 +446,7 @@
         <string/>
        </property>
       </widget>
-      <widget class="QComboBox" name="combosel_xerr_att">
+      <widget class="QComboBox" name="combosel_xerr_attribute">
        <property name="geometry">
         <rect>
          <x>85</x>
@@ -478,7 +478,7 @@
         <string>show y</string>
        </property>
       </widget>
-      <widget class="QComboBox" name="combosel_yerr_att">
+      <widget class="QComboBox" name="combosel_yerr_attribute">
        <property name="geometry">
         <rect>
          <x>85</x>
@@ -510,7 +510,7 @@
         <string>show z</string>
        </property>
       </widget>
-      <widget class="QComboBox" name="combosel_zerr_att">
+      <widget class="QComboBox" name="combosel_zerr_attribute">
        <property name="geometry">
         <rect>
          <x>85</x>
