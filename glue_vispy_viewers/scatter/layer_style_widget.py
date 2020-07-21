@@ -25,19 +25,22 @@ class ScatterLayerStyleWidget(QtWidgets.QWidget):
         self.layer = layer_artist.layer
 
         connect_kwargs = {'value_alpha': dict(value_range=(0., 1.)),
-                          'value_size_scaling': dict(value_range=(0.1, 10), log=True)}
+                          'value_size_scaling': dict(value_range=(0.1, 10), log=True),
+                          'vector_scaling': dict(value_range=(0.1, 10), log=True)}
         self._connections = autoconnect_callbacks_to_qt(self.state, self.ui, connect_kwargs)
 
         # Set initial values
         self._update_size_mode()
         self._update_color_mode()
         self._update_error_vis()
+        self._update_vector_vis()
 
         self.state.add_callback('color_mode', self._update_color_mode)
         self.state.add_callback('size_mode', self._update_size_mode)
         self.state.add_callback('xerr_visible', self._update_error_vis)
         self.state.add_callback('yerr_visible', self._update_error_vis)
         self.state.add_callback('zerr_visible', self._update_error_vis)
+        self.state.add_callback('vector_visible', self._update_vector_vis)
 
 
     def _update_size_mode(self, *args):
@@ -70,3 +73,12 @@ class ScatterLayerStyleWidget(QtWidgets.QWidget):
         self.ui.combosel_xerr_attribute.setEnabled(self.state.xerr_visible)
         self.ui.combosel_yerr_attribute.setEnabled(self.state.yerr_visible)
         self.ui.combosel_zerr_attribute.setEnabled(self.state.zerr_visible)
+
+    def _update_vector_vis(self, *arg):
+        visible = self.state.vector_visible
+        self.ui.combosel_vx_attribute.setEnabled(visible)
+        self.ui.combosel_vy_attribute.setEnabled(visible)
+        self.ui.combosel_vz_attribute.setEnabled(visible)
+        self.ui.value_vector_scaling.setEnabled(visible)
+        self.ui.combosel_vector_origin.setEnabled(visible)
+        self.ui.bool_vector_arrowhead.setEnabled(visible)

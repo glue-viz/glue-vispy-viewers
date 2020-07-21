@@ -29,7 +29,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tab_widget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="tab_2">
       <attribute name="title">
@@ -541,7 +541,7 @@
       <attribute name="title">
        <string>Vectors</string>
       </attribute>
-      <widget class="QComboBox" name="combosel_vx_att">
+      <widget class="QComboBox" name="combosel_vx_attribute">
        <property name="geometry">
         <rect>
          <x>45</x>
@@ -576,7 +576,7 @@
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
-      <widget class="QComboBox" name="combosel_vy_att">
+      <widget class="QComboBox" name="combosel_vy_attribute">
        <property name="geometry">
         <rect>
          <x>45</x>
@@ -592,7 +592,7 @@
       <widget class="QCheckBox" name="bool_vector_visible">
        <property name="geometry">
         <rect>
-         <x>45</x>
+         <x>50</x>
          <y>20</y>
          <width>245</width>
          <height>13</height>
@@ -690,7 +690,7 @@
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
-      <widget class="QComboBox" name="combosel_vz_att">
+      <widget class="QComboBox" name="combosel_vz_attribute">
        <property name="geometry">
         <rect>
          <x>45</x>
@@ -728,8 +728,8 @@
       <widget class="QCheckBox" name="bool_vector_arrowhead">
        <property name="geometry">
         <rect>
-         <x>45</x>
-         <y>165</y>
+         <x>170</x>
+         <y>18</y>
          <width>205</width>
          <height>17</height>
         </rect>
@@ -754,8 +754,8 @@
       <widget class="QLabel" name="label_12">
        <property name="geometry">
         <rect>
-         <x>2</x>
-         <y>165</y>
+         <x>120</x>
+         <y>18</y>
          <width>39</width>
          <height>17</height>
         </rect>

@@ -1,6 +1,5 @@
 from glue.config import colormaps
-from glue.external.echo import (CallbackProperty, SelectionCallbackProperty,
-                                keep_in_sync, delay_callback)
+from echo import CallbackProperty, SelectionCallbackProperty, keep_in_sync, delay_callback
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.core.data_combo_helper import ComponentIDComboHelper
 from ..common.layer_state import VispyLayerState
@@ -33,6 +32,14 @@ class ScatterLayerState(VispyLayerState):
     zerr_visible = CallbackProperty(False)
     zerr_attribute = SelectionCallbackProperty()
 
+    vector_visible = CallbackProperty(False)
+    vx_attribute = SelectionCallbackProperty()
+    vy_attribute = SelectionCallbackProperty()
+    vz_attribute = SelectionCallbackProperty()
+    vector_scaling = CallbackProperty(1)
+    vector_origin = SelectionCallbackProperty(default_index=1)
+    vector_arrowhead = CallbackProperty()
+
     size_limits_cache = CallbackProperty({})
     cmap_limits_cache = CallbackProperty({})
 
@@ -54,6 +61,10 @@ class ScatterLayerState(VispyLayerState):
         self.yerr_att_helper = ComponentIDComboHelper(self, 'yerr_attribute')
         self.zerr_att_helper = ComponentIDComboHelper(self, 'zerr_attribute')
 
+        self.vx_att_helper = ComponentIDComboHelper(self, 'vx_attribute')
+        self.vy_att_helper = ComponentIDComboHelper(self, 'vy_attribute')
+        self.vz_att_helper = ComponentIDComboHelper(self, 'vz_attribute')
+
         self.size_lim_helper = StateAttributeLimitsHelper(self, attribute='size_attribute',
                                                           lower='size_vmin', upper='size_vmax',
                                                           cache=self.size_limits_cache)
@@ -61,6 +72,12 @@ class ScatterLayerState(VispyLayerState):
         self.cmap_lim_helper = StateAttributeLimitsHelper(self, attribute='cmap_attribute',
                                                           lower='cmap_vmin', upper='cmap_vmax',
                                                           cache=self.cmap_limits_cache)
+
+        vector_origin_display = {'tail': 'Tail of vector',
+                                 'middle': 'Middle of vector',
+                                 'tip': 'Tip of vector'}
+        ScatterLayerState.vector_origin.set_choices(self, ['tail', 'middle', 'tip'])
+        ScatterLayerState.vector_origin.set_display_func(self, vector_origin_display.get)
 
         self.add_callback('layer', self._on_layer_change)
         if layer is not None:
@@ -73,8 +90,9 @@ class ScatterLayerState(VispyLayerState):
     def _on_layer_change(self, layer=None):
 
         with delay_callback(self, 'cmap_vmin', 'cmap_vmax', 'size_vmin', 'size_vmax'):
-            helpers = [self.size_att_helper, self.cmap_att_helper, self.xerr_att_helper,
-                       self.yerr_att_helper, self.zerr_att_helper]
+            helpers = [self.size_att_helper, self.cmap_att_helper,
+                       self.xerr_att_helper, self.yerr_att_helper, self.zerr_att_helper,
+                       self.vx_att_helper, self.vy_att_helper, self.vz_att_helper]
             if self.layer is None:
                 for helper in helpers:
                     helper.set_multiple_data([])
