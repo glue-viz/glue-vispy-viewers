@@ -9,11 +9,17 @@ from .multi_scatter import MultiColorScatter
 from .layer_state import ScatterLayerState
 from ..common.layer_artist import VispyLayerArtist
 
+from vispy.scene.visuals import Line, Arrow
+
+from matplotlib.colors import ColorConverter
+
 COLOR_PROPERTIES = set(['color_mode', 'cmap_attribute', 'cmap_vmin', 'cmap_vmax', 'cmap', 'color'])
 SIZE_PROPERTIES = set(['size_mode', 'size_attribute', 'size_vmin', 'size_vmax',
                        'size_scaling', 'size'])
 ALPHA_PROPERTIES = set(['alpha'])
 DATA_PROPERTIES = set(['layer', 'x_att', 'y_att', 'z_att'])
+ERROR_PROPERTIES = set(['xerr_visible', 'yerr_visible', 'zerr_visible', 'xerr_attribute', 'yerr_attribute', 'zerr_attribute'])
+VECTOR_PROPERTIES = set(['vector_visible', 'vx_attribute', 'vy_attribute', 'vz_attribute', 'vector_scaling', 'vector_origin'])
 VISIBLE_PROPERTIES = set(['visible'])
 
 
@@ -63,6 +69,12 @@ class ScatterLayerArtist(VispyLayerArtist):
         self._multiscat = self.vispy_widget._multiscat
         self._multiscat.allocate(self.id)
         self._multiscat.set_zorder(self.id, self.get_zorder)
+
+        self._error_bar_widget = Line(connect="segments")
+        self._vector_widget =  Arrow()
+        self.vispy_widget.add_data_visual(self._error_bar_widget)
+        self.vispy_widget.add_data_visual(self._vector_widget)
+        self.vispy_widget.add_data_visual(self._vector_widget)
 
         # Watch for changes in the viewer state which would require the
         # layers to be redrawn
@@ -152,6 +164,16 @@ class ScatterLayerArtist(VispyLayerArtist):
             cmap_data[:, 3][np.isnan(data)] = 0.
             self._multiscat.set_color(self.id, cmap_data)
 
+    def _update_line_colors(self):
+        if self.state.color_mode is None:
+            pass
+        elif self.state.color_mode == 'Fixed':
+            color = ColorConverter.to_rgba(self.state.color, alpha=self.state.alpha)
+            self._error_bar_widget.set_data(color=color)
+        else:
+            cmap_data = self._multiscat.layers[self.id]['color']
+            self._error_bar_widget.set_data(color=self._get_cmap_array(cmap_data, self._error_bar_widget.pos.shape[0]))
+
     def _update_alpha(self):
         self._multiscat.set_alpha(self.id, self.state.alpha)
 
@@ -193,6 +215,61 @@ class ScatterLayerArtist(VispyLayerArtist):
     def _update_visibility(self):
         self._multiscat.set_visible(self.id, self.visible)
         self.redraw()
+
+    def _update_errorbars(self):
+        orig_points = self._multiscat.layers[self.id]['data']
+        num_points = orig_points.shape[0]
+        num_bars = (self.state.xerr_visible + self.state.yerr_visible + self.state.zerr_visible) * \
+                    num_points
+        line_points = np.zeros((2*num_bars,3))
+        offset = 0
+        if self.state.xerr_visible:
+            err = self.layer[self.state.xerr_attribute].ravel()
+            line_points[offset  :offset+num_points*2:2, :] = orig_points
+            line_points[offset+1:offset+num_points*2:2, :] = orig_points
+            line_points[offset  :offset+num_points*2:2, 0] -= err
+            line_points[offset+1:offset+num_points*2:2, 0] += err
+            offset += 2*num_points
+        if self.state.yerr_visible:
+            err = self.layer[self.state.yerr_attribute].ravel()
+            line_points[offset:offset + num_points * 2:2, :] = orig_points
+            line_points[offset + 1:offset + num_points * 2:2, :] = orig_points
+            line_points[offset:offset + num_points * 2:2, 1] -= err
+            line_points[offset + 1:offset + num_points * 2:2, 1] += err
+            offset += 2 * num_points
+        if self.state.zerr_visible:
+            err = self.layer[self.state.zerr_attribute].ravel()
+            line_points[offset  :offset+num_points*2:2, :] = orig_points
+            line_points[offset+1:offset+num_points*2:2, :] = orig_points
+            line_points[offset  :offset+num_points*2:2, 2] -= err
+            line_points[offset+1:offset+num_points*2:2, 2] += err
+            offset += 2*num_points
+
+        self._error_bar_widget.set_data(pos=line_points)
+
+    def _update_vectors(self):
+        offsets = {'tail': (0,1), 'middle': (-0.5, 0.5), 'tip': (-1,0)}
+        orig_points = self._multiscat.layers[self.id]['data']
+        points = np.zeros((orig_points.shape[0],6))
+        vx = self.layer[self._viewer_state.vx_attribute].ravel()
+        points[:,0] = orig_points + offsets[self.state.vector_origin][0]*vx*vector_scaling
+        points[:,0] = orig_points + offsets[self.state.vector_origin][0]*vx*vector_scaling
+        points[:,0] = orig_points + offsets[self.state.vector_origin][0]*vx*vector_scaling
+        points[:,0] = orig_points + offsets[self.state.vector_origin][0]*vx*vector_scaling
+        points[:,0] = orig_points + offsets[self.state.vector_origin][0]*vx*vector_scaling
+        points[:,0] = orig_points + offsets[self.state.vector_origin][0]*vx*vector_scaling
+
+
+    def _get_cmap_array(self, color_data, dest_size):
+        res = np.zeros((dest_size, color_data.shape[1]))
+        offset = 0
+        while offset < dest_size:
+            res[offset  :offset+color_data.shape[0]*2:2] = color_data
+            res[offset+1:offset+color_data.shape[0]*2:2] = color_data
+            offset += 2*color_data.shape[0]
+        res[:,3] *= self.state.alpha
+        return res
+
 
     @property
     def default_limits(self):
@@ -246,12 +323,19 @@ class ScatterLayerArtist(VispyLayerArtist):
 
         if force or len(changed & COLOR_PROPERTIES) > 0:
             self._update_colors()
+            self._update_line_colors()
 
         if force or len(changed & ALPHA_PROPERTIES) > 0:
             self._update_alpha()
+            self._update_line_colors()
 
         if force or len(changed & VISIBLE_PROPERTIES) > 0:
             self._update_visibility()
+            self._update_errorbars()
+
+        if force or len(changed & ERROR_PROPERTIES) > 0:
+            self._update_errorbars()
+            self._update_line_colors()
 
     def update(self):
         with self._multiscat.delay_update():
