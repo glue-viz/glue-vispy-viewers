@@ -5,6 +5,7 @@ import numpy as np
 from matplotlib.colors import ColorConverter
 
 from vispy import scene
+from vispy.scene.visuals import Arrow
 
 
 class MultiColorScatter(scene.visuals.Markers):
@@ -18,6 +19,7 @@ class MultiColorScatter(scene.visuals.Markers):
         self.layers = {}
         self._combined_data = None
         self._skip_update = False
+        self._error_vector_widget = None
         super(MultiColorScatter, self).__init__(*args, **kwargs)
 
     @contextmanager
@@ -32,11 +34,14 @@ class MultiColorScatter(scene.visuals.Markers):
         else:
             self.layers[label] = {'data': None,
                                   'mask': None,
+                                  'errors': None,
+                                  'vectors': None,
+                                  'draw_arrows': False,
                                   'color': np.asarray((1., 1., 1.)),
                                   'alpha': 1.,
                                   'zorder': lambda: 0,
                                   'size': 10,
-                                  'visible': True}
+                                  'visible': True,}
 
     def deallocate(self, label):
         self.layers.pop(label)
@@ -56,6 +61,18 @@ class MultiColorScatter(scene.visuals.Markers):
 
     def set_mask(self, label, mask):
         self.layers[label]['mask'] = mask
+        self._update()
+
+    def set_errors(self, label, error_lines):
+        self.layers[label]['errors'] = error_lines
+        self._update()
+
+    def set_vectors(self, label, vectors):
+        self.layers[label]['vectors'] = vectors
+        self._update()
+
+    def set_draw_arrows(self, label, draw_arrows):
+        self.layers[label]['draw_arrows'] = draw_arrows
         self._update()
 
     def set_size(self, label, size):
@@ -86,6 +103,10 @@ class MultiColorScatter(scene.visuals.Markers):
         data = []
         colors = []
         sizes = []
+        lines = []
+        line_colors =[]
+        arrows = []
+        arrow_colors = []
 
         for label in sorted(self.layers, key=lambda x: self.layers[x]['zorder']()):
 
@@ -132,8 +153,31 @@ class MultiColorScatter(scene.visuals.Markers):
                         size = layer['size']
                     else:
                         size = layer['size'][layer['mask']]
-
                 sizes.append(size)
+
+
+                # Error bar and colors
+
+                if layer['errors'] is not None:
+                    for error_set in layer['errors']:
+                        if layer['mask'] is None:
+                            out = error_set
+                        else:
+                            out = error_set[layer['mask']]
+                        out = out.reshape((-1,3))
+                        lines.append(out)
+                        line_colors.append(np.repeat(rgba,2,axis=0))
+
+                if layer['vectors'] is not None:
+                    if layer['mask'] is None:
+                        out = layer['vectors']
+                    else:
+                        out = layer['vectors'][layer['mask']]
+                    lines.append(out.reshape((-1,3)))
+                    line_colors.append(np.repeat(rgba, 2, axis=0))
+                    if layer['draw_arrows']:
+                        arrows.append(out)
+                        arrow_colors.append(rgba)
 
         if len(data) == 0:
             self.visible = False
@@ -146,6 +190,24 @@ class MultiColorScatter(scene.visuals.Markers):
         sizes = np.hstack(sizes)
 
         self.set_data(data, edge_color=colors, face_color=colors, size=sizes)
+
+        if len(lines) == 0:
+            if self._error_vector_widget is not None:
+                self._error_vector_widget.visible = False
+            return
+        else:
+            if self._error_vector_widget is None:
+                self._error_vector_widget = Arrow(parent=self, connect="segments")
+            self._error_vector_widget.visible = True
+
+        lines = np.vstack(lines)
+        line_colors = np.vstack(line_colors)
+        self._error_vector_widget.set_data(pos=lines, color=line_colors)
+
+        arrows = np.vstack(arrows) if len(arrows) > 0 else np.array([])
+        arrow_colors = np.vstack(arrow_colors) if len(arrow_colors) else np.array([])
+        self._error_vector_widget.set_data(arrows=arrows)
+        self._error_vector_widget.arrow_color = arrow_colors
 
     def draw(self, *args, **kwargs):
         if len(self.layers) == 0:
