@@ -106,6 +106,8 @@ class ScatterLayerArtist(VispyLayerArtist):
         Clear the visualization for this layer
         """
         self._multiscat.set_data_values(self.id, [], [], [])
+        self._multiscat.set_errors(self.id, [])
+        self._multiscat.set_vectors(self.id, None)
 
     def remove(self):
         """
@@ -249,6 +251,7 @@ class ScatterLayerArtist(VispyLayerArtist):
             self._multiscat.set_vectors(self.id, vector_points)
         else:
             self._multiscat.set_vectors(self.id, None)
+        self.redraw()
 
     def _update_visibility(self):
         self._multiscat.set_visible(self.id, self.visible)

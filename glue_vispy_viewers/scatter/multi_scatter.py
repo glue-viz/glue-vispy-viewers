@@ -115,12 +115,13 @@ class MultiColorScatter(scene.visuals.Markers):
             if not layer['visible'] or layer['data'] is None:
                 continue
 
+            input_points = layer['data'].shape[0]
             if layer['mask'] is None:
-                n_points = layer['data'].shape[0]
+                n_points = input_points
             else:
                 n_points = np.sum(layer['mask'])
 
-            if n_points > 0:
+            if  input_points > 0 and n_points > 0:
 
                 # Data
 
