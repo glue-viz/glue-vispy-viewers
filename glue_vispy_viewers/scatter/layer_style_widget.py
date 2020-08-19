@@ -42,7 +42,6 @@ class ScatterLayerStyleWidget(QtWidgets.QWidget):
         self.state.add_callback('zerr_visible', self._update_error_vis)
         self.state.add_callback('vector_visible', self._update_vector_vis)
 
-
     def _update_size_mode(self, *args):
 
         if self.state.size_mode == "Fixed":

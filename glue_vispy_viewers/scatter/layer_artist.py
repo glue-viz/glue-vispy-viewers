@@ -12,8 +12,10 @@ from ..common.layer_artist import VispyLayerArtist
 COLOR_PROPERTIES = set(['color_mode', 'cmap_attribute', 'cmap_vmin', 'cmap_vmax', 'cmap', 'color'])
 SIZE_PROPERTIES = set(['size_mode', 'size_attribute', 'size_vmin', 'size_vmax',
                        'size_scaling', 'size'])
-ERROR_PROPERTIES = set(['xerr_visible', 'yerr_visible', 'zerr_visible', 'xerr_attribute', 'yerr_attribute', 'zerr_attribute'])
-VECTOR_PROPERTIES = set(['vector_visible', 'vx_attribute', 'vy_attribute', 'vz_attribute', 'vector_scaling', 'vector_origin'])
+ERROR_PROPERTIES = set(['xerr_visible', 'yerr_visible', 'zerr_visible',
+                        'xerr_attribute', 'yerr_attribute', 'zerr_attribute'])
+VECTOR_PROPERTIES = set(['vector_visible', 'vx_attribute', 'vy_attribute', 'vz_attribute',
+                         'vector_scaling', 'vector_origin'])
 ARROW_PROPERTIES = set(['vector_arrowhead'])
 ALPHA_PROPERTIES = set(['alpha'])
 DATA_PROPERTIES = set(['layer', 'x_att', 'y_att', 'z_att'])
@@ -247,7 +249,6 @@ class ScatterLayerArtist(VispyLayerArtist):
             self._multiscat.set_vectors(self.id, vector_points)
         else:
             self._multiscat.set_vectors(self.id, None)
-
 
     def _update_visibility(self):
         self._multiscat.set_visible(self.id, self.visible)

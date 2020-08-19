@@ -41,7 +41,7 @@ class MultiColorScatter(scene.visuals.Markers):
                                   'alpha': 1.,
                                   'zorder': lambda: 0,
                                   'size': 10,
-                                  'visible': True,}
+                                  'visible': True}
 
     def deallocate(self, label):
         self.layers.pop(label)
@@ -104,7 +104,7 @@ class MultiColorScatter(scene.visuals.Markers):
         colors = []
         sizes = []
         lines = []
-        line_colors =[]
+        line_colors = []
         arrows = []
         arrow_colors = []
 
@@ -155,25 +155,23 @@ class MultiColorScatter(scene.visuals.Markers):
                         size = layer['size'][layer['mask']]
                 sizes.append(size)
 
-
                 # Error bar and colors
-
                 if layer['errors'] is not None:
                     for error_set in layer['errors']:
                         if layer['mask'] is None:
                             out = error_set
                         else:
                             out = error_set[layer['mask']]
-                        out = out.reshape((-1,3))
+                        out = out.reshape((-1, 3))
                         lines.append(out)
-                        line_colors.append(np.repeat(rgba,2,axis=0))
+                        line_colors.append(np.repeat(rgba, 2, axis=0))
 
                 if layer['vectors'] is not None:
                     if layer['mask'] is None:
                         out = layer['vectors']
                     else:
                         out = layer['vectors'][layer['mask']]
-                    lines.append(out.reshape((-1,3)))
+                    lines.append(out.reshape((-1, 3)))
                     line_colors.append(np.repeat(rgba, 2, axis=0))
                     if layer['draw_arrows']:
                         arrows.append(out)
