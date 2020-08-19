@@ -121,6 +121,122 @@ def test_scatter_viewer(tmpdir):
 
     ga2.close()
 
+def test_error_bars(tmpdir):
+
+    # Create fake data
+    data = make_test_data()
+
+    # Create fake session
+
+    dc = DataCollection([data])
+    ga = GlueApplication(dc)
+    ga.show()
+
+    scatter = ga.new_data_viewer(VispyScatterViewer)
+    scatter.add_data(data)
+    scatter.viewer_size = (400, 500)
+
+    viewer_state = scatter.state
+
+    viewer_state.x_att = data.id['a']
+    viewer_state.y_att = data.id['f']
+    viewer_state.z_att = data.id['z']
+
+    layer_state = viewer_state.layers[0]
+
+    layer_state.xerr_visible = True
+    layer_state.xerr_attribute = data.id['b']
+
+    layer_state.yerr_visible = False
+    layer_state.yerr_attribute = data.id['c']
+
+    layer_state.zerr_visible = True
+    layer_state.zerr_attribute = data.id['d']
+
+
+    # Check that writing a session works as expected.
+
+    session_file = tmpdir.join('test_error_bars.glu').strpath
+    ga.save_session(session_file)
+    ga.close()
+
+    # Now we can check that everything is restored correctly
+
+    ga2 = GlueApplication.restore_session(session_file)
+    ga2.show()
+
+    scatter_r = ga2.viewers[0][0]
+    layer_state = scatter_r.state.layers[0]
+
+    assert layer_state.xerr_visible
+    assert layer_state.xerr_attribute.label == 'b'
+
+    assert not layer_state.yerr_visible
+    assert layer_state.yerr_attribute.label == 'c'
+
+    assert layer_state.zerr_visible
+    assert  layer_state.zerr_attribute.label == 'd'
+    ga2.close()
+
+def test_vectors(tmpdir):
+
+    # Create fake data
+    data = make_test_data()
+
+    # Create fake session
+
+    dc = DataCollection([data])
+    ga = GlueApplication(dc)
+    ga.show()
+
+    scatter = ga.new_data_viewer(VispyScatterViewer)
+    scatter.add_data(data)
+    scatter.viewer_size = (400, 500)
+
+    viewer_state = scatter.state
+
+    viewer_state.x_att = data.id['a']
+    viewer_state.y_att = data.id['f']
+    viewer_state.z_att = data.id['z']
+
+    layer_state = viewer_state.layers[0]
+
+    layer_state.vector_visible = True
+    layer_state.vx_attribute = data.id['x']
+    layer_state.vy_attribute = data.id['y']
+    layer_state.vz_attribute = data.id['e']
+    layer_state.vector_scaling = 0.1
+    layer_state.vector_origin = 'tail'
+    layer_state.vector_arrowhead = True
+
+    # Check that writing a session works as expected.
+
+    session_file = tmpdir.join('test_vectors.glu').strpath
+    ga.save_session(session_file)
+    ga.close()
+
+    # Now we can check that everything is restored correctly
+
+    ga2 = GlueApplication.restore_session(session_file)
+    ga2.show()
+
+    scatter_r = ga2.viewers[0][0]
+    layer_state = scatter_r.state.layers[0]
+
+    assert layer_state.vector_visible
+
+    assert layer_state.vx_attribute.label == 'x'
+    assert layer_state.vy_attribute.label == 'y'
+    assert layer_state.vz_attribute.label == 'e'
+
+    assert np.isclose(layer_state.vector_scaling, 0.1)
+
+    assert layer_state.vector_origin == 'tail'
+
+    assert layer_state.vector_arrowhead
+
+    ga2.close()
+
 
 def test_n_dimensional_data():
 
