@@ -121,6 +121,7 @@ def test_scatter_viewer(tmpdir):
 
     ga2.close()
 
+
 def test_error_bars(tmpdir):
 
     # Create fake data
@@ -153,7 +154,6 @@ def test_error_bars(tmpdir):
     layer_state.zerr_visible = True
     layer_state.zerr_attribute = data.id['d']
 
-
     # Check that writing a session works as expected.
 
     session_file = tmpdir.join('test_error_bars.glu').strpath
@@ -175,8 +175,9 @@ def test_error_bars(tmpdir):
     assert layer_state.yerr_attribute.label == 'c'
 
     assert layer_state.zerr_visible
-    assert  layer_state.zerr_attribute.label == 'd'
+    assert layer_state.zerr_attribute.label == 'd'
     ga2.close()
+
 
 def test_vectors(tmpdir):
 
