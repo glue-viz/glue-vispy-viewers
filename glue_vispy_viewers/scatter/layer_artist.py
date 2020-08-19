@@ -199,32 +199,25 @@ class ScatterLayerArtist(VispyLayerArtist):
 
     def _update_errors(self):
         orig_points = self._multiscat.layers[self.id]['data']
-        num_points = orig_points.shape[0]
         errors = []
 
         if self.state.xerr_visible:
-            line_points = np.zeros((num_points, 6))
+            line_points = np.tile(orig_points, (1, 2))
             err = self.layer[self.state.xerr_attribute].ravel()
-            line_points[:, :3] = orig_points
-            line_points[:, 3:] = orig_points
             line_points[:, 0] -= err
             line_points[:, 3] += err
             errors.append(line_points)
 
         if self.state.yerr_visible:
-            line_points = np.zeros((num_points, 6))
+            line_points = np.tile(orig_points, (1, 2))
             err = self.layer[self.state.yerr_attribute].ravel()
-            line_points[:, :3] = orig_points
-            line_points[:, 3:] = orig_points
             line_points[:, 1] -= err
             line_points[:, 4] += err
             errors.append(line_points)
 
         if self.state.zerr_visible:
-            line_points = np.zeros((num_points, 6))
+            line_points = np.tile(orig_points, (1, 2))
             err = self.layer[self.state.zerr_attribute].ravel()
-            line_points[:, :3] = orig_points
-            line_points[:, 3:] = orig_points
             line_points[:, 2] -= err
             line_points[:, 5] += err
             errors.append(line_points)
