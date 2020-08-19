@@ -57,13 +57,13 @@ class ScatterLayerState(VispyLayerState):
 
         self.size_att_helper = ComponentIDComboHelper(self, 'size_attribute')
         self.cmap_att_helper = ComponentIDComboHelper(self, 'cmap_attribute')
-        self.xerr_att_helper = ComponentIDComboHelper(self, 'xerr_attribute')
-        self.yerr_att_helper = ComponentIDComboHelper(self, 'yerr_attribute')
-        self.zerr_att_helper = ComponentIDComboHelper(self, 'zerr_attribute')
+        self.xerr_att_helper = ComponentIDComboHelper(self, 'xerr_attribute', categorical=False)
+        self.yerr_att_helper = ComponentIDComboHelper(self, 'yerr_attribute', categorical=False)
+        self.zerr_att_helper = ComponentIDComboHelper(self, 'zerr_attribute', categorical=False)
 
-        self.vx_att_helper = ComponentIDComboHelper(self, 'vx_attribute')
-        self.vy_att_helper = ComponentIDComboHelper(self, 'vy_attribute')
-        self.vz_att_helper = ComponentIDComboHelper(self, 'vz_attribute')
+        self.vx_att_helper = ComponentIDComboHelper(self, 'vx_attribute', categorical=False)
+        self.vy_att_helper = ComponentIDComboHelper(self, 'vy_attribute', categorical=False)
+        self.vz_att_helper = ComponentIDComboHelper(self, 'vz_attribute', categorical=False)
 
         self.size_lim_helper = StateAttributeLimitsHelper(self, attribute='size_attribute',
                                                           lower='size_vmin', upper='size_vmax',
