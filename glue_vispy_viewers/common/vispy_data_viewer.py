@@ -53,6 +53,8 @@ class BaseVispyViewer(DataViewerWithState):
         self.state.add_callback('z_min', self._update_clip)
         self.state.add_callback('z_max', self._update_clip)
 
+        self.state.add_callback('line_width', self._update_line_width)
+
         self.status_label = None
         self._opengl_ok = None
         self._ready_draw = False
@@ -188,3 +190,7 @@ class BaseVispyViewer(DataViewerWithState):
         if hidden:
             tbar.setWindowFlags(original_flags)
             tbar.hide()
+
+    def _update_line_width(self, *args):
+        if hasattr(self._vispy_widget, '_multiscat'):
+            self._vispy_widget._multiscat.update_line_width(self.state.line_width)

@@ -95,6 +95,10 @@ class MultiColorScatter(scene.visuals.Markers):
         self.layers[label]['zorder'] = zorder
         self._update()
 
+    def update_line_width(self, width):
+        if self._error_vector_widget:
+            self._error_vector_widget.set_data(width=width)
+
     def _update(self):
 
         if self._skip_update:
