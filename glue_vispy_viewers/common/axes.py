@@ -1,10 +1,10 @@
 from vispy import scene
-from vispy.geometry import create_cube
 from vispy.visuals.transforms import STTransform, ChainTransform
 
 from glue_vispy_viewers.compat.axis import Axis
 
 import numpy as np
+
 
 class AxesVisual3D(object):
 
@@ -15,13 +15,12 @@ class AxesVisual3D(object):
         # Add a 3D cube to show us the unit cube. The 1.001 factor is to make
         # sure that the grid lines are not 'hidden' by volume renderings on the
         # front side due to numerical precision.
-        self.axis = scene.visuals.Line(np.array([[1, 1, 1], [-1, 1, 1], [-1, -1, 1], [1, -1, 1],
-                  [1, -1, -1], [1, 1, -1], [-1, 1, -1], [-1, -1, -1]]), parent=self.view.scene,
-                                       color=kwargs['axis_color'], connect=np.array([[0,1],[0,3], [0,5],
-                                                                                     [1,2],[1,6],
-                                                                                     [2,3],[2,7],
-                                                                                    [3,4], [4,5], [4,7],
-                                                                                    [5,6],[6,7]]))
+        cube_verts = np.array([[1, 1, 1], [-1, 1, 1], [-1, -1, 1], [1, -1, 1],
+                               [1, -1, -1], [1, 1, -1], [-1, 1, -1], [-1, -1, -1]])
+        cube_edge_indices = np.array([[0, 1], [0, 3], [0, 5], [1, 2], [1, 6], [2, 3],
+                                      [2, 7], [3, 4], [4, 5], [4, 7], [5, 6], [6, 7]])
+        self.axis = scene.visuals.Line(cube_verts, parent=self.view.scene,
+                                       color=kwargs['axis_color'], connect=cube_edge_indices)
 
         self.axis.transform = transform
 
