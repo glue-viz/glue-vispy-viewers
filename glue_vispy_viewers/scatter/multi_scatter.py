@@ -201,6 +201,9 @@ class MultiColorScatter(scene.visuals.Markers):
         else:
             if self._error_vector_widget is None:
                 self._error_vector_widget = Arrow(parent=self, connect="segments")
+                self._error_vector_widget.set_gl_state(depth_test=False,
+                                                       blend=True,
+                                                       blend_func=('src_alpha', 'one_minus_src_alpha'))
             self._error_vector_widget.visible = True
 
         lines = np.vstack(lines)
