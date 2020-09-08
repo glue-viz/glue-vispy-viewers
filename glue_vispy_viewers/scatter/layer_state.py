@@ -1,6 +1,5 @@
 from glue.config import colormaps
-from glue.external.echo import (CallbackProperty, SelectionCallbackProperty,
-                                keep_in_sync, delay_callback)
+from echo import CallbackProperty, SelectionCallbackProperty, keep_in_sync, delay_callback
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.core.data_combo_helper import ComponentIDComboHelper
 from ..common.layer_state import VispyLayerState
@@ -26,6 +25,21 @@ class ScatterLayerState(VispyLayerState):
     cmap_vmax = CallbackProperty()
     cmap = CallbackProperty()
 
+    xerr_visible = CallbackProperty(False)
+    xerr_attribute = SelectionCallbackProperty()
+    yerr_visible = CallbackProperty(False)
+    yerr_attribute = SelectionCallbackProperty()
+    zerr_visible = CallbackProperty(False)
+    zerr_attribute = SelectionCallbackProperty()
+
+    vector_visible = CallbackProperty(False)
+    vx_attribute = SelectionCallbackProperty()
+    vy_attribute = SelectionCallbackProperty()
+    vz_attribute = SelectionCallbackProperty()
+    vector_scaling = CallbackProperty(1)
+    vector_origin = SelectionCallbackProperty(default_index=1)
+    vector_arrowhead = CallbackProperty()
+
     size_limits_cache = CallbackProperty({})
     cmap_limits_cache = CallbackProperty({})
 
@@ -43,6 +57,13 @@ class ScatterLayerState(VispyLayerState):
 
         self.size_att_helper = ComponentIDComboHelper(self, 'size_attribute')
         self.cmap_att_helper = ComponentIDComboHelper(self, 'cmap_attribute')
+        self.xerr_att_helper = ComponentIDComboHelper(self, 'xerr_attribute', categorical=False)
+        self.yerr_att_helper = ComponentIDComboHelper(self, 'yerr_attribute', categorical=False)
+        self.zerr_att_helper = ComponentIDComboHelper(self, 'zerr_attribute', categorical=False)
+
+        self.vx_att_helper = ComponentIDComboHelper(self, 'vx_attribute', categorical=False)
+        self.vy_att_helper = ComponentIDComboHelper(self, 'vy_attribute', categorical=False)
+        self.vz_att_helper = ComponentIDComboHelper(self, 'vz_attribute', categorical=False)
 
         self.size_lim_helper = StateAttributeLimitsHelper(self, attribute='size_attribute',
                                                           lower='size_vmin', upper='size_vmax',
@@ -51,6 +72,12 @@ class ScatterLayerState(VispyLayerState):
         self.cmap_lim_helper = StateAttributeLimitsHelper(self, attribute='cmap_attribute',
                                                           lower='cmap_vmin', upper='cmap_vmax',
                                                           cache=self.cmap_limits_cache)
+
+        vector_origin_display = {'tail': 'Tail of vector',
+                                 'middle': 'Middle of vector',
+                                 'tip': 'Tip of vector'}
+        ScatterLayerState.vector_origin.set_choices(self, ['tail', 'middle', 'tip'])
+        ScatterLayerState.vector_origin.set_display_func(self, vector_origin_display.get)
 
         self.add_callback('layer', self._on_layer_change)
         if layer is not None:
@@ -63,13 +90,15 @@ class ScatterLayerState(VispyLayerState):
     def _on_layer_change(self, layer=None):
 
         with delay_callback(self, 'cmap_vmin', 'cmap_vmax', 'size_vmin', 'size_vmax'):
-
+            helpers = [self.size_att_helper, self.cmap_att_helper,
+                       self.xerr_att_helper, self.yerr_att_helper, self.zerr_att_helper,
+                       self.vx_att_helper, self.vy_att_helper, self.vz_att_helper]
             if self.layer is None:
-                self.cmap_att_helper.set_multiple_data([])
-                self.size_att_helper.set_multiple_data([])
+                for helper in helpers:
+                    helper.set_multiple_data([])
             else:
-                self.cmap_att_helper.set_multiple_data([self.layer])
-                self.size_att_helper.set_multiple_data([self.layer])
+                for helper in helpers:
+                    helper.set_multiple_data([self.layer])
 
     def update_priority(self, name):
         return 0 if name.endswith(('vmin', 'vmax')) else 1

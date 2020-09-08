@@ -12,6 +12,11 @@ from ..common.layer_artist import VispyLayerArtist
 COLOR_PROPERTIES = set(['color_mode', 'cmap_attribute', 'cmap_vmin', 'cmap_vmax', 'cmap', 'color'])
 SIZE_PROPERTIES = set(['size_mode', 'size_attribute', 'size_vmin', 'size_vmax',
                        'size_scaling', 'size'])
+ERROR_PROPERTIES = set(['xerr_visible', 'yerr_visible', 'zerr_visible',
+                        'xerr_attribute', 'yerr_attribute', 'zerr_attribute'])
+VECTOR_PROPERTIES = set(['vector_visible', 'vx_attribute', 'vy_attribute', 'vz_attribute',
+                         'vector_scaling', 'vector_origin'])
+ARROW_PROPERTIES = set(['vector_arrowhead'])
 ALPHA_PROPERTIES = set(['alpha'])
 DATA_PROPERTIES = set(['layer', 'x_att', 'y_att', 'z_att'])
 VISIBLE_PROPERTIES = set(['visible'])
@@ -101,6 +106,8 @@ class ScatterLayerArtist(VispyLayerArtist):
         Clear the visualization for this layer
         """
         self._multiscat.set_data_values(self.id, [], [], [])
+        self._multiscat.set_errors(self.id, [])
+        self._multiscat.set_vectors(self.id, None)
 
     def remove(self):
         """
@@ -190,8 +197,61 @@ class ScatterLayerArtist(VispyLayerArtist):
 
         self.redraw()
 
+    def _update_errors(self):
+        orig_points = self._multiscat.layers[self.id]['data']
+        errors = []
+
+        if self.state.xerr_visible:
+            line_points = np.tile(orig_points, (1, 2))
+            err = self.layer[self.state.xerr_attribute].ravel()
+            line_points[:, 0] -= err
+            line_points[:, 3] += err
+            errors.append(line_points)
+
+        if self.state.yerr_visible:
+            line_points = np.tile(orig_points, (1, 2))
+            err = self.layer[self.state.yerr_attribute].ravel()
+            line_points[:, 1] -= err
+            line_points[:, 4] += err
+            errors.append(line_points)
+
+        if self.state.zerr_visible:
+            line_points = np.tile(orig_points, (1, 2))
+            err = self.layer[self.state.zerr_attribute].ravel()
+            line_points[:, 2] -= err
+            line_points[:, 5] += err
+            errors.append(line_points)
+
+        self._multiscat.set_errors(self.id, errors)
+        self.redraw()
+
+    def _update_vectors(self):
+        if self.state.vector_visible:
+            offsets = {'tail': (0, 1), 'middle': (-0.5, 0.5), 'tip': (-1, 0)}
+            orig_points = self._multiscat.layers[self.id]['data']
+            vector_points = np.zeros((orig_points.shape[0], 6))
+            vec_offset = offsets[self.state.vector_origin]
+            scale = self.state.vector_scaling
+            vx = self.layer[self.state.vx_attribute].ravel()
+            vector_points[:, 0] = orig_points[:, 0] + vec_offset[0] * vx * scale
+            vector_points[:, 3] = orig_points[:, 0] + vec_offset[1] * vx * scale
+            vy = self.layer[self.state.vy_attribute].ravel()
+            vector_points[:, 1] = orig_points[:, 1] + vec_offset[0] * vy * scale
+            vector_points[:, 4] = orig_points[:, 1] + vec_offset[1] * vy * scale
+            vz = self.layer[self.state.vz_attribute].ravel()
+            vector_points[:, 2] = orig_points[:, 2] + vec_offset[0] * vz * scale
+            vector_points[:, 5] = orig_points[:, 2] + vec_offset[1] * vz * scale
+            self._multiscat.set_vectors(self.id, vector_points)
+        else:
+            self._multiscat.set_vectors(self.id, None)
+        self.redraw()
+
     def _update_visibility(self):
         self._multiscat.set_visible(self.id, self.visible)
+        self.redraw()
+
+    def _update_arrow_head(self):
+        self._multiscat.set_draw_arrows(self.id, self.state.vector_arrowhead)
         self.redraw()
 
     @property
@@ -244,6 +304,12 @@ class ScatterLayerArtist(VispyLayerArtist):
         if force or len(changed & SIZE_PROPERTIES) > 0:
             self._update_sizes()
 
+        if force or len(changed & ERROR_PROPERTIES) > 0:
+            self._update_errors()
+
+        if force or len(changed & VECTOR_PROPERTIES) > 0:
+            self._update_vectors()
+
         if force or len(changed & COLOR_PROPERTIES) > 0:
             self._update_colors()
 
@@ -252,6 +318,9 @@ class ScatterLayerArtist(VispyLayerArtist):
 
         if force or len(changed & VISIBLE_PROPERTIES) > 0:
             self._update_visibility()
+
+        if force or len(changed & ARROW_PROPERTIES) > 0:
+            self._update_arrow_head()
 
     def update(self):
         with self._multiscat.delay_update():
