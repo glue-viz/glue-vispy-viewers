@@ -180,7 +180,7 @@ def test_error_bars(tmpdir):
     assert layer_state.zerr_attribute.label == 'd'
 
     assert scatter_r.state.line_width == 1
-    
+
     ga2.close()
 
 
