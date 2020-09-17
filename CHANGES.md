@@ -1,11 +1,15 @@
-0.13 (unreleased)
------------------
+1.0.0 (2020-09-17)
+------------------
 
-- Drop support for Python < 3.6. [#351]
+- Drop support for Python < 3.6. [#351, #353]
 
-- No longer bundle vispy, and instead depend on the latest stable release. [#351]
+- No longer bundle vispy, and instead depend on the
+  latest stable release. [#351]
 
-0.12.2 (unreleased)
+- Add initial support for vectors and error bars.
+  [#358]
+
+0.12.2 (2019-06-24)
 -------------------
 
 - Fixed __version__ variable which was set to 'undefined'. [#344]
