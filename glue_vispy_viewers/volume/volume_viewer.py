@@ -164,7 +164,7 @@ class VispyVolumeViewer(BaseVispyViewer):
             if first_layer_artist:
                 QMessageBox.critical(self, "Error",
                                      "Can only add a scatter plot overlay once "
-                                     "a volume is present".format(data.ndim),
+                                     "a volume is present",
                                      buttons=QMessageBox.Ok)
                 return False
         elif data.ndim == 3:
