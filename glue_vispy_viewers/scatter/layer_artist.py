@@ -191,8 +191,24 @@ class ScatterLayerArtist(VispyLayerArtist):
         if self._clip_limits is None:
             self._multiscat.set_mask(self.id, None)
         else:
+
             xmin, xmax, ymin, ymax, zmin, zmax = self._clip_limits
-            keep = (x >= xmin) & (x <= xmax) & (y >= ymin) & (y <= ymax) & (z >= zmin) & (z <= zmax)
+
+            if xmin <= xmax:
+                keep = (x >= xmin) & (x <= xmax)
+            else:
+                keep = (x <= xmin) & (x >= xmax)
+
+            if ymin <= ymax:
+                keep &= (y >= ymin) & (y <= ymax)
+            else:
+                keep &= (y <= ymin) & (y >= ymax)
+
+            if zmin <= zmax:
+                keep &= (z >= zmin) & (z <= zmax)
+            else:
+                keep &= (z <= zmin) & (z >= zmax)
+
             self._multiscat.set_mask(self.id, keep)
 
         self.redraw()

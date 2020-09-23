@@ -1,3 +1,8 @@
+1.0.1 (unreleased)
+------------------
+
+- Fix 'flip limits' button in 3D scatter plot. [#361]
+
 1.0.0 (2020-09-17)
 ------------------
 
