@@ -95,6 +95,10 @@ class MultiColorScatter(scene.visuals.Markers):
         self.layers[label]['zorder'] = zorder
         self._update()
 
+    def update_line_width(self, width):
+        if self._error_vector_widget:
+            self._error_vector_widget.set_data(width=width)
+
     def _update(self):
 
         if self._skip_update:
@@ -196,7 +200,10 @@ class MultiColorScatter(scene.visuals.Markers):
             return
         else:
             if self._error_vector_widget is None:
-                self._error_vector_widget = Arrow(parent=self, connect="segments")
+                widget = Arrow(parent=self, connect="segments")
+                widget.set_gl_state(depth_test=False, blend=True,
+                                    blend_func=('src_alpha', 'one_minus_src_alpha'))
+                self._error_vector_widget = widget
             self._error_vector_widget.visible = True
 
         lines = np.vstack(lines)

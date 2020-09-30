@@ -38,4 +38,7 @@ class VispyOptionsWidget(QtWidgets.QWidget):
             self.ui.label_reference_data.hide()
             self.ui.combosel_reference_data.hide()
 
+        self.ui.label_line_width.hide()
+        self.ui.value_line_width.hide()
+
         self._connections = autoconnect_callbacks_to_qt(viewer_state, self.ui, connect_kwargs)

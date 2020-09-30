@@ -154,6 +154,8 @@ def test_error_bars(tmpdir):
     layer_state.zerr_visible = True
     layer_state.zerr_attribute = data.id['d']
 
+    assert viewer_state.line_width == 1
+
     # Check that writing a session works as expected.
 
     session_file = tmpdir.join('test_error_bars.glu').strpath
@@ -176,6 +178,9 @@ def test_error_bars(tmpdir):
 
     assert layer_state.zerr_visible
     assert layer_state.zerr_attribute.label == 'd'
+
+    assert scatter_r.state.line_width == 1
+
     ga2.close()
 
 
@@ -210,6 +215,8 @@ def test_vectors(tmpdir):
     layer_state.vector_origin = 'tail'
     layer_state.vector_arrowhead = True
 
+    viewer_state.line_width = 3
+
     # Check that writing a session works as expected.
 
     session_file = tmpdir.join('test_vectors.glu').strpath
@@ -235,6 +242,8 @@ def test_vectors(tmpdir):
     assert layer_state.vector_origin == 'tail'
 
     assert layer_state.vector_arrowhead
+
+    assert scatter_r.state.line_width == 3
 
     ga2.close()
 
