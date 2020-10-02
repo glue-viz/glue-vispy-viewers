@@ -1,7 +1,9 @@
-1.0.1 (unreleased)
+1.0.1 (2020-10-02)
 ------------------
 
 - Fix 'flip limits' button in 3D scatter plot. [#361]
+
+- Fix the visual appearance of vectors. [#362]
 
 1.0.0 (2020-09-17)
 ------------------
