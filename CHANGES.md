@@ -1,3 +1,8 @@
+1.0.2 (2020-11-24)
+------------------
+
+- Fix compatibility with latest developer version of vispy. [#363]
+
 1.0.1 (2020-10-02)
 ------------------
 
