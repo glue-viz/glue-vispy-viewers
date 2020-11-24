@@ -19,7 +19,6 @@ from vispy.visuals.text._sdf_cpu import _calc_distance_field
 from vispy.gloo import (TextureAtlas, IndexBuffer, VertexBuffer)
 from vispy.gloo import context
 from vispy.gloo.wrappers import _check_valid
-from vispy.ext.six import string_types
 from vispy.util.fonts import _load_glyph
 from vispy.visuals.transforms import STTransform
 from vispy.color import ColorArray
@@ -75,7 +74,7 @@ class TextureFont(object):
         return self._spread // self.ratio
 
     def __getitem__(self, char):
-        if not (isinstance(char, string_types) and len(char) == 1):
+        if not (isinstance(char, str) and len(char) == 1):
             raise TypeError('index must be a 1-character string')
         if char not in self._glyphs:
             self._load_char(char)
@@ -89,7 +88,7 @@ class TextureFont(object):
         char : str
             A single character to be represented.
         """
-        assert isinstance(char, string_types) and len(char) == 1
+        assert isinstance(char, str) and len(char) == 1
         assert char not in self._glyphs
         # load new glyph data from font
         _load_glyph(self._font, char, self._glyphs)
@@ -126,7 +125,7 @@ class FontManager(object):
     # or let TextureFont use a TextureAtlas for each context
     def __init__(self, method='cpu'):
         self._fonts = {}
-        if not isinstance(method, string_types) or \
+        if not isinstance(method, str) or \
                 method not in ('cpu', 'gpu'):
             raise ValueError('method must be "cpu" or "gpu", got %s (%s)'
                              % (method, type(method)))
@@ -414,7 +413,10 @@ class TextVisual(Visual):
         # Init font handling stuff
         # _font_manager is a temporary solution to use global mananger
         self._font_manager = font_manager or FontManager(method=method)
-        self._font = self._font_manager.get_font(face, bold, italic)
+        self._face = face
+        self._bold = bold
+        self._italic = italic
+        self._update_font()
         self._vertices = None
         self._color_vbo = None
         self._anchors = (anchor_x, anchor_y)
@@ -438,7 +440,7 @@ class TextVisual(Visual):
     @text.setter
     def text(self, text):
         if isinstance(text, list):
-            assert all(isinstance(t, string_types) for t in text)
+            assert all(isinstance(t, str) for t in text)
         if text is None:
             text = []
         self._text = text
@@ -519,7 +521,7 @@ class TextVisual(Visual):
             return False
         if self._vertices is None:
             text = self.text
-            if isinstance(text, string_types):
+            if isinstance(text, str):
                 text = [text]
             n_char = sum(len(t) for t in text)
             # we delay creating vertices because it requires a context,
@@ -539,7 +541,7 @@ class TextVisual(Visual):
         if self._pos_changed:
             # now we promote pos to the proper shape (attribute)
             text = self.text
-            if not isinstance(text, string_types):
+            if not isinstance(text, str):
                 repeats = [4 * len(t) for t in text]
                 text = ''.join(text)
             else:
@@ -567,7 +569,7 @@ class TextVisual(Visual):
         if self._color_changed:
             # now we promote color to the proper shape (varying)
             text = self.text
-            if not isinstance(text, string_types):
+            if not isinstance(text, str):
                 repeats = [4 * len(t) for t in text]
                 text = ''.join(text)
             else:
@@ -605,6 +607,37 @@ class TextVisual(Visual):
 
     def _compute_bounds(self, axis, view):
         return self._pos[:, axis].min(), self._pos[:, axis].max()
+
+    @property
+    def face(self):
+        return self._face
+
+    @face.setter
+    def face(self, value):
+        self._face = value
+        self._update_font()
+
+    @property
+    def bold(self):
+        return self._bold
+
+    @bold.setter
+    def bold(self, value):
+        self._bold = value
+        self._update_font()
+
+    @property
+    def italic(self):
+        return self._italic
+
+    @italic.setter
+    def italic(self, value):
+        self._italic = value
+        self._update_font()
+
+    def _update_font(self):
+        self._font = self._font_manager.get_font(self._face, self._bold, self._italic)
+        self.update()
 
 
 class SDFRendererCPU(object):
