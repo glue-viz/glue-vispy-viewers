@@ -1,6 +1,6 @@
 from glue.core import Subset
 from echo import (CallbackProperty, SelectionCallbackProperty,
-                                delay_callback)
+                  delay_callback)
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.core.data_combo_helper import ComponentIDComboHelper
 from ..common.layer_state import VispyLayerState
