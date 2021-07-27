@@ -1,4 +1,4 @@
-from glue.external.echo import CallbackProperty, keep_in_sync
+from echo import CallbackProperty, keep_in_sync
 from glue.core.message import LayerArtistUpdatedMessage
 from glue.viewers.common.state import LayerState
 

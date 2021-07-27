@@ -5,7 +5,7 @@ from glue.core.subset import Subset
 from qtpy import QtWidgets
 
 from glue.utils.qt import load_ui
-from glue.external.echo.qt import autoconnect_callbacks_to_qt
+from echo.qt import autoconnect_callbacks_to_qt
 
 
 class VolumeLayerStyleWidget(QtWidgets.QWidget):

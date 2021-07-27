@@ -1,5 +1,5 @@
 from glue.config import colormaps
-from glue.external.echo import CallbackProperty, SelectionCallbackProperty, delay_callback
+from echo import CallbackProperty, SelectionCallbackProperty, delay_callback
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.core.data_combo_helper import ComponentIDComboHelper
 

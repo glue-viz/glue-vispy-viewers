@@ -1,5 +1,5 @@
 from glue.core import Subset
-from glue.external.echo import (CallbackProperty, SelectionCallbackProperty,
+from echo import (CallbackProperty, SelectionCallbackProperty,
                                 delay_callback)
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.core.data_combo_helper import ComponentIDComboHelper

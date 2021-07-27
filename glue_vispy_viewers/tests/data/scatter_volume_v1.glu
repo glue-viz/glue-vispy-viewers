@@ -1,12 +1,12 @@
 {
   "CallbackList": {
-    "_type": "glue.external.echo.list.CallbackList",
+    "_type": "echo.list.CallbackList",
     "values": [
       "ScatterLayerState"
     ]
   },
   "CallbackList_0": {
-    "_type": "glue.external.echo.list.CallbackList",
+    "_type": "echo.list.CallbackList",
     "values": [
       "VolumeLayerState"
     ]
