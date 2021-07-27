@@ -1,4 +1,4 @@
-1.0.2 (unreleased)
+1.0.3 (2021-07-27)
 ------------------
 
 - Fix deprecation warnings related to echo with recent versions
