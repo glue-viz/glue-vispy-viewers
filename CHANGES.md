@@ -1,3 +1,9 @@
+1.0.2 (unreleased)
+------------------
+
+- Fix deprecation warnings related to echo with recent versions
+  of glue-core. [#367]
+
 1.0.2 (2020-11-24)
 ------------------
 

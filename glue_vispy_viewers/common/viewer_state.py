@@ -1,7 +1,7 @@
 import numpy as np
 
-from glue.external.echo import (CallbackProperty, SelectionCallbackProperty,
-                                delay_callback, ListCallbackProperty)
+from echo import (CallbackProperty, SelectionCallbackProperty,
+                  delay_callback, ListCallbackProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.viewers.common.state import ViewerState
 

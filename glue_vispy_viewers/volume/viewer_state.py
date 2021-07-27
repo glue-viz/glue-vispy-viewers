@@ -1,5 +1,5 @@
 from glue.core.data import BaseData
-from glue.external.echo import CallbackProperty, SelectionCallbackProperty
+from echo import CallbackProperty, SelectionCallbackProperty
 from glue_vispy_viewers.common.viewer_state import Vispy3DViewerState
 from glue.core.data_combo_helper import ManualDataComboHelper
 

@@ -1,7 +1,7 @@
 import numpy as np
 
 from glue.viewers.common.qt.data_viewer_with_state import DataViewerWithState
-from glue.external.echo import delay_callback
+from echo import delay_callback
 
 from qtpy import QtWidgets
 from qtpy.QtCore import Qt
