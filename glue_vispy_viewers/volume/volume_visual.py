@@ -367,6 +367,19 @@ class MultiVolumeVisual(VolumeVisual):
         self.transform._update_shaders()
         self.transform.update()
 
+    def _prepare_transforms(self, view):
+
+        # Copied from VolumeVisual in vispy v0.8.1 as this was then chnaged
+        # in v0.9.0 in a way that breaks things.
+
+        trs = view.transforms
+        view.view_program.vert['transform'] = trs.get_transform()
+
+        view_tr_f = trs.get_transform('visual', 'document')
+        view_tr_i = view_tr_f.inverse
+        view.view_program.vert['viewtransformf'] = view_tr_f
+        view.view_program.vert['viewtransformi'] = view_tr_i
+
     @property
     def enabled(self):
         return [self.shared_program['u_enabled_{0}'.format(i)] == 1
