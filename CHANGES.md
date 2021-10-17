@@ -1,4 +1,4 @@
-1.0.4 (unreleased)
+1.0.4 (2021-10-17)
 ------------------
 
 - Fix compatibility with vispy v0.9.0. [#369]
