@@ -41,7 +41,27 @@ except ImportError:  # Python < 3.5
     def indent(text, prefix):
         return '\n'.join(prefix + line for line in text.splitlines())
 
-from vispy.visuals.volume import VERT_SHADER  # noqa
+# Vertex shader
+VERT_SHADER = """
+attribute vec3 a_position;
+uniform vec3 u_shape;
+varying vec3 v_position;
+varying vec4 v_nearpos;
+varying vec4 v_farpos;
+void main() {
+    v_position = a_position;
+    // Project local vertex coordinate to camera position. Then do a step
+    // backward (in cam coords) and project back. Voila, we get our ray vector.
+    vec4 pos_in_cam = $viewtransformf(vec4(v_position, 1));
+    // intersection of ray and near clipping plane (z = -1 in clip coords)
+    pos_in_cam.z = -pos_in_cam.w;
+    v_nearpos = $viewtransformi(pos_in_cam);
+    // intersection of ray and far clipping plane (z = +1 in clip coords)
+    pos_in_cam.z = pos_in_cam.w;
+    v_farpos = $viewtransformi(pos_in_cam);
+    gl_Position = $transform(vec4(v_position, 1.0));
+}
+"""
 
 # Fragment shader
 FRAG_SHADER = """
