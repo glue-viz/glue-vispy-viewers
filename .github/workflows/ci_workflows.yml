@@ -1,0 +1,46 @@
+name: CI Workflows
+
+on:
+  push:
+    branches:
+    - main
+    tags:
+    - '*'
+  pull_request:
+
+jobs:
+  tests:
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
+    with:
+      display: true
+      coverage: codecov
+      libraries: |
+        apt:
+          - libxkbcommon-x11-0
+
+      envs: |
+        # Code style
+        - linux: codestyle
+          coverage: false
+
+        # Standard tests
+        - linux: py36-test
+        - linux: py37-test
+        - linux: py37-test-dev
+        - linux: py310-test
+
+        - macos: py37-test
+        - macos: py39-test
+        - macos: py39-test-dev
+
+        - windows: py36-test
+        - windows: py37-test
+        - windows: py38-test-dev
+
+  publish:
+    needs: tests
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/publish_pure_python.yml@v1
+    with:
+      libraries: libxkbcommon-x11-0
+    secrets:
+      pypi_token: ${{ secrets.pypi_token }}
