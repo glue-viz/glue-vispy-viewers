@@ -24,18 +24,18 @@ jobs:
           coverage: false
 
         # Standard tests
-        - linux: py36-test
         - linux: py37-test
         - linux: py37-test-dev
+        - linux: py38-test
         - linux: py310-test
 
         - macos: py37-test
         - macos: py39-test
-        - macos: py39-test-dev
+        - macos: py310-test-dev
 
-        - windows: py36-test
         - windows: py37-test
         - windows: py38-test-dev
+        - windows: py39-test
 
   publish:
     needs: tests
