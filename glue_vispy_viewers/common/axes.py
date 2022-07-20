@@ -85,7 +85,7 @@ class AxesVisual3D(object):
 
     @axis_color.setter
     def axis_color(self, value):
-        self.axis.color = value
+        self.axis.set_data(color=value)
 
     @property
     def tick_font_size(self):
