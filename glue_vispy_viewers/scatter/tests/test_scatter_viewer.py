@@ -1,4 +1,6 @@
 import numpy as np
+import pytest
+import sys
 
 from glue.core import DataCollection, Data
 from glue.app.qt.application import GlueApplication
@@ -7,6 +9,8 @@ from glue.core.component import Component
 from matplotlib import cm
 
 from ..scatter_viewer import VispyScatterViewer
+
+IS_WIN = sys.platform == 'win32'
 
 
 def make_test_data():
@@ -22,6 +26,7 @@ def make_test_data():
     return data
 
 
+@pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
 def test_scatter_viewer(tmpdir):
 
     # Create fake data
@@ -122,6 +127,7 @@ def test_scatter_viewer(tmpdir):
     ga2.close()
 
 
+@pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
 def test_error_bars(tmpdir):
 
     # Create fake data

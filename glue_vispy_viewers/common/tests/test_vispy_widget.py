@@ -1,11 +1,16 @@
 import numpy as np
+import pytest
+import sys
 
 from vispy import scene
 
 from ..vispy_widget import VispyWidgetHelper
 from ..viewer_state import Vispy3DViewerState
 
+IS_WIN = sys.platform == 'win32'
 
+
+@pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
 def test_vispy_widget():
 
     d = Vispy3DViewerState()

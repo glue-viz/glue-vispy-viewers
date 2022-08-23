@@ -1,3 +1,4 @@
+import sys
 import pytest
 import numpy as np
 
@@ -6,6 +7,8 @@ from glue.app.qt.application import GlueApplication
 from glue.core.component import Component
 
 from ..isosurface_viewer import VispyIsosurfaceViewer
+
+IS_WIN = sys.platform == 'win32'
 
 
 def make_test_data():
@@ -21,6 +24,7 @@ def make_test_data():
     return data
 
 
+@pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
 def test_isosurface_viewer(tmpdir):
 
     # Create fake data

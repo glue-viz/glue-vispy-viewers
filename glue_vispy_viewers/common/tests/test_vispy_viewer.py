@@ -2,6 +2,7 @@
 
 import numpy as np
 import pytest
+import sys
 from mock import patch
 
 from glue.core import Data, DataCollection
@@ -13,6 +14,8 @@ from ..vispy_data_viewer import BaseVispyViewer
 from ...volume.volume_viewer import VispyVolumeViewer
 from ...scatter.scatter_viewer import VispyScatterViewer
 from ...isosurface.isosurface_viewer import VispyIsosurfaceViewer
+
+IS_WIN = sys.platform == 'win32'
 
 
 def setup_function(func):
@@ -33,6 +36,7 @@ class BaseTestDataViewer(object):
             w.close()
         unregister.assert_called_once_with(hub)
 
+    @pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
     def test_add_viewer(self, tmpdir):
         if self.widget_cls == VispyIsosurfaceViewer:
             pytest.skip(reason='MultiIsoVisual broken')
