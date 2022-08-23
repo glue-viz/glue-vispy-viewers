@@ -42,7 +42,7 @@ from vispy.visuals.volume import VolumeVisual, Visual
 from vispy.scene.visuals import create_visual_node
 
 import numpy as np
-from vispy.visuals.volume import VERT_SHADER, frag_dict
+from ..volume.shaders import VERT_SHADER
 from vispy.color import get_colormap
 
 # TODO: find a way to add a uniform variable instead of rewriting the whole shader code
@@ -265,8 +265,6 @@ ISO_SNIPPETS = dict(
 
 ISO_FRAG_SHADER = FRAG_SHADER.format(**ISO_SNIPPETS)
 
-frag_dict['iso'] = ISO_FRAG_SHADER
-
 
 class MultiIsoVisual(VolumeVisual):
     """
@@ -299,6 +297,9 @@ class MultiIsoVisual(VolumeVisual):
         # Set the colormap
         self._cmap = get_colormap(cmap)
         # self._cmap = TransGrays()
+
+        # Set the shader for (default) rendering method
+        self._rendering_methods['iso'] = ISO_FRAG_SHADER
 
         # Create gloo objects
         self._vertices = VertexBuffer()
