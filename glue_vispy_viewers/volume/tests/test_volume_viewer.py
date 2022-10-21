@@ -1,3 +1,5 @@
+import sys
+import pytest
 import numpy as np
 
 from glue.core import DataCollection, Data
@@ -7,6 +9,8 @@ from glue.core.link_helpers import LinkSame
 from glue.core.fixed_resolution_buffer import PIXEL_CACHE, ARRAY_CACHE
 
 from ..volume_viewer import VispyVolumeViewer
+
+IS_WIN = sys.platform == 'win32'
 
 
 def teardown_function(function):
@@ -30,6 +34,7 @@ def make_test_data(dimensions=(10, 10, 10)):
     return data
 
 
+@pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
 def test_volume_viewer(tmpdir):
 
     # Create fake data
@@ -108,6 +113,7 @@ def test_volume_viewer(tmpdir):
     ga2.close()
 
 
+@pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
 def test_array_shape(tmpdir):
     # Create irregularly shaped data cube
     data = make_test_data((3841, 48, 46))
@@ -130,6 +136,7 @@ def test_array_shape(tmpdir):
     ga.close()
 
 
+@pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
 def test_scatter_on_volume(tmpdir):
 
     data1 = Data(a=np.arange(60).reshape((3, 4, 5)))
@@ -168,6 +175,7 @@ def test_scatter_on_volume(tmpdir):
     ga2.close()
 
 
+@pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
 def test_layer_visibility_clip():
 
     # Regression test for a bug that meant that updating the clip data setting
@@ -201,6 +209,7 @@ def test_layer_visibility_clip():
     ga.close()
 
 
+@pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
 def test_remove_subset_group():
 
     # Regression test for a bug that meant that removing a subset caused an
@@ -240,6 +249,8 @@ def test_add_data_with_incompatible_subsets(tmpdir):
     # for data1
     dc.new_subset_group(subset_state=data2.id['y'] > 0.5, label='subset 1')
 
+    if IS_WIN:
+        pytest.skip(reason='Windows fatal exception: access violation')
     volume = ga.new_data_viewer(VispyVolumeViewer)
     volume.add_data(data1)
 

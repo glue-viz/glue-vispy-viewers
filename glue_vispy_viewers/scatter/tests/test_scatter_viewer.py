@@ -329,24 +329,7 @@ def test_scatter_remove_layer_artists(tmpdir):
     ga2.close()
 
 
-def test_add_data(tmpdir):
-
-    # Regression test for a bug that an error when adding a dataset with an
-    # incompatible subset to a 3D scatter viewer.
-
-    data1 = Data(label="Data 1", x=[1, 2, 3])
-    data2 = Data(label="Data 2", y=[4, 5, 6])
-
-    dc = DataCollection([data1, data2])
-    ga = GlueApplication(dc)
-    ga.show()
-
-    scatter = ga.new_data_viewer(VispyScatterViewer)
-    scatter.add_data(data1)
-
-    ga.close()
-
-
+@pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
 def test_add_data_with_incompatible_subsets(tmpdir):
 
     # Regression test for a bug that an error when adding a dataset with an
@@ -369,6 +352,7 @@ def test_add_data_with_incompatible_subsets(tmpdir):
     ga.close()
 
 
+@pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
 def test_not_all_points_inside_limits(tmpdir):
 
     # Regression test for a bug that occurred when not all points were inside
@@ -392,6 +376,7 @@ def test_not_all_points_inside_limits(tmpdir):
     ga.close()
 
 
+@pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
 def test_categorical_color_size(tmpdir):
 
     # Create fake data
@@ -424,6 +409,7 @@ def test_categorical_color_size(tmpdir):
     ga.close()
 
 
+@pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
 def test_layer_visibility_after_session(tmpdir):
 
     # Regression test for a bug that caused layers to be incorrectly visible

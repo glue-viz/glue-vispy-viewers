@@ -9,6 +9,7 @@ from glue.core.component import Component
 from ..isosurface_viewer import VispyIsosurfaceViewer
 
 IS_WIN = sys.platform == 'win32'
+PY_LT38 = sys.version_info < (3, 8)
 
 
 def make_test_data():
@@ -25,6 +26,7 @@ def make_test_data():
 
 
 @pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
+@pytest.mark.skipif('PY_LT38', reason='Teardown error on Python 3.7')
 def test_isosurface_viewer(tmpdir):
 
     # Create fake data
