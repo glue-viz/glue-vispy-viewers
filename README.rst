@@ -1,7 +1,7 @@
 Glue plugin for 3D viewers using VisPy
 ======================================
 
-|Travis Status| |AppVeyor Status| |Coverage Status|
+|Actions Status| |Coverage Status|
 
 Requirements
 ------------
@@ -56,9 +56,8 @@ working directory::
     from glue_vispy_viewers.isosurface import setup as setup_isosurface
     setup_isosurface()
 
-.. |Travis Status| image:: https://travis-ci.org/glue-viz/glue-vispy-viewers.svg
-   :target: https://travis-ci.org/glue-viz/glue-vispy-viewers?branch=master
-.. |AppVeyor Status| image:: https://ci.appveyor.com/api/projects/status/7h9js5tdu9v9nnlg/branch/master?svg=true
-   :target: https://ci.appveyor.com/project/glue-viz/glue-3d-viewer/branch/master
-.. |Coverage Status| image:: https://coveralls.io/repos/github/glue-viz/glue-vispy-viewers/badge.svg
-   :target: https://coveralls.io/github/glue-viz/glue-vispy-viewers
+.. |Actions Status| image:: https://github.com/glue-viz/glue-vispy-viewers/workflows/CI%20Workflows/badge.svg
+    :target: https://github.com/glue-viz/glue-vispy-viewers/actions
+    :alt: Glue's GitHub Actions CI Status
+.. |Coverage Status| image:: https://codecov.io/gh/glue-viz/glue-vispy-viewers/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/glue-viz/glue-vispy-viewers

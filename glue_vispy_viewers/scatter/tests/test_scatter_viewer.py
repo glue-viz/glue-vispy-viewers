@@ -190,6 +190,7 @@ def test_error_bars(tmpdir):
     ga2.close()
 
 
+@pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
 def test_vectors(tmpdir):
 
     # Create fake data
@@ -254,6 +255,7 @@ def test_vectors(tmpdir):
     ga2.close()
 
 
+@pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
 def test_n_dimensional_data():
 
     # Create fake data
@@ -283,6 +285,7 @@ def test_n_dimensional_data():
     ga.close()
 
 
+@pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
 def test_scatter_remove_layer_artists(tmpdir):
 
     # Regression test for a bug that caused layer states to not be removed
@@ -326,6 +329,7 @@ def test_scatter_remove_layer_artists(tmpdir):
     ga2.close()
 
 
+@pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
 def test_add_data_with_incompatible_subsets(tmpdir):
 
     # Regression test for a bug that an error when adding a dataset with an
@@ -348,6 +352,7 @@ def test_add_data_with_incompatible_subsets(tmpdir):
     ga.close()
 
 
+@pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
 def test_not_all_points_inside_limits(tmpdir):
 
     # Regression test for a bug that occurred when not all points were inside
@@ -371,6 +376,7 @@ def test_not_all_points_inside_limits(tmpdir):
     ga.close()
 
 
+@pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
 def test_categorical_color_size(tmpdir):
 
     # Create fake data
@@ -403,6 +409,7 @@ def test_categorical_color_size(tmpdir):
     ga.close()
 
 
+@pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
 def test_layer_visibility_after_session(tmpdir):
 
     # Regression test for a bug that caused layers to be incorrectly visible
