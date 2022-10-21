@@ -1,12 +1,12 @@
 {
   "CallbackList": {
-    "_type": "echo.list.CallbackList",
+    "_type": "echo.CallbackList",
     "values": [
       "ScatterLayerState"
     ]
   },
   "CallbackList_0": {
-    "_type": "echo.list.CallbackList",
+    "_type": "echo.CallbackList",
     "values": [
       "VolumeLayerState"
     ]

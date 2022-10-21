@@ -9,7 +9,17 @@ on:
   pull_request:
 
 jobs:
+  initial_checks:
+    # Mandatory checks before CI tests
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
+    with:
+      coverage: false
+      envs: |
+        # Code style
+        - linux: codestyle
+
   tests:
+    needs: initial_checks
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
     with:
       display: true
@@ -19,10 +29,6 @@ jobs:
           - libxkbcommon-x11-0
 
       envs: |
-        # Code style
-        - linux: codestyle
-          coverage: false
-
         # Standard tests
         - linux: py37-test
         - linux: py37-test-dev
@@ -35,7 +41,7 @@ jobs:
 
         - windows: py37-test
         - windows: py38-test-dev
-        - windows: py39-test
+        - windows: py310-test
 
   publish:
     needs: tests
