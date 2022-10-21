@@ -190,6 +190,7 @@ def test_error_bars(tmpdir):
     ga2.close()
 
 
+@pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
 def test_vectors(tmpdir):
 
     # Create fake data
@@ -254,6 +255,7 @@ def test_vectors(tmpdir):
     ga2.close()
 
 
+@pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
 def test_n_dimensional_data():
 
     # Create fake data
@@ -283,6 +285,7 @@ def test_n_dimensional_data():
     ga.close()
 
 
+@pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
 def test_scatter_remove_layer_artists(tmpdir):
 
     # Regression test for a bug that caused layer states to not be removed
@@ -324,6 +327,24 @@ def test_scatter_remove_layer_artists(tmpdir):
     ga2 = GlueApplication.restore_session(session_file)
     ga2.show()
     ga2.close()
+
+
+def test_add_data(tmpdir):
+
+    # Regression test for a bug that an error when adding a dataset with an
+    # incompatible subset to a 3D scatter viewer.
+
+    data1 = Data(label="Data 1", x=[1, 2, 3])
+    data2 = Data(label="Data 2", y=[4, 5, 6])
+
+    dc = DataCollection([data1, data2])
+    ga = GlueApplication(dc)
+    ga.show()
+
+    scatter = ga.new_data_viewer(VispyScatterViewer)
+    scatter.add_data(data1)
+
+    ga.close()
 
 
 def test_add_data_with_incompatible_subsets(tmpdir):
