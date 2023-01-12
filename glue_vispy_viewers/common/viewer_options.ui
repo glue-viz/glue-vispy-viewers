@@ -138,14 +138,14 @@
    <item row="4" column="3" colspan="3">
     <widget class="QComboBox" name="combosel_y_att">
      <property name="sizeAdjustPolicy">
-      <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+      <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
      </property>
     </widget>
    </item>
    <item row="7" column="3" colspan="3">
     <widget class="QComboBox" name="combosel_z_att">
      <property name="sizeAdjustPolicy">
-      <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+      <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
      </property>
     </widget>
    </item>
@@ -236,7 +236,7 @@
    <item row="0" column="3" colspan="3">
     <widget class="QComboBox" name="combosel_x_att">
      <property name="sizeAdjustPolicy">
-      <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+      <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
      </property>
     </widget>
    </item>
