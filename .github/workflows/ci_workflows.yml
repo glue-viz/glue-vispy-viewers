@@ -24,11 +24,13 @@ jobs:
     with:
       display: true
       coverage: codecov
-      # The Linux PyQt 5.15 installation requires apt-getting its xcb deps and headless X11 display
+      # Linux PyQt 5.15 and 6.x installations require apt-getting xcb and EGL deps
+      # and headless X11 display
       libraries: |
         apt:
           - '^libxcb.*-dev'
           - libxkbcommon-x11-dev
+          - libegl1-mesa
 
       envs: |
         # Standard tests
