@@ -158,6 +158,8 @@ class MultiVolumeVisual(VolumeVisual):
         # Set initial background color
         self.shared_program['u_bgcolor'] = Color(bgcolor).rgba
 
+        self._need_interpolation_update = False
+
         # Prevent additional attributes from being added
         try:
             self.freeze()
