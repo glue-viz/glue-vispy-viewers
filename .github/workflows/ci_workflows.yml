@@ -34,16 +34,16 @@ jobs:
         # Standard tests
         - linux: py37-test
         - linux: py38-test
-        - linux: py39-test
-        - linux: py310-test-dev
+        - linux: py39-test-pyqt6
+        - linux: py310-test-dev-pyqt6
 
         - macos: py38-test
         - macos: py39-test-dev
-        - macos: py310-test
+        - macos: py310-test-pyqt6
 
         - windows: py38-test
         - windows: py39-test-dev
-        - windows: py310-test
+        - windows: py310-test-pyqt6
 
   publish:
     needs: tests
