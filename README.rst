@@ -59,5 +59,5 @@ working directory::
 .. |Actions Status| image:: https://github.com/glue-viz/glue-vispy-viewers/workflows/CI%20Workflows/badge.svg
     :target: https://github.com/glue-viz/glue-vispy-viewers/actions
     :alt: Glue's GitHub Actions CI Status
-.. |Coverage Status| image:: https://codecov.io/gh/glue-viz/glue-vispy-viewers/branch/master/graph/badge.svg
+.. |Coverage Status| image:: https://codecov.io/gh/glue-viz/glue-vispy-viewers/branch/main/graph/badge.svg
    :target: https://codecov.io/gh/glue-viz/glue-vispy-viewers
