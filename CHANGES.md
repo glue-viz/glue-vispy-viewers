@@ -1,5 +1,21 @@
 # Full changelog
 
+## v1.0.7 - 2023-02-11
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Bug Fixes
+
+- Allow axis color to be changed during runtime. by @Carifio24 in https://github.com/glue-viz/glue-vispy-viewers/pull/372
+- Drop Python 3.7 and fix compatibility with latest glue-core versions by @astrofrog in https://github.com/glue-viz/glue-vispy-viewers/pull/377
+
+### New Contributors
+
+- @Carifio24 made their first contribution in https://github.com/glue-viz/glue-vispy-viewers/pull/372
+
+**Full Changelog**: https://github.com/glue-viz/glue-vispy-viewers/compare/v1.0.6...v1.0.7
+
 ## v1.0.6 - 2023-01-12
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
