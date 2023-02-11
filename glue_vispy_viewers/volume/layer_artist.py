@@ -1,11 +1,12 @@
 import uuid
 import weakref
 
+import numpy as np
+
 from matplotlib.colors import ColorConverter
 
 from glue.core.data import Subset, Data
 from glue.core.exceptions import IncompatibleAttribute
-from glue.utils import broadcast_to
 from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
 from .colors import get_translucent_cmap
 from .layer_state import VolumeLayerState
@@ -45,7 +46,7 @@ class DataProxy(object):
         shape = [bound[2] for bound in bounds]
 
         if self.layer_artist is None or self.viewer_state is None:
-            return broadcast_to(0, shape)
+            return np.broadcast_to(0, shape)
 
         if isinstance(self.layer_artist.layer, Subset):
             try:
@@ -56,7 +57,7 @@ class DataProxy(object):
                     cache_id=self.layer_artist.id)
             except IncompatibleAttribute:
                 self.layer_artist.disable_incompatible_subset()
-                return broadcast_to(0, shape)
+                return np.broadcast_to(0, shape)
             else:
                 self.layer_artist.enable()
         else:
@@ -67,7 +68,7 @@ class DataProxy(object):
                     cache_id=self.layer_artist.id)
             except IncompatibleAttribute:
                 self.layer_artist.disable('Layer data is not fully linked to reference data')
-                return broadcast_to(0, shape)
+                return np.broadcast_to(0, shape)
             else:
                 self.layer_artist.enable()
 
