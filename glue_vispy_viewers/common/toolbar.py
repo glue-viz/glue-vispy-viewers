@@ -4,7 +4,7 @@ all button functions will be implemented as a tool function
 """
 
 
-from glue.viewers.common.qt.toolbar import BasicToolbar
+from glue_qt.viewers.common.toolbar import BasicToolbar
 
 from .selection_tools import VispyMouseMode
 

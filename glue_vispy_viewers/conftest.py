@@ -5,7 +5,7 @@ import sys
 if sys.platform.startswith('win'):
     import vispy.gloo.gl  # noqa
 
-from glue.utils.qt import get_qapp  # noqa
+from glue_qt.utils import get_qapp  # noqa
 
 try:
     import objgraph

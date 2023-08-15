@@ -194,7 +194,7 @@
         "VispyVolumeViewer"
       ]
     ],
-    "_type": "glue.app.qt.application.GlueApplication",
+    "_type": "glue_qt.app.application.GlueApplication",
     "data": "DataCollection"
   },
   "CoordinateComponent_2": {
