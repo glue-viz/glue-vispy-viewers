@@ -6,7 +6,7 @@ import sys
 from mock import patch
 
 from glue.core import Data, DataCollection
-from glue.app.qt import GlueApplication
+from glue_qt.app import GlueApplication
 
 from glue.core.tests.util import simple_session
 

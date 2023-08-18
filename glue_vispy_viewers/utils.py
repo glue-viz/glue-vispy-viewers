@@ -37,12 +37,12 @@ def as_matrix_transform(transform):
 
 try:
 
-    from glue.utils.qt import fix_tab_widget_fontsize  # noqa
+    from glue_qt.utils import fix_tab_widget_fontsize  # noqa
 
 except ImportError:
 
     import platform
-    from glue.utils.qt import get_qapp
+    from glue_qt.utils import get_qapp
 
     def fix_tab_widget_fontsize(tab_widget):
         """

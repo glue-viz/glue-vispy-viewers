@@ -3,7 +3,7 @@ import pytest
 import numpy as np
 
 from glue.core import DataCollection, Data
-from glue.app.qt.application import GlueApplication
+from glue_qt.app.application import GlueApplication
 from glue.core.component import Component
 
 from ..isosurface_viewer import VispyIsosurfaceViewer

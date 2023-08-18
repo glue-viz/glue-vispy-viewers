@@ -2,7 +2,7 @@ import os
 
 from qtpy import QtWidgets
 
-from glue.utils.qt import load_ui
+from glue_qt.utils import load_ui
 from echo.qt import autoconnect_callbacks_to_qt
 
 
@@ -27,7 +27,7 @@ class IsosurfaceLayerStyleWidget(QtWidgets.QWidget):
 
 # if __name__ == "__main__":
 #
-#     from glue.utils.qt import get_qapp
+#     from glue_qt.utils import get_qapp
 #     from echo import CallbackProperty
 #
 #     app = get_qapp()
