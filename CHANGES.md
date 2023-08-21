@@ -1,5 +1,14 @@
 # Full changelog
 
+## v1.1.0 - 2023-08-21
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+- Updated imports to glue_qt by @astrofrog in https://github.com/glue-viz/glue-vispy-viewers/pull/378
+
+**Full Changelog**: https://github.com/glue-viz/glue-vispy-viewers/compare/v1.0.7...v1.1.0
+
 ## v1.0.7 - 2023-02-11
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
