@@ -7,12 +7,11 @@ from ..common import tools as _tools, selection_tools  # noqa
 from . import scatter_toolbar  # noqa
 
 
-class VispyScatterViewer(BaseVispyViewer):
+class VispyScatterViewerMixin:
 
     LABEL = "3D Scatter"
 
     _state_cls = Vispy3DScatterViewerState
-    _layer_style_widget_cls = ScatterLayerStyleWidget
 
     tools = BaseVispyViewer.tools + ['vispy:lasso', 'vispy:rectangle',
                                      'vispy:circle', 'scatter3d:point']
