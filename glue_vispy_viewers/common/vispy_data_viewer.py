@@ -16,7 +16,6 @@ class BaseVispyViewerMixin:
     _toolbar_cls = VispyViewerToolbar
 
     tools = ['vispy:reset', 'vispy:rotate']
-    subtools = {'save': ['vispy:save']}
 
     # If imageio is available, we can add the record icon
     try:
