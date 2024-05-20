@@ -22,7 +22,7 @@ class VispyScatterViewerMixin(BaseVispyViewerMixin):
 
         first_layer_artist = len(self._layer_artist_container) == 0
 
-        added = super(VispyScatterViewer, self).add_data(data)
+        added = super().add_data(data)
 
         if added:
             if first_layer_artist:

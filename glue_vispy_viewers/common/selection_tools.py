@@ -29,8 +29,11 @@ class VispyMouseMode(CheckableTool):
 
     def __init__(self, viewer):
         super(VispyMouseMode, self).__init__(viewer)
-        self._vispy_widget = viewer._vispy_widget
         self.current_visible_array = None
+
+    @property
+    def _vispy_widget(self):
+        return self.viewer._vispy_widget
 
     def get_visible_data(self):
         visible = []
@@ -85,8 +88,7 @@ class LassoSelectionMode(VispyMouseMode):
     def __init__(self, viewer):
         super(LassoSelectionMode, self).__init__(viewer)
         self.line = Line(color='purple',
-                         width=2, method='agg',
-                         parent=self._vispy_widget.canvas.scene)
+                         width=2, method='agg')
 
     def activate(self):
         self.reset()
