@@ -5,22 +5,39 @@ from glue_jupyter.link import link
 from glue_jupyter.widgets import LinkedDropdown
 
 
-class Scatter3DViewerStateWidget(VBox):
+import ipyvuetify as v
+import traitlets
+
+from glue_jupyter.state_traitlets_helpers import GlueState
+from glue_jupyter.vuetify_helpers import link_glue_choices
+
+__all__ = ["ScatterViewerStateWidget"]
+
+
+class Scatter3DViewerStateWidget(v.VuetifyTemplate):
+
+    template_file = (__file__, "viewer_state_widget.vue")
+
+    glue_state = GlueState().tag(sync=True)
+
+    x_att_items = traitlets.List().tag(sync=True)
+    x_att_selected = traitlets.Int(allow_none=True).tag(sync=True)
+
+    y_att_items = traitlets.List().tag(sync=True)
+    y_att_selected = traitlets.Int(allow_none=True).tag(sync=True)
+
+    z_att_items = traitlets.List().tag(sync=True)
+    z_att_selected = traitlets.Int(allow_none=True).tag(sync=True)
 
     def __init__(self, viewer_state):
 
-        self.state = viewer_state
+        super().__init__()
 
-        self.widget_show_axes = Checkbox(value=False, description="Show axes")
-        link((self.state, 'visible_axes'), (self.widget_show_axes, 'value'))
+        self.viewer_state = viewer_state
+        self.glue_state = viewer_state
 
-        self.widget_native_aspect = Checkbox(value=False, description="Native aspect ratio")
-        link((self.state, 'native_aspect'), (self.widget_native_aspect, 'value'))
+        link_glue_choices(self, viewer_state, "x_att")
+        link_glue_choices(self, viewer_state, "y_att")
+        link_glue_choices(self, viewer_state, "z_att")
 
-        self.widgets_axis = []
-        for i, axis_name in enumerate('xyz'):
-            widget_axis = LinkedDropdown(self.state, axis_name + '_att',
-                                         label=axis_name + ' axis')
-            self.widgets_axis.append(widget_axis)
-
-        super().__init__([self.widget_show_axes, self.widget_native_aspect] + self.widgets_axis)
+        # TODO: expose line width on viewer state?

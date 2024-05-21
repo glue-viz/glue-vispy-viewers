@@ -17,7 +17,7 @@ class VolumeLayerState(VispyLayerState):
     vmin = CallbackProperty()
     vmax = CallbackProperty()
     subset_mode = CallbackProperty('data')
-    limits_cache = CallbackProperty({})
+    _limits_cache = CallbackProperty({})
 
     def __init__(self, layer=None, **kwargs):
 
@@ -32,7 +32,7 @@ class VolumeLayerState(VispyLayerState):
 
         self.lim_helper = StateAttributeLimitsHelper(self, attribute='attribute',
                                                      lower='vmin', upper='vmax',
-                                                     cache=self.limits_cache)
+                                                     cache=self._limits_cache)
 
         self.add_callback('layer', self._on_layer_change)
         if layer is not None:

@@ -12,14 +12,14 @@ class ScatterLayerState(VispyLayerState):
     A state object for volume layers
     """
 
-    size_mode = CallbackProperty('Fixed')
+    size_mode = SelectionCallbackProperty()
     size = CallbackProperty()
     size_attribute = SelectionCallbackProperty()
     size_vmin = CallbackProperty()
     size_vmax = CallbackProperty()
     size_scaling = CallbackProperty(1)
 
-    color_mode = CallbackProperty('Fixed')
+    color_mode = SelectionCallbackProperty()
     cmap_attribute = SelectionCallbackProperty()
     cmap_vmin = CallbackProperty()
     cmap_vmax = CallbackProperty()
@@ -40,8 +40,8 @@ class ScatterLayerState(VispyLayerState):
     vector_origin = SelectionCallbackProperty(default_index=1)
     vector_arrowhead = CallbackProperty()
 
-    size_limits_cache = CallbackProperty({})
-    cmap_limits_cache = CallbackProperty({})
+    _size_limits_cache = CallbackProperty({})
+    _cmap_limits_cache = CallbackProperty({})
 
     def __init__(self, layer=None, **kwargs):
 
@@ -55,6 +55,9 @@ class ScatterLayerState(VispyLayerState):
             self.size = self.layer.style.markersize
             self.alpha = self.layer.style.alpha
 
+        ScatterLayerState.color_mode.set_choices(self, ['Fixed', 'Linear'])
+        ScatterLayerState.size_mode.set_choices(self, ['Fixed', 'Linear'])
+
         self.size_att_helper = ComponentIDComboHelper(self, 'size_attribute')
         self.cmap_att_helper = ComponentIDComboHelper(self, 'cmap_attribute')
         self.xerr_att_helper = ComponentIDComboHelper(self, 'xerr_attribute', categorical=False)
@@ -67,11 +70,11 @@ class ScatterLayerState(VispyLayerState):
 
         self.size_lim_helper = StateAttributeLimitsHelper(self, attribute='size_attribute',
                                                           lower='size_vmin', upper='size_vmax',
-                                                          cache=self.size_limits_cache)
+                                                          cache=self._size_limits_cache)
 
         self.cmap_lim_helper = StateAttributeLimitsHelper(self, attribute='cmap_attribute',
                                                           lower='cmap_vmin', upper='cmap_vmax',
-                                                          cache=self.cmap_limits_cache)
+                                                          cache=self._cmap_limits_cache)
 
         vector_origin_display = {'tail': 'Tail of vector',
                                  'middle': 'Middle of vector',
