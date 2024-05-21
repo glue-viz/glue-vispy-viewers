@@ -8,3 +8,8 @@ except ImportError:
     raise ImportError("The PyOpenGL package is required for this plugin")
 else:
     del OpenGL
+
+# Ensure we can read old session files prior to the Qt/Jupyter split
+from glue.core.state import PATH_PATCHES
+PATH_PATCHES['glue_vispy_viewers.scatter.scatter_viewer.VispyScatterViewer'] = 'glue_vispy_viewers.scatter.qt.scatter_viewer.VispyScatterViewer'
+del PATH_PATCHES
