@@ -11,7 +11,7 @@ from glue_qt.app import GlueApplication
 from glue.core.tests.util import simple_session
 
 from ..data_viewer import BaseVispyViewer
-from ....volume.volume_viewer import VispyVolumeViewer
+from ....volume.qt.volume_viewer import VispyVolumeViewer
 from ....scatter.qt.scatter_viewer import VispyScatterViewer
 
 IS_WIN = sys.platform == 'win32'

@@ -15,4 +15,7 @@ from glue.core.state import PATH_PATCHES
 PATH_PATCHES[
     "glue_vispy_viewers.scatter.scatter_viewer.VispyScatterViewer"
 ] = "glue_vispy_viewers.scatter.qt.scatter_viewer.VispyScatterViewer"
+PATH_PATCHES[
+    "glue_vispy_viewers.volume.volume_viewer.VispyVolumeViewer"
+] = "glue_vispy_viewers.volume.qt.volume_viewer.VispyVolumeViewer"
 del PATH_PATCHES
