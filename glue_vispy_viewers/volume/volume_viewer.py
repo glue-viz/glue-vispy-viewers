@@ -34,7 +34,7 @@ class VispyVolumeViewerMixin(BaseVispyViewerMixin):
         # Set whether we are emulating a 3D texture. This needs to be
         # enabled as a workaround on Windows otherwise VisPy crashes.
         emulate_texture = (sys.platform == 'win32' and
-                            sys.version_info[0] < 3)
+                           sys.version_info[0] < 3)
 
         multivol = MultiVolume(emulate_texture=emulate_texture,
                                bgcolor=settings.BACKGROUND_COLOR)
@@ -44,7 +44,6 @@ class VispyVolumeViewerMixin(BaseVispyViewerMixin):
 
         self.state.add_callback('resolution', self._update_resolution)
         self._update_resolution()
-
 
     def _update_clip(self, force=False):
         if hasattr(self._vispy_widget, '_multivol'):
