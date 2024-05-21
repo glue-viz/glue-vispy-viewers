@@ -5,7 +5,6 @@ from .viewer_state_widget import Scatter3DViewerStateWidget
 from .layer_state_widget import Scatter3DLayerStateWidget
 
 
-
 class JupyterVispyScatterViewer(VispyScatterViewerMixin, IPyWidgetView):
 
     _options_cls = Scatter3DViewerStateWidget

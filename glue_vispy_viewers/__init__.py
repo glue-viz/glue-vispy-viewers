@@ -1,6 +1,6 @@
 import importlib.metadata
 
-__version__ = importlib.metadata.version('glue-vispy-viewers')
+__version__ = importlib.metadata.version("glue-vispy-viewers")
 
 try:
     import OpenGL  # noqa
@@ -11,5 +11,8 @@ else:
 
 # Ensure we can read old session files prior to the Qt/Jupyter split
 from glue.core.state import PATH_PATCHES
-PATH_PATCHES['glue_vispy_viewers.scatter.scatter_viewer.VispyScatterViewer'] = 'glue_vispy_viewers.scatter.qt.scatter_viewer.VispyScatterViewer'
+
+PATH_PATCHES[
+    "glue_vispy_viewers.scatter.scatter_viewer.VispyScatterViewer"
+] = "glue_vispy_viewers.scatter.qt.scatter_viewer.VispyScatterViewer"
 del PATH_PATCHES

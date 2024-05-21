@@ -1,17 +1,10 @@
-from ipywidgets import Checkbox, VBox
-
-
-from glue_jupyter.link import link
-from glue_jupyter.widgets import LinkedDropdown
-
-
 import ipyvuetify as v
 import traitlets
 
 from glue_jupyter.state_traitlets_helpers import GlueState
 from glue_jupyter.vuetify_helpers import link_glue_choices
 
-__all__ = ["ScatterViewerStateWidget"]
+__all__ = ["Scatter3DViewerStateWidget"]
 
 
 class Scatter3DViewerStateWidget(v.VuetifyTemplate):

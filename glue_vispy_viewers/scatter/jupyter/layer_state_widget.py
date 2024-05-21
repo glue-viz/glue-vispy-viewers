@@ -6,7 +6,7 @@ from glue.config import colormaps
 from glue_jupyter.state_traitlets_helpers import GlueState
 from glue_jupyter.vuetify_helpers import link_glue_choices
 
-__all__ = ["ScatterLayerStateWidget"]
+__all__ = ["Scatter3DLayerStateWidget"]
 
 
 class Scatter3DLayerStateWidget(v.VuetifyTemplate):
@@ -59,7 +59,6 @@ class Scatter3DLayerStateWidget(v.VuetifyTemplate):
 
     zerr_attribute_items = traitlets.List().tag(sync=True)
     zerr_attribute_selected = traitlets.Int(allow_none=True).tag(sync=True)
-
 
     def __init__(self, layer_state):
         super().__init__()
