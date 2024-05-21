@@ -9,7 +9,7 @@ from qtpy.QtCore import QTimer
 from glue.core.data import BaseData
 from glue.core.link_helpers import LinkSame
 
-from ..common.vispy_data_viewer import BaseVispyViewer
+from ..common.qt.data_viewer import BaseVispyViewer
 from .layer_artist import VolumeLayerArtist
 from .layer_style_widget import VolumeLayerStyleWidget
 from .viewer_state import Vispy3DVolumeViewerState
@@ -17,7 +17,7 @@ from .layer_state import VolumeLayerState
 from .volume_visual import MultiVolume
 
 from ..scatter.layer_artist import ScatterLayerArtist
-from ..scatter.layer_style_widget import ScatterLayerStyleWidget
+from ..scatter.qt.layer_style_widget import ScatterLayerStyleWidget
 
 from ..common import tools as _tools, selection_tools  # noqa
 from . import volume_toolbar  # noqa

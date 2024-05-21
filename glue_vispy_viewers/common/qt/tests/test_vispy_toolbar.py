@@ -3,14 +3,14 @@
 import os
 import sys
 import pytest
-from mock import patch
+from unittest.mock import patch
 
 from glue_qt.app import GlueApplication
 from glue.core import Data
 
-from ...scatter.scatter_viewer import VispyScatterViewer
+from ....scatter.qt.scatter_viewer import VispyScatterViewer
 
-from .. import tools  # noqa:
+from ... import tools  # noqa:
 
 try:
     import imageio  # noqa
