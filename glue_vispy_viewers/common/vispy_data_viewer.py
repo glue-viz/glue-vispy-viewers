@@ -5,7 +5,6 @@ from echo import delay_callback
 from vispy.util import keys
 
 from .vispy_widget import VispyWidgetHelper
-from .toolbar import VispyViewerToolbar
 from .viewer_state import Vispy3DViewerState
 from .compat import update_viewer_state
 
@@ -13,7 +12,6 @@ from .compat import update_viewer_state
 class BaseVispyViewerMixin:
 
     _state_cls = Vispy3DViewerState
-    _toolbar_cls = VispyViewerToolbar
 
     tools = ['vispy:reset', 'vispy:rotate']
 

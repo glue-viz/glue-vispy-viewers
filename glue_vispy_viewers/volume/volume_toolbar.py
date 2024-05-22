@@ -30,7 +30,7 @@ class FloodFillSelectionMode(VispyMouseMode):
     def release(self, event):
         pass
 
-    def deactivate(self):
+    def reset(self):
         self.markers.visible = False
 
     def press(self, event):

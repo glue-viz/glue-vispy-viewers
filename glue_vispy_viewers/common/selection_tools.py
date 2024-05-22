@@ -31,6 +31,17 @@ class VispyMouseMode(CheckableTool):
         super(VispyMouseMode, self).__init__(viewer)
         self.current_visible_array = None
 
+    def activate(self):
+        self.viewer.toolbar.activate_tool(self)
+        self.reset()
+
+    def deactivate(self):
+        self.viewer.toolbar.deactivate_tool(self)
+        self.reset()
+
+    def reset(self):
+        pass
+
     @property
     def _vispy_widget(self):
         return self.viewer._vispy_widget
@@ -90,9 +101,6 @@ class LassoSelectionMode(VispyMouseMode):
         self.line = Line(color='purple',
                          width=2, method='agg')
 
-    def activate(self):
-        self.reset()
-
     def reset(self):
         self.line_pos = []
         self.line.set_data(np.zeros((0, 2), dtype=float))
@@ -134,9 +142,6 @@ class RectangleSelectionMode(VispyMouseMode):
         super(RectangleSelectionMode, self).__init__(viewer)
         self.rectangle = Rectangle(center=(0, 0), width=1, height=1, border_width=2,
                                    color=(0, 0, 0, 0), border_color='purple')
-
-    def activate(self):
-        self.reset()
 
     def reset(self):
         self.corner1 = None
@@ -189,9 +194,6 @@ class CircleSelectionMode(VispyMouseMode):
         super(CircleSelectionMode, self).__init__(viewer)
         self.ellipse = Ellipse(center=(0, 0), radius=1, border_width=2,
                                color=(0, 0, 0, 0), border_color='purple')
-
-    def activate(self):
-        self.reset()
 
     def reset(self):
         self.center = None
