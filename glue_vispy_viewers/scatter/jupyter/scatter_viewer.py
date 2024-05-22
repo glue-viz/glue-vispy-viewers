@@ -4,6 +4,8 @@ from ..scatter_viewer import VispyScatterViewerMixin
 from .viewer_state_widget import Scatter3DViewerStateWidget
 from .layer_state_widget import Scatter3DLayerStateWidget
 
+__all__ = ['JupyterVispyScatterViewer']
+
 
 class JupyterVispyScatterViewer(VispyScatterViewerMixin, IPyWidgetView):
 
