@@ -1,8 +1,6 @@
 import ipyvuetify as v
 import traitlets
 
-from glue.config import colormaps
-
 from glue_jupyter.state_traitlets_helpers import GlueState
 from glue_jupyter.vuetify_helpers import link_glue_choices
 
