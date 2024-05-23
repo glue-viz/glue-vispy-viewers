@@ -20,18 +20,9 @@ BROKEN_PYQT5_MESSAGE = ("The version of PyQt5 you are using does not appear to "
 class BaseVispyViewer(BaseVispyViewerMixin, DataViewer):
 
     _options_cls = VispyOptionsWidget
-    tools = BaseVispyViewerMixin.tools
     subtools = {'save': ['vispy:save']}
 
     _toolbar_cls = VispyQtToolbar
-
-    # If imageio is available, we can add the record icon
-    try:
-        import imageio  # noqa
-    except ImportError:
-        pass
-    else:
-        tools.insert(1, 'vispy:record')
 
     def __init__(self, session, state=None, parent=None):
         super().__init__(session, state=state, parent=parent)
@@ -50,3 +41,12 @@ class BaseVispyViewer(BaseVispyViewerMixin, DataViewer):
     def show_status(self, text):
         statusbar = self.statusBar()
         statusbar.showMessage(text)
+
+
+# If imageio is available, we can add the record icon
+try:
+    import imageio  # noqa
+except ImportError:
+    pass
+else:
+    BaseVispyViewer.tools.insert(1, 'vispy:record')
