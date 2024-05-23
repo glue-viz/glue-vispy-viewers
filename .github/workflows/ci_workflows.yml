@@ -41,6 +41,12 @@ jobs:
         - windows: py311-test
         - linux: py311-test-dev
 
+        # Tests with Jupyter
+        - linux: py38-test-jupyter
+        - windows: py39-test-jupyter
+        - linux: py310-test-jupyter
+        - windows: py311-test-jupyter
+
         # Tests with Qt
         - linux: py38-test-pyqt63
         - linux: py39-test-pyside63
