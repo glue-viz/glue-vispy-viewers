@@ -8,6 +8,8 @@ from ..vispy_data_viewer import BaseVispyViewerMixin
 
 from .toolbar import VispyQtToolbar
 
+from . import tools  # noqa
+
 BROKEN_PYQT5_MESSAGE = ("The version of PyQt5 you are using does not appear to "
                         "support OpenGL. See <a href='http://docs.glueviz.org/en"
                         "/stable/known_issues.html#d-viewers-not-working-on-linux"
