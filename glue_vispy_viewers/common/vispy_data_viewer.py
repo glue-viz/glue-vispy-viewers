@@ -15,14 +15,6 @@ class BaseVispyViewerMixin:
 
     tools = ['vispy:reset', 'vispy:rotate']
 
-    # If imageio is available, we can add the record icon
-    try:
-        import imageio  # noqa
-    except ImportError:
-        pass
-    else:
-        tools.insert(1, 'vispy:record')
-
     def setup_widget_and_callbacks(self):
 
         self._vispy_widget = VispyWidgetHelper(viewer_state=self.state)

@@ -14,6 +14,13 @@ else:
     GLUEQT_INSTALLED = True
 
 try:
+    import glue_jupyter  # noqa
+except ImportError:
+    GLUEJUPYTER_INSTALLED = False
+else:
+    GLUEJUPYTER_INSTALLED = True
+
+try:
     import objgraph
 except ImportError:
     OBJGRAPH_INSTALLED = False
@@ -44,8 +51,11 @@ VIEWER_CLASSES = ['VispyScatterViewer', 'VispyVolumeViewer']
 
 
 def pytest_ignore_collect(collection_path, path, config):
-    if path.isdir() and "qt" in collection_path.parts:
-        return not GLUEQT_INSTALLED
+    if path.isdir():
+        if "qt" in collection_path.parts:
+            return not GLUEQT_INSTALLED
+        if "jupyter" in collection_path.parts:
+            return not GLUEJUPYTER_INSTALLED
 
 
 def pytest_runtest_setup(item):

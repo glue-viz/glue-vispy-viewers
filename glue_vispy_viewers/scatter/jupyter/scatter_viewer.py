@@ -16,7 +16,7 @@ class JupyterVispyScatterViewer(VispyScatterViewerMixin, IPyWidgetView):
 
     def __init__(self, *args, **kwargs):
         # Vispy and jupyter_rfb don't work correctly on Linux unless DISPLAY is set
-        if 'DISPLAY' not in os:
+        if 'DISPLAY' not in os.environ:
             os.environ['DISPLAY'] = ':0'
         super().__init__(*args, **kwargs)
         self.setup_widget_and_callbacks()
