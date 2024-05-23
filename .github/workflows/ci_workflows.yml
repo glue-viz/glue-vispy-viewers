@@ -33,12 +33,13 @@ jobs:
           - libegl1-mesa
 
       envs: |
-        # Tests without Qt
+        # Tests without Qt. For now glfw can't run on MacOS runners in headless mode
+        # so we only run on Linux and Windows.
         - linux: py38-test
-        - macos: py39-test
-        - windows: py310-test
-        - linux: py311-test
-        - macos: py311-test-dev
+        - windows: py39-test
+        - linux: py310-test
+        - windows: py311-test
+        - linux: py311-test-dev
 
         # Tests with Qt
         - linux: py38-test-pyqt63
