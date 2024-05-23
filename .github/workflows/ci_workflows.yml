@@ -33,19 +33,34 @@ jobs:
           - libegl1-mesa
 
       envs: |
-        # Standard tests
+        # Tests without Qt. For now glfw can't run on MacOS runners in headless mode
+        # so we only run on Linux and Windows.
         - linux: py38-test
-        - linux: py39-test
-        - linux: py310-test-pyqt6
-        - linux: py311-test-dev-pyqt6
+        - windows: py39-test
+        - linux: py310-test
+        - windows: py311-test
+        - linux: py311-test-dev
 
-        - macos: py38-test
-        - macos: py39-test-dev
-        - macos: py310-test-pyqt6
+        # Tests with Jupyter
+        - linux: py38-test-jupyter
+        - windows: py39-test-jupyter
+        - linux: py310-test-jupyter
+        - windows: py311-test-jupyter
 
-        - windows: py38-test
-        - windows: py39-test-dev
-        - windows: py310-test-pyqt6
+        # Tests with Qt
+        - linux: py38-test-pyqt63
+        - linux: py39-test-pyside63
+        - linux: py310-test-pyqt64
+        - linux: py311-test-dev-pyqt64
+        # - macos: py38-test-pyqt63  # segfault
+        - macos: py39-test-pyside63
+        - macos: py310-test-pyqt64
+        - macos: py311-test-dev-pyqt64
+        - windows: py38-test-pyqt63
+        - windows: py39-test-pyside63
+        - windows: py310-test-pyqt64
+        - windows: py311-test-dev-pyqt64
+
 
   publish:
     needs: tests

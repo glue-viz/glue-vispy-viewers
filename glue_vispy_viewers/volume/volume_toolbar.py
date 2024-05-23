@@ -25,13 +25,12 @@ class FloodFillSelectionMode(VispyMouseMode):
 
     def __init__(self, viewer):
         super(FloodFillSelectionMode, self).__init__(viewer)
-        self.markers = Markers(parent=self._vispy_widget.view.scene)
         self.subset_state = None
 
     def release(self, event):
         pass
 
-    def deactivate(self):
+    def reset(self):
         self.markers.visible = False
 
     def press(self, event):
@@ -39,6 +38,9 @@ class FloodFillSelectionMode(VispyMouseMode):
         Assign mouse position and do point selection.
         :param event:
         """
+
+        if not hasattr(self, 'markers'):
+            self.markers = Markers(parent=self._vispy_widget.view.scene)
 
         if event.button == 1:
 

@@ -3,16 +3,16 @@
 import numpy as np
 import pytest
 import sys
-from mock import patch
+from unittest.mock import patch
 
 from glue.core import Data, DataCollection
 from glue_qt.app import GlueApplication
 
 from glue.core.tests.util import simple_session
 
-from ..vispy_data_viewer import BaseVispyViewer
-from ...volume.volume_viewer import VispyVolumeViewer
-from ...scatter.scatter_viewer import VispyScatterViewer
+from ..data_viewer import BaseVispyViewer
+from ....volume.qt.volume_viewer import VispyVolumeViewer
+from ....scatter.qt.scatter_viewer import VispyScatterViewer
 
 IS_WIN = sys.platform == 'win32'
 

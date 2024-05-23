@@ -5,7 +5,7 @@ from qtpy import QtWidgets
 from glue_qt.utils import load_ui
 from echo.qt import autoconnect_callbacks_to_qt
 
-from glue_vispy_viewers.utils import fix_tab_widget_fontsize
+from glue_qt.utils.app import fix_tab_widget_fontsize
 
 
 class ScatterLayerStyleWidget(QtWidgets.QWidget):

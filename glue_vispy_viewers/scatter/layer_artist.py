@@ -64,8 +64,8 @@ class ScatterLayerArtist(VispyLayerArtist):
 
             self.vispy_widget.add_data_visual(multiscat)
             self.vispy_widget._multiscat = multiscat
-            vispy_viewer.options.ui.label_line_width.show()
-            vispy_viewer.options.ui.value_line_width.show()
+            # vispy_viewer.options.ui.label_line_width.show()
+            # vispy_viewer.options.ui.value_line_width.show()
 
         self._multiscat = self.vispy_widget._multiscat
         self._multiscat.allocate(self.id)

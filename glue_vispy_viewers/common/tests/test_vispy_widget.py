@@ -17,7 +17,8 @@ def test_vispy_widget():
 
     w = VispyWidgetHelper(viewer_state=d)
 
-    w.canvas.native.show()
+    if hasattr(w.canvas.native, 'show'):  # Qt
+        w.canvas.native.show()
 
     # Try adding marker visuals to the scene
     positions = np.random.random((1000, 3))

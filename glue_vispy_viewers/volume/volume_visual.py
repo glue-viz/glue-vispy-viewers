@@ -36,7 +36,6 @@
 # This modified version is released under the BSD license given in the LICENSE
 # file in this repository.
 
-from distutils.version import LooseVersion
 from collections import defaultdict
 
 import numpy as np
@@ -49,8 +48,6 @@ from vispy.color import get_colormap, Color
 from vispy.scene.visuals import create_visual_node
 
 from .shaders import get_frag_shader, VERT_SHADER
-
-NUMPY_LT_1_13 = LooseVersion(np.__version__) < LooseVersion('1.13')
 
 
 class NoFreeSlotsError(Exception):
