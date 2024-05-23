@@ -13,7 +13,6 @@ from glue.core.tests.util import simple_session
 from ..vispy_data_viewer import BaseVispyViewer
 from ...volume.volume_viewer import VispyVolumeViewer
 from ...scatter.scatter_viewer import VispyScatterViewer
-from ...isosurface.isosurface_viewer import VispyIsosurfaceViewer
 
 IS_WIN = sys.platform == 'win32'
 
@@ -38,8 +37,6 @@ class BaseTestDataViewer(object):
 
     @pytest.mark.skipif('IS_WIN', reason='Windows fatal exception: access violation')
     def test_add_viewer(self, tmpdir):
-        if self.widget_cls == VispyIsosurfaceViewer:
-            pytest.skip(reason='MultiIsoVisual broken')
 
         d1 = Data(x=np.random.random((2,) * self.ndim))
         d2 = Data(x=np.random.random((2,) * self.ndim))
@@ -61,8 +58,6 @@ class BaseTestDataViewer(object):
         app2.close()
 
     def test_options_widget(self):
-        if self.widget_cls == VispyIsosurfaceViewer:
-            pytest.skip(reason='MultiIsoVisual broken')
 
         d1 = Data(x=np.random.random((2,) * self.ndim))
         d2 = Data(x=np.random.random((2,) * self.ndim))
@@ -92,7 +87,3 @@ class TestDataViewerVolume(BaseTestDataViewer):
 
 class TestDataViewerScatter(BaseTestDataViewer):
     widget_cls = VispyScatterViewer
-
-
-class TestDataViewerIsosurface(BaseTestDataViewer):
-    widget_cls = VispyIsosurfaceViewer
