@@ -32,11 +32,11 @@ class VispyMouseMode(CheckableTool):
         self.current_visible_array = None
 
     def activate(self):
-        self.viewer.toolbar.activate_tool(self)
+        self.viewer.toolbar._enable_tool_interactions(self)
         self.reset()
 
     def deactivate(self):
-        self.viewer.toolbar.deactivate_tool(self)
+        self.viewer.toolbar._disable_tool_interactions(self)
         self.reset()
 
     def reset(self):
