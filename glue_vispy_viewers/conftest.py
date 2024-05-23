@@ -31,7 +31,7 @@ def pytest_unconfigure(config):
     app = None
 
 
-VIEWER_CLASSES = ['VispyScatterViewer', 'VispyIsosurfaceViewer', 'VispyVolumeViewer']
+VIEWER_CLASSES = ['VispyScatterViewer', 'VispyVolumeViewer']
 
 
 def pytest_runtest_setup(item):
