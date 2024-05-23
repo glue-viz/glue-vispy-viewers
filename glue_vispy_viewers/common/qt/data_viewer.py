@@ -49,4 +49,4 @@ try:
 except ImportError:
     pass
 else:
-    BaseVispyViewer.tools.insert(1, 'vispy:record')
+    BaseVispyViewer.tools = BaseVispyViewer.tools[:] + ['vispy:record']
