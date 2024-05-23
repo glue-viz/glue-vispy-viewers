@@ -5,7 +5,12 @@ import sys
 if sys.platform.startswith('win'):
     import vispy.gloo.gl  # noqa
 
-from glue_qt.utils import get_qapp  # noqa
+try:
+    from glue_qt.utils import get_qapp  # noqa
+except ImportError:
+    GLUEQT_INSTALLED = False
+except ImportError:
+    GLUEQT_INSTALLED = True
 
 try:
     import objgraph
@@ -16,29 +21,38 @@ else:
 
 # The application has to always be referenced to avoid being shut down, so we
 # keep a reference to it here
-app = None
+if GLUEQT_INSTALLED:
+    app = None
 
 
 def pytest_configure(config):
     os.environ['GLUE_TESTING'] = 'True'
-    global app
-    app = get_qapp()
+    if GLUEQT_INSTALLED:
+        global app
+        app = get_qapp()
 
 
 def pytest_unconfigure(config):
     os.environ.pop('GLUE_TESTING')
-    global app
-    app = None
+    if GLUEQT_INSTALLED:
+        global app
+        app = None
 
 
 VIEWER_CLASSES = ['VispyScatterViewer', 'VispyVolumeViewer']
+
+
+def pytest_ignore_collect(path, config):
+    if path.isdir() and "qt" in path.parts():
+        return not GLUEQT_INSTALLED
 
 
 def pytest_runtest_setup(item):
 
     if OBJGRAPH_INSTALLED:
 
-        app.processEvents()
+        if GLUEQT_INSTALLED:
+            app.processEvents()
 
         for viewer_cls in VIEWER_CLASSES:
 
@@ -62,7 +76,8 @@ def pytest_runtest_teardown(item, nextitem):
 
     if OBJGRAPH_INSTALLED and hasattr(item, '_viewer_count'):
 
-        app.processEvents()
+        if GLUEQT_INSTALLED:
+            app.processEvents()
 
         for viewer_cls in VIEWER_CLASSES:
 
