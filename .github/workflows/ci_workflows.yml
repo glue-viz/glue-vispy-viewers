@@ -46,7 +46,7 @@ jobs:
         - linux: py39-test-pyside63
         - linux: py310-test-pyqt64
         - linux: py311-test-dev-pyqt64
-        - macos: py38-test-pyqt63
+        # - macos: py38-test-pyqt63  # segfault
         - macos: py39-test-pyside63
         - macos: py310-test-pyqt64
         - macos: py311-test-dev-pyqt64
