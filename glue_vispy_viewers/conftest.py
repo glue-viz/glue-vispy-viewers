@@ -6,10 +6,11 @@ if sys.platform.startswith('win'):
     import vispy.gloo.gl  # noqa
 
 try:
+    import qtpy  # noqa
     from glue_qt.utils import get_qapp  # noqa
 except ImportError:
     GLUEQT_INSTALLED = False
-except ImportError:
+else:
     GLUEQT_INSTALLED = True
 
 try:
@@ -42,8 +43,8 @@ def pytest_unconfigure(config):
 VIEWER_CLASSES = ['VispyScatterViewer', 'VispyVolumeViewer']
 
 
-def pytest_ignore_collect(path, config):
-    if path.isdir() and "qt" in path.parts():
+def pytest_ignore_collect(collection_path, path, config):
+    if path.isdir() and "qt" in collection_path.parts:
         return not GLUEQT_INSTALLED
 
 

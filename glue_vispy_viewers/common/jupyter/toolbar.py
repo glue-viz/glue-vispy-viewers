@@ -1,3 +1,4 @@
+import weakref
 from glue_jupyter.common.toolbar_vuetify import BasicJupyterToolbar
 from ..toolbar import VispyViewerToolbarMixin
 
@@ -8,4 +9,8 @@ class VispyJupyterToolbar(VispyViewerToolbarMixin, BasicJupyterToolbar):
 
     def __init__(self, viewer=None, **kwargs):
         BasicJupyterToolbar.__init__(self, viewer, **kwargs)
-        self.viewer = viewer
+        self._viewer = weakref.ref(viewer)
+
+    @property
+    def viewer(self):
+        return self._viewer()

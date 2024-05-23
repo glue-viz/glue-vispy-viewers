@@ -35,25 +35,6 @@ def as_matrix_transform(transform):
         raise TypeError("Could not simplify transform of type {0}".format(type(transform)))
 
 
-try:
-
-    from glue_qt.utils import fix_tab_widget_fontsize  # noqa
-
-except ImportError:
-
-    import platform
-    from glue_qt.utils import get_qapp
-
-    def fix_tab_widget_fontsize(tab_widget):
-        """
-        Because of a bug in Qt, tab titles on MacOS X don't have the right font size
-        """
-        if platform.system() == 'Darwin':
-            app = get_qapp()
-            app_font = app.font()
-            tab_widget.setStyleSheet('font-size: {0}px'.format(app_font.pointSize()))
-
-
 class NestedSTTransform(STTransform):
 
     glsl_map = """

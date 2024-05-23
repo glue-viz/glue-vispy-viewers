@@ -15,7 +15,6 @@ from ..layer_state import VolumeLayerState
 from ...scatter.layer_artist import ScatterLayerArtist
 from ...scatter.qt.layer_style_widget import ScatterLayerStyleWidget
 
-
 class VispyVolumeViewer(VispyVolumeViewerMixin, BaseVispyViewer):
 
     _layer_style_widget_cls = {VolumeLayerArtist: VolumeLayerStyleWidget,

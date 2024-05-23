@@ -6,6 +6,8 @@ from .viewer_options import VispyOptionsWidget
 
 from ..vispy_data_viewer import BaseVispyViewerMixin
 
+from .toolbar import VispyQtToolbar
+
 BROKEN_PYQT5_MESSAGE = ("The version of PyQt5 you are using does not appear to "
                         "support OpenGL. See <a href='http://docs.glueviz.org/en"
                         "/stable/known_issues.html#d-viewers-not-working-on-linux"
@@ -17,6 +19,8 @@ class BaseVispyViewer(BaseVispyViewerMixin, DataViewer):
 
     _options_cls = VispyOptionsWidget
     subtools = {'save': ['vispy:save']}
+
+    _toolbar_cls = VispyQtToolbar
 
     def __init__(self, session, state=None, parent=None):
         super().__init__(session, state=state, parent=parent)
