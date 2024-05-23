@@ -1,4 +1,4 @@
-
+import os
 from glue_jupyter.view import IPyWidgetView
 from ..scatter_viewer import VispyScatterViewerMixin
 from .viewer_state_widget import Scatter3DViewerStateWidget
@@ -15,6 +15,9 @@ class JupyterVispyScatterViewer(VispyScatterViewerMixin, IPyWidgetView):
     _toolbar_cls = VispyJupyterToolbar
 
     def __init__(self, *args, **kwargs):
+        # Vispy and jupyter_rfb don't work correctly on Linux unless DISPLAY is set
+        if 'DISPLAY' not in os:
+            os.environ['DISPLAY'] = ':0'
         super().__init__(*args, **kwargs)
         self.setup_widget_and_callbacks()
         self.create_layout()
