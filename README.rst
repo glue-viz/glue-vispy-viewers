@@ -19,29 +19,24 @@ install VisPy separately.
 Installing
 ----------
 
-If you use the Anaconda Python Distribution, you can install this plugin
-with::
+If you use conda, you can install this plugin with::
 
-    conda install -c glueviz glue-vispy-viewers
+    conda install -c conda-forge glue-vispy-viewers
 
-To install the latest stable version of the plugin, you can do::
+or using pip::
 
     pip install glue-vispy-viewers
 
-or you can install the latest developer version from the git repository
-using::
-
-    pip install git+https://github.com/glue-viz/glue-vispy-viewers.git
-
 This will auto-register the plugin with Glue. Now simply start up Glue,
-open a data cube, drag it onto the main canvas, then select '3D viewer'.
+open a data cube, drag it onto the main canvas, then select one of the
+3D viewer choices.
 
 Testing
 -------
 
 To run the tests, do::
 
-    py.test glue_vispy_viewers
+    pytest glue_vispy_viewers
 
 at the root of the repository. This requires the
 `pytest <http://pytest.org>`__ module to be installed.
