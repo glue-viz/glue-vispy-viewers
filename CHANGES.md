@@ -1,5 +1,26 @@
 # Full changelog
 
+## v1.2.0 - 2024-05-24
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### New Features
+
+* Refactor viewer classes to split out Qt from non-Qt part, and define Jupyter viewers by @astrofrog in https://github.com/glue-viz/glue-vispy-viewers/pull/381
+
+#### Bug Fixes
+
+* Fixes following Qt/Jupyter split by @astrofrog in https://github.com/glue-viz/glue-vispy-viewers/pull/383
+* Fix save/record tools in Qt and volume selection tools in Jupyter by @astrofrog in https://github.com/glue-viz/glue-vispy-viewers/pull/384
+* Fix tests by @astrofrog in https://github.com/glue-viz/glue-vispy-viewers/pull/385
+
+#### Other Changes
+
+* Remove isosurface sub-module as it has been broken for a long time by @astrofrog in https://github.com/glue-viz/glue-vispy-viewers/pull/382
+
+**Full Changelog**: https://github.com/glue-viz/glue-vispy-viewers/compare/v1.1.0...v1.2.0
+
 ## v1.1.0 - 2023-08-21
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
