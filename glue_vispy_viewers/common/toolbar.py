@@ -8,14 +8,14 @@ from .selection_tools import VispyMouseMode
 
 class VispyViewerToolbarMixin:
 
-    def activate_tool(self, mode):
+    def _enable_tool_interactions(self, mode):
         if isinstance(mode, VispyMouseMode):
             self._vispy_widget.canvas.events.mouse_press.connect(mode.press)
             self._vispy_widget.canvas.events.mouse_release.connect(mode.release)
             self._vispy_widget.canvas.events.mouse_move.connect(mode.move)
             self.disable_camera_events()
 
-    def deactivate_tool(self, mode):
+    def _disable_tool_interactions(self, mode):
         if isinstance(mode, VispyMouseMode):
             self._vispy_widget.canvas.events.mouse_press.disconnect(mode.press)
             self._vispy_widget.canvas.events.mouse_release.disconnect(mode.release)
