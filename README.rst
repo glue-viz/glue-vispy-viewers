@@ -1,8 +1,6 @@
 Glue plugin for 3D viewers using VisPy
 ======================================
 
-|Actions Status| |Coverage Status|
-
 Requirements
 ------------
 
