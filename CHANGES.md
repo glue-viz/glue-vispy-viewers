@@ -1,5 +1,16 @@
 # Full changelog
 
+## v1.2.1 - 2024-05-28
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Bug Fixes
+
+* Fix validation checks for build distributions by @astrofrog in https://github.com/glue-viz/glue-vispy-viewers/pull/386
+
+**Full Changelog**: https://github.com/glue-viz/glue-vispy-viewers/compare/v1.2.0...v1.2.1
+
 ## v1.2.0 - 2024-05-24
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
