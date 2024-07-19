@@ -35,20 +35,20 @@ jobs:
       envs: |
         # Tests without Qt. For now glfw can't run on MacOS runners in headless mode
         # so we only run on Linux and Windows.
-        - linux: py38-test
+        - linux: py38-test-oldestdeps
         - windows: py39-test
         - linux: py310-test
         - windows: py311-test
         - linux: py311-test-dev
 
         # Tests with Jupyter
-        - linux: py38-test-jupyter
+        - linux: py38-test-jupyter-oldestdeps
         - windows: py39-test-jupyter
         - linux: py310-test-jupyter
         - windows: py311-test-jupyter
 
         # Tests with Qt
-        - linux: py38-test-pyqt63
+        - linux: py38-test-pyqt63-oldestdeps
         - linux: py39-test-pyside63
         - linux: py310-test-pyqt64
         - linux: py311-test-dev-pyqt64
