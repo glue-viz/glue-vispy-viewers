@@ -1,5 +1,16 @@
 # Full changelog
 
+## v1.2.2 - 2024-07-19
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Other Changes
+
+* Added oldestdeps tox configuration and enable in CI, and bump minimum version of vispy to 0.12 by @astrofrog in https://github.com/glue-viz/glue-vispy-viewers/pull/387
+
+**Full Changelog**: https://github.com/glue-viz/glue-vispy-viewers/compare/v1.2.1...v1.2.2
+
 ## v1.2.1 - 2024-05-28
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
