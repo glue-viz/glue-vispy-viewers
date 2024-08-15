@@ -1,6 +1,6 @@
 import os
 
-from glue.viewers.common.tool import Tool, CheckableTool
+from glue.viewers.common.tool import Tool
 
 from glue.config import viewer_tool
 
@@ -25,7 +25,7 @@ class ResetTool(Tool):
 
 
 @viewer_tool
-class RotateTool(CheckableTool):
+class RotateTool(Tool):
 
     icon = ROTATE_ICON
     tool_id = 'vispy:rotate'
@@ -33,14 +33,16 @@ class RotateTool(CheckableTool):
     tool_tip = 'Start/Stop rotation'
 
     timer = None
+    rotating = False
 
     def activate(self):
         if self.timer is None:
             self.timer = app.Timer(connect=self.rotate)
-        self.timer.start(0.1)
-
-    def deactivate(self):
-        self.timer.stop()
+        self.rotating = not self.rotating
+        if self.rotating:
+            self.timer.start(0.1)
+        else:
+            self.timer.stop()
 
     def rotate(self, event):
         self.viewer._vispy_widget.view.camera.azimuth -= 1.  # set speed as constant first
