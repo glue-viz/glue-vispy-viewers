@@ -19,14 +19,18 @@ class MultiColorScatter(scene.visuals.Markers):
         self.layers = {}
         self._combined_data = None
         self._skip_update = False
+        self._update_called = False
         self._error_vector_widget = None
         super(MultiColorScatter, self).__init__(*args, **kwargs)
 
     @contextmanager
     def delay_update(self):
         self._skip_update = True
+        self._update_called = False
         yield
         self._skip_update = False
+        if self._update_called:
+            self._update()
 
     def allocate(self, label):
         if label in self.layers:
@@ -102,6 +106,7 @@ class MultiColorScatter(scene.visuals.Markers):
     def _update(self):
 
         if self._skip_update:
+            self._update_called = True
             return
 
         data = []
