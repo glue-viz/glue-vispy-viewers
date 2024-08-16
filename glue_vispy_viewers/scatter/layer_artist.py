@@ -315,32 +315,33 @@ class ScatterLayerArtist(VispyLayerArtist):
         self._last_viewer_state.update(self._viewer_state.as_dict())
         self._last_layer_state.update(self.state.as_dict())
 
-        if force or len(changed & DATA_PROPERTIES) > 0:
-            self._update_data()
-            force = True
+        with self._multiscat.delay_update():
 
-        if force or len(changed & SIZE_PROPERTIES) > 0:
-            self._update_sizes()
+            if force or len(changed & DATA_PROPERTIES) > 0:
+                self._update_data()
+                force = True
 
-        if force or len(changed & ERROR_PROPERTIES) > 0:
-            self._update_errors()
+            if force or len(changed & SIZE_PROPERTIES) > 0:
+                self._update_sizes()
 
-        if force or len(changed & VECTOR_PROPERTIES) > 0:
-            self._update_vectors()
+            if force or len(changed & ERROR_PROPERTIES) > 0:
+                self._update_errors()
 
-        if force or len(changed & COLOR_PROPERTIES) > 0:
-            self._update_colors()
+            if force or len(changed & VECTOR_PROPERTIES) > 0:
+                self._update_vectors()
 
-        if force or len(changed & ALPHA_PROPERTIES) > 0:
-            self._update_alpha()
+            if force or len(changed & COLOR_PROPERTIES) > 0:
+                self._update_colors()
 
-        if force or len(changed & VISIBLE_PROPERTIES) > 0:
-            self._update_visibility()
+            if force or len(changed & ALPHA_PROPERTIES) > 0:
+                self._update_alpha()
 
-        if force or len(changed & ARROW_PROPERTIES) > 0:
-            self._update_arrow_head()
+            if force or len(changed & VISIBLE_PROPERTIES) > 0:
+                self._update_visibility()
+
+            if force or len(changed & ARROW_PROPERTIES) > 0:
+                self._update_arrow_head()
 
     def update(self):
-        with self._multiscat.delay_update():
-            self._update_scatter(force=True)
+        self._update_scatter(force=True)
         self.redraw()
