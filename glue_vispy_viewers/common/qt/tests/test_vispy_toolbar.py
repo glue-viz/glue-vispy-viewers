@@ -50,7 +50,6 @@ def test_save(tmpdir, capsys):
     app.close()
 
 
-@pytest.mark.skipif('not IS_WIN', reason='Teardown disaster')
 def test_rotate(capsys):
 
     app = GlueApplication()
