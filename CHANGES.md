@@ -1,5 +1,21 @@
 # Full changelog
 
+## v1.2.3 - 2025-05-14
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Bug Fixes
+
+* Choose correct style widget for scatter layers in Jupyter volume viewer by @Carifio24 in https://github.com/glue-viz/glue-vispy-viewers/pull/388
+
+#### Other Changes
+
+* Delay updates to multiscatter if _update_scatter is called without update being called first by @astrofrog in https://github.com/glue-viz/glue-vispy-viewers/pull/391
+* Added more PyQt6/PySide6 versions to tox and fix test suite by @astrofrog in https://github.com/glue-viz/glue-vispy-viewers/pull/393
+
+**Full Changelog**: https://github.com/glue-viz/glue-vispy-viewers/compare/v1.2.2...v1.2.3
+
 ## v1.2.2 - 2024-07-19
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
