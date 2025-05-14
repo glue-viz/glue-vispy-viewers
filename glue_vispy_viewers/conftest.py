@@ -32,6 +32,8 @@ else:
 if GLUEQT_INSTALLED:
     app = None
 
+from glue.core.fixed_resolution_buffer import PIXEL_CACHE, ARRAY_CACHE
+
 
 def pytest_configure(config):
     os.environ['GLUE_TESTING'] = 'True'
@@ -50,8 +52,8 @@ def pytest_unconfigure(config):
 VIEWER_CLASSES = ['VispyScatterViewer', 'VispyVolumeViewer']
 
 
-def pytest_ignore_collect(collection_path, path, config):
-    if path.isdir():
+def pytest_ignore_collect(collection_path, config):
+    if collection_path.is_dir():
         if "qt" in collection_path.parts:
             return not GLUEQT_INSTALLED
         if "jupyter" in collection_path.parts:
@@ -80,6 +82,13 @@ def pytest_runtest_teardown(item, nextitem):
     # previously circular references that meant that viewer instances were
     # not properly garbage collected, which in turn meant they still reacted
     # in some cases to events.
+
+    # Make sure pixel and array cache is empty - if it isn't, it usually
+    # indicates the viewer has not been closed/cleaned up correctly
+    if len(PIXEL_CACHE) > 0:
+        raise Exception("Pixel cache contains {0} elements".format(len(PIXEL_CACHE)))
+    if len(ARRAY_CACHE) > 0:
+        raise Exception("Array cache contains {0} elements".format(len(ARRAY_CACHE)))
 
     # Temporarily skip this test for test_add_viewer while trying to determine cause
     if item.name == 'test_add_viewer':

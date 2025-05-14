@@ -10,8 +10,8 @@ def test_basic_jupyter_volume():
     app = jglue()
     data = Data(x=np.arange(24).reshape((2, 3, 4)), label="cube data")
     app.add_data(data)
-    app.new_data_viewer(JupyterVispyVolumeViewer, data=data)
-
+    viewer = app.new_data_viewer(JupyterVispyVolumeViewer, data=data)
+    viewer.cleanup()
 
 def test_jupyter_layer_widgets():
     app = jglue()
@@ -31,3 +31,5 @@ def test_jupyter_layer_widgets():
     assert isinstance(volume_widget, Volume3DLayerStateWidget)
     scatter_widget = layer_options.layer_to_dict(scatter_layer, 1)["layer_panel"]
     assert isinstance(scatter_widget, Scatter3DLayerStateWidget)
+
+    viewer.cleanup()
