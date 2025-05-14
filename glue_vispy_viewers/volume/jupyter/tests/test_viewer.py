@@ -13,6 +13,7 @@ def test_basic_jupyter_volume():
     viewer = app.new_data_viewer(JupyterVispyVolumeViewer, data=data)
     viewer.cleanup()
 
+
 def test_jupyter_layer_widgets():
     app = jglue()
     volume_data = Data(x=np.arange(24).reshape((2, 3, 4)), label="cube data")
