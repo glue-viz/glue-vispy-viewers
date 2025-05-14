@@ -15,6 +15,8 @@ class Vispy3DVolumeViewerState(Vispy3DViewerState):
                                                          'which defines the coordinate frame in '
                                                          'which the images are shown')
 
+    cutting_plane = CallbackProperty(None)
+
     def __init__(self, **kwargs):
 
         super(Vispy3DVolumeViewerState, self).__init__()
