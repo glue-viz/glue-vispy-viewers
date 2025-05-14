@@ -50,17 +50,16 @@ def test_save(tmpdir, capsys):
     app.close()
 
 
-@pytest.mark.skipif('not IS_WIN', reason='Teardown disaster')
 def test_rotate(capsys):
 
     app = GlueApplication()
     viewer = app.new_data_viewer(VispyScatterViewer)
 
-    viewer.toolbar.actions['vispy:rotate'].toggle()
-    assert viewer.toolbar.active_tool.tool_id == 'vispy:rotate'
+    viewer.toolbar.actions['vispy:rotate'].trigger()
+    assert viewer.toolbar.tools['vispy:rotate'].rotating
 
-    viewer.toolbar.actions['vispy:rotate'].toggle()
-    assert viewer.toolbar.active_tool is None
+    viewer.toolbar.actions['vispy:rotate'].trigger()
+    assert not viewer.toolbar.tools['vispy:rotate'].rotating
 
     out, err = capsys.readouterr()
     assert out.strip() == ""

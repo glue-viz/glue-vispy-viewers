@@ -35,11 +35,11 @@ def test_volumeviewer_toolbar():
     toolbar = v.toolbar
 
     # test rotate tool
-    toolbar.actions['vispy:rotate'].toggle()
-    assert toolbar.active_tool.tool_id == 'vispy:rotate'
-    # TODO: assert a mode here
-    toolbar.actions['vispy:rotate'].toggle()
-    assert toolbar.active_tool is None
+    toolbar.actions['vispy:rotate'].trigger()
+    assert toolbar.tools['vispy:rotate'].rotating
+
+    toolbar.actions['vispy:rotate'].trigger()
+    assert not toolbar.tools['vispy:rotate'].rotating
 
     # test lasso selection tool
     toolbar.actions['vispy:lasso'].toggle()
