@@ -6,6 +6,8 @@ from echo.qt import autoconnect_callbacks_to_qt
 
 from glue_qt.utils import load_ui
 
+from glue_vispy_viewers.scatter.viewer_state import Vispy3DScatterViewerState
+
 __all__ = ["VispyOptionsWidget"]
 
 
@@ -26,6 +28,9 @@ class VispyOptionsWidget(QtWidgets.QWidget):
                           'valuetext_x_stretch': dict(fmt='{:6.2f}'),
                           'valuetext_y_stretch': dict(fmt='{:6.2f}'),
                           'valuetext_z_stretch': dict(fmt='{:6.2f}')}
+
+        if not isinstance(viewer_state, Vispy3DScatterViewerState):
+            self.ui.bool_clip_data.hide()
 
         if not hasattr(viewer_state, 'downsample'):
             self.ui.bool_downsample.hide()
