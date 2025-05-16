@@ -8,7 +8,7 @@ from matplotlib.colors import ColorConverter
 from glue.core.data import Subset, Data
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
-from .colors import get_linear_cmap, get_translucent_cmap
+from .colors import get_linear_cmap, get_mpl_cmap, get_translucent_cmap
 from .layer_state import VolumeLayerState
 from ..common.layer_artist import VispyLayerArtist
 
@@ -156,9 +156,10 @@ class VolumeLayerArtist(VispyLayerArtist):
         PIXEL_CACHE.pop(self.id, None)
 
     def _update_cmap_from_color(self):
-        cmap = get_linear_cmap((0.5, 0, 0.5), (0.5, 0.5, 0))
+        # cmap = get_linear_cmap((0.0, 0.0, 1.0), (1.0, 0.0, 0.0))
+        cmap = get_mpl_cmap("viridis")
+
         # cmap = get_translucent_cmap(*ColorConverter().to_rgb(self.state.color))
-        print(ColorConverter().to_rgb(self.state.color))
         self._multivol.set_cmap(self.id, cmap)
         self.redraw()
 
