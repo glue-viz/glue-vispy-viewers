@@ -1,4 +1,5 @@
 from matplotlib import colormaps
+from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from vispy.color import BaseColormap
 
 
@@ -27,37 +28,19 @@ def get_translucent_cmap(r, g, b):
     return TranslucentCmap()
 
 
-def get_linear_cmap(cl, ch):
+def get_mpl_cmap(cmap):
 
-    class LinearCmap(BaseColormap):
-        c = tuple(f"{l} + t * ({h} - {l})" for l, h in zip(cl, ch))
-        glsl_map = """
-        vec4 translucent_linear(float t) {{
-            return vec4({0}, {1}, {2}, t);
-        }}
-        """.format(*c)
+    if isinstance(cmap, ListedColormap):
+        colors = cmap.colors
+        n_colors = len(colors)
+        colors = [color + [index / n_colors] for index, color in enumerate(colors)]
+    else:
+        n_colors = 256
+        colors = [cmap(index / n_colors) for index in range(n_colors)]
 
-    return LinearCmap()
-
-
-def get_mpl_cmap(cmap_name):
-    
-    cmap = colormaps[cmap_name]
-    colors = cmap.colors
-    n_colors = len(colors)
-    colors = [color + [index / n_colors] for index, color in enumerate(colors)]
     template = create_cmap_template(n_colors)
-    print(template)
 
     class MatplotlibCmap(BaseColormap):
         glsl_map = template
-        # glsl_map = """
-        # vec4 test(float t) {
-        #     if (t < 0.5) { return $color_0; }
-        #     return $color_200;
-        # }
-        # """
 
     return MatplotlibCmap(colors=colors)
-
-
