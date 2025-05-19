@@ -1,5 +1,4 @@
-from matplotlib import colormaps
-from matplotlib.colors import LinearSegmentedColormap, ListedColormap
+from matplotlib.colors import ListedColormap
 from vispy.color import BaseColormap
 
 
