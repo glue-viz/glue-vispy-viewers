@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>292</width>
-    <height>214</height>
+    <height>246</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -101,13 +101,6 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="0">
-    <widget class="QLabel" name="label_cmap">
-     <property name="text">
-      <string>Colormap:</string>
-     </property>
-    </widget>
-   </item>
    <item row="9" column="1">
     <widget class="QRadioButton" name="radio_subset_data">
      <property name="text">
@@ -145,6 +138,26 @@
      </item>
     </widget>
    </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="label_cmap">
+     <property name="text">
+      <string>Colormap:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1" colspan="2">
+    <widget class="QColorBox" name="color_color">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
    <item row="10" column="1">
     <spacer name="verticalSpacer">
      <property name="orientation">
@@ -157,6 +170,37 @@
       </size>
      </property>
     </spacer>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_color">
+     <property name="text">
+      <string>Color:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="label_limits">
+     <property name="text">
+      <string>Limits:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="1">
+    <widget class="QRadioButton" name="radio_subset_data">
+     <property name="text">
+      <string>Data</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLabel" name="label_stretch">
+     <property name="text">
+      <string>Stretch</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1" colspan="3">
+    <widget class="QComboBox" name="combosel_stretch"/>
    </item>
   </layout>
  </widget>
