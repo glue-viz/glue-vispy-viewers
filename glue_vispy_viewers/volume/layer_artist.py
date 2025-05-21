@@ -13,7 +13,7 @@ from .layer_state import VolumeLayerState
 from ..common.layer_artist import VispyLayerArtist
 
 
-COLOR_PROPERTIES = set(['cmap', 'color', 'color_mode', 'stretch'])
+COLOR_PROPERTIES = set(['cmap', 'color', 'color_mode', 'stretch', 'stretch_parameters'])
 
 
 class DataProxy(object):
