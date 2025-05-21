@@ -159,13 +159,10 @@ class VolumeLayerArtist(VispyLayerArtist):
         PIXEL_CACHE.pop(self.id, None)
 
     def _update_cmap(self):
-        print(self.state.cmap)
         if self.state.color_mode == "Fixed":
             cmap = get_translucent_cmap(*ColorConverter().to_rgb(self.state.color))
         else:
             cmap = get_mpl_cmap(self.state.cmap)
-
-        print(cmap)
 
         self._multivol.set_cmap(self.id, cmap)
         self.redraw()
