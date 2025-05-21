@@ -35,7 +35,7 @@ def get_mpl_cmap(cmap):
         colors = [color + [index / n_colors] for index, color in enumerate(colors)]
     else:
         n_colors = 256
-        colors = [cmap(index / n_colors) for index in range(n_colors)]
+        colors = [cmap(index / n_colors)[:3] + (index / n_colors,) for index in range(n_colors)]
 
     template = create_cmap_template(n_colors)
 
