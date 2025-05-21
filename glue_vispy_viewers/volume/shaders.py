@@ -80,6 +80,10 @@ varying vec3 v_position;
 varying vec4 v_nearpos;
 varying vec4 v_farpos;
 
+// A cutting plane defined as ax + by + cz + d = 0 where the vector below is (a, b, c)
+uniform vec3 u_cutting_plane_abc;
+uniform float u_cutting_plane_d;
+
 // uniforms for lighting. Hard coded until we figure out how to do lights
 const vec4 u_ambient = vec4(0.2, 0.4, 0.2, 1.0);
 const vec4 u_diffuse = vec4(0.8, 0.2, 0.2, 1.0);
@@ -120,6 +124,10 @@ void main() {{
                             (u_shape.y - 0.5 - v_position.y) / view_ray.y));
     distance = max(distance, min((-0.5 - v_position.z) / view_ray.z,
                             (u_shape.z - 0.5 - v_position.z) / view_ray.z));
+
+    // Compute distance to cutting plane
+    float cutting_distance = -(dot(v_position, u_cutting_plane_abc) + u_cutting_plane_d) / dot(view_ray, u_cutting_plane_abc);
+    distance = max(distance, cutting_distance);
 
     // Now we have the starting position on the front surface
     vec3 front = v_position + view_ray * distance;
