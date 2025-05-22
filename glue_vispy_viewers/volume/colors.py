@@ -6,7 +6,8 @@ from vispy.color import BaseColormap
 STRETCHES_GLSL = {
     LogStretch: "log({stretch.a} * {parameter} + 1.0) / log({stretch.a} + 1.0)",
     SqrtStretch: "sqrt({parameter})",
-    AsinhStretch: "log({parameter} / {stretch.a} + sqrt(pow({parameter} / {stretch.a}, 2) + 1)) / log(1.0 / {stretch.a} + sqrt(pow(1.0 / {stretch.a}, 2) + 1))",
+    AsinhStretch: "log({parameter} / {stretch.a} + sqrt(pow({parameter} / {stretch.a}, 2) + 1)) / "
+                  "log(1.0 / {stretch.a} + sqrt(pow(1.0 / {stretch.a}, 2) + 1))",
     LinearStretch: "{parameter}",
 }
 
@@ -62,5 +63,5 @@ def get_mpl_cmap(cmap, stretch):
 
     class MatplotlibCmap(BaseColormap):
         glsl_map = template
-    
+
     return MatplotlibCmap(colors=colors)
