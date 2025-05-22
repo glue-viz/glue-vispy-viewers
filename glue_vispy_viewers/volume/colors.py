@@ -7,7 +7,7 @@ def create_cmap_template(n):
         "vec4 translucent_colormap(float t) {",
     ]
     for i in range(n-1):
-        lines.append(f"    if (t <= {i / n})")
+        lines.append(f"    if (t <= {(i+1) / n})")
         lines.append(f"        {{ return $color_{i}; }}")
     lines.append(f"    return $color_{n-1};")
     lines.append("}")
