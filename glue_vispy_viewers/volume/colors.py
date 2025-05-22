@@ -69,5 +69,5 @@ def get_mpl_cmap(cmap, stretch):
 
     class MatplotlibCmap(BaseColormap):
         glsl_map = template
-    
+
     return MatplotlibCmap(colors=colors)
