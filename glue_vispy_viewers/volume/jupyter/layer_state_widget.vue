@@ -14,6 +14,9 @@
           </div>
         </template>
         <div>
+           <v-select label="stretch" :items="stretch_items" v-model="stretch_selected" hide-details />
+       </div> 
+        <div>
             <v-subheader class="pl-0 slider-label">opacity</v-subheader>
             <glue-throttled-slider wait="300" max="1" step="0.01" :value.sync="glue_state.alpha" hide-details />
         </div>
