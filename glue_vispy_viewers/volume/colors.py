@@ -1,6 +1,14 @@
-from glue.config import AsinhStretch, LogStretch, SqrtStretch
+from glue.config import AsinhStretch, LinearStretch, LogStretch, SqrtStretch
 from matplotlib.colors import ListedColormap
 from vispy.color import BaseColormap
+
+
+STRETCHES_GLSL = {
+    LogStretch: "log({stretch.a} * {parameter} + 1.0) / log({stretch.a} + 1.0)",
+    SqrtStretch: "sqrt({parameter})",
+    AsinhStretch: "log({parameter} / {stretch.a} + sqrt(pow({parameter} / {stretch.a}, 2) + 1)) / log(1.0 / {stretch.a} + sqrt(pow(1.0 / {stretch.a}, 2) + 1))",
+    LinearStretch: "{parameter}",
+}
 
 
 def create_cmap_template(n, stretch_glsl):
@@ -18,16 +26,9 @@ def create_cmap_template(n, stretch_glsl):
     return "\n".join(lines)
 
 
-def glsl_for_stretch(stretch, param="t"):
-    if isinstance(stretch, LogStretch):
-        return f"log({stretch.a} * {param} + 1.0) / log({stretch.a} + 1.0)"
-    elif isinstance(stretch, SqrtStretch):
-        return f"sqrt({param})"
-    elif isinstance(stretch, AsinhStretch):
-        reciprocal = 1 / stretch.a
-        param_rec = f"{param} * {reciprocal}"
-        return f"log({param_rec} + sqrt(pow({param_rec}, 2) + 1)) / log({reciprocal} + sqrt(pow({reciprocal}, 2) + 1))"
-    return param
+def glsl_for_stretch(stretch, parameter="t"):
+    template = STRETCHES_GLSL.get(type(stretch), "{param}")
+    return template.format(stretch=stretch, parameter=parameter)
 
 
 def get_translucent_cmap(r, g, b, stretch):
