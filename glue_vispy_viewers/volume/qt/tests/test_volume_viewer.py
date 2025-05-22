@@ -2,6 +2,7 @@ import sys
 import pytest
 import numpy as np
 
+from glue.config import colormaps
 from glue.core import DataCollection, Data
 from glue_qt.app.application import GlueApplication
 from glue.core.component import Component
@@ -65,7 +66,7 @@ def test_volume_viewer(tmpdir):
     layer_state.alpha = 0.8
 
     layer_state.color = "#ff0000"
-    layer_state.cmap = "Red-Blue"
+    layer_state.cmap = colormaps['Red-Blue']
     layer_state.color_mode = "Fixed"
 
     # Check that writing a session works as expected.
@@ -106,7 +107,7 @@ def test_volume_viewer(tmpdir):
     assert layer_artist.alpha == 0.8
 
     assert layer_state.color == "#ff0000"
-    assert layer_state.cmap == "Red-Blue"
+    assert layer_state.cmap == colormaps['Red-Blue']
     assert layer_state.color_mode == "Fixed"
 
     ga2.close()
