@@ -1,14 +1,16 @@
+from glue.config import colormaps
 from glue.core import Subset
 from echo import (CallbackProperty, SelectionCallbackProperty,
                   delay_callback)
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.core.data_combo_helper import ComponentIDComboHelper
+from glue.viewers.common.stretch_state_mixin import StretchStateMixin
 from ..common.layer_state import VispyLayerState
 
 __all__ = ['VolumeLayerState']
 
 
-class VolumeLayerState(VispyLayerState):
+class VolumeLayerState(VispyLayerState, StretchStateMixin):
     """
     A state object for volume layers
     """
@@ -16,6 +18,8 @@ class VolumeLayerState(VispyLayerState):
     attribute = SelectionCallbackProperty()
     vmin = CallbackProperty()
     vmax = CallbackProperty()
+    color_mode = SelectionCallbackProperty()
+    cmap = CallbackProperty()
     subset_mode = CallbackProperty('data')
     _limits_cache = CallbackProperty({})
 
@@ -34,9 +38,15 @@ class VolumeLayerState(VispyLayerState):
                                                      lower='vmin', upper='vmax',
                                                      cache=self._limits_cache)
 
+        VolumeLayerState.color_mode.set_choices(self, ['Fixed', 'Linear'])
+
+        self.setup_stretch_callback()
+
         self.add_callback('layer', self._on_layer_change)
         if layer is not None:
             self._on_layer_change()
+
+        self.cmap = colormaps.members[0][1]
 
         if isinstance(self.layer, Subset):
             self.vmin = 0
