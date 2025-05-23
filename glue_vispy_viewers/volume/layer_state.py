@@ -1,3 +1,4 @@
+from glue.config import colormaps
 from glue.core import Subset
 from echo import (CallbackProperty, SelectionCallbackProperty,
                   delay_callback)
@@ -16,6 +17,8 @@ class VolumeLayerState(VispyLayerState):
     attribute = SelectionCallbackProperty()
     vmin = CallbackProperty()
     vmax = CallbackProperty()
+    color_mode = SelectionCallbackProperty()
+    cmap = CallbackProperty()
     subset_mode = CallbackProperty('data')
     _limits_cache = CallbackProperty({})
 
@@ -34,9 +37,13 @@ class VolumeLayerState(VispyLayerState):
                                                      lower='vmin', upper='vmax',
                                                      cache=self._limits_cache)
 
+        VolumeLayerState.color_mode.set_choices(self, ['Fixed', 'Linear'])
+
         self.add_callback('layer', self._on_layer_change)
         if layer is not None:
             self._on_layer_change()
+
+        self.cmap = colormaps.members[0][1]
 
         if isinstance(self.layer, Subset):
             self.vmin = 0
