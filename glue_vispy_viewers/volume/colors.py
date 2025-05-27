@@ -1,15 +1,21 @@
-from glue.config import AsinhStretch, LinearStretch, LogStretch, SqrtStretch
+from glue.config import AsinhStretch, LinearStretch, LogStretch, SqrtStretch, DictRegistry
 from matplotlib.colors import ListedColormap
 from vispy.color import BaseColormap
 
 
-STRETCHES_GLSL = {
-    LogStretch: "log({stretch.a} * {parameter} + 1.0) / log({stretch.a} + 1.0)",
-    SqrtStretch: "sqrt({parameter})",
-    AsinhStretch: "log({parameter} / {stretch.a} + sqrt(pow({parameter} / {stretch.a}, 2) + 1)) / "
-                  "log(1.0 / {stretch.a} + sqrt(pow(1.0 / {stretch.a}, 2) + 1))",
-    LinearStretch: "{parameter}",
-}
+class GLSLStretchRegistry(DictRegistry):
+
+    def add(self, stretch_cls, glsl):
+        self.members[stretch_cls] = glsl
+
+
+stretch_glsl = GLSLStretchRegistry()
+stretch_glsl.add(LogStretch, "log({stretch.a} * {parameter} + 1.0) / log({stretch.a} + 1.0)")
+stretch_glsl.add(SqrtStretch, "sqrt({parameter})")
+stretch_glsl.add(AsinhStretch,
+                 "log({parameter} / {stretch.a} + sqrt(pow({parameter} / {stretch.a}, 2) + 1)) / "
+                 "log(1.0 / {stretch.a} + sqrt(pow(1.0 / {stretch.a}, 2) + 1))")
+stretch_glsl.add(LinearStretch, "{parameter}")
 
 
 def create_cmap_template(n, stretch_glsl):
@@ -28,7 +34,7 @@ def create_cmap_template(n, stretch_glsl):
 
 
 def glsl_for_stretch(stretch, parameter="t"):
-    template = STRETCHES_GLSL.get(type(stretch), "{param}")
+    template = stretch_glsl.members.get(type(stretch), "{param}")
     return template.format(stretch=stretch, parameter=parameter)
 
 
