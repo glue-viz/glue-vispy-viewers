@@ -4,12 +4,12 @@
             <v-select label="attribute" :items="attribute_items" v-model="attribute_selected" hide-details class="margin-bottom: 16px" />
         </div>
         <template v-if="glue_state.color_mode === 'Linear'">
-          <div v-if="!subset">
+          <div>
               <v-select label="colormap" :items="cmap_items" :value="glue_state.cmap" @change="set_colormap" hide-details/>
           </div>
         </template>
         <template v-else>
-          <div>
+          <div v-if="!subset">
               <v-select label="color" :items="color_mode_items" v-model="color_mode_selected" hide-details />
           </div>
         </template>
