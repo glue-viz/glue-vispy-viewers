@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>276</width>
-    <height>390</height>
+    <height>415</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -33,7 +33,6 @@
     <widget class="QLabel" name="label_resolution">
      <property name="font">
       <font>
-       <weight>75</weight>
        <bold>true</bold>
       </font>
      </property>
@@ -60,7 +59,6 @@
     <widget class="QLabel" name="x_lab">
      <property name="font">
       <font>
-       <weight>75</weight>
        <bold>true</bold>
       </font>
      </property>
@@ -76,7 +74,6 @@
     <widget class="QLabel" name="label_reference_data">
      <property name="font">
       <font>
-       <weight>75</weight>
        <bold>true</bold>
       </font>
      </property>
@@ -92,7 +89,6 @@
     <widget class="QLabel" name="x_lab">
      <property name="font">
       <font>
-       <weight>75</weight>
        <bold>true</bold>
       </font>
      </property>
@@ -161,16 +157,6 @@
    </item>
    <item row="12" column="2" colspan="4">
     <layout class="QGridLayout" name="gridLayout">
-     <item row="1" column="0">
-      <widget class="QCheckBox" name="bool_perspective_view">
-       <property name="text">
-        <string>Perspective</string>
-       </property>
-       <property name="checked">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
      <item row="2" column="0" colspan="2">
       <widget class="QCheckBox" name="bool_downsample">
        <property name="enabled">
@@ -184,6 +170,13 @@
        </property>
       </widget>
      </item>
+     <item row="0" column="0">
+      <widget class="QCheckBox" name="bool_native_aspect">
+       <property name="text">
+        <string>Native aspect ratio</string>
+       </property>
+      </widget>
+     </item>
      <item row="1" column="1">
       <widget class="QCheckBox" name="bool_visible_axes">
        <property name="text">
@@ -194,10 +187,13 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="0">
-      <widget class="QCheckBox" name="bool_native_aspect">
+     <item row="1" column="0">
+      <widget class="QCheckBox" name="bool_perspective_view">
        <property name="text">
-        <string>Native aspect ratio</string>
+        <string>Perspective</string>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
        </property>
       </widget>
      </item>
@@ -231,6 +227,13 @@
        </item>
       </layout>
      </item>
+     <item row="3" column="0" colspan="2">
+      <widget class="QCheckBox" name="bool_clip_data">
+       <property name="text">
+        <string>Restrict to bounding box</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item row="0" column="3" colspan="3">
@@ -258,7 +261,6 @@
     <widget class="QLabel" name="x_lab">
      <property name="font">
       <font>
-       <weight>75</weight>
        <bold>true</bold>
       </font>
      </property>

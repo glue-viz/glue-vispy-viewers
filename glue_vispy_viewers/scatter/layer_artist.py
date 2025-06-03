@@ -190,6 +190,7 @@ class ScatterLayerArtist(VispyLayerArtist):
         self._multiscat.set_data_values(self.id, x, y, z)
 
         # Mask points outside the clip limits
+        self._clip_limits = self._viewer_state.clip_limits if self._viewer_state.clip_data else None
         if self._clip_limits is None:
             self._multiscat.set_mask(self.id, None)
         else:
