@@ -2,6 +2,7 @@ import ipyvuetify as v
 import traitlets
 
 from glue.config import colormaps
+from glue.core.subset import Subset
 
 from glue_jupyter.state_traitlets_helpers import GlueState
 from glue_jupyter.vuetify_helpers import link_glue_choices
@@ -25,11 +26,15 @@ class Volume3DLayerStateWidget(v.VuetifyTemplate):
 
     cmap_items = traitlets.List().tag(sync=True)
 
+    subset = traitlets.Bool().tag(sync=True)
+
     def __init__(self, layer_state):
         super().__init__()
 
         self.layer_state = layer_state
         self.glue_state = layer_state
+
+        self.subset = isinstance(layer_state.layer, Subset)
 
         link_glue_choices(self, layer_state, "attribute")
         link_glue_choices(self, layer_state, "color_mode")

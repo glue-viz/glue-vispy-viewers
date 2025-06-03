@@ -18,7 +18,7 @@
     <number>5</number>
    </property>
    <item row="3" column="0">
-    <widget class="QLabel" name="label">
+    <widget class="QLabel" name="label_color_mode">
      <property name="text">
       <string>Color mode:</string>
      </property>
