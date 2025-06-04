@@ -62,3 +62,6 @@ class VolumeLayerState(VispyLayerState):
 
     def update_priority(self, name):
         return 0 if name.endswith(('vmin', 'vmax')) else 1
+
+    def flip_limits(self):
+        self.lim_helper.flip_limits()
