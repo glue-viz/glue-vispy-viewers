@@ -8,9 +8,12 @@ from matplotlib.colors import ColorConverter
 from glue.core.data import Subset, Data
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
-from .colors import get_translucent_cmap
+from .colors import get_mpl_cmap, get_translucent_cmap
 from .layer_state import VolumeLayerState
 from ..common.layer_artist import VispyLayerArtist
+
+
+COLOR_PROPERTIES = set(['cmap', 'color', 'color_mode'])
 
 
 class DataProxy(object):
@@ -155,8 +158,12 @@ class VolumeLayerArtist(VispyLayerArtist):
         ARRAY_CACHE.pop(self.id, None)
         PIXEL_CACHE.pop(self.id, None)
 
-    def _update_cmap_from_color(self):
-        cmap = get_translucent_cmap(*ColorConverter().to_rgb(self.state.color))
+    def _update_cmap(self):
+        if self.state.color_mode == "Fixed":
+            cmap = get_translucent_cmap(*ColorConverter().to_rgb(self.state.color))
+        else:
+            cmap = get_mpl_cmap(self.state.cmap)
+
         self._multivol.set_cmap(self.id, cmap)
         self.redraw()
 
@@ -226,8 +233,8 @@ class VolumeLayerArtist(VispyLayerArtist):
         self._last_viewer_state.update(self._viewer_state.as_dict())
         self._last_layer_state.update(self.state.as_dict())
 
-        if force or 'color' in changed:
-            self._update_cmap_from_color()
+        if force or len(changed & COLOR_PROPERTIES) > 0:
+            self._update_cmap()
 
         if force or 'vmin' in changed or 'vmax' in changed:
             self._update_limits()

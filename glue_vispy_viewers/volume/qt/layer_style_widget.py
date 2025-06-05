@@ -27,6 +27,9 @@ class VolumeLayerStyleWidget(QtWidgets.QWidget):
         self.layer_artist = layer_artist
         self.layer = layer_artist.layer
 
+        self._update_color_mode()
+        self.state.add_callback('color_mode', self._update_color_mode)
+
         # autoconnect needs to come after setting up the component IDs
         connect_kwargs = {'value_alpha': dict(value_range=(0., 1.))}
         self._connections = autoconnect_callbacks_to_qt(self.state, self.ui, connect_kwargs)
@@ -41,6 +44,8 @@ class VolumeLayerStyleWidget(QtWidgets.QWidget):
             self.ui.valuetext_vmin.hide()
             self.ui.valuetext_vmax.hide()
             self.ui.label_limits.hide()
+            self.ui.label_color_mode.hide()
+            self.ui.combotext_color_mode.hide()
         else:
             self.ui.radio_subset_outline.hide()
             self.ui.radio_subset_data.hide()
@@ -51,3 +56,16 @@ class VolumeLayerStyleWidget(QtWidgets.QWidget):
             self.state.subset_mode = 'outline'
         else:
             self.state.subset_mode = 'data'
+
+    def _update_color_mode(self, *args):
+        fixed_color = self.state.color_mode == "Fixed"
+        if fixed_color:
+            self.ui.label_color.show()
+            self.ui.color_color.show()
+            self.ui.label_cmap.hide()
+            self.ui.combodata_cmap.hide()
+        else:
+            self.ui.label_color.hide()
+            self.ui.color_color.hide()
+            self.ui.label_cmap.show()
+            self.ui.combodata_cmap.show()
