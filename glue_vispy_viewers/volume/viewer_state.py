@@ -1,5 +1,5 @@
 from glue.core.data import BaseData
-from echo import CallbackProperty, SelectionCallbackProperty
+from echo import CallbackProperty, SelectionCallbackProperty, delay_callback
 from glue_vispy_viewers.common.viewer_state import Vispy3DViewerState
 from glue.core.data_combo_helper import ManualDataComboHelper
 
@@ -22,6 +22,9 @@ class Vispy3DVolumeViewerState(Vispy3DViewerState):
         self.ref_data_helper = ManualDataComboHelper(self, 'reference_data')
 
         self.add_callback('layers', self._layers_changed)
+        self.add_callback('x_att', self._on_xatt_changed, echo_old=True)
+        self.add_callback('y_att', self._on_yatt_changed, echo_old=True)
+        self.add_callback('z_att', self._on_zatt_changed, echo_old=True)
 
         Vispy3DVolumeViewerState.resolution.set_choices(self, [2**i for i in range(4, 12)])
 
@@ -29,7 +32,7 @@ class Vispy3DVolumeViewerState(Vispy3DViewerState):
 
     def _first_3d_data(self):
         for layer_state in self.layers:
-            if getattr(layer_state.layer, 'ndim', None) == 3:
+            if getattr(layer_state.layer, 'ndim', None) >= 3:
                 return layer_state.layer
 
     def _layers_changed(self, *args):
@@ -58,12 +61,14 @@ class Vispy3DVolumeViewerState(Vispy3DViewerState):
             type(self).z_att.set_choices(self, [])
 
         else:
-
-            z_cid, y_cid, x_cid = data.pixel_component_ids
-
-            type(self).x_att.set_choices(self, [x_cid])
-            type(self).y_att.set_choices(self, [y_cid])
-            type(self).z_att.set_choices(self, [z_cid])
+            pixel_ids = data.pixel_component_ids
+            with delay_callback(self, "x_att", "y_att", "z_att"):
+                type(self).x_att.set_choices(self, pixel_ids)
+                type(self).y_att.set_choices(self, pixel_ids)
+                type(self).z_att.set_choices(self, pixel_ids)
+                self.x_att = pixel_ids[2]
+                self.y_att = pixel_ids[1]
+                self.z_att = pixel_ids[0]
 
     @property
     def clip_limits_relative(self):
@@ -73,10 +78,30 @@ class Vispy3DVolumeViewerState(Vispy3DViewerState):
         if data is None:
             return [0., 1., 0., 1., 0., 1.]
         else:
-            nz, ny, nx = data.shape
+            nx = data.shape[self.x_att.axis]
+            ny = data.shape[self.y_att.axis]
+            nz = data.shape[self.z_att.axis]
             return (self.x_min / nx,
                     self.x_max / nx,
                     self.y_min / ny,
                     self.y_max / ny,
                     self.z_min / nz,
                     self.z_max / nz)
+
+    def _on_xatt_changed(self, prev_att, new_att):
+        if self.y_att == new_att:
+            self.y_att = prev_att
+        elif self.z_att == new_att:
+            self.z_att = prev_att
+
+    def _on_yatt_changed(self, prev_att, new_att):
+        if self.x_att == new_att:
+            self.x_att = prev_att
+        elif self.z_att == new_att:
+            self.z_att = prev_att
+
+    def _on_zatt_changed(self, prev_att, new_att):
+        if self.x_att == new_att:
+            self.x_att = prev_att
+        elif self.y_att == new_att:
+            self.y_att = prev_att
