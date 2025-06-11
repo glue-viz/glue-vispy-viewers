@@ -3,6 +3,8 @@ from echo import CallbackProperty, SelectionCallbackProperty, delay_callback
 from glue_vispy_viewers.common.viewer_state import Vispy3DViewerState
 from glue.core.data_combo_helper import ManualDataComboHelper
 
+from glue.viewers.image.state import AggregateSlice
+
 __all__ = ['Vispy3DVolumeViewerState']
 
 
@@ -10,6 +12,7 @@ class Vispy3DVolumeViewerState(Vispy3DViewerState):
 
     downsample = CallbackProperty(True)
     resolution = SelectionCallbackProperty(4)
+    slices = CallbackProperty(docstring='The current slice along all dimensions')
     reference_data = SelectionCallbackProperty(docstring='The dataset that is used to define the '
                                                          'available pixel/world components, and '
                                                          'which defines the coordinate frame in '
@@ -20,11 +23,12 @@ class Vispy3DVolumeViewerState(Vispy3DViewerState):
         super(Vispy3DVolumeViewerState, self).__init__()
 
         self.ref_data_helper = ManualDataComboHelper(self, 'reference_data')
+        self.slices = ()
 
         self.add_callback('layers', self._layers_changed)
-        self.add_callback('x_att', self._on_xatt_changed, echo_old=True)
-        self.add_callback('y_att', self._on_yatt_changed, echo_old=True)
-        self.add_callback('z_att', self._on_zatt_changed, echo_old=True)
+        self.add_callback('x_att', self._on_xatt_changed, echo_old=True, priority=1000)
+        self.add_callback('y_att', self._on_yatt_changed, echo_old=True, priority=1000)
+        self.add_callback('z_att', self._on_zatt_changed, echo_old=True, priority=1000)
 
         Vispy3DVolumeViewerState.resolution.set_choices(self, [2**i for i in range(4, 12)])
 
@@ -45,10 +49,13 @@ class Vispy3DVolumeViewerState(Vispy3DViewerState):
 
     def _set_reference_data(self, *args):
         if self.reference_data is None:
+            self.slices = ()
             for layer in self.layers:
                 if isinstance(layer.layer, BaseData):
                     self.reference_data = layer.layer
                     return
+        else:
+            self.slices = (0,) * self.reference_data.ndim
 
     def _update_attributes(self, *args):
 
@@ -69,6 +76,32 @@ class Vispy3DVolumeViewerState(Vispy3DViewerState):
                 self.x_att = pixel_ids[2]
                 self.y_att = pixel_ids[1]
                 self.z_att = pixel_ids[0]
+
+    @property
+    def numpy_slice_aggregation(self):
+        if self.reference_data is None:
+            return None
+
+        slices = []
+        agg_func = []
+        coord_att_axes = [self.x_att.axis, self.y_att.axis, self.z_att.axis]
+        print(self.x_att, self.y_att, self.z_att)
+        print(self)
+        print("Axes: ", coord_att_axes)
+        for i in range(self.reference_data.ndim):
+            if i in coord_att_axes:
+                slices.append(slice(None))
+                agg_func.append(None)
+            else:
+                if isinstance(self.slices[i], AggregateSlice):
+                    slices.append(self.slices[i].slice)
+                    agg_func.append(self.slices[i].function)
+                else:
+                    slices.append(self.slices[i])
+
+        self.slices = slices
+
+        return slices, agg_func
 
     @property
     def clip_limits_relative(self):

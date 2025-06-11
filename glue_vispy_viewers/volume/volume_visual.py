@@ -348,6 +348,8 @@ class MultiVolumeVisual(VolumeVisual):
                        (y_min, y_max, self.resolution),
                        (x_min, x_max, self.resolution)]
 
+        print(data_bounds)
+
         # We should stop at this point if the bounds are the same as before
         if data_bounds == self._data_bounds:
             return

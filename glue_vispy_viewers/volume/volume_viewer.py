@@ -90,12 +90,12 @@ class VispyVolumeViewerMixin(BaseVispyViewerMixin):
             if first_layer_artist:
                 raise Exception("Can only add a scatter plot overlay once "
                                 "a volume is present")
-        elif data.ndim == 3:
+        elif data.ndim >= 3:
             if not self._has_free_volume_layers:
                 self._warn_no_free_volume_layers()
                 return False
         else:
-            raise Exception("Data should be 1- or 3-dimensional ({0} dimensions "
+            raise Exception("Data should be 1- or >3-dimensional ({0} dimensions "
                             "found)".format(data.ndim))
 
         added = super().add_data(data)
