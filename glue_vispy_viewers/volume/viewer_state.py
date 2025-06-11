@@ -99,8 +99,6 @@ class Vispy3DVolumeViewerState(Vispy3DViewerState):
                 else:
                     slices.append(self.slices[i])
 
-        self.slices = slices
-
         return slices, agg_func
 
     @property
