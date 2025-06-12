@@ -40,7 +40,6 @@ class Vispy3DVolumeViewerState(Vispy3DViewerState):
                 return layer_state.layer
 
     def _layers_changed(self, *args):
-        print("LAYERS CHANGED")
         self._update_combo_ref_data()
         self._set_reference_data()
         self._update_attributes()
@@ -49,7 +48,6 @@ class Vispy3DVolumeViewerState(Vispy3DViewerState):
         self.ref_data_helper.set_multiple_data(self.layers_data)
 
     def _set_reference_data(self, *args):
-        print("SET REFERENCE DATA")
         if self.reference_data is None:
             self.slices = ()
             for layer in self.layers:
@@ -91,7 +89,6 @@ class Vispy3DVolumeViewerState(Vispy3DViewerState):
 
         slices = []
         coord_att_axes = [self.x_att.axis, self.y_att.axis, self.z_att.axis]
-        print("Axes: ", coord_att_axes)
         for i in range(self.reference_data.ndim):
             if i in coord_att_axes:
                 slices.append(slice(None))

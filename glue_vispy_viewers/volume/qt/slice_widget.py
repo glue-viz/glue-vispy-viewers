@@ -73,8 +73,7 @@ class MultiSliceWidgetHelper(object):
         if (self.viewer_state.reference_data is not self._reference_data or
                 self.viewer_state.x_att is not self._x_att or
                 self.viewer_state.y_att is not self._y_att or
-                self.viewer_state.z_att is not self._z_att
-            ):
+                self.viewer_state.z_att is not self._z_att):
 
             self._reference_data = self.viewer_state.reference_data
             self._x_att = self.viewer_state.x_att
@@ -85,7 +84,9 @@ class MultiSliceWidgetHelper(object):
 
             for i in range(self.data.ndim):
 
-                if i == self.viewer_state.x_att.axis or i == self.viewer_state.y_att.axis or i == self.viewer_state.z_att.axis:
+                if i == self.viewer_state.x_att.axis or \
+                   i == self.viewer_state.y_att.axis or \
+                   i == self.viewer_state.z_att.axis:
                     self._sliders.append(None)
                     continue
 
@@ -93,7 +94,8 @@ class MultiSliceWidgetHelper(object):
                 # but we will need to generalize this in future. We deliberately
                 # check the type of data.coords here since we want to treat
                 # subclasses differently.
-                if getattr(self.data, 'coords') is not None and type(self.data.coords) is not LegacyCoordinates:
+                if getattr(self.data, 'coords') is not None and \
+                   type(self.data.coords) is not LegacyCoordinates:
                     world_axis_index = self.data.ndim - 1 - i
                     world = world_axis(self.data.coords, self.data,
                                        pixel_axis=world_axis_index,

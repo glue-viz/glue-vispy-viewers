@@ -62,8 +62,6 @@ class VispyVolumeViewerMixin(BaseVispyViewerMixin):
                 self._vispy_widget._multivol.set_clip(False, [0, 0, 0, 1, 1, 1])
 
     def _update_slice_transform(self, *args):
-        print("Update slice transform")
-        print(self.state.x_min, self.state.x_max, self.state.y_min, self.state.y_max, self.state.z_min, self.state.z_max)
         self._vispy_widget._multivol._update_slice_transform(self.state.x_min, self.state.x_max,
                                                              self.state.y_min, self.state.y_max,
                                                              self.state.z_min, self.state.z_max)

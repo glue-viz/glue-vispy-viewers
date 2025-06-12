@@ -65,17 +65,14 @@ class DataProxy(object):
 
         full_view = self.viewer_state.numpy_slice_aggregation
 
-        print(f"Full view initial: {full_view}")
-
         full_view[self.viewer_state.x_att.axis] = bounds[2]
         full_view[self.viewer_state.y_att.axis] = bounds[1]
         full_view[self.viewer_state.z_att.axis] = bounds[0]
 
         for i in range(self.viewer_state.reference_data.ndim):
             if isinstance(full_view[i], slice):
-                full_view[i] = slice_to_bound(full_view[i], self.viewer_state.reference_data.shape[i])
-
-        print(f"Full view: {full_view}")
+                full_view[i] = slice_to_bound(full_view[i],
+                                              self.viewer_state.reference_data.shape[i])
 
         if isinstance(self.layer_artist.layer, Subset):
             try:
@@ -237,8 +234,6 @@ class VolumeLayerArtist(VispyLayerArtist):
 
     def _update_volume(self, force=False, **kwargs):
 
-        print("start _update_volume")
-
         if self.state.attribute is None or self.state.layer is None:
             return
 
@@ -274,7 +269,8 @@ class VolumeLayerArtist(VispyLayerArtist):
             self._update_alpha()
 
         # TODO: Feel like we shouldn't need the axis atts here
-        if force or any(att in changed for att in ('layer', 'attribute', 'slices', 'x_att', 'y_att', 'z_att')):
+        if force or any(att in changed for att in
+                        ('layer', 'attribute', 'slices', 'x_att', 'y_att', 'z_att')):
             self._update_data()
 
         if force or 'subset_mode' in changed:
@@ -282,8 +278,6 @@ class VolumeLayerArtist(VispyLayerArtist):
 
         if force or 'visible' in changed:
             self._update_visibility()
-
-        print("end _update_volume")
 
     def update(self):
         self._update_volume(force=True)

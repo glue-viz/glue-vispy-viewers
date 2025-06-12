@@ -283,9 +283,7 @@ class MultiVolumeVisual(VolumeVisual):
         # is arbitrary but appears to work nicely. We can reduce that in future
         # if needed.
 
-        print(self._data_bounds)
         sliced_data = data.compute_fixed_resolution_buffer(self._data_bounds)
-        print(sliced_data.shape)
 
         chunk_shape = [min(x, 128, self.resolution) for x in sliced_data.shape]
 
@@ -295,7 +293,6 @@ class MultiVolumeVisual(VolumeVisual):
 
         # Now loop over chunks
 
-        print(f"Sliced data shape: {sliced_data.shape}")
         for view in iterate_chunks(sliced_data.shape, chunk_shape=chunk_shape):
 
             chunk = sliced_data[view]
@@ -311,13 +308,8 @@ class MultiVolumeVisual(VolumeVisual):
 
             offset = tuple([s.start for s in view])
 
-            print(offset)
-
             if chunk.size == 0:
                 continue
-
-            print(f"Chunk shape: {chunk_shape}")
-            print(f"Chunk size: {chunk.size}")
 
             self.shared_program['u_volumetex_{0:d}'.format(index)].set_data(chunk, offset=offset)
 
