@@ -40,6 +40,7 @@ class Vispy3DVolumeViewerState(Vispy3DViewerState):
                 return layer_state.layer
 
     def _layers_changed(self, *args):
+        print("LAYERS CHANGED")
         self._update_combo_ref_data()
         self._set_reference_data()
         self._update_attributes()
@@ -48,6 +49,7 @@ class Vispy3DVolumeViewerState(Vispy3DViewerState):
         self.ref_data_helper.set_multiple_data(self.layers_data)
 
     def _set_reference_data(self, *args):
+        print("SET REFERENCE DATA")
         if self.reference_data is None:
             self.slices = ()
             for layer in self.layers:
@@ -73,9 +75,14 @@ class Vispy3DVolumeViewerState(Vispy3DViewerState):
                 type(self).x_att.set_choices(self, pixel_ids)
                 type(self).y_att.set_choices(self, pixel_ids)
                 type(self).z_att.set_choices(self, pixel_ids)
-                self.x_att = pixel_ids[2]
-                self.y_att = pixel_ids[1]
-                self.z_att = pixel_ids[0]
+
+    def _set_up_attributes(self, *args):
+        data = self._first_3d_data()
+        if data is not None:
+            pixel_ids = data.pixel_component_ids
+            self.x_att = pixel_ids[2]
+            self.y_att = pixel_ids[1]
+            self.z_att = pixel_ids[0]
 
     @property
     def numpy_slice_aggregation(self):
@@ -85,8 +92,6 @@ class Vispy3DVolumeViewerState(Vispy3DViewerState):
         slices = []
         agg_func = []
         coord_att_axes = [self.x_att.axis, self.y_att.axis, self.z_att.axis]
-        print(self.x_att, self.y_att, self.z_att)
-        print(self)
         print("Axes: ", coord_att_axes)
         for i in range(self.reference_data.ndim):
             if i in coord_att_axes:

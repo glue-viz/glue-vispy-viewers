@@ -148,9 +148,9 @@ class VolumeLayerArtist(VispyLayerArtist):
 
     @property
     def bbox(self):
-        return (-0.5, self.layer.shape[2] - 0.5,
-                -0.5, self.layer.shape[1] - 0.5,
-                -0.5, self.layer.shape[0] - 0.5)
+        return (-0.5, self.layer.shape[self._viewer_state.x_att.axis] - 0.5,
+                -0.5, self.layer.shape[self._viewer_state.y_att.axis] - 0.5,
+                -0.5, self.layer.shape[self._viewer_state.z_att.axis] - 0.5)
 
     @property
     def shape(self):
@@ -229,6 +229,8 @@ class VolumeLayerArtist(VispyLayerArtist):
 
     def _update_volume(self, force=False, **kwargs):
 
+        print("start _update_volume")
+
         if self.state.attribute is None or self.state.layer is None:
             return
 
@@ -272,6 +274,8 @@ class VolumeLayerArtist(VispyLayerArtist):
 
         if force or 'visible' in changed:
             self._update_visibility()
+
+        print("end _update_volume")
 
     def update(self):
         self._update_volume(force=True)
