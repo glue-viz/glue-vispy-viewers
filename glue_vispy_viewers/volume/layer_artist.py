@@ -63,11 +63,19 @@ class DataProxy(object):
             max = min + step * n
             return (min, max, n + 1)
 
-        full_view, _agg_func = self.viewer_state.numpy_slice_aggregation
+        full_view = self.viewer_state.numpy_slice_aggregation
+
+        print(f"Full view initial: {full_view}")
+
+        full_view[self.viewer_state.x_att.axis] = bounds[2]
+        full_view[self.viewer_state.y_att.axis] = bounds[1]
+        full_view[self.viewer_state.z_att.axis] = bounds[0]
 
         for i in range(self.viewer_state.reference_data.ndim):
             if isinstance(full_view[i], slice):
                 full_view[i] = slice_to_bound(full_view[i], self.viewer_state.reference_data.shape[i])
+
+        print(f"Full view: {full_view}")
 
         if isinstance(self.layer_artist.layer, Subset):
             try:

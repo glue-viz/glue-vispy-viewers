@@ -90,21 +90,18 @@ class Vispy3DVolumeViewerState(Vispy3DViewerState):
             return None
 
         slices = []
-        agg_func = []
         coord_att_axes = [self.x_att.axis, self.y_att.axis, self.z_att.axis]
         print("Axes: ", coord_att_axes)
         for i in range(self.reference_data.ndim):
             if i in coord_att_axes:
                 slices.append(slice(None))
-                agg_func.append(None)
             else:
                 if isinstance(self.slices[i], AggregateSlice):
                     slices.append(self.slices[i].slice)
-                    agg_func.append(self.slices[i].function)
                 else:
                     slices.append(self.slices[i])
 
-        return slices, agg_func
+        return slices
 
     @property
     def clip_limits_relative(self):
