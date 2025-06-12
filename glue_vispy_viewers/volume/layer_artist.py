@@ -84,7 +84,7 @@ class DataProxy(object):
                     full_view,
                     target_data=self.layer_artist._viewer_state.reference_data,
                     subset_state=subset_state,
-                    cache_id=None)
+                    cache_id=self.layer_artist.id)
             except IncompatibleAttribute:
                 self.layer_artist.disable_incompatible_subset()
                 return np.broadcast_to(0, shape)
@@ -96,7 +96,7 @@ class DataProxy(object):
                     full_view,
                     target_data=self.layer_artist._viewer_state.reference_data,
                     target_cid=self.layer_artist.state.attribute,
-                    cache_id=None)
+                    cache_id=self.layer_artist.id)
             except IncompatibleAttribute:
                 self.layer_artist.disable('Layer data is not fully linked to reference data')
                 return np.broadcast_to(0, shape)
