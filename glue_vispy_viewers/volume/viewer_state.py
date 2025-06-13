@@ -25,10 +25,12 @@ class Vispy3DVolumeViewerState(Vispy3DViewerState):
         self.ref_data_helper = ManualDataComboHelper(self, 'reference_data')
         self.slices = ()
 
-        self.add_callback('layers', self._layers_changed)
-        self.add_callback('x_att', self._on_xatt_changed, echo_old=True, priority=1000)
-        self.add_callback('y_att', self._on_yatt_changed, echo_old=True, priority=1000)
-        self.add_callback('z_att', self._on_zatt_changed, echo_old=True, priority=1000)
+        self.add_callback('layers', self._layers_changed, echo_old=True)
+        self.add_callback('x_att', self._on_xatt_changed, echo_old=True)
+        self.add_callback('y_att', self._on_yatt_changed, echo_old=True)
+        self.add_callback('z_att', self._on_zatt_changed, echo_old=True)
+
+        self._layers_changed(None, self.layers)
 
         Vispy3DVolumeViewerState.resolution.set_choices(self, [2**i for i in range(4, 12)])
 
@@ -39,7 +41,9 @@ class Vispy3DVolumeViewerState(Vispy3DViewerState):
             if getattr(layer_state.layer, 'ndim', None) >= 3:
                 return layer_state.layer
 
-    def _layers_changed(self, *args):
+    def _layers_changed(self, old_layers, new_layers):
+        if self.reference_data is not None and old_layers == new_layers:
+            return
         self._update_combo_ref_data()
         self._set_reference_data()
         self._update_attributes()
