@@ -26,6 +26,11 @@ class Volume3DLayerStateWidget(v.VuetifyTemplate):
 
     cmap_items = traitlets.List().tag(sync=True)
 
+    # Stretch
+
+    stretch_items = traitlets.List().tag(sync=True)
+    stretch_selected = traitlets.Int(allow_none=True).tag(sync=True)
+
     subset = traitlets.Bool().tag(sync=True)
 
     def __init__(self, layer_state):
@@ -37,6 +42,7 @@ class Volume3DLayerStateWidget(v.VuetifyTemplate):
         self.subset = isinstance(layer_state.layer, Subset)
 
         link_glue_choices(self, layer_state, "attribute")
+        link_glue_choices(self, layer_state, "stretch")
         link_glue_choices(self, layer_state, "color_mode")
 
         self.cmap_items = [

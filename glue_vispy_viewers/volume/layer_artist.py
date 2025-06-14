@@ -13,7 +13,7 @@ from .layer_state import VolumeLayerState
 from ..common.layer_artist import VispyLayerArtist
 
 
-COLOR_PROPERTIES = set(['cmap', 'color', 'color_mode'])
+COLOR_PROPERTIES = set(['cmap', 'color', 'color_mode', 'stretch', 'stretch_parameters'])
 
 
 class DataProxy(object):
@@ -51,12 +51,36 @@ class DataProxy(object):
         if self.layer_artist is None or self.viewer_state is None:
             return np.broadcast_to(0, shape)
 
+        # For this method, we make use of Data.compute_fixed_resolution_buffer,
+        # which requires us to specify bounds in the form (min, max, nsteps).
+        # We also allow view to be passed here (which is a normal Numpy view)
+        # and, if given, translate it to bounds. If neither are specified,
+        # we behave as if view was [slice(None), slice(None), slice(None)].
+
+        def slice_to_bound(slc, size):
+            min, max, step = slc.indices(size)
+            n = (max - min - 1) // step
+            max = min + step * n
+            return (min, max, n + 1)
+
+        full_view = self.viewer_state.numpy_slice_aggregation
+
+        full_view[self.viewer_state.x_att.axis] = bounds[2]
+        full_view[self.viewer_state.y_att.axis] = bounds[1]
+        full_view[self.viewer_state.z_att.axis] = bounds[0]
+
+        for i in range(self.viewer_state.reference_data.ndim):
+            if isinstance(full_view[i], slice):
+                full_view[i] = slice_to_bound(full_view[i],
+                                              self.viewer_state.reference_data.shape[i])
+
         if isinstance(self.layer_artist.layer, Subset):
             try:
                 subset_state = self.layer_artist.layer.subset_state
                 result = self.layer_artist.layer.data.compute_fixed_resolution_buffer(
+                    full_view,
                     target_data=self.layer_artist._viewer_state.reference_data,
-                    bounds=bounds, subset_state=subset_state,
+                    subset_state=subset_state,
                     cache_id=self.layer_artist.id)
             except IncompatibleAttribute:
                 self.layer_artist.disable_incompatible_subset()
@@ -66,8 +90,9 @@ class DataProxy(object):
         else:
             try:
                 result = self.layer_artist.layer.compute_fixed_resolution_buffer(
+                    full_view,
                     target_data=self.layer_artist._viewer_state.reference_data,
-                    bounds=bounds, target_cid=self.layer_artist.state.attribute,
+                    target_cid=self.layer_artist.state.attribute,
                     cache_id=self.layer_artist.id)
             except IncompatibleAttribute:
                 self.layer_artist.disable('Layer data is not fully linked to reference data')
@@ -128,9 +153,9 @@ class VolumeLayerArtist(VispyLayerArtist):
 
     @property
     def bbox(self):
-        return (-0.5, self.layer.shape[2] - 0.5,
-                -0.5, self.layer.shape[1] - 0.5,
-                -0.5, self.layer.shape[0] - 0.5)
+        return (-0.5, self.layer.shape[self._viewer_state.x_att.axis] - 0.5,
+                -0.5, self.layer.shape[self._viewer_state.y_att.axis] - 0.5,
+                -0.5, self.layer.shape[self._viewer_state.z_att.axis] - 0.5)
 
     @property
     def shape(self):
@@ -160,9 +185,10 @@ class VolumeLayerArtist(VispyLayerArtist):
 
     def _update_cmap(self):
         if self.state.color_mode == "Fixed":
-            cmap = get_translucent_cmap(*ColorConverter().to_rgb(self.state.color))
+            cmap = get_translucent_cmap(*ColorConverter().to_rgb(self.state.color),
+                                        self.state.stretch_object)
         else:
-            cmap = get_mpl_cmap(self.state.cmap)
+            cmap = get_mpl_cmap(self.state.cmap, self.state.stretch_object)
 
         self._multivol.set_cmap(self.id, cmap)
         self.redraw()
@@ -242,7 +268,9 @@ class VolumeLayerArtist(VispyLayerArtist):
         if force or 'alpha' in changed:
             self._update_alpha()
 
-        if force or 'layer' in changed or 'attribute' in changed:
+        # TODO: Feel like we shouldn't need the axis atts here
+        if force or any(att in changed for att in
+                        ('layer', 'attribute', 'slices', 'x_att', 'y_att', 'z_att')):
             self._update_data()
 
         if force or 'subset_mode' in changed:
