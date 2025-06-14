@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>276</width>
-    <height>471</height>
+    <height>443</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -66,9 +66,6 @@
       <string>y axis</string>
      </property>
     </widget>
-   </item>
-   <item row="1" column="5">
-    <widget class="QLineEdit" name="valuetext_x_max"/>
    </item>
    <item row="10" column="2">
     <widget class="QLabel" name="label_reference_data">
@@ -151,16 +148,6 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
-      <widget class="QCheckBox" name="bool_visible_axes">
-       <property name="text">
-        <string>Perspective</string>
-       </property>
-       <property name="checked">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
      <item row="1" column="0">
       <widget class="QCheckBox" name="bool_perspective_view">
        <property name="text">
@@ -168,16 +155,6 @@
        </property>
        <property name="checked">
         <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QCheckBox" name="bool_visible_axes">
-       <property name="text">
-        <string>Show axes</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -215,6 +192,16 @@
       <widget class="QCheckBox" name="bool_clip_data">
        <property name="text">
         <string>Restrict to bounding box</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QCheckBox" name="bool_visible_axes">
+       <property name="text">
+        <string>Show axes</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -380,7 +367,6 @@
     <widget class="QLabel" name="x_lab">
      <property name="font">
       <font>
-       <weight>75</weight>
        <bold>true</bold>
       </font>
      </property>
@@ -422,7 +408,6 @@
     <widget class="QLabel" name="x_lab">
      <property name="font">
       <font>
-       <weight>75</weight>
        <bold>true</bold>
       </font>
      </property>
@@ -436,6 +421,9 @@
    </item>
    <item row="12" column="2" colspan="4">
     <layout class="QVBoxLayout" name="layout_slices"/>
+   </item>
+   <item row="1" column="3">
+    <widget class="QLineEdit" name="valuetext_x_min"/>
    </item>
   </layout>
  </widget>
