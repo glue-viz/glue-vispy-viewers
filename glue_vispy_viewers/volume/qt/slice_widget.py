@@ -62,10 +62,15 @@ class MultiSliceWidgetHelper(object):
     @avoid_circular
     def sync_sliders_from_state(self, *args):
 
-        if self.data is None or self.viewer_state.x_att is None or self.viewer_state.y_att is None:
+        if self.data is None or \
+           self.viewer_state.x_att is None or \
+           self.viewer_state.y_att is None or \
+           (hasattr(self.viewer_state, "z_att") and self.viewer_state.z_att is None):
             return
 
-        if self.viewer_state.x_att is self.viewer_state.y_att:
+        if any((self.viewer_state.x_att is self.viewer_state.y_att,
+                self.viewer_state.x_att is getattr(self.viewer_state, "z_att", None),
+                self.viewer_state.y_att is getattr(self.viewer_state, "z_att", None))):
             return
 
         # Update sliders if needed
