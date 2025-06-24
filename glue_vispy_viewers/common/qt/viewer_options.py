@@ -5,7 +5,7 @@ from qtpy import QtWidgets
 from echo.qt import autoconnect_callbacks_to_qt
 
 from glue_qt.utils import load_ui
-from glue_vispy_viewers.volume.qt.slice_widget import MultiSliceWidgetHelper
+from glue_qt.viewers.common.slice_widget import MultiSliceWidgetHelper
 
 from glue_vispy_viewers.volume.viewer_state import Vispy3DVolumeViewerState
 
