@@ -77,9 +77,6 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_color_mode"/>
-   </item>
    <item row="1" column="0">
     <widget class="QLabel" name="label_limits">
      <property name="text">
@@ -155,20 +152,6 @@
     <widget class="QLabel" name="label_color">
      <property name="text">
       <string>Color:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="label_limits">
-     <property name="text">
-      <string>Limits:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="9" column="1">
-    <widget class="QRadioButton" name="radio_subset_data">
-     <property name="text">
-      <string>Data</string>
      </property>
     </widget>
    </item>

@@ -43,6 +43,7 @@ class VolumeLayerStyleWidget(QtWidgets.QWidget):
             self.ui.radio_subset_data.toggled.connect(self._update_subset_mode)
             self.ui.valuetext_vmin.hide()
             self.ui.valuetext_vmax.hide()
+            self.ui.button_flip_limits.hide()
             self.ui.label_limits.hide()
             self.ui.label_color_mode.hide()
             self.ui.combotext_color_mode.hide()
