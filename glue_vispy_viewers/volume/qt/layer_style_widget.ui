@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>292</width>
-    <height>214</height>
+    <height>246</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,13 +17,6 @@
    <property name="verticalSpacing">
     <number>5</number>
    </property>
-   <item row="4" column="0">
-    <widget class="QLabel" name="label_color">
-     <property name="text">
-      <string>Color:</string>
-     </property>
-    </widget>
-   </item>
    <item row="3" column="0">
     <widget class="QLabel" name="label_color_mode">
      <property name="text">
@@ -84,9 +77,6 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_color_mode"/>
-   </item>
    <item row="1" column="0">
     <widget class="QLabel" name="label_limits">
      <property name="text">
@@ -98,13 +88,6 @@
     <widget class="QRadioButton" name="radio_subset_outline">
      <property name="text">
       <string>Outline</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0">
-    <widget class="QLabel" name="label_cmap">
-     <property name="text">
-      <string>Colormap:</string>
      </property>
     </widget>
    </item>
@@ -145,6 +128,13 @@
      </item>
     </widget>
    </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="label_cmap">
+     <property name="text">
+      <string>Colormap:</string>
+     </property>
+    </widget>
+   </item>
    <item row="10" column="1">
     <spacer name="verticalSpacer">
      <property name="orientation">
@@ -157,6 +147,23 @@
       </size>
      </property>
     </spacer>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_color">
+     <property name="text">
+      <string>Color:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLabel" name="label_stretch">
+     <property name="text">
+      <string>Stretch</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1" colspan="3">
+    <widget class="QComboBox" name="combosel_stretch"/>
    </item>
   </layout>
  </widget>
