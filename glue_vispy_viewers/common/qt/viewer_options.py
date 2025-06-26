@@ -5,6 +5,9 @@ from qtpy import QtWidgets
 from echo.qt import autoconnect_callbacks_to_qt
 
 from glue_qt.utils import load_ui
+from glue_qt.viewers.common.slice_widget import MultiSliceWidgetHelper
+
+from glue_vispy_viewers.volume.viewer_state import Vispy3DVolumeViewerState
 
 from glue_vispy_viewers.scatter.viewer_state import Vispy3DScatterViewerState
 
@@ -42,6 +45,10 @@ class VispyOptionsWidget(QtWidgets.QWidget):
         if not hasattr(viewer_state, 'reference_data'):
             self.ui.label_reference_data.hide()
             self.ui.combosel_reference_data.hide()
+
+        if isinstance(viewer_state, Vispy3DVolumeViewerState):
+            self.slice_helper = MultiSliceWidgetHelper(viewer_state=viewer_state,
+                                                       layout=self.ui.layout_slices)
 
         self.ui.label_line_width.hide()
         self.ui.value_line_width.hide()

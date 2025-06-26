@@ -4,12 +4,13 @@ from echo import (CallbackProperty, SelectionCallbackProperty,
                   delay_callback)
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.core.data_combo_helper import ComponentIDComboHelper
+from glue.viewers.common.stretch_state_mixin import StretchStateMixin
 from ..common.layer_state import VispyLayerState
 
 __all__ = ['VolumeLayerState']
 
 
-class VolumeLayerState(VispyLayerState):
+class VolumeLayerState(VispyLayerState, StretchStateMixin):
     """
     A state object for volume layers
     """
@@ -38,6 +39,8 @@ class VolumeLayerState(VispyLayerState):
                                                      cache=self._limits_cache)
 
         VolumeLayerState.color_mode.set_choices(self, ['Fixed', 'Linear'])
+
+        self.setup_stretch_callback()
 
         self.add_callback('layer', self._on_layer_change)
         if layer is not None:
