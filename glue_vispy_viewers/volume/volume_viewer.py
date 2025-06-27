@@ -45,6 +45,13 @@ class VispyVolumeViewerMixin(BaseVispyViewerMixin):
         self.state.add_callback('resolution', self._update_resolution)
         self._update_resolution()
 
+        self.state.add_callback('cutting_plane', self._update_cutting_plane)
+        self._update_cutting_plane()
+
+    def _update_cutting_plane(self, *args):
+        self._vispy_widget._multivol.set_cutting_plane(self.state.cutting_plane)
+        self._vispy_widget.canvas.update()
+
     def _update_clip(self, force=False):
         if hasattr(self._vispy_widget, '_multivol'):
             if (self.state.clip_data or force):
