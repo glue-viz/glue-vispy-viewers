@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>292</width>
-    <height>214</height>
+    <height>246</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,115 +17,14 @@
    <property name="verticalSpacing">
     <number>5</number>
    </property>
-   <item row="4" column="0">
-    <widget class="QLabel" name="label_color">
-     <property name="text">
-      <string>Color:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_color_mode">
-     <property name="text">
-      <string>Color mode:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QLineEdit" name="valuetext_vmin"/>
-   </item>
-   <item row="1" column="3" alignment="Qt::AlignLeft">
-    <widget class="QLineEdit" name="valuetext_vmax"/>
-   </item>
-   <item row="5" column="1" colspan="3">
-    <widget class="QColormapCombo" name="combodata_cmap"/>
-   </item>
-   <item row="8" column="0" colspan="4">
-    <widget class="QSlider" name="value_alpha">
-     <property name="maximum">
-      <number>100</number>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="1" colspan="3">
-    <widget class="QColorBox" name="color_color">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1" colspan="3">
-    <widget class="QComboBox" name="combosel_attribute">
-     <property name="sizeAdjustPolicy">
-      <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="9" column="0">
-    <widget class="QLabel" name="label_subset_mode">
-     <property name="text">
-      <string>Subset:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label_att">
-     <property name="text">
-      <string>Attribute:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_color_mode"/>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="label_limits">
-     <property name="text">
-      <string>Limits:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="9" column="3">
+   <item row="9" column="2">
     <widget class="QRadioButton" name="radio_subset_outline">
      <property name="text">
       <string>Outline</string>
      </property>
     </widget>
    </item>
-   <item row="5" column="0">
-    <widget class="QLabel" name="label_cmap">
-     <property name="text">
-      <string>Colormap:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="9" column="1">
-    <widget class="QRadioButton" name="radio_subset_data">
-     <property name="text">
-      <string>Data</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="2" alignment="Qt::AlignHCenter">
-    <widget class="QToolButton" name="button_flip_limits">
-     <property name="styleSheet">
-      <string notr="true">padding: 0px</string>
-     </property>
-     <property name="text">
-      <string>⇄</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1" colspan="3">
+   <item row="3" column="1" colspan="2">
     <widget class="QComboBox" name="combotext_color_mode">
      <property name="currentText">
       <string>Fixed</string>
@@ -145,6 +44,87 @@
      </item>
     </widget>
    </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_color">
+     <property name="text">
+      <string>Color:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_att">
+     <property name="text">
+      <string>Attribute:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0" colspan="3">
+    <widget class="QSlider" name="value_alpha">
+     <property name="maximum">
+      <number>100</number>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="1">
+    <widget class="QRadioButton" name="radio_subset_data">
+     <property name="text">
+      <string>Data</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="label_limits">
+     <property name="text">
+      <string>Limits:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="0">
+    <widget class="QLabel" name="label_subset_mode">
+     <property name="text">
+      <string>Subset:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="label_cmap">
+     <property name="text">
+      <string>Colormap:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_color_mode">
+     <property name="text">
+      <string>Color mode:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1" colspan="2">
+    <widget class="QComboBox" name="combosel_stretch"/>
+   </item>
+   <item row="4" column="1" colspan="2">
+    <widget class="QColorBox" name="color_color">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="valuetext_vmin"/>
+   </item>
+   <item row="5" column="1" colspan="2">
+    <widget class="QColormapCombo" name="combodata_cmap"/>
+   </item>
    <item row="10" column="1">
     <spacer name="verticalSpacer">
      <property name="orientation">
@@ -157,6 +137,23 @@
       </size>
      </property>
     </spacer>
+   </item>
+   <item row="0" column="1" colspan="2">
+    <widget class="QComboBox" name="combosel_attribute">
+     <property name="sizeAdjustPolicy">
+      <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLabel" name="label_stretch">
+     <property name="text">
+      <string>Stretch</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2" alignment="Qt::AlignLeft">
+    <widget class="QLineEdit" name="valuetext_vmax"/>
    </item>
   </layout>
  </widget>
