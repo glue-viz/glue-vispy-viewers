@@ -58,7 +58,7 @@ class Volume3DViewerStateWidget(v.VuetifyTemplate):
         if self.viewer_state.x_att is None or \
            self.viewer_state.y_att is None or \
            self.viewer_state.z_att is None:
-               return
+            return
 
         data = self.viewer_state.reference_data
 
