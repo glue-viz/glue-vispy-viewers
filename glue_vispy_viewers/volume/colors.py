@@ -57,12 +57,12 @@ def get_mpl_cmap(cmap, stretch):
     if isinstance(cmap, ListedColormap):
         colors = cmap.colors
         n_colors = len(colors)
-        ts = stretch([index / n_colors for index in range(len(colors))])
-        colors = [color + [t] for t, color in zip(ts, colors)]
+        ts = stretch([index / n_colors for index in range(n_colors)])
+        colors = [[*color, t] for t, color in zip(ts, colors)]
     else:
         n_colors = 256
         ts = stretch([index / n_colors for index in range(n_colors)])
-        colors = [cmap(t)[:3] + (t,) for t in ts]
+        colors = [[*cmap(t)[:3], t] for t in ts]
 
     stretch_glsl = glsl_for_stretch(stretch)
     template = create_cmap_template(n_colors, stretch_glsl)
