@@ -69,17 +69,18 @@ class DataProxy(object):
         full_view[self.viewer_state.y_att.axis] = bounds[1]
         full_view[self.viewer_state.z_att.axis] = bounds[0]
 
+        layer = self.layer_artist.layer
         for i in range(self.viewer_state.reference_data.ndim):
             if isinstance(full_view[i], slice):
                 full_view[i] = slice_to_bound(full_view[i],
                                               self.viewer_state.reference_data.shape[i])
 
-        if isinstance(self.layer_artist.layer, Subset):
+        if isinstance(layer, Subset):
             try:
-                subset_state = self.layer_artist.layer.subset_state
-                result = self.layer_artist.layer.data.compute_fixed_resolution_buffer(
+                subset_state = layer.subset_state
+                result = layer.data.compute_fixed_resolution_buffer(
                     full_view,
-                    target_data=self.layer_artist._viewer_state.reference_data,
+                    target_data=self.viewer_state.reference_data,
                     subset_state=subset_state,
                     cache_id=self.layer_artist.id)
             except IncompatibleAttribute:
@@ -89,9 +90,9 @@ class DataProxy(object):
                 self.layer_artist.enable()
         else:
             try:
-                result = self.layer_artist.layer.compute_fixed_resolution_buffer(
+                result = layer.compute_fixed_resolution_buffer(
                     full_view,
-                    target_data=self.layer_artist._viewer_state.reference_data,
+                    target_data=self.viewer_state.reference_data,
                     target_cid=self.layer_artist.state.attribute,
                     cache_id=self.layer_artist.id)
             except IncompatibleAttribute:
