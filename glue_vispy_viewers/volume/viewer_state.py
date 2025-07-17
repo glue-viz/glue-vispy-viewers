@@ -1,5 +1,6 @@
 from glue.core.data import BaseData
 from echo import CallbackProperty, SelectionCallbackProperty, delay_callback
+from numpy import argsort
 from glue_vispy_viewers.common.viewer_state import Vispy3DViewerState
 from glue.core.data_combo_helper import ManualDataComboHelper
 
@@ -102,8 +103,9 @@ class Vispy3DVolumeViewerState(Vispy3DViewerState):
                 else:
                     slices.append(self.slices[i])
 
-        perm = [0] * 3
-        for i, t in enumerate(coord_att_axes):
+        axes_order = argsort(coord_att_axes)
+        perm = [0] * len(axes_order) 
+        for i, t in enumerate(axes_order):
             perm[t] = i
         return slices, perm 
 

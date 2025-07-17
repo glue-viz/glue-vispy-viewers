@@ -1,5 +1,6 @@
 import uuid
 import weakref
+from glue.core.component import DerivedComponent
 
 import numpy as np
 
@@ -30,12 +31,23 @@ class DataProxy(object):
     def viewer_state(self):
         return self._viewer_state()
 
+    def _get_att(self, viewer_state_att):
+        component = self.layer_artist.layer.get_component(viewer_state_att)
+        if isinstance(component, DerivedComponent):
+            link = component.link
+            if viewer_state_att in link.get_to_ids():
+                return link.get_from_ids()[0]
+            else:
+                return link.get_to_ids()[0]
+        else:
+            return viewer_state_att
+
     @property
     def shape(self):
 
-        x_axis = self.viewer_state.x_att.axis
-        y_axis = self.viewer_state.y_att.axis
-        z_axis = self.viewer_state.z_att.axis
+        x_axis = self._get_att(self.viewer_state.x_att).axis
+        y_axis = self._get_att(self.viewer_state.y_att).axis
+        z_axis = self._get_att(self.viewer_state.z_att).axis
 
         if isinstance(self.layer_artist.layer, Subset):
             full_shape = self.layer_artist.layer.data.shape
