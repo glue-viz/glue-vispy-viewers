@@ -87,9 +87,9 @@ class Vispy3DVolumeViewerState(Vispy3DViewerState):
             self.z_att = pixel_ids[0]
 
     @property
-    def numpy_slice_aggregation(self):
+    def numpy_slice_permutation(self):
         if self.reference_data is None:
-            return None
+            return None, None
 
         slices = []
         coord_att_axes = [self.x_att.axis, self.y_att.axis, self.z_att.axis]
@@ -102,7 +102,10 @@ class Vispy3DVolumeViewerState(Vispy3DViewerState):
                 else:
                     slices.append(self.slices[i])
 
-        return slices
+        perm = [0] * 3
+        for i, t in enumerate(coord_att_axes):
+            perm[t] = i
+        return slices, perm 
 
     @property
     def clip_limits_relative(self):

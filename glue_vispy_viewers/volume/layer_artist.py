@@ -63,7 +63,7 @@ class DataProxy(object):
             max = min + step * n
             return (min, max, n + 1)
 
-        full_view = self.viewer_state.numpy_slice_aggregation
+        full_view, permutation = self.viewer_state.numpy_slice_permutation
 
         full_view[self.viewer_state.x_att.axis] = bounds[2]
         full_view[self.viewer_state.y_att.axis] = bounds[1]
@@ -100,6 +100,9 @@ class DataProxy(object):
                 return np.broadcast_to(0, shape)
             else:
                 self.layer_artist.enable()
+
+        if permutation:
+            result = result.transpose(permutation)
 
         return result
 
