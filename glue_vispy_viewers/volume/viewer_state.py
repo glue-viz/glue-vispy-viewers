@@ -104,10 +104,10 @@ class Vispy3DVolumeViewerState(Vispy3DViewerState):
                     slices.append(self.slices[i])
 
         axes_order = argsort(coord_att_axes)
-        perm = [0] * len(axes_order) 
+        perm = [0] * len(axes_order)
         for i, t in enumerate(axes_order):
             perm[t] = i
-        return slices, perm 
+        return slices, perm
 
     @property
     def clip_limits_relative(self):
