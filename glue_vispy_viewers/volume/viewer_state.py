@@ -107,6 +107,7 @@ class Vispy3DVolumeViewerState(Vispy3DViewerState):
         perm = [0] * len(axes_order)
         for i, t in enumerate(axes_order):
             perm[t] = i
+        perm = [perm[2], perm[1], perm[0]]
         return slices, perm
 
     @property
