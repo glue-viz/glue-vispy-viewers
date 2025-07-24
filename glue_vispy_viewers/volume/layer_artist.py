@@ -1,12 +1,12 @@
 import uuid
 import weakref
-from glue.core.component import DerivedComponent
 
 import numpy as np
 
 from matplotlib.colors import ColorConverter
 
 from glue.core.data import Subset, Data
+from glue.core.link_manager import equivalent_pixel_cids
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
 from .colors import get_mpl_cmap, get_translucent_cmap
@@ -31,23 +31,18 @@ class DataProxy(object):
     def viewer_state(self):
         return self._viewer_state()
 
-    def _get_att(self, viewer_state_att):
-        component = self.layer_artist.layer.get_component(viewer_state_att)
-        if isinstance(component, DerivedComponent):
-            link = component.link
-            if viewer_state_att in link.get_to_ids():
-                return link.get_from_ids()[0]
-            else:
-                return link.get_to_ids()[0]
-        else:
-            return viewer_state_att
-
     @property
     def shape(self):
 
-        x_axis = self._get_att(self.viewer_state.x_att).axis
-        y_axis = self._get_att(self.viewer_state.y_att).axis
-        z_axis = self._get_att(self.viewer_state.z_att).axis
+        order = equivalent_pixel_cids(self.viewer_state.reference_data,
+                                      self.layer_artist.layer)
+
+        try:
+            x_axis = order.index(self.viewer_state.x_att.axis)
+            y_axis = order.index(self.viewer_state.y_att.axis)
+            z_axis = order.index(self.viewer_state.z_att.axis)
+        except (TypeError, ValueError):
+            return 0, 0, 0
 
         if isinstance(self.layer_artist.layer, Subset):
             full_shape = self.layer_artist.layer.data.shape
@@ -61,6 +56,15 @@ class DataProxy(object):
         shape = [bound[2] for bound in bounds]
 
         if self.layer_artist is None or self.viewer_state is None:
+            return np.broadcast_to(0, shape)
+
+        order = equivalent_pixel_cids(self.viewer_state.reference_data,
+                                      self.layer_artist.layer)
+        reference_axes = [self.viewer_state.x_att.axis,
+                          self.viewer_state.y_att.axis,
+                          self.viewer_state.z_att.axis]
+        if order is None or not set(reference_axes) <= set(order):
+            self.layer_artist.disable('Layer data is not fully linked to x/y/z attributes')
             return np.broadcast_to(0, shape)
 
         # For this method, we make use of Data.compute_fixed_resolution_buffer,
@@ -77,9 +81,9 @@ class DataProxy(object):
 
         full_view, permutation = self.viewer_state.numpy_slice_permutation
 
-        full_view[self.viewer_state.x_att.axis] = bounds[2]
-        full_view[self.viewer_state.y_att.axis] = bounds[1]
-        full_view[self.viewer_state.z_att.axis] = bounds[0]
+        full_view[reference_axes[0]] = bounds[2]
+        full_view[reference_axes[1]] = bounds[1]
+        full_view[reference_axes[2]] = bounds[0]
 
         layer = self.layer_artist.layer
         for i in range(self.viewer_state.reference_data.ndim):
