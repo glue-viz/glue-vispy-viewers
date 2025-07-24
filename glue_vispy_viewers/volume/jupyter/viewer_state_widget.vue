@@ -31,6 +31,16 @@
         <div>
             <v-select label="resolution" :items="resolution_items" v-model="resolution_selected" hide-details />
         </div>
+        <div v-for="slider of sliders">
+            <v-subheader class="pl-0 slider-label">{{ slider.label }}: {{ glue_state.slices[slider.index] }} {{ slider.world_value }}</v-subheader>
+            <glue-throttled-slider
+                v-if="glue_state.slices && glue_state.slices.length > 0"
+                wait="300"
+                :max="slider.max"
+                :value.sync="glue_state.slices[slider.index]"
+                hide-details
+            />
+        </div>
     </div>
 </template>
 
