@@ -1,6 +1,7 @@
 import sys
 import pytest
 import numpy as np
+from string import ascii_lowercase
 
 from glue.config import colormaps
 from glue.core import DataCollection, Data
@@ -19,7 +20,7 @@ def make_test_data(dimensions=(10, 10, 10)):
 
     np.random.seed(12345)
 
-    for letter in 'abc':
+    for letter in ascii_lowercase[:len(dimensions)]:
         comp = Component(np.random.random(dimensions))
         data.add_component(comp, letter)
 
@@ -255,3 +256,72 @@ def test_add_data_with_incompatible_subsets(tmpdir):
     volume.add_data(data1)
 
     ga.close()
+
+
+def test_add_higher_dimensional_layers():
+
+    # Check that we can load layers with > 3 dimensions
+   
+    shape_4d = (10, 10, 10, 5)
+    data_4d = make_test_data(shape_4d)
+
+    shape_5d = (5, 5, 4, 4, 2)
+    data_5d = make_test_data(shape_5d)
+
+    dc = DataCollection([data_4d, data_5d])
+
+    ga = GlueApplication(dc)
+    ga.show()
+
+    # First add a 4D layer
+    volume = ga.new_data_viewer(VispyVolumeViewer)
+    volume.add_data(data_4d)
+
+    assert len(volume.layers) == 1
+
+    volume.state.x_att = data_4d.id['a']
+    volume.state.y_att = data_4d.id['c']
+    volume.state.z_att = data_4d.id['d']
+
+    # Next add a 5D layer
+    volume2 = ga.new_data_viewer(VispyVolumeViewer)
+    volume2.add_data(data_5d)
+
+    assert len(volume2.layers) == 1
+
+    volume2.state.x_att = data_5d.id['a']
+    volume2.state.y_att = data_5d.id['e']
+    volume2.state.z_att = data_5d.id['c']
+
+
+def test_3d_4d_layers():
+    shape_4d = (10, 10, 10, 5)
+    data_4d = make_test_data(shape_4d)
+
+    shape_3d = (15, 20, 25)
+    data_3d = make_test_data(shape_3d)
+
+    dc = DataCollection([data_4d, data_3d])
+
+    dc.add_link(LinkSame(data_4d.pixel_component_ids[0], data_3d.pixel_component_ids[2]))
+    dc.add_link(LinkSame(data_4d.pixel_component_ids[1], data_3d.pixel_component_ids[0]))
+    dc.add_link(LinkSame(data_4d.pixel_component_ids[2], data_3d.pixel_component_ids[1]))
+
+    ga = GlueApplication(dc)
+    ga.show()
+
+    volume = ga.new_data_viewer(VispyVolumeViewer)
+    volume.add_data(data_4d)
+    volume.add_data(data_3d)
+    layer_4d = volume.layers[0]
+    layer_3d = volume.layers[1]
+
+    volume.state.x_att = data_4d.pixel_component_ids[0]
+    volume.state.y_att = data_4d.pixel_component_ids[1]
+    volume.state.z_att = data_4d.pixel_component_ids[2]
+    
+    assert layer_3d.enabled
+
+    volume.state.y_att = data_4d.pixel_component_ids[3]
+    
+    assert not layer_3d.enabled
