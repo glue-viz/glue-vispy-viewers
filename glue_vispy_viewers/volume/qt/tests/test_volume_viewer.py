@@ -375,7 +375,14 @@ def test_data_proxy_shape():
     shape_4d = (5, 4, 2, 7)
     data_4d = make_test_data(shape_4d)
 
-    dc = DataCollection([data_4d])
+    shape_4d_2 = (6, 3, 7, 11)
+    data_4d_2 = make_test_data(shape_4d_2)
+
+    dc = DataCollection([data_4d, data_4d_2])
+
+    dc.add_link(LinkSame(data_4d.pixel_component_ids[0], data_4d_2.pixel_component_ids[3]))
+    dc.add_link(LinkSame(data_4d.pixel_component_ids[1], data_4d_2.pixel_component_ids[0]))
+    dc.add_link(LinkSame(data_4d.pixel_component_ids[2], data_4d_2.pixel_component_ids[1]))
 
     ga = GlueApplication(dc)
     ga.show()
@@ -398,5 +405,21 @@ def test_data_proxy_shape():
     volume.state.y_att = data_4d.pixel_component_ids[1]
     volume.state.z_att = data_4d.pixel_component_ids[3]
     assert proxy.shape == (2, 4, 7)
+
+    volume.add_data(data_4d_2)
+    layer2 = volume.layers[-1]
+
+    proxy2 = DataProxy(volume.state, layer2.state)
+    assert proxy.shape == (0, 0, 0)
+
+    volume.state.x_att = data_4d.pixel_component_ids[0]
+    volume.state.y_att = data_4d.pixel_component_ids[1]
+    volume.state.z_att = data_4d.pixel_component_ids[2]
+    assert proxy2.shape == (11, 6, 3)
+
+    volume.state.x_att = data_4d.pixel_component_ids[2]
+    volume.state.y_att = data_4d.pixel_component_ids[0]
+    volume.state.z_att = data_4d.pixel_component_ids[1]
+    assert proxy2.shape == (3, 11, 6)
 
     ga.close()
