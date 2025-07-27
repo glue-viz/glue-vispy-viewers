@@ -9,6 +9,7 @@ from glue_qt.app.application import GlueApplication
 from glue.core.component import Component
 from glue.core.link_helpers import LinkSame
 
+from ...layer_artist import DataProxy
 from ..volume_viewer import VispyVolumeViewer
 
 IS_WIN = sys.platform == 'win32'
@@ -261,7 +262,7 @@ def test_add_data_with_incompatible_subsets(tmpdir):
 def test_add_higher_dimensional_layers():
 
     # Check that we can load layers with > 3 dimensions
-   
+
     shape_4d = (10, 10, 10, 5)
     data_4d = make_test_data(shape_4d)
 
@@ -279,9 +280,9 @@ def test_add_higher_dimensional_layers():
 
     assert len(volume.layers) == 1
 
-    volume.state.x_att = data_4d.id['a']
-    volume.state.y_att = data_4d.id['c']
-    volume.state.z_att = data_4d.id['d']
+    volume.state.x_att = data_4d.pixel_component_ids[0]
+    volume.state.y_att = data_4d.pixel_component_ids[2]
+    volume.state.z_att = data_4d.pixel_component_ids[3]
 
     # Next add a 5D layer
     volume2 = ga.new_data_viewer(VispyVolumeViewer)
@@ -289,9 +290,11 @@ def test_add_higher_dimensional_layers():
 
     assert len(volume2.layers) == 1
 
-    volume2.state.x_att = data_5d.id['a']
-    volume2.state.y_att = data_5d.id['e']
-    volume2.state.z_att = data_5d.id['c']
+    volume2.state.x_att = data_5d.pixel_component_ids[0]
+    volume2.state.y_att = data_5d.pixel_component_ids[4]
+    volume2.state.z_att = data_5d.pixel_component_ids[2]
+
+    ga.close()
 
 
 def test_3d_4d_layers():
@@ -313,15 +316,87 @@ def test_3d_4d_layers():
     volume = ga.new_data_viewer(VispyVolumeViewer)
     volume.add_data(data_4d)
     volume.add_data(data_3d)
-    layer_4d = volume.layers[0]
     layer_3d = volume.layers[1]
 
     volume.state.x_att = data_4d.pixel_component_ids[0]
     volume.state.y_att = data_4d.pixel_component_ids[1]
     volume.state.z_att = data_4d.pixel_component_ids[2]
-    
+
     assert layer_3d.enabled
 
     volume.state.y_att = data_4d.pixel_component_ids[3]
-    
+
     assert not layer_3d.enabled
+
+    ga.close()
+
+
+def test_scatter_on_4d():
+    shape_4d = (10, 10, 10, 5)
+    data_4d = make_test_data(shape_4d)
+
+    data_scatter = Data(x=[1, 2, 3], y=[2, 3, 4], z=[3, 4, 5])
+
+    dc = DataCollection([data_4d, data_scatter])
+
+    dc.add_link(LinkSame(data_4d.id['b'], data_scatter.id['x']))
+    dc.add_link(LinkSame(data_4d.id['c'], data_scatter.id['y']))
+    dc.add_link(LinkSame(data_4d.id['d'], data_scatter.id['z']))
+
+    ga = GlueApplication(dc)
+    ga.show()
+
+    volume = ga.new_data_viewer(VispyVolumeViewer)
+    volume.add_data(data_4d)
+
+    volume.state.x_att = data_4d.pixel_component_ids[1]
+    volume.state.y_att = data_4d.pixel_component_ids[2]
+    volume.state.z_att = data_4d.pixel_component_ids[3]
+
+    volume.add_data(data_scatter)
+
+    layer_scatter = volume.layers[-1]
+
+    assert layer_scatter.enabled
+
+    volume.state.x_att = data_4d.pixel_component_ids[0]
+
+    assert not layer_scatter.enabled
+
+    volume.state.x_att = data_4d.pixel_component_ids[3]
+    volume.state.z_att = data_4d.pixel_component_ids[1]
+
+    assert layer_scatter.enabled
+
+    ga.close()
+
+
+def test_data_proxy_shape():
+    shape_4d = (5, 4, 2, 7)
+    data_4d = make_test_data(shape_4d)
+
+    dc = DataCollection([data_4d])
+
+    ga = GlueApplication(dc)
+    ga.show()
+
+    volume = ga.new_data_viewer(VispyVolumeViewer)
+    volume.add_data(data_4d)
+    layer = volume.layers[0]
+
+    volume.state.x_att = data_4d.pixel_component_ids[0]
+    volume.state.y_att = data_4d.pixel_component_ids[1]
+    volume.state.z_att = data_4d.pixel_component_ids[2]
+
+    proxy = DataProxy(volume.state, layer.state)
+    assert proxy.shape == (5, 4, 2)
+
+    volume.state.x_att = data_4d.pixel_component_ids[3]
+    assert proxy.shape == (7, 4, 2)
+
+    volume.state.x_att = data_4d.pixel_component_ids[2]
+    volume.state.y_att = data_4d.pixel_component_ids[1]
+    volume.state.z_att = data_4d.pixel_component_ids[3]
+    assert proxy.shape == (2, 4, 7)
+
+    ga.close()
