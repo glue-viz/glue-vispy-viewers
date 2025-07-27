@@ -41,7 +41,7 @@ class DataProxy(object):
             x_axis = order.index(self.viewer_state.x_att.axis)
             y_axis = order.index(self.viewer_state.y_att.axis)
             z_axis = order.index(self.viewer_state.z_att.axis)
-        except (TypeError, ValueError):
+        except (AttributeError, ValueError):
             return 0, 0, 0
 
         if isinstance(self.layer_artist.layer, Subset):
