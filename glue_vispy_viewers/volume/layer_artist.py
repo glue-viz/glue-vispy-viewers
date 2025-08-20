@@ -58,7 +58,7 @@ class DataProxy(object):
     def shape(self):
 
         order = linked_pixel_cids(self.viewer_state.reference_data,
-                                      self.layer_artist.layer)
+                                  self.layer_artist.layer)
 
         try:
             x_axis = order.index(self.viewer_state.x_att.axis)
@@ -82,7 +82,7 @@ class DataProxy(object):
             return np.broadcast_to(0, shape)
 
         order = linked_pixel_cids(self.viewer_state.reference_data,
-                                      self.layer_artist.layer)
+                                  self.layer_artist.layer)
         reference_axes = [self.viewer_state.x_att.axis,
                           self.viewer_state.y_att.axis,
                           self.viewer_state.z_att.axis]

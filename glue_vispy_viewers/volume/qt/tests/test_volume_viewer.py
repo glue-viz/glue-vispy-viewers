@@ -7,7 +7,6 @@ from glue.config import colormaps
 from glue.core import DataCollection, Data
 from glue_qt.app.application import GlueApplication
 from glue.core.component import Component
-from glue.core.component_link import CoordinateComponentLink
 from glue.core.link_helpers import LinkSame
 
 from ...layer_artist import DataProxy
