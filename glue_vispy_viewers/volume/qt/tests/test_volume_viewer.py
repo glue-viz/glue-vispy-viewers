@@ -415,11 +415,17 @@ def test_data_proxy_shape():
     volume.state.x_att = data_4d.pixel_component_ids[0]
     volume.state.y_att = data_4d.pixel_component_ids[1]
     volume.state.z_att = data_4d.pixel_component_ids[2]
+    assert proxy2.shape == (0, 0, 0)
+
+    dc.add_link(LinkSame(data_4d.pixel_component_ids[3], data_4d_2.pixel_component_ids[2]))
     assert proxy2.shape == (3, 6, 11)
 
     volume.state.x_att = data_4d.pixel_component_ids[2]
     volume.state.y_att = data_4d.pixel_component_ids[0]
     volume.state.z_att = data_4d.pixel_component_ids[1]
     assert proxy2.shape == (6, 11, 3)
+
+    volume.state.y_att = data_4d.pixel_component_ids[3]
+    assert proxy2.shape == (6, 7, 3)
 
     ga.close()
