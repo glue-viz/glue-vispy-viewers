@@ -6,7 +6,7 @@ import numpy as np
 from matplotlib.colors import ColorConverter
 
 from glue.core.data import Subset, Data
-from glue.core.link_manager import is_equivalent_cid
+from glue.core.link_manager import equivalent_pixel_cids
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
 from .colors import get_mpl_cmap, get_translucent_cmap
@@ -15,29 +15,6 @@ from ..common.layer_artist import VispyLayerArtist
 
 
 COLOR_PROPERTIES = set(['cmap', 'color', 'color_mode', 'stretch', 'stretch_parameters'])
-
-
-def linked_pixel_cids(reference, target):
-    """
-    Determine which pixel IDs of target are linked to reference.
-
-    This is similar to `glue.core.link_manager.equivalent_pixel_cids`, except that we
-    return partial matches. Instead of returning `None` if we don't find a match, we
-    add `None` to the relevant place in the list.
-    """
-    if target is reference:
-        return list(range(reference.ndim))
-
-    order = []
-    for tar_cid in target.pixel_component_ids:
-        for iref, ref_cid in enumerate(reference.pixel_component_ids):
-            if is_equivalent_cid(reference, ref_cid, tar_cid):
-                order.append(iref)
-                break
-        else:
-            order.append(None)
-
-    return order
 
 
 class DataProxy(object):
@@ -57,8 +34,8 @@ class DataProxy(object):
     @property
     def shape(self):
 
-        order = linked_pixel_cids(self.viewer_state.reference_data,
-                                  self.layer_artist.layer)
+        order = equivalent_pixel_cids(self.viewer_state.reference_data,
+                                      self.layer_artist.layer)
 
         try:
             x_axis = order.index(self.viewer_state.x_att.axis)
@@ -81,12 +58,12 @@ class DataProxy(object):
         if self.layer_artist is None or self.viewer_state is None:
             return np.broadcast_to(0, shape)
 
-        order = linked_pixel_cids(self.viewer_state.reference_data,
-                                  self.layer_artist.layer)
+        order = equivalent_pixel_cids(self.viewer_state.reference_data,
+                                      self.layer_artist.layer)
         reference_axes = [self.viewer_state.x_att.axis,
                           self.viewer_state.y_att.axis,
                           self.viewer_state.z_att.axis]
-        if not set(reference_axes) <= set(order):
+        if order is not None and not set(reference_axes) <= set(order):
             self.layer_artist.disable('Layer data is not fully linked to x/y/z attributes')
             return np.broadcast_to(0, shape)
 
