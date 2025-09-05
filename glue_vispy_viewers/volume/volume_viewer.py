@@ -42,6 +42,9 @@ class VispyVolumeViewerMixin(BaseVispyViewerMixin):
         self._vispy_widget.add_data_visual(multivol)
         self._vispy_widget._multivol = multivol
 
+        self.state.add_callback('x_att', self._update_slice_transform)
+        self.state.add_callback('y_att', self._update_slice_transform)
+        self.state.add_callback('z_att', self._update_slice_transform)
         self.state.add_callback('resolution', self._update_resolution)
         self._update_resolution()
 
@@ -58,7 +61,7 @@ class VispyVolumeViewerMixin(BaseVispyViewerMixin):
             else:
                 self._vispy_widget._multivol.set_clip(False, [0, 0, 0, 1, 1, 1])
 
-    def _update_slice_transform(self):
+    def _update_slice_transform(self, *args):
         self._vispy_widget._multivol._update_slice_transform(self.state.x_min, self.state.x_max,
                                                              self.state.y_min, self.state.y_max,
                                                              self.state.z_min, self.state.z_max)
@@ -90,12 +93,12 @@ class VispyVolumeViewerMixin(BaseVispyViewerMixin):
             if first_layer_artist:
                 raise Exception("Can only add a scatter plot overlay once "
                                 "a volume is present")
-        elif data.ndim == 3:
+        elif data.ndim >= 3:
             if not self._has_free_volume_layers:
                 self._warn_no_free_volume_layers()
                 return False
         else:
-            raise Exception("Data should be 1- or 3-dimensional ({0} dimensions "
+            raise Exception("Data should be 1- or >3-dimensional ({0} dimensions "
                             "found)".format(data.ndim))
 
         added = super().add_data(data)

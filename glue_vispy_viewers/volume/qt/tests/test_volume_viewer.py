@@ -1,6 +1,7 @@
 import sys
 import pytest
 import numpy as np
+from string import ascii_lowercase
 
 from glue.config import colormaps
 from glue.core import DataCollection, Data
@@ -8,6 +9,7 @@ from glue_qt.app.application import GlueApplication
 from glue.core.component import Component
 from glue.core.link_helpers import LinkSame
 
+from ...layer_artist import DataProxy
 from ..volume_viewer import VispyVolumeViewer
 
 IS_WIN = sys.platform == 'win32'
@@ -19,7 +21,7 @@ def make_test_data(dimensions=(10, 10, 10)):
 
     np.random.seed(12345)
 
-    for letter in 'abc':
+    for letter in ascii_lowercase[:len(dimensions)]:
         comp = Component(np.random.random(dimensions))
         data.add_component(comp, letter)
 
@@ -253,5 +255,177 @@ def test_add_data_with_incompatible_subsets(tmpdir):
         pytest.skip(reason='Windows fatal exception: access violation')
     volume = ga.new_data_viewer(VispyVolumeViewer)
     volume.add_data(data1)
+
+    ga.close()
+
+
+def test_add_higher_dimensional_layers():
+
+    # Check that we can load layers with > 3 dimensions
+
+    shape_4d = (10, 10, 10, 5)
+    data_4d = make_test_data(shape_4d)
+
+    shape_5d = (5, 5, 4, 4, 2)
+    data_5d = make_test_data(shape_5d)
+
+    dc = DataCollection([data_4d, data_5d])
+
+    ga = GlueApplication(dc)
+    ga.show()
+
+    # First add a 4D layer
+    volume = ga.new_data_viewer(VispyVolumeViewer)
+    volume.add_data(data_4d)
+
+    assert len(volume.layers) == 1
+
+    volume.state.x_att = data_4d.pixel_component_ids[0]
+    volume.state.y_att = data_4d.pixel_component_ids[2]
+    volume.state.z_att = data_4d.pixel_component_ids[3]
+
+    # Next add a 5D layer
+    volume2 = ga.new_data_viewer(VispyVolumeViewer)
+    volume2.add_data(data_5d)
+
+    assert len(volume2.layers) == 1
+
+    volume2.state.x_att = data_5d.pixel_component_ids[0]
+    volume2.state.y_att = data_5d.pixel_component_ids[4]
+    volume2.state.z_att = data_5d.pixel_component_ids[2]
+
+    ga.close()
+
+
+def test_3d_4d_layers():
+    shape_4d = (10, 10, 10, 5)
+    data_4d = make_test_data(shape_4d)
+
+    shape_3d = (15, 20, 25)
+    data_3d = make_test_data(shape_3d)
+
+    dc = DataCollection([data_4d, data_3d])
+
+    dc.add_link(LinkSame(data_4d.pixel_component_ids[0], data_3d.pixel_component_ids[2]))
+    dc.add_link(LinkSame(data_4d.pixel_component_ids[1], data_3d.pixel_component_ids[0]))
+    dc.add_link(LinkSame(data_4d.pixel_component_ids[2], data_3d.pixel_component_ids[1]))
+
+    ga = GlueApplication(dc)
+    ga.show()
+
+    volume = ga.new_data_viewer(VispyVolumeViewer)
+    volume.add_data(data_4d)
+    volume.add_data(data_3d)
+    layer_3d = volume.layers[1]
+
+    volume.state.x_att = data_4d.pixel_component_ids[0]
+    volume.state.y_att = data_4d.pixel_component_ids[1]
+    volume.state.z_att = data_4d.pixel_component_ids[2]
+
+    assert layer_3d.enabled
+
+    volume.state.y_att = data_4d.pixel_component_ids[3]
+
+    assert not layer_3d.enabled
+
+    ga.close()
+
+
+def test_scatter_on_4d():
+    shape_4d = (10, 10, 10, 5)
+    data_4d = make_test_data(shape_4d)
+
+    data_scatter = Data(label="Scatter", x=[1, 2, 3], y=[2, 3, 4], z=[3, 4, 5])
+
+    dc = DataCollection([data_4d, data_scatter])
+
+    dc.add_link(LinkSame(data_4d.pixel_component_ids[1], data_scatter.id['x']))
+    dc.add_link(LinkSame(data_4d.pixel_component_ids[2], data_scatter.id['y']))
+    dc.add_link(LinkSame(data_4d.pixel_component_ids[3], data_scatter.id['z']))
+
+    ga = GlueApplication(dc)
+    ga.show()
+
+    volume = ga.new_data_viewer(VispyVolumeViewer)
+    volume.add_data(data_4d)
+
+    volume.state.x_att = data_4d.pixel_component_ids[1]
+    volume.state.y_att = data_4d.pixel_component_ids[2]
+    volume.state.z_att = data_4d.pixel_component_ids[3]
+
+    volume.add_data(data_scatter)
+
+    layer_scatter = volume.layers[-1]
+
+    assert layer_scatter.enabled
+
+    volume.state.x_att = data_4d.pixel_component_ids[0]
+
+    assert not layer_scatter.enabled
+
+    volume.state.x_att = data_4d.pixel_component_ids[3]
+    volume.state.z_att = data_4d.pixel_component_ids[1]
+
+    assert layer_scatter.enabled
+
+    ga.close()
+
+
+def test_data_proxy_shape():
+    shape_4d = (5, 4, 2, 7)
+    data_4d = make_test_data(shape_4d)
+
+    shape_4d_2 = (6, 3, 7, 11)
+    data_4d_2 = make_test_data(shape_4d_2)
+
+    dc = DataCollection([data_4d, data_4d_2])
+
+    dc.add_link(LinkSame(data_4d.pixel_component_ids[0], data_4d_2.pixel_component_ids[3]))
+    dc.add_link(LinkSame(data_4d.pixel_component_ids[1], data_4d_2.pixel_component_ids[0]))
+    dc.add_link(LinkSame(data_4d.pixel_component_ids[2], data_4d_2.pixel_component_ids[1]))
+
+    ga = GlueApplication(dc)
+    ga.show()
+
+    volume = ga.new_data_viewer(VispyVolumeViewer)
+    volume.add_data(data_4d)
+    layer = volume.layers[0]
+
+    volume.state.x_att = data_4d.pixel_component_ids[0]
+    volume.state.y_att = data_4d.pixel_component_ids[1]
+    volume.state.z_att = data_4d.pixel_component_ids[2]
+
+    proxy = DataProxy(volume.state, layer.state)
+    assert proxy.shape == (2, 4, 5)
+
+    volume.state.x_att = data_4d.pixel_component_ids[3]
+    assert proxy.shape == (2, 4, 7)
+
+    volume.state.x_att = data_4d.pixel_component_ids[2]
+    volume.state.y_att = data_4d.pixel_component_ids[1]
+    volume.state.z_att = data_4d.pixel_component_ids[3]
+    assert proxy.shape == (7, 4, 2)
+
+    volume.add_data(data_4d_2)
+    layer2 = volume.layers[-1]
+
+    proxy2 = DataProxy(volume.state, layer2.state)
+    assert proxy2.shape == (0, 0, 0)
+
+    volume.state.x_att = data_4d.pixel_component_ids[0]
+    volume.state.y_att = data_4d.pixel_component_ids[1]
+    volume.state.z_att = data_4d.pixel_component_ids[2]
+    assert proxy2.shape == (0, 0, 0)
+
+    dc.add_link(LinkSame(data_4d.pixel_component_ids[3], data_4d_2.pixel_component_ids[2]))
+    assert proxy2.shape == (3, 6, 11)
+
+    volume.state.x_att = data_4d.pixel_component_ids[2]
+    volume.state.y_att = data_4d.pixel_component_ids[0]
+    volume.state.z_att = data_4d.pixel_component_ids[1]
+    assert proxy2.shape == (6, 11, 3)
+
+    volume.state.y_att = data_4d.pixel_component_ids[3]
+    assert proxy2.shape == (6, 7, 3)
 
     ga.close()

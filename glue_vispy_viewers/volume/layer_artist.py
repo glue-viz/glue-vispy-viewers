@@ -6,6 +6,7 @@ import numpy as np
 from matplotlib.colors import ColorConverter
 
 from glue.core.data import Subset, Data
+from glue.core.link_manager import equivalent_pixel_cids
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
 from .colors import get_mpl_cmap, get_translucent_cmap
@@ -33,9 +34,15 @@ class DataProxy(object):
     @property
     def shape(self):
 
-        x_axis = self.viewer_state.x_att.axis
-        y_axis = self.viewer_state.y_att.axis
-        z_axis = self.viewer_state.z_att.axis
+        order = equivalent_pixel_cids(self.viewer_state.reference_data,
+                                      self.layer_artist.layer)
+
+        try:
+            x_axis = order.index(self.viewer_state.x_att.axis)
+            y_axis = order.index(self.viewer_state.y_att.axis)
+            z_axis = order.index(self.viewer_state.z_att.axis)
+        except (AttributeError, ValueError):
+            return 0, 0, 0
 
         if isinstance(self.layer_artist.layer, Subset):
             full_shape = self.layer_artist.layer.data.shape
@@ -51,12 +58,46 @@ class DataProxy(object):
         if self.layer_artist is None or self.viewer_state is None:
             return np.broadcast_to(0, shape)
 
-        if isinstance(self.layer_artist.layer, Subset):
+        order = equivalent_pixel_cids(self.viewer_state.reference_data,
+                                      self.layer_artist.layer)
+        reference_axes = [self.viewer_state.x_att.axis,
+                          self.viewer_state.y_att.axis,
+                          self.viewer_state.z_att.axis]
+        if order is not None and not set(reference_axes) <= set(order):
+            self.layer_artist.disable('Layer data is not fully linked to x/y/z attributes')
+            return np.broadcast_to(0, shape)
+
+        # For this method, we make use of Data.compute_fixed_resolution_buffer,
+        # which requires us to specify bounds in the form (min, max, nsteps).
+        # We also allow view to be passed here (which is a normal Numpy view)
+        # and, if given, translate it to bounds. If neither are specified,
+        # we behave as if view was [slice(None), slice(None), slice(None)].
+
+        def slice_to_bound(slc, size):
+            min, max, step = slc.indices(size)
+            n = (max - min - 1) // step
+            max = min + step * n
+            return (min, max, n + 1)
+
+        full_view, permutation = self.viewer_state.numpy_slice_permutation
+
+        full_view[reference_axes[0]] = bounds[2]
+        full_view[reference_axes[1]] = bounds[1]
+        full_view[reference_axes[2]] = bounds[0]
+
+        layer = self.layer_artist.layer
+        for i in range(self.viewer_state.reference_data.ndim):
+            if isinstance(full_view[i], slice):
+                full_view[i] = slice_to_bound(full_view[i],
+                                              self.viewer_state.reference_data.shape[i])
+
+        if isinstance(layer, Subset):
             try:
-                subset_state = self.layer_artist.layer.subset_state
-                result = self.layer_artist.layer.data.compute_fixed_resolution_buffer(
-                    target_data=self.layer_artist._viewer_state.reference_data,
-                    bounds=bounds, subset_state=subset_state,
+                subset_state = layer.subset_state
+                result = layer.data.compute_fixed_resolution_buffer(
+                    full_view,
+                    target_data=self.viewer_state.reference_data,
+                    subset_state=subset_state,
                     cache_id=self.layer_artist.id)
             except IncompatibleAttribute:
                 self.layer_artist.disable_incompatible_subset()
@@ -65,15 +106,22 @@ class DataProxy(object):
                 self.layer_artist.enable()
         else:
             try:
-                result = self.layer_artist.layer.compute_fixed_resolution_buffer(
-                    target_data=self.layer_artist._viewer_state.reference_data,
-                    bounds=bounds, target_cid=self.layer_artist.state.attribute,
+                result = layer.compute_fixed_resolution_buffer(
+                    full_view,
+                    target_data=self.viewer_state.reference_data,
+                    target_cid=self.layer_artist.state.attribute,
                     cache_id=self.layer_artist.id)
             except IncompatibleAttribute:
                 self.layer_artist.disable('Layer data is not fully linked to reference data')
                 return np.broadcast_to(0, shape)
             else:
                 self.layer_artist.enable()
+
+        if permutation:
+            try:
+                result = result.transpose(permutation)
+            except ValueError:
+                return np.broadcast_to(0, shape)
 
         return result
 
@@ -128,9 +176,9 @@ class VolumeLayerArtist(VispyLayerArtist):
 
     @property
     def bbox(self):
-        return (-0.5, self.layer.shape[2] - 0.5,
-                -0.5, self.layer.shape[1] - 0.5,
-                -0.5, self.layer.shape[0] - 0.5)
+        return (-0.5, self.layer.shape[self._viewer_state.x_att.axis] - 0.5,
+                -0.5, self.layer.shape[self._viewer_state.y_att.axis] - 0.5,
+                -0.5, self.layer.shape[self._viewer_state.z_att.axis] - 0.5)
 
     @property
     def shape(self):
@@ -243,7 +291,9 @@ class VolumeLayerArtist(VispyLayerArtist):
         if force or 'alpha' in changed:
             self._update_alpha()
 
-        if force or 'layer' in changed or 'attribute' in changed:
+        # TODO: Feel like we shouldn't need the axis atts here
+        if force or any(att in changed for att in
+                        ('layer', 'attribute', 'slices', 'x_att', 'y_att', 'z_att')):
             self._update_data()
 
         if force or 'subset_mode' in changed:
