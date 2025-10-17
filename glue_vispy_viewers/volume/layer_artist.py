@@ -6,7 +6,7 @@ import numpy as np
 from matplotlib.colors import ColorConverter
 
 from glue.core.data import Subset, Data
-from glue.core.link_manager import equivalent_pixel_cids, pixel_cid_to_pixel_cid_matrix
+from glue.core.link_manager import pixel_cid_to_pixel_cid_matrix
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
 from .colors import get_mpl_cmap, get_translucent_cmap
@@ -39,7 +39,6 @@ class DataProxy(object):
             idx = np.argmax(mat[:, i])
             order.append(idx if mat[idx, i] else None)
         return order
-
 
     @property
     def shape(self):
