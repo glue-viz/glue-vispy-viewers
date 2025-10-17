@@ -6,7 +6,7 @@ import numpy as np
 from matplotlib.colors import ColorConverter
 
 from glue.core.data import Subset, Data
-from glue.core.link_manager import equivalent_pixel_cids
+from glue.core.link_manager import equivalent_pixel_cids, pixel_cid_to_pixel_cid_matrix
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
 from .colors import get_mpl_cmap, get_translucent_cmap
@@ -31,17 +31,22 @@ class DataProxy(object):
     def viewer_state(self):
         return self._viewer_state()
 
+    def _pixel_cid_order(self):
+        mat = pixel_cid_to_pixel_cid_matrix(self.viewer_state.reference_data,
+                                            self.layer_artist.layer)
+        return [np.argmax(mat[:, i]) for i in range(mat.shape[1])]
+
     @property
     def shape(self):
 
-        order = equivalent_pixel_cids(self.viewer_state.reference_data,
-                                      self.layer_artist.layer)
+        order = self._pixel_cid_order()
 
         try:
             x_axis = order.index(self.viewer_state.x_att.axis)
             y_axis = order.index(self.viewer_state.y_att.axis)
             z_axis = order.index(self.viewer_state.z_att.axis)
         except (AttributeError, ValueError):
+            self.layer_artist.disable('Layer data is not fully linked to reference data')
             return 0, 0, 0
 
         if isinstance(self.layer_artist.layer, Subset):
@@ -58,8 +63,7 @@ class DataProxy(object):
         if self.layer_artist is None or self.viewer_state is None:
             return np.broadcast_to(0, shape)
 
-        order = equivalent_pixel_cids(self.viewer_state.reference_data,
-                                      self.layer_artist.layer)
+        order = self._pixel_cid_order()
         reference_axes = [self.viewer_state.x_att.axis,
                           self.viewer_state.y_att.axis,
                           self.viewer_state.z_att.axis]
