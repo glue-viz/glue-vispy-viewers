@@ -67,13 +67,9 @@ class DataProxy(object):
         if self.layer_artist is None or self.viewer_state is None:
             return np.broadcast_to(0, shape)
 
-        order = self._pixel_cid_order()
         reference_axes = [self.viewer_state.x_att.axis,
                           self.viewer_state.y_att.axis,
                           self.viewer_state.z_att.axis]
-        if set(reference_axes) > set([t for t in order if t is not None]):
-            self.layer_artist.disable('Layer data is not fully linked to x/y/z attributes')
-            return np.broadcast_to(0, shape)
 
         # For this method, we make use of Data.compute_fixed_resolution_buffer,
         # which requires us to specify bounds in the form (min, max, nsteps).
