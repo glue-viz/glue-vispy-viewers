@@ -32,8 +32,11 @@ class DataProxy(object):
         return self._viewer_state()
 
     def _pixel_cid_order(self):
+        data = self.layer_artist.layer
+        if isinstance(self.layer_artist.layer, Subset):
+            data = data.data
         mat = pixel_cid_to_pixel_cid_matrix(self.viewer_state.reference_data,
-                                            self.layer_artist.layer)
+                                            data)
         order = []
         for i in range(mat.shape[1]):
             idx = np.argmax(mat[:, i])
