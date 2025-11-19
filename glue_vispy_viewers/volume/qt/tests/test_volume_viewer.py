@@ -326,7 +326,7 @@ def test_3d_4d_layers():
 
     volume.state.y_att = data_4d.pixel_component_ids[3]
 
-    assert not layer_3d.enabled
+    assert layer_3d.enabled
 
     ga.close()
 
@@ -395,7 +395,7 @@ def test_data_proxy_shape():
     volume.state.y_att = data_4d.pixel_component_ids[1]
     volume.state.z_att = data_4d.pixel_component_ids[2]
 
-    proxy = DataProxy(volume.state, layer.state)
+    proxy = DataProxy(volume.state, layer)
     assert proxy.shape == (2, 4, 5)
 
     volume.state.x_att = data_4d.pixel_component_ids[3]
@@ -409,13 +409,13 @@ def test_data_proxy_shape():
     volume.add_data(data_4d_2)
     layer2 = volume.layers[-1]
 
-    proxy2 = DataProxy(volume.state, layer2.state)
+    proxy2 = DataProxy(volume.state, layer2)
     assert proxy2.shape == (0, 0, 0)
 
     volume.state.x_att = data_4d.pixel_component_ids[0]
     volume.state.y_att = data_4d.pixel_component_ids[1]
     volume.state.z_att = data_4d.pixel_component_ids[2]
-    assert proxy2.shape == (0, 0, 0)
+    assert proxy2.shape == (3, 6, 11)
 
     dc.add_link(LinkSame(data_4d.pixel_component_ids[3], data_4d_2.pixel_component_ids[2]))
     assert proxy2.shape == (3, 6, 11)
