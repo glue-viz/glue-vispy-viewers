@@ -7,7 +7,7 @@ from matplotlib.colors import ColorConverter
 
 from glue.core.data import Subset, Data
 from glue.core.link_manager import pixel_cid_to_pixel_cid_matrix
-from glue.core.exceptions import IncompatibleAttribute
+from glue.core.exceptions import IncompatibleAttribute, IncompatibleDataException
 from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
 from .colors import get_mpl_cmap, get_translucent_cmap
 from .layer_state import VolumeLayerState
@@ -106,7 +106,7 @@ class DataProxy(object):
                     target_data=self.viewer_state.reference_data,
                     subset_state=subset_state,
                     cache_id=self.layer_artist.id)
-            except IncompatibleAttribute:
+            except (IncompatibleDataException, IncompatibleAttribute):
                 self.layer_artist.disable_incompatible_subset()
                 return np.broadcast_to(0, shape)
             else:
@@ -118,7 +118,7 @@ class DataProxy(object):
                     target_data=self.viewer_state.reference_data,
                     target_cid=self.layer_artist.state.attribute,
                     cache_id=self.layer_artist.id)
-            except IncompatibleAttribute:
+            except (IncompatibleDataException, IncompatibleAttribute):
                 self.layer_artist.disable('Layer data is not fully linked to reference data')
                 return np.broadcast_to(0, shape)
             else:
