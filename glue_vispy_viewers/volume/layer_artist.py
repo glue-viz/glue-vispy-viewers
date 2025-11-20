@@ -6,8 +6,8 @@ import numpy as np
 from matplotlib.colors import ColorConverter
 
 from glue.core.data import Subset, Data
-from glue.core.link_manager import equivalent_pixel_cids
-from glue.core.exceptions import IncompatibleAttribute
+from glue.core.link_manager import pixel_cid_to_pixel_cid_matrix
+from glue.core.exceptions import IncompatibleAttribute, IncompatibleDataException
 from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
 from .colors import get_mpl_cmap, get_translucent_cmap
 from .layer_state import VolumeLayerState
@@ -31,17 +31,29 @@ class DataProxy(object):
     def viewer_state(self):
         return self._viewer_state()
 
+    def _pixel_cid_order(self):
+        data = self.layer_artist.layer
+        if isinstance(self.layer_artist.layer, Subset):
+            data = data.data
+        mat = pixel_cid_to_pixel_cid_matrix(self.viewer_state.reference_data,
+                                            data)
+        order = []
+        for i in range(mat.shape[1]):
+            idx = np.argmax(mat[:, i])
+            order.append(idx if mat[idx, i] else None)
+        return order
+
     @property
     def shape(self):
 
-        order = equivalent_pixel_cids(self.viewer_state.reference_data,
-                                      self.layer_artist.layer)
+        order = self._pixel_cid_order()
 
         try:
             x_axis = order.index(self.viewer_state.x_att.axis)
             y_axis = order.index(self.viewer_state.y_att.axis)
             z_axis = order.index(self.viewer_state.z_att.axis)
         except (AttributeError, ValueError):
+            self.layer_artist.disable('Layer data is not fully linked to reference data')
             return 0, 0, 0
 
         if isinstance(self.layer_artist.layer, Subset):
@@ -58,14 +70,9 @@ class DataProxy(object):
         if self.layer_artist is None or self.viewer_state is None:
             return np.broadcast_to(0, shape)
 
-        order = equivalent_pixel_cids(self.viewer_state.reference_data,
-                                      self.layer_artist.layer)
         reference_axes = [self.viewer_state.x_att.axis,
                           self.viewer_state.y_att.axis,
                           self.viewer_state.z_att.axis]
-        if order is not None and not set(reference_axes) <= set(order):
-            self.layer_artist.disable('Layer data is not fully linked to x/y/z attributes')
-            return np.broadcast_to(0, shape)
 
         # For this method, we make use of Data.compute_fixed_resolution_buffer,
         # which requires us to specify bounds in the form (min, max, nsteps).
@@ -99,7 +106,7 @@ class DataProxy(object):
                     target_data=self.viewer_state.reference_data,
                     subset_state=subset_state,
                     cache_id=self.layer_artist.id)
-            except IncompatibleAttribute:
+            except (IncompatibleDataException, IncompatibleAttribute):
                 self.layer_artist.disable_incompatible_subset()
                 return np.broadcast_to(0, shape)
             else:
@@ -111,7 +118,7 @@ class DataProxy(object):
                     target_data=self.viewer_state.reference_data,
                     target_cid=self.layer_artist.state.attribute,
                     cache_id=self.layer_artist.id)
-            except IncompatibleAttribute:
+            except (IncompatibleDataException, IncompatibleAttribute):
                 self.layer_artist.disable('Layer data is not fully linked to reference data')
                 return np.broadcast_to(0, shape)
             else:
