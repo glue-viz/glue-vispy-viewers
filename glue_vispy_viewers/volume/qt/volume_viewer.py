@@ -64,7 +64,7 @@ class VispyVolumeViewer(VispyVolumeViewerMixin, BaseVispyViewer):
             if hasattr(self._vispy_widget, '_multivol') and self._downsampled:
                 self._vispy_widget._multivol.upsample()
                 self._downsampled = False
-                self._vispy_widget.canvas.render()
+                self._vispy_widget.canvas.update()
 
         self._update_slice_transform()
         self._update_clip()
