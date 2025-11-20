@@ -1,5 +1,29 @@
 # Full changelog
 
+## v1.3.0 - 2025-11-20
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### New Features
+
+* Allow view to keep rotating while other tools are used by @Carifio24 in https://github.com/glue-viz/glue-vispy-viewers/pull/389
+* Allow displaying scatter points outside of bounding box by @Carifio24 in https://github.com/glue-viz/glue-vispy-viewers/pull/394
+* Support colormaps in volume viewer by @Carifio24 in https://github.com/glue-viz/glue-vispy-viewers/pull/395
+* Add support for stretches in volume viewer by @Carifio24 in https://github.com/glue-viz/glue-vispy-viewers/pull/396
+* Support datasets with 4+ dimensions in the volume viewer by @Carifio24 in https://github.com/glue-viz/glue-vispy-viewers/pull/399
+* Make volume viewer colormap construction more flexible by @Carifio24 in https://github.com/glue-viz/glue-vispy-viewers/pull/400
+
+#### Bug Fixes
+
+* Stop downsampling when panning ends by @Carifio24 in https://github.com/glue-viz/glue-vispy-viewers/pull/398
+
+#### Other Changes
+
+* Use pixel matrix for component ID mapping by @Carifio24 in https://github.com/glue-viz/glue-vispy-viewers/pull/401
+
+**Full Changelog**: https://github.com/glue-viz/glue-vispy-viewers/compare/v1.2.3...v1.3.0
+
 ## v1.2.3 - 2025-05-14
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
