@@ -10,9 +10,12 @@ class Vispy3DScatterViewerState(Vispy3DViewerState):
 
         super(Vispy3DScatterViewerState, self).__init__()
 
-        self.x_att_helper = ComponentIDComboHelper(self, 'x_att', categorical=False)
-        self.y_att_helper = ComponentIDComboHelper(self, 'y_att', categorical=False)
-        self.z_att_helper = ComponentIDComboHelper(self, 'z_att', categorical=False)
+        self.x_att_helper = ComponentIDComboHelper(self, 'x_att', categorical=False,
+                                                   pixel_coord=True, world_coord=True)
+        self.y_att_helper = ComponentIDComboHelper(self, 'y_att', categorical=False,
+                                                   pixel_coord=True, world_coord=True)
+        self.z_att_helper = ComponentIDComboHelper(self, 'z_att', categorical=False,
+                                                   pixel_coord=True, world_coord=True)
 
         self.add_callback('layers', self._on_layers_change)
 
