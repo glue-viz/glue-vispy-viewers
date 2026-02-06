@@ -3,7 +3,6 @@ import uuid
 import numpy as np
 
 from glue.core.exceptions import IncompatibleAttribute
-from glue.utils import categorical_ndarray
 
 from .multi_scatter import MultiColorScatter
 from .layer_state import ScatterLayerState
@@ -126,40 +125,14 @@ class ScatterLayerArtist(VispyLayerArtist):
         self.state.remove_global_callback(self._update_scatter)
 
     def _update_sizes(self):
-        if self.state.size_mode is None:
-            pass
-        elif self.state.size_mode == 'Fixed':
-            self._multiscat.set_size(self.id, self.state.size * self.state.size_scaling)
-        else:
-            data = self.layer[self.state.size_attribute].ravel()
-            if isinstance(data, categorical_ndarray):
-                data = data.codes
-            if self.state.size_vmax == self.state.size_vmin:
-                size = np.ones(data.shape) * 10
-            else:
-                size = (20 * (data - self.state.size_vmin) /
-                        (self.state.size_vmax - self.state.size_vmin))
-            size_data = size * self.state.size_scaling
-            size_data[np.isnan(data)] = 0.
-            self._multiscat.set_size(self.id, size_data)
+        sizes = self.state.point_sizes
+        if sizes is not None:
+            self._multiscat.set_size(self.id, sizes)
 
     def _update_colors(self):
-        if self.state.color_mode is None:
-            pass
-        elif self.state.color_mode == 'Fixed':
-            self._multiscat.set_color(self.id, self.state.color)
-        else:
-            data = self.layer[self.state.cmap_attribute].ravel()
-            if isinstance(data, categorical_ndarray):
-                data = data.codes
-            if self.state.cmap_vmax == self.state.cmap_vmin:
-                cmap_data = np.ones(data.shape) * 0.5
-            else:
-                cmap_data = ((data - self.state.cmap_vmin) /
-                             (self.state.cmap_vmax - self.state.cmap_vmin))
-            cmap_data = self.state.cmap(cmap_data)
-            cmap_data[:, 3][np.isnan(data)] = 0.
-            self._multiscat.set_color(self.id, cmap_data)
+        colors = self.state.point_colors
+        if colors is not None:
+            self._multiscat.set_color(self.id, colors)
 
     def _update_alpha(self):
         self._multiscat.set_alpha(self.id, self.state.alpha)
