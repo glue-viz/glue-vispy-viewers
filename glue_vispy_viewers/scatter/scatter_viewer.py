@@ -1,6 +1,7 @@
+from glue.viewers3d.scatter.viewer_state import ScatterViewerState3D as Vispy3DScatterViewerState
+
 from ..common.vispy_data_viewer import BaseVispyViewerMixin
 from .layer_artist import ScatterLayerArtist
-from .viewer_state import Vispy3DScatterViewerState
 
 from ..common import tools as _tools, selection_tools  # noqa
 from . import scatter_toolbar  # noqa

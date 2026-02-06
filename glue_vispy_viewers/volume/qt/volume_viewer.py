@@ -7,10 +7,10 @@ from qtpy.QtCore import QTimer
 from ...common.qt.data_viewer import BaseVispyViewer
 from .layer_style_widget import VolumeLayerStyleWidget
 
-from ..volume_viewer import VispyVolumeViewerMixin
+from glue.viewers3d.volume.layer_state import VolumeLayerState
 
+from ..volume_viewer import VispyVolumeViewerMixin
 from ..layer_artist import VolumeLayerArtist
-from ..layer_state import VolumeLayerState
 
 from ...scatter.layer_artist import ScatterLayerArtist
 from ...scatter.qt.layer_style_widget import ScatterLayerStyleWidget

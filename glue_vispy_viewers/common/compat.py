@@ -6,8 +6,8 @@ from glue.core import Data
 from glue.core.subset import SubsetState
 from glue.core.exceptions import IncompatibleAttribute
 
-from ..scatter.layer_state import ScatterLayerState
-from ..volume.layer_state import VolumeLayerState
+from glue.viewers3d.scatter.layer_state import ScatterLayerState
+from glue.viewers3d.volume.layer_state import VolumeLayerState
 
 STATE_CLASS = {}
 STATE_CLASS['ScatterLayerArtist'] = ScatterLayerState

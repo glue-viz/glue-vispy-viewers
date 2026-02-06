@@ -2,10 +2,10 @@ import sys
 import numpy as np
 
 from glue.config import settings
+from glue.viewers3d.volume.viewer_state import VolumeViewerState3D as Vispy3DVolumeViewerState
 
 from ..common.vispy_data_viewer import BaseVispyViewerMixin
 from .layer_artist import VolumeLayerArtist
-from .viewer_state import Vispy3DVolumeViewerState
 
 from ..scatter.layer_artist import ScatterLayerArtist
 from .volume_visual import MultiVolume

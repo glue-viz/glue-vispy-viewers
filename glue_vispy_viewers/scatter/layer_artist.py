@@ -3,9 +3,9 @@ import uuid
 import numpy as np
 
 from glue.core.exceptions import IncompatibleAttribute
+from glue.viewers3d.scatter.layer_state import ScatterLayerState
 
 from .multi_scatter import MultiColorScatter
-from .layer_state import ScatterLayerState
 from ..common.layer_artist import VispyLayerArtist
 
 COLOR_PROPERTIES = set(['color_mode', 'cmap_attribute', 'cmap_vmin', 'cmap_vmax', 'cmap', 'color'])
