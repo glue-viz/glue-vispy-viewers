@@ -1,7 +1,5 @@
 import uuid
 
-import numpy as np
-
 from matplotlib.colors import ColorConverter
 
 from glue.core.data import Subset, Data
