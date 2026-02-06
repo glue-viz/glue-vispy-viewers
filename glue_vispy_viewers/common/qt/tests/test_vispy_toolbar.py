@@ -113,7 +113,6 @@ def test_reset(tmpdir, capsys):
 
 
 @pytest.mark.skipif('not IMAGEIO_INSTALLED')
-@pytest.mark.skipif('not IS_WIN', reason='Teardown disaster')
 def test_record(tmpdir, capsys):
 
     app = GlueApplication()
@@ -127,6 +126,10 @@ def test_record(tmpdir, capsys):
 
     assert viewer.toolbar.active_tool.tool_id == 'vispy:record'
 
+    # Record at least one frame before stopping, otherwise imageio
+    # won't create the file
+    viewer.toolbar.active_tool.record(None)
+
     viewer.toolbar.actions['vispy:record'].toggle()
     assert viewer.toolbar.active_tool is None
 
@@ -134,7 +137,6 @@ def test_record(tmpdir, capsys):
 
     out, err = capsys.readouterr()
     assert out.strip() == ""
-    with pytest.raises(AssertionError, match=r'I/O operation on closed file'):
-        assert err.strip() == ""
+    assert err.strip() == ""
 
     app.close()
