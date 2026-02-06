@@ -34,31 +34,36 @@ jobs:
       envs: |
         # Tests without Qt. For now glfw can't run on MacOS runners in headless mode
         # so we only run on Linux and Windows.
-        - linux: py38-test-oldestdeps
-        - windows: py39-test
-        - linux: py310-test
+        - linux: py310-test-oldestdeps
+        - windows: py310-test
+        - linux: py311-test
         - windows: py311-test
-        - linux: py311-test-dev
+        - linux: py312-test
+        - windows: py312-test
+        - linux: py313-test-dev
 
         # Tests with Jupyter
-        - linux: py38-test-jupyter-oldestdeps
-        - windows: py39-test-jupyter
-        - linux: py310-test-jupyter
+        - linux: py310-test-jupyter-oldestdeps
+        - windows: py310-test-jupyter
+        - linux: py311-test-jupyter
         - windows: py311-test-jupyter
+        - linux: py312-test-jupyter
+        - windows: py312-test-jupyter
 
         # Tests with Qt
-        - linux: py38-test-pyqt63-oldestdeps
-        - linux: py39-test-pyside63
-        - linux: py310-test-pyqt64
-        - linux: py311-test-dev-pyqt64
-        # - macos: py38-test-pyqt63  # segfault
-        - macos: py39-test-pyside63
-        - macos: py310-test-pyqt64
-        - macos: py311-test-dev-pyqt64
-        - windows: py38-test-pyqt63
-        # - windows: py39-test-pyside63  # segfault
+        - linux: py310-test-pyqt64-oldestdeps
+        - linux: py310-test-pyside64
+        - linux: py311-test-pyqt69
+        - linux: py312-test-pyqt69
+        - linux: py313-test-dev-pyqt69
+        - macos: py310-test-pyside64
+        - macos: py311-test-pyqt69
+        - macos: py312-test-pyqt69
+        - macos: py313-test-dev-pyqt69
         - windows: py310-test-pyqt64
-        - windows: py311-test-dev-pyqt64
+        - windows: py311-test-pyqt69
+        - windows: py312-test-pyqt69
+        - windows: py313-test-dev-pyqt69
 
 
   publish:
