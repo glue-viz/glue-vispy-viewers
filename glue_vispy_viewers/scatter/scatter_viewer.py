@@ -1,4 +1,4 @@
-from glue.viewers3d.scatter.viewer_state import ScatterViewerState3D as Vispy3DScatterViewerState
+from glue.viewers.scatter3d.viewer_state import ScatterViewerState3D as Vispy3DScatterViewerState
 
 from ..common.vispy_data_viewer import BaseVispyViewerMixin
 from .layer_artist import ScatterLayerArtist

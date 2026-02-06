@@ -4,8 +4,8 @@ from matplotlib.colors import ColorConverter
 
 from glue.core.data import Subset, Data
 from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
-from glue.viewers3d.volume.data_proxy import DataProxy
-from glue.viewers3d.volume.layer_state import VolumeLayerState
+from glue.viewers.volume3d.data_proxy import DataProxy
+from glue.viewers.volume3d.layer_state import VolumeLayerState
 
 from .colors import get_mpl_cmap, get_translucent_cmap
 from ..common.layer_artist import VispyLayerArtist

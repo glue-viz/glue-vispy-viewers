@@ -7,8 +7,8 @@ from echo.qt import autoconnect_callbacks_to_qt
 from glue_qt.utils import load_ui
 from glue_qt.viewers.common.slice_widget import MultiSliceWidgetHelper
 
-from glue.viewers3d.volume.viewer_state import VolumeViewerState3D as Vispy3DVolumeViewerState
-from glue.viewers3d.scatter.viewer_state import ScatterViewerState3D as Vispy3DScatterViewerState
+from glue.viewers.volume3d.viewer_state import VolumeViewerState3D as Vispy3DVolumeViewerState
+from glue.viewers.scatter3d.viewer_state import ScatterViewerState3D as Vispy3DScatterViewerState
 
 __all__ = ["VispyOptionsWidget"]
 

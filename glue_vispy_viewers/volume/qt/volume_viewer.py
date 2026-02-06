@@ -7,7 +7,7 @@ from qtpy.QtCore import QTimer
 from ...common.qt.data_viewer import BaseVispyViewer
 from .layer_style_widget import VolumeLayerStyleWidget
 
-from glue.viewers3d.volume.layer_state import VolumeLayerState
+from glue.viewers.volume3d.layer_state import VolumeLayerState
 
 from ..volume_viewer import VispyVolumeViewerMixin
 from ..layer_artist import VolumeLayerArtist

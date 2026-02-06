@@ -4,7 +4,7 @@ from echo import delay_callback
 
 from vispy.util import keys
 
-from glue.viewers3d.common.viewer_state import ViewerState3D as Vispy3DViewerState
+from glue.viewers.common3d.viewer_state import ViewerState3D as Vispy3DViewerState
 
 from .vispy_widget import VispyWidgetHelper
 from .compat import update_viewer_state
