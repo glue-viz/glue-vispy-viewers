@@ -23,20 +23,15 @@ class VolumeLayerArtist(VispyLayerArtist):
     each data viewer.
     """
 
+    _layer_state_cls = VolumeLayerState
+
     def __init__(self, vispy_viewer=None, layer=None, layer_state=None):
 
-        super(VolumeLayerArtist, self).__init__(layer)
+        super(VolumeLayerArtist, self).__init__(vispy_viewer,
+                                                 layer_state=layer_state,
+                                                 layer=layer)
 
         self._clip_limits = None
-
-        self.layer = layer or layer_state.layer
-        self.vispy_widget = vispy_viewer._vispy_widget
-
-        # TODO: need to remove layers when layer artist is removed
-        self._viewer_state = vispy_viewer.state
-        self.state = layer_state or VolumeLayerState(layer=self.layer)
-        if self.state not in self._viewer_state.layers:
-            self._viewer_state.layers.append(self.state)
 
         # We create a unique ID for this layer artist, that will be used to
         # refer to the layer artist in the MultiVolume. We have to do this
@@ -50,13 +45,7 @@ class VolumeLayerArtist(VispyLayerArtist):
         self._viewer_state.add_global_callback(self._update_volume)
         self.state.add_global_callback(self._update_volume)
 
-        self.reset_cache()
-
         self._data_proxy = None
-
-    def reset_cache(self):
-        self._last_viewer_state = {}
-        self._last_layer_state = {}
 
     @property
     def visual(self):
@@ -90,6 +79,9 @@ class VolumeLayerArtist(VispyLayerArtist):
         """
         Remove the layer artist for good
         """
+        self._viewer_state.remove_global_callback(self._update_volume)
+        self.state.remove_global_callback(self._update_volume)
+
         self._multivol.deallocate(self.id)
         ARRAY_CACHE.pop(self.id, None)
         PIXEL_CACHE.pop(self.id, None)
@@ -148,27 +140,7 @@ class VolumeLayerArtist(VispyLayerArtist):
         if self.state.attribute is None or self.state.layer is None:
             return
 
-        # Figure out which attributes are different from before. Ideally we shouldn't
-        # need this but currently this method is called multiple times if an
-        # attribute is changed due to x_att changing then hist_x_min, hist_x_max, etc.
-        # If we can solve this so that _update_histogram is really only called once
-        # then we could consider simplifying this. Until then, we manually keep track
-        # of which properties have changed.
-
-        changed = set()
-
-        if not force:
-
-            for key, value in self._viewer_state.as_dict().items():
-                if value != self._last_viewer_state.get(key, None):
-                    changed.add(key)
-
-            for key, value in self.state.as_dict().items():
-                if value != self._last_layer_state.get(key, None):
-                    changed.add(key)
-
-        self._last_viewer_state.update(self._viewer_state.as_dict())
-        self._last_layer_state.update(self.state.as_dict())
+        changed = self.pop_changed_properties()
 
         if force or len(changed & COLOR_PROPERTIES) > 0:
             self._update_cmap()
