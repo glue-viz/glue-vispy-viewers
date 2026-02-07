@@ -12,6 +12,7 @@ class VispyLayerArtist(LayerArtist):
     """
 
     def __init__(self, vispy_viewer, layer_state=None, layer=None):
+
         # Store vispy_widget before calling super (needed for rendering)
         self.vispy_widget = vispy_viewer._vispy_widget
 
@@ -19,12 +20,6 @@ class VispyLayerArtist(LayerArtist):
         super(VispyLayerArtist, self).__init__(vispy_viewer.state,
                                                layer_state=layer_state,
                                                layer=layer)
-
-        # Preserve existing behavior: redraw on zorder change
-        self.state.add_callback('zorder', self._on_zorder_change)
-
-    def _on_zorder_change(self, *args):
-        self.redraw()
 
     def redraw(self):
         """
