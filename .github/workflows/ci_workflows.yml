@@ -54,7 +54,7 @@ jobs:
         # Tests with Qt
         - linux: py310-test-pyqt64-oldestdeps
         - linux: py310-test-pyside64
-        - linux: py311-test-pyqt69
+        # - linux: py311-test-pyqt69  # segfault
         - linux: py312-test-pyqt69
         - linux: py313-test-pyqt69
         - linux: py314-test-dev-pyqt69
