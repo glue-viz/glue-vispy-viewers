@@ -40,7 +40,8 @@ jobs:
         - windows: py311-test
         - linux: py312-test
         - windows: py312-test
-        - linux: py313-test-dev
+        - linux: py313-test
+        - linux: py314-test-dev
 
         # Tests with Jupyter
         - linux: py310-test-jupyter-oldestdeps
@@ -55,15 +56,18 @@ jobs:
         - linux: py310-test-pyside64
         - linux: py311-test-pyqt69
         - linux: py312-test-pyqt69
-        - linux: py313-test-dev-pyqt69
+        - linux: py313-test-pyqt69
+        - linux: py314-test-dev-pyqt69
         - macos: py310-test-pyside64
         - macos: py311-test-pyqt69
         - macos: py312-test-pyqt69
-        - macos: py313-test-dev-pyqt69
+        - macos: py313-test-pyqt69
+        - macos: py314-test-dev-pyqt69
         - windows: py310-test-pyqt64
         - windows: py311-test-pyqt69
         - windows: py312-test-pyqt69
-        - windows: py313-test-dev-pyqt69
+        - windows: py313-test-pyqt69
+        - windows: py314-test-dev-pyqt69
 
 
   publish:
