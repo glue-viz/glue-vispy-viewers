@@ -31,8 +31,8 @@ class ScatterLayerArtist(VispyLayerArtist):
     def __init__(self, vispy_viewer, layer=None, layer_state=None):
 
         super(ScatterLayerArtist, self).__init__(vispy_viewer,
-                                                  layer_state=layer_state,
-                                                  layer=layer)
+                                                 layer_state=layer_state,
+                                                 layer=layer)
 
         self._clip_limits = None
 

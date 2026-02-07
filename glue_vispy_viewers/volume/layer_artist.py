@@ -28,8 +28,8 @@ class VolumeLayerArtist(VispyLayerArtist):
     def __init__(self, vispy_viewer=None, layer=None, layer_state=None):
 
         super(VolumeLayerArtist, self).__init__(vispy_viewer,
-                                                 layer_state=layer_state,
-                                                 layer=layer)
+                                                layer_state=layer_state,
+                                                layer=layer)
 
         self._clip_limits = None
 
