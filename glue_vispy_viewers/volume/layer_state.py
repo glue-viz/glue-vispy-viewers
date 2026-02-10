@@ -1,6 +1,6 @@
 import warnings
 
-from glue.viewers.volume3d.layer_state import VolumeLayerState
+from glue.viewers.volume3d.layer_state import VolumeLayerState3D as VolumeLayerState
 
 __all__ = ['VolumeLayerState']
 

@@ -63,8 +63,8 @@ def test_volume_viewer(tmpdir):
     layer_state = viewer_state.layers[0]
 
     layer_state.attribute = data.id['b']
-    layer_state.vmin = 0.1
-    layer_state.vmax = 0.9
+    layer_state.v_min = 0.1
+    layer_state.v_max = 0.9
     layer_state.alpha = 0.8
 
     layer_state.color = "#ff0000"
@@ -104,8 +104,8 @@ def test_volume_viewer(tmpdir):
     layer_artist = viewer_state.layers[0]
 
     assert layer_artist.attribute.label == 'b'
-    assert layer_artist.vmin == 0.1
-    assert layer_artist.vmax == 0.9
+    assert layer_artist.v_min == 0.1
+    assert layer_artist.v_max == 0.9
     assert layer_artist.alpha == 0.8
 
     assert layer_state.color == "#ff0000"

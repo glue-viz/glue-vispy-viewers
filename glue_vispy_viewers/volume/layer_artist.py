@@ -5,7 +5,7 @@ from matplotlib.colors import ColorConverter
 from glue.core.data import Subset, Data
 from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
 from glue.viewers.volume3d.data_proxy import DataProxy
-from glue.viewers.volume3d.layer_state import VolumeLayerState
+from glue.viewers.volume3d.layer_state import VolumeLayerState3D
 
 from .colors import get_mpl_cmap, get_translucent_cmap
 from ..common.layer_artist import VispyLayerArtist
@@ -23,7 +23,7 @@ class VolumeLayerArtist(VispyLayerArtist):
     each data viewer.
     """
 
-    _layer_state_cls = VolumeLayerState
+    _layer_state_cls = VolumeLayerState3D
 
     def __init__(self, vispy_viewer=None, layer=None, layer_state=None):
 
@@ -100,7 +100,7 @@ class VolumeLayerArtist(VispyLayerArtist):
         if isinstance(self.layer, Subset):
             self._multivol.set_clim(self.id, None)
         else:
-            self._multivol.set_clim(self.id, (self.state.vmin, self.state.vmax))
+            self._multivol.set_clim(self.id, (self.state.v_min, self.state.v_max))
         self.redraw()
 
     def _update_alpha(self):
@@ -145,7 +145,7 @@ class VolumeLayerArtist(VispyLayerArtist):
         if force or len(changed & COLOR_PROPERTIES) > 0:
             self._update_cmap()
 
-        if force or 'vmin' in changed or 'vmax' in changed:
+        if force or 'v_min' in changed or 'v_max' in changed:
             self._update_limits()
 
         if force or 'alpha' in changed:

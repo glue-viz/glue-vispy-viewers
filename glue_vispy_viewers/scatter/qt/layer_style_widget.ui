@@ -96,7 +96,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="combosel_size_attribute">
+           <widget class="QComboBox" name="combosel_size_att">
             <property name="sizeAdjustPolicy">
              <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
             </property>
@@ -258,7 +258,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="combosel_cmap_attribute">
+           <widget class="QComboBox" name="combosel_cmap_att">
             <property name="sizeAdjustPolicy">
              <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
             </property>
@@ -446,7 +446,7 @@
         <string/>
        </property>
       </widget>
-      <widget class="QComboBox" name="combosel_xerr_attribute">
+      <widget class="QComboBox" name="combosel_xerr_att">
        <property name="geometry">
         <rect>
          <x>85</x>
@@ -478,7 +478,7 @@
         <string>show y</string>
        </property>
       </widget>
-      <widget class="QComboBox" name="combosel_yerr_attribute">
+      <widget class="QComboBox" name="combosel_yerr_att">
        <property name="geometry">
         <rect>
          <x>85</x>
@@ -510,7 +510,7 @@
         <string>show z</string>
        </property>
       </widget>
-      <widget class="QComboBox" name="combosel_zerr_attribute">
+      <widget class="QComboBox" name="combosel_zerr_att">
        <property name="geometry">
         <rect>
          <x>85</x>
@@ -541,7 +541,7 @@
       <attribute name="title">
        <string>Vectors</string>
       </attribute>
-      <widget class="QComboBox" name="combosel_vx_attribute">
+      <widget class="QComboBox" name="combosel_vx_att">
        <property name="geometry">
         <rect>
          <x>45</x>
@@ -576,7 +576,7 @@
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
-      <widget class="QComboBox" name="combosel_vy_attribute">
+      <widget class="QComboBox" name="combosel_vy_att">
        <property name="geometry">
         <rect>
          <x>45</x>
@@ -690,7 +690,7 @@
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
-      <widget class="QComboBox" name="combosel_vz_attribute">
+      <widget class="QComboBox" name="combosel_vz_att">
        <property name="geometry">
         <rect>
          <x>45</x>

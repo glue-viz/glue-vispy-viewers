@@ -3,17 +3,17 @@ import uuid
 import numpy as np
 
 from glue.core.exceptions import IncompatibleAttribute
-from glue.viewers.scatter3d.layer_state import ScatterLayerState
+from glue.viewers.scatter3d.layer_state import ScatterLayerState3D
 
 from .multi_scatter import MultiColorScatter
 from ..common.layer_artist import VispyLayerArtist
 
-COLOR_PROPERTIES = set(['color_mode', 'cmap_attribute', 'cmap_vmin', 'cmap_vmax', 'cmap', 'color'])
-SIZE_PROPERTIES = set(['size_mode', 'size_attribute', 'size_vmin', 'size_vmax',
+COLOR_PROPERTIES = set(['color_mode', 'cmap_att', 'cmap_vmin', 'cmap_vmax', 'cmap', 'color'])
+SIZE_PROPERTIES = set(['size_mode', 'size_att', 'size_vmin', 'size_vmax',
                        'size_scaling', 'size'])
 ERROR_PROPERTIES = set(['xerr_visible', 'yerr_visible', 'zerr_visible',
-                        'xerr_attribute', 'yerr_attribute', 'zerr_attribute'])
-VECTOR_PROPERTIES = set(['vector_visible', 'vx_attribute', 'vy_attribute', 'vz_attribute',
+                        'xerr_att', 'yerr_att', 'zerr_att'])
+VECTOR_PROPERTIES = set(['vector_visible', 'vx_att', 'vy_att', 'vz_att',
                          'vector_scaling', 'vector_origin'])
 ARROW_PROPERTIES = set(['vector_arrowhead'])
 ALPHA_PROPERTIES = set(['alpha'])
@@ -26,7 +26,7 @@ class ScatterLayerArtist(VispyLayerArtist):
     A layer artist to render 3d scatter plots.
     """
 
-    _layer_state_cls = ScatterLayerState
+    _layer_state_cls = ScatterLayerState3D
 
     def __init__(self, vispy_viewer, layer=None, layer_state=None):
 
@@ -182,21 +182,21 @@ class ScatterLayerArtist(VispyLayerArtist):
 
         if self.state.xerr_visible:
             line_points = np.tile(orig_points, (1, 2))
-            err = self.layer[self.state.xerr_attribute].ravel()
+            err = self.layer[self.state.xerr_att].ravel()
             line_points[:, 0] -= err
             line_points[:, 3] += err
             errors.append(line_points)
 
         if self.state.yerr_visible:
             line_points = np.tile(orig_points, (1, 2))
-            err = self.layer[self.state.yerr_attribute].ravel()
+            err = self.layer[self.state.yerr_att].ravel()
             line_points[:, 1] -= err
             line_points[:, 4] += err
             errors.append(line_points)
 
         if self.state.zerr_visible:
             line_points = np.tile(orig_points, (1, 2))
-            err = self.layer[self.state.zerr_attribute].ravel()
+            err = self.layer[self.state.zerr_att].ravel()
             line_points[:, 2] -= err
             line_points[:, 5] += err
             errors.append(line_points)
@@ -211,13 +211,13 @@ class ScatterLayerArtist(VispyLayerArtist):
             vector_points = np.zeros((orig_points.shape[0], 6))
             vec_offset = offsets[self.state.vector_origin]
             scale = self.state.vector_scaling
-            vx = self.layer[self.state.vx_attribute].ravel()
+            vx = self.layer[self.state.vx_att].ravel()
             vector_points[:, 0] = orig_points[:, 0] + vec_offset[0] * vx * scale
             vector_points[:, 3] = orig_points[:, 0] + vec_offset[1] * vx * scale
-            vy = self.layer[self.state.vy_attribute].ravel()
+            vy = self.layer[self.state.vy_att].ravel()
             vector_points[:, 1] = orig_points[:, 1] + vec_offset[0] * vy * scale
             vector_points[:, 4] = orig_points[:, 1] + vec_offset[1] * vy * scale
-            vz = self.layer[self.state.vz_attribute].ravel()
+            vz = self.layer[self.state.vz_att].ravel()
             vector_points[:, 2] = orig_points[:, 2] + vec_offset[0] * vz * scale
             vector_points[:, 5] = orig_points[:, 2] + vec_offset[1] * vz * scale
             self._multiscat.set_vectors(self.id, vector_points)

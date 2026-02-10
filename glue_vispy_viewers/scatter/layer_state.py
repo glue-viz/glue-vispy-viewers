@@ -1,6 +1,6 @@
 import warnings
 
-from glue.viewers.scatter3d.layer_state import ScatterLayerState
+from glue.viewers.scatter3d.layer_state import ScatterLayerState3D as ScatterLayerState
 
 __all__ = ['ScatterLayerState']
 

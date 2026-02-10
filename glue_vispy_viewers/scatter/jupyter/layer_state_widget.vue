@@ -6,7 +6,7 @@
         </div>
         <template v-if="glue_state.color_mode === 'Linear'">
             <div>
-                <v-select label="attribute" :items="cmap_attribute_items" v-model="cmap_attribute_selected" hide-details />
+                <v-select label="attribute" :items="cmap_att_items" v-model="cmap_att_selected" hide-details />
             </div>
             <div>
                 <glue-float-field label="min" :value.sync="glue_state.cmap_vmin" />
@@ -26,7 +26,7 @@
         <v-select label="size" :items="size_mode_items" v-model="size_mode_selected" hide-details />
         <template v-if="glue_state.size_mode === 'Linear'">
             <div>
-                <v-select label="attribute" :items="size_attribute_items" v-model="size_attribute_selected" hide-details />
+                <v-select label="attribute" :items="size_att_items" v-model="size_att_selected" hide-details />
             </div>
             <div>
                 <glue-float-field label="min" :value.sync="glue_state.size_vmin" />
@@ -47,13 +47,13 @@
         </div>
         <template v-if="glue_state.vector_visible">
             <div>
-                <v-select label="vx" :items="vx_attribute_items" v-model="vx_attribute_selected" hide-details />
+                <v-select label="vx" :items="vx_att_items" v-model="vx_att_selected" hide-details />
             </div>
             <div>
-                <v-select label="vy" :items="vy_attribute_items" v-model="vy_attribute_selected" hide-details />
+                <v-select label="vy" :items="vy_att_items" v-model="vy_att_selected" hide-details />
             </div>
             <div>
-                <v-select label="vy" :items="vz_attribute_items" v-model="vz_attribute_selected" hide-details />
+                <v-select label="vy" :items="vz_att_items" v-model="vz_att_selected" hide-details />
             </div>
         </template>
         <div class="text-subtitle-2 font-weight-bold" :style="glue_state.vector_visible ? {} : {marginTop: '6px'}">Errorbars</div>
@@ -63,7 +63,7 @@
         </div>
         <template v-if="glue_state.xerr_visible">
             <div>
-                <v-select label="xerr" :items="xerr_attribute_items" v-model="xerr_attribute_selected" hide-details />
+                <v-select label="xerr" :items="xerr_att_items" v-model="xerr_att_selected" hide-details />
             </div>
         </template>
         <div>
@@ -72,7 +72,7 @@
         </div>
         <template v-if="glue_state.yerr_visible">
             <div>
-                <v-select label="yerr" :items="yerr_attribute_items" v-model="yerr_attribute_selected" hide-details />
+                <v-select label="yerr" :items="yerr_att_items" v-model="yerr_att_selected" hide-details />
             </div>
         </template>
         <div>
@@ -81,7 +81,7 @@
         </div>
         <template v-if="glue_state.zerr_visible">
             <div>
-                <v-select label="zerr" :items="zerr_attribute_items" v-model="zerr_attribute_selected" hide-details />
+                <v-select label="zerr" :items="zerr_att_items" v-model="zerr_att_selected" hide-details />
             </div>
         </template>
     </div>
