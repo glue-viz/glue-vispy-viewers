@@ -7,10 +7,10 @@ from qtpy.QtCore import QTimer
 from ...common.qt.data_viewer import BaseVispyViewer
 from .layer_style_widget import VolumeLayerStyleWidget
 
-from ..volume_viewer import VispyVolumeViewerMixin
+from glue.viewers.volume3d.layer_state import VolumeLayerState3D
 
+from ..volume_viewer import VispyVolumeViewerMixin
 from ..layer_artist import VolumeLayerArtist
-from ..layer_state import VolumeLayerState
 
 from ...scatter.layer_artist import ScatterLayerArtist
 from ...scatter.qt.layer_style_widget import ScatterLayerStyleWidget
@@ -94,7 +94,7 @@ class VispyVolumeViewer(VispyVolumeViewerMixin, BaseVispyViewer):
 
             # Find all data objects in layers (not subsets)
             layer_data = [layer.layer for layer in viewer.state.layers
-                          if (isinstance(layer, VolumeLayerState) and
+                          if (isinstance(layer, VolumeLayerState3D) and
                               isinstance(layer.layer, BaseData))]
 
             if len(layer_data) > 1:

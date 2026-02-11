@@ -46,11 +46,11 @@ class ScatterLayerStyleWidget(QtWidgets.QWidget):
 
         if self.state.size_mode == "Fixed":
             self.ui.size_row_2.hide()
-            self.ui.combosel_size_attribute.hide()
+            self.ui.combosel_size_att.hide()
             self.ui.valuetext_size.show()
         else:
             self.ui.valuetext_size.hide()
-            self.ui.combosel_size_attribute.show()
+            self.ui.combosel_size_att.show()
             self.ui.size_row_2.show()
 
     def _update_color_mode(self, *args):
@@ -58,26 +58,26 @@ class ScatterLayerStyleWidget(QtWidgets.QWidget):
         if self.state.color_mode == "Fixed":
             self.ui.color_row_2.hide()
             self.ui.color_row_3.hide()
-            self.ui.combosel_cmap_attribute.hide()
+            self.ui.combosel_cmap_att.hide()
             self.ui.spacer_color_label.show()
             self.ui.color_color.show()
         else:
             self.ui.color_color.hide()
-            self.ui.combosel_cmap_attribute.show()
+            self.ui.combosel_cmap_att.show()
             self.ui.spacer_color_label.hide()
             self.ui.color_row_2.show()
             self.ui.color_row_3.show()
 
     def _update_error_vis(self, *args):
-        self.ui.combosel_xerr_attribute.setEnabled(self.state.xerr_visible)
-        self.ui.combosel_yerr_attribute.setEnabled(self.state.yerr_visible)
-        self.ui.combosel_zerr_attribute.setEnabled(self.state.zerr_visible)
+        self.ui.combosel_xerr_att.setEnabled(self.state.xerr_visible)
+        self.ui.combosel_yerr_att.setEnabled(self.state.yerr_visible)
+        self.ui.combosel_zerr_att.setEnabled(self.state.zerr_visible)
 
     def _update_vector_vis(self, *arg):
         visible = self.state.vector_visible
-        self.ui.combosel_vx_attribute.setEnabled(visible)
-        self.ui.combosel_vy_attribute.setEnabled(visible)
-        self.ui.combosel_vz_attribute.setEnabled(visible)
+        self.ui.combosel_vx_att.setEnabled(visible)
+        self.ui.combosel_vy_att.setEnabled(visible)
+        self.ui.combosel_vz_att.setEnabled(visible)
         self.ui.value_vector_scaling.setEnabled(visible)
         self.ui.combosel_vector_origin.setEnabled(visible)
         self.ui.bool_vector_arrowhead.setEnabled(visible)

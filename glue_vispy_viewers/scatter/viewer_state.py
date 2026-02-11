@@ -1,25 +1,16 @@
-from glue.core.data_combo_helper import ComponentIDComboHelper
-from glue_vispy_viewers.common.viewer_state import Vispy3DViewerState
+import warnings
+
+from glue.viewers.scatter3d.viewer_state import ScatterViewerState3D
 
 __all__ = ['Vispy3DScatterViewerState']
 
+warnings.warn(
+    "Importing Vispy3DScatterViewerState from glue_vispy_viewers.scatter.viewer_state is "
+    "deprecated. Please import ScatterViewerState3D from glue.viewers.scatter3d.viewer_state "
+    "instead.",
+    DeprecationWarning,
+    stacklevel=2
+)
 
-class Vispy3DScatterViewerState(Vispy3DViewerState):
-
-    def __init__(self, **kwargs):
-
-        super(Vispy3DScatterViewerState, self).__init__()
-
-        self.x_att_helper = ComponentIDComboHelper(self, 'x_att', categorical=False)
-        self.y_att_helper = ComponentIDComboHelper(self, 'y_att', categorical=False)
-        self.z_att_helper = ComponentIDComboHelper(self, 'z_att', categorical=False)
-
-        self.add_callback('layers', self._on_layers_change)
-
-        self.update_from_dict(kwargs)
-
-    def _on_layers_change(self, *args):
-        layers_data = [layer_state.layer for layer_state in self.layers]
-        self.x_att_helper.set_multiple_data(layers_data)
-        self.y_att_helper.set_multiple_data(layers_data)
-        self.z_att_helper.set_multiple_data(layers_data)
+# Re-export for backwards compatibility
+Vispy3DScatterViewerState = ScatterViewerState3D

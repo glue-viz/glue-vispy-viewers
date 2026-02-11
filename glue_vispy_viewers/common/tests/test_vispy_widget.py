@@ -4,8 +4,9 @@ import sys
 
 from vispy import scene
 
+from glue.viewers.common3d.viewer_state import ViewerState3D as Vispy3DViewerState
+
 from ..vispy_widget import VispyWidgetHelper
-from ..viewer_state import Vispy3DViewerState
 
 IS_WIN = sys.platform == 'win32'
 

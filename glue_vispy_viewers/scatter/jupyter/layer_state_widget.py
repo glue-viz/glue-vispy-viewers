@@ -20,8 +20,8 @@ class Scatter3DLayerStateWidget(v.VuetifyTemplate):
     color_mode_items = traitlets.List().tag(sync=True)
     color_mode_selected = traitlets.Int(allow_none=True).tag(sync=True)
 
-    cmap_attribute_items = traitlets.List().tag(sync=True)
-    cmap_attribute_selected = traitlets.Int(allow_none=True).tag(sync=True)
+    cmap_att_items = traitlets.List().tag(sync=True)
+    cmap_att_selected = traitlets.Int(allow_none=True).tag(sync=True)
 
     cmap_items = traitlets.List().tag(sync=True)
 
@@ -30,8 +30,8 @@ class Scatter3DLayerStateWidget(v.VuetifyTemplate):
     size_mode_items = traitlets.List().tag(sync=True)
     size_mode_selected = traitlets.Int(allow_none=True).tag(sync=True)
 
-    size_attribute_items = traitlets.List().tag(sync=True)
-    size_attribute_selected = traitlets.Int(allow_none=True).tag(sync=True)
+    size_att_items = traitlets.List().tag(sync=True)
+    size_att_selected = traitlets.Int(allow_none=True).tag(sync=True)
 
     # Line
 
@@ -40,25 +40,25 @@ class Scatter3DLayerStateWidget(v.VuetifyTemplate):
 
     # Vectors
 
-    vx_attribute_items = traitlets.List().tag(sync=True)
-    vx_attribute_selected = traitlets.Int(allow_none=True).tag(sync=True)
+    vx_att_items = traitlets.List().tag(sync=True)
+    vx_att_selected = traitlets.Int(allow_none=True).tag(sync=True)
 
-    vy_attribute_items = traitlets.List().tag(sync=True)
-    vy_attribute_selected = traitlets.Int(allow_none=True).tag(sync=True)
+    vy_att_items = traitlets.List().tag(sync=True)
+    vy_att_selected = traitlets.Int(allow_none=True).tag(sync=True)
 
-    vz_attribute_items = traitlets.List().tag(sync=True)
-    vz_attribute_selected = traitlets.Int(allow_none=True).tag(sync=True)
+    vz_att_items = traitlets.List().tag(sync=True)
+    vz_att_selected = traitlets.Int(allow_none=True).tag(sync=True)
 
     # Errors
 
-    xerr_attribute_items = traitlets.List().tag(sync=True)
-    xerr_attribute_selected = traitlets.Int(allow_none=True).tag(sync=True)
+    xerr_att_items = traitlets.List().tag(sync=True)
+    xerr_att_selected = traitlets.Int(allow_none=True).tag(sync=True)
 
-    yerr_attribute_items = traitlets.List().tag(sync=True)
-    yerr_attribute_selected = traitlets.Int(allow_none=True).tag(sync=True)
+    yerr_att_items = traitlets.List().tag(sync=True)
+    yerr_att_selected = traitlets.Int(allow_none=True).tag(sync=True)
 
-    zerr_attribute_items = traitlets.List().tag(sync=True)
-    zerr_attribute_selected = traitlets.Int(allow_none=True).tag(sync=True)
+    zerr_att_items = traitlets.List().tag(sync=True)
+    zerr_att_selected = traitlets.Int(allow_none=True).tag(sync=True)
 
     def __init__(self, layer_state):
         super().__init__()
@@ -69,7 +69,7 @@ class Scatter3DLayerStateWidget(v.VuetifyTemplate):
         # Color
 
         link_glue_choices(self, layer_state, "color_mode")
-        link_glue_choices(self, layer_state, "cmap_attribute")
+        link_glue_choices(self, layer_state, "cmap_att")
 
         self.cmap_items = [
             {"text": cmap[0], "value": cmap[1].name} for cmap in colormaps.members
@@ -78,19 +78,19 @@ class Scatter3DLayerStateWidget(v.VuetifyTemplate):
         # Size
 
         link_glue_choices(self, layer_state, "size_mode")
-        link_glue_choices(self, layer_state, "size_attribute")
+        link_glue_choices(self, layer_state, "size_att")
 
         # Vectors
 
-        link_glue_choices(self, layer_state, "vx_attribute")
-        link_glue_choices(self, layer_state, "vy_attribute")
-        link_glue_choices(self, layer_state, "vz_attribute")
+        link_glue_choices(self, layer_state, "vx_att")
+        link_glue_choices(self, layer_state, "vy_att")
+        link_glue_choices(self, layer_state, "vz_att")
 
         # Error bars
 
-        link_glue_choices(self, layer_state, "xerr_attribute")
-        link_glue_choices(self, layer_state, "yerr_attribute")
-        link_glue_choices(self, layer_state, "zerr_attribute")
+        link_glue_choices(self, layer_state, "xerr_att")
+        link_glue_choices(self, layer_state, "yerr_att")
+        link_glue_choices(self, layer_state, "zerr_att")
 
     def vue_set_colormap(self, data):
         cmap = None

@@ -21,10 +21,10 @@
             <glue-throttled-slider wait="300" max="1" step="0.01" :value.sync="glue_state.alpha" hide-details />
         </div>
         <div>
-            <glue-float-field label="min" :value.sync="glue_state.vmin" />
+            <glue-float-field label="min" :value.sync="glue_state.v_min" />
         </div>
         <div>
-            <glue-float-field label="max" :value.sync="glue_state.vmax" />
+            <glue-float-field label="max" :value.sync="glue_state.v_max" />
         </div>
     </div>
 </template>

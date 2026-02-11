@@ -64,13 +64,13 @@ def test_scatter_viewer(tmpdir):
     # Get layer artist style editor
     layer_state = viewer_state.layers[0]
 
-    layer_state.size_attribute = data.id['c']
+    layer_state.size_att = data.id['c']
     layer_state.size_mode = 'Linear'
     layer_state.size_scaling = 2
     layer_state.size_vmin = 0.2
     layer_state.size_vmax = 0.8
 
-    layer_state.cmap_attribute = data.id['y']
+    layer_state.cmap_att = data.id['y']
     layer_state.color_mode = 'Linear'
     layer_state.cmap_vmin = 0.1
     layer_state.cmap_vmax = 0.9
@@ -113,13 +113,13 @@ def test_scatter_viewer(tmpdir):
     layer_state = viewer_state.layers[0]
 
     assert layer_state.size_mode == 'Linear'
-    assert layer_state.size_attribute.label == 'c'
+    assert layer_state.size_att.label == 'c'
     np.testing.assert_allclose(layer_state.size_scaling, 2, rtol=0.01)
     assert layer_state.size_vmin == 0.2
     assert layer_state.size_vmax == 0.8
 
     assert layer_state.color_mode == 'Linear'
-    assert layer_state.cmap_attribute.label == 'y'
+    assert layer_state.cmap_att.label == 'y'
     assert layer_state.cmap_vmin == 0.1
     assert layer_state.cmap_vmax == 0.9
     assert layer_state.cmap is cm.BuGn
@@ -152,13 +152,13 @@ def test_error_bars(tmpdir):
     layer_state = viewer_state.layers[0]
 
     layer_state.xerr_visible = True
-    layer_state.xerr_attribute = data.id['b']
+    layer_state.xerr_att = data.id['b']
 
     layer_state.yerr_visible = False
-    layer_state.yerr_attribute = data.id['c']
+    layer_state.yerr_att = data.id['c']
 
     layer_state.zerr_visible = True
-    layer_state.zerr_attribute = data.id['d']
+    layer_state.zerr_att = data.id['d']
 
     assert viewer_state.line_width == 1
 
@@ -177,13 +177,13 @@ def test_error_bars(tmpdir):
     layer_state = scatter_r.state.layers[0]
 
     assert layer_state.xerr_visible
-    assert layer_state.xerr_attribute.label == 'b'
+    assert layer_state.xerr_att.label == 'b'
 
     assert not layer_state.yerr_visible
-    assert layer_state.yerr_attribute.label == 'c'
+    assert layer_state.yerr_att.label == 'c'
 
     assert layer_state.zerr_visible
-    assert layer_state.zerr_attribute.label == 'd'
+    assert layer_state.zerr_att.label == 'd'
 
     assert scatter_r.state.line_width == 1
 
@@ -215,9 +215,9 @@ def test_vectors(tmpdir):
     layer_state = viewer_state.layers[0]
 
     layer_state.vector_visible = True
-    layer_state.vx_attribute = data.id['x']
-    layer_state.vy_attribute = data.id['y']
-    layer_state.vz_attribute = data.id['e']
+    layer_state.vx_att = data.id['x']
+    layer_state.vy_att = data.id['y']
+    layer_state.vz_att = data.id['e']
     layer_state.vector_scaling = 0.1
     layer_state.vector_origin = 'tail'
     layer_state.vector_arrowhead = True
@@ -240,9 +240,9 @@ def test_vectors(tmpdir):
 
     assert layer_state.vector_visible
 
-    assert layer_state.vx_attribute.label == 'x'
-    assert layer_state.vy_attribute.label == 'y'
-    assert layer_state.vz_attribute.label == 'e'
+    assert layer_state.vx_att.label == 'x'
+    assert layer_state.vy_att.label == 'y'
+    assert layer_state.vz_att.label == 'e'
 
     assert np.isclose(layer_state.vector_scaling, 0.1)
 
@@ -276,10 +276,10 @@ def test_n_dimensional_data():
     style_widget = scatter._view.layout_style_widgets[layer_artist]
 
     style_widget.size_mode = 'Linear'
-    style_widget.size_attribute = data.id['x']
+    style_widget.size_att = data.id['x']
 
     style_widget.color_mode = 'Linear'
-    style_widget.cmap_attribute = data.id['y']
+    style_widget.cmap_att = data.id['y']
     style_widget.cmap = cm.BuGn
 
     ga.close()
@@ -401,10 +401,10 @@ def test_categorical_color_size(tmpdir):
     layer_state = viewer_state.layers[0]
 
     layer_state.size_mode = 'Linear'
-    layer_state.size_attribute = data.id['categorical']
+    layer_state.size_att = data.id['categorical']
 
     layer_state.color_mode = 'Linear'
-    layer_state.cmap_attribute = data.id['categorical']
+    layer_state.cmap_att = data.id['categorical']
 
     ga.close()
 

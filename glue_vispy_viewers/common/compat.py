@@ -6,12 +6,12 @@ from glue.core import Data
 from glue.core.subset import SubsetState
 from glue.core.exceptions import IncompatibleAttribute
 
-from ..scatter.layer_state import ScatterLayerState
-from ..volume.layer_state import VolumeLayerState
+from glue.viewers.scatter3d.layer_state import ScatterLayerState3D
+from glue.viewers.volume3d.layer_state import VolumeLayerState3D
 
 STATE_CLASS = {}
-STATE_CLASS['ScatterLayerArtist'] = ScatterLayerState
-STATE_CLASS['VolumeLayerArtist'] = VolumeLayerState
+STATE_CLASS['ScatterLayerArtist'] = ScatterLayerState3D
+STATE_CLASS['VolumeLayerArtist'] = VolumeLayerState3D
 
 
 def update_viewer_state(rec, context):
@@ -35,7 +35,7 @@ def update_viewer_state(rec, context):
             state_cls = STATE_CLASS[layer['_type'].split('.')[-1]]
             state = state_cls(layer=context.object(layer.pop('layer')))
             properties = set(layer.keys()) - set(['_type'])
-            for prop in sorted(properties, key=state.update_priority, reverse=True):
+            for prop in sorted(properties, key=state._update_priority, reverse=True):
                 value = layer.pop(prop)
                 value = context.object(value)
                 if isinstance(value, str) and value == 'fixed':
