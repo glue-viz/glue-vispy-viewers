@@ -1,5 +1,16 @@
 # Full changelog
 
+## v1.4.0 - 2026-04-21
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+* Update CI infrastructure by @astrofrog in https://github.com/glue-viz/glue-vispy-viewers/pull/403
+* Added Python 3.14 testing by @astrofrog in https://github.com/glue-viz/glue-vispy-viewers/pull/404
+* Use state classes and LayerArtist from glue.viewers by @astrofrog in https://github.com/glue-viz/glue-vispy-viewers/pull/402
+
+**Full Changelog**: https://github.com/glue-viz/glue-vispy-viewers/compare/v1.3.0...v1.4.0
+
 ## v1.3.0 - 2025-11-20
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
