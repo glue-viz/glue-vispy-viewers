@@ -11,19 +11,19 @@
         </div>
         <div>
             <v-subheader class="pl-0 slider-label">show axes</v-subheader>
-            <v-switch v-model="glue_state.visible_axes" hide-details style="margin-top: 0"/>
+            <v-switch v-model="visible_axes" hide-details style="margin-top: 0"/>
         </div>
         <div>
             <v-subheader class="pl-0 slider-label">native aspect ratio</v-subheader>
-            <v-switch v-model="glue_state.native_aspect" hide-details style="margin-top: 0"/>
+            <v-switch v-model="native_aspect" hide-details style="margin-top: 0"/>
         </div>
         <div>
             <v-subheader class="pl-0 slider-label">perspective view</v-subheader>
-            <v-switch v-model="glue_state.perspective_view" hide-details style="margin-top: 0"/>
+            <v-switch v-model="perspective_view" hide-details style="margin-top: 0"/>
         </div>
         <div>
             <v-subheader class="pl-0 slider-label">clip data</v-subheader>
-            <v-switch v-model="glue_state.clip_data" hide-details style="margin-top: 0"/>
+            <v-switch v-model="clip_data" hide-details style="margin-top: 0"/>
         </div>
     </div>
 </template>
