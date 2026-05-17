@@ -14,32 +14,25 @@
         </div>
         <div>
             <v-subheader class="pl-0 slider-label">show axes</v-subheader>
-            <v-switch v-model="glue_state.visible_axes" hide-details style="margin-top: 0"/>
+            <v-switch v-model="visible_axes" hide-details style="margin-top: 0"/>
         </div>
         <div>
             <v-subheader class="pl-0 slider-label">native aspect ratio</v-subheader>
-            <v-switch v-model="glue_state.native_aspect" hide-details style="margin-top: 0"/>
+            <v-switch v-model="native_aspect" hide-details style="margin-top: 0"/>
         </div>
         <div>
             <v-subheader class="pl-0 slider-label">perspective view</v-subheader>
-            <v-switch v-model="glue_state.perspective_view" hide-details style="margin-top: 0"/>
+            <v-switch v-model="perspective_view" hide-details style="margin-top: 0"/>
         </div>
         <div>
             <v-subheader class="pl-0 slider-label">clip data</v-subheader>
-            <v-switch v-model="glue_state.clip_data" hide-details style="margin-top: 0"/>
+            <v-switch v-model="clip_data" hide-details style="margin-top: 0"/>
         </div>
         <div>
             <v-select label="resolution" :items="resolution_items" v-model="resolution_selected" hide-details />
         </div>
-        <div v-for="slider of sliders">
-            <v-subheader class="pl-0 slider-label">{{ slider.label }}: {{ glue_state.slices[slider.index] }} {{ slider.world_value }}</v-subheader>
-            <glue-throttled-slider
-                v-if="glue_state.slices && glue_state.slices.length > 0"
-                wait="300"
-                :max="slider.max"
-                :value.sync="glue_state.slices[slider.index]"
-                hide-details
-            />
+        <div>
+            <jupyter-widget :widget="widget_slices" />
         </div>
     </div>
 </template>

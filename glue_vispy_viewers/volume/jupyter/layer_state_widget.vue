@@ -3,9 +3,9 @@
         <div>
             <v-select label="attribute" :items="attribute_items" v-model="attribute_selected" hide-details class="margin-bottom: 16px" />
         </div>
-        <template v-if="glue_state.color_mode === 'Linear'">
+        <template v-if="(color_mode_items[color_mode_selected] || {}).text === 'Linear'">
           <div>
-              <v-select label="colormap" :items="cmap_items" :value="glue_state.cmap" @change="set_colormap" hide-details/>
+              <v-select label="colormap" :items="cmap_items" v-model="cmap" hide-details />
           </div>
         </template>
         <template v-else>
@@ -18,25 +18,17 @@
        </div> 
         <div>
             <v-subheader class="pl-0 slider-label">opacity</v-subheader>
-            <glue-throttled-slider wait="300" max="1" step="0.01" :value.sync="glue_state.alpha" hide-details />
+            <glue-throttled-slider wait="300" max="1" step="0.01" :value.sync="alpha" echo-type="float" hide-details />
         </div>
         <div>
-            <glue-float-field label="min" :value.sync="glue_state.v_min" />
+            <glue-float-field label="min" :value.sync="v_min" echo-type="float" />
         </div>
         <div>
-            <glue-float-field label="max" :value.sync="glue_state.v_max" />
+            <glue-float-field label="max" :value.sync="v_max" echo-type="float" />
         </div>
     </div>
 </template>
-<script>
-    modules.export = {
-        methods: {
-            setAlpha(value) {
-                this.glue_state.alpha = value;
-            },
-        },
-    }
-</script>
+
 <style id="layer_volume">
     .v-subheader.slider-label {
         font-size: 12px;
