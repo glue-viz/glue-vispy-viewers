@@ -1,4 +1,4 @@
 {
-    "glue_vispy_viewers.scatter.jupyter.tests.test_visual.test_visual_scatter3d_jupyter[chromium]": "8c9e823fe08d8118ba6101b3d0c6b8fd6c39956805153bc6b8e2712dcdc85767",
+    "glue_vispy_viewers.scatter.jupyter.tests.test_visual.test_visual_scatter3d_jupyter[chromium]": "fde9c463637a7890dcd851fcc17475a5f631dcacdd5a87b65906a6148982c700",
     "glue_vispy_viewers.volume.jupyter.tests.test_visual.test_visual_volume3d_jupyter[chromium]": "47502be53014060739ae9e3100db3e7727291ea32d4e3120a2544523c730d9ef"
 }

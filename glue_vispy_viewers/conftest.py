@@ -74,7 +74,18 @@ def pytest_runtest_setup(item):
             item._viewer_count = len(obj)
 
 
+import pytest as _pytest  # noqa: E402
+
+
+@_pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_teardown(item, nextitem):
+
+    # Hookwrapper so xunit setup/teardown methods (setup_method /
+    # teardown_method) run BEFORE our checks. Without this, a class-based
+    # test that creates a viewer in setup_method and closes it in
+    # teardown_method would still appear to be leaking viewers at the time
+    # the objgraph check runs.
+    yield
 
     # The following is a check to make sure that once the viewer and
     # application have been closed, there are no leftover references to data
@@ -98,6 +109,13 @@ def pytest_runtest_teardown(item, nextitem):
 
         if GLUEQT_INSTALLED:
             app.processEvents()
+
+        # A class-based test may still hold references via self even after
+        # teardown_method nulls them out, until Python collects the test
+        # instance. Force a collection here so the viewer count check sees
+        # the post-cleanup state.
+        import gc
+        gc.collect()
 
         for viewer_cls in VIEWER_CLASSES:
 
