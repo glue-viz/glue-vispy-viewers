@@ -1,0 +1,18 @@
+{
+  "glue_vispy_viewers.scatter.tests.test_visual.test_visual_scatter3d_basic": "ee18476c17938ac0b2e653271d53739321c6cc1e0e90e48d733fd89b53d4edc3",
+  "glue_vispy_viewers.scatter.tests.test_visual.test_visual_scatter3d_size_and_color": "c2adb4207f9b074904a8083212d0789006215717c85e5933525cf5e0b2f1add5",
+  "glue_vispy_viewers.scatter.tests.test_visual.test_visual_scatter3d_subset": "6e5c91eb71fbd9b754a1860927e7afe2e468b70c46681f02adfa4b455a51448b",
+  "glue_vispy_viewers.scatter.tests.test_visual.test_visual_scatter3d_two_layers": "a8ee5efb21abfdc69ef31200958356be9645ce3be1a5205af2a5c205e95da417",
+  "glue_vispy_viewers.scatter.tests.test_visual.test_visual_scatter3d_vectors": "22eddccf9afd0209a5b986bc8a29e36f7dc0e9e83489ad42a0808e23ba5a661f",
+  "glue_vispy_viewers.scatter.tests.test_visual.test_visual_scatter3d_errorbars": "40367ee549be55e313e11398a7a9f196c5558005bc91d59f308302822768a5e8",
+  "glue_vispy_viewers.scatter.tests.test_visual.test_visual_scatter3d_clip_off": "1872945b87f4dd9435eaabe2a60f1c028a9ea7c4333dbc47f4f6bdeb2dd3de03",
+  "glue_vispy_viewers.scatter.tests.test_visual.test_visual_scatter3d_native_aspect": "275f5e0cfb1d9e3107995fbf4b53a70282b130cc37e076967d5f314fc4240938",
+  "glue_vispy_viewers.scatter.tests.test_visual.test_visual_scatter3d_rotated": "83885468aa1fe37d150b5b9574f853f824a4be1947d42982a56ebde8217e7e97",
+  "glue_vispy_viewers.scatter.tests.test_visual.test_visual_scatter3d_perspective": "ae0a68dae0352d8da3bb646ebccc47dae55aecc0bd20ec80b02c39cbff07f4ad",
+  "glue_vispy_viewers.volume.tests.test_visual.test_visual_volume3d_basic": "e5ee4a44748f02c68fb831f7be71c8f83e59d923ae8ecf4361945b418aacd4a3",
+  "glue_vispy_viewers.volume.tests.test_visual.test_visual_volume3d_colormap": "1f36100ca6981215aebc759004269fabf0ed238895aa96b26fde4cfa3df49027",
+  "glue_vispy_viewers.volume.tests.test_visual.test_visual_volume3d_native_aspect": "a473988dbc5e8f7fd6898459384de1381221c2fbcaa1a09090050cfb1915fe18",
+  "glue_vispy_viewers.volume.tests.test_visual.test_visual_volume3d_subset": "4913eae5ba0c725b0c0006e910a851877c751caf0e4a65359268b47a95bb1bfe",
+  "glue_vispy_viewers.volume.tests.test_visual.test_visual_volume3d_clip_off": "df4417eecd7596a7682cfb611a7c0ffab2ca7c7e8b19bc1c7785e9965c9114ab",
+  "glue_vispy_viewers.volume.tests.test_visual.test_visual_volume3d_scatter_overlay": "4821cc23b54fed2e2d484e32921e9ec6a196d9afda5b4e3f5998242f38626175"
+}

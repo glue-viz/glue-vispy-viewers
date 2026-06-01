@@ -51,15 +51,21 @@ def test_translucent_cmap():
     assert template.endswith(template_end)
 
 
+# Both Linear and Listed paths in get_mpl_cmap are now capped to 64 entries
+# to work around a Mesa llvmpipe miscompilation of the long chained-if
+# function emitted by create_cmap_template. See the comment in colors.py.
+EXPECTED_N_COLORS = 64
+
+
 def test_linear_cmap():
 
     colormap = colormaps['Red-Blue']
     stretch = LinearStretch()
     stretch_glsl = glsl_for_stretch(stretch)
     cmap = get_mpl_cmap(colormap, stretch)
-    assert len(cmap.colors) == 256
+    assert len(cmap.colors) == EXPECTED_N_COLORS
 
-    template = create_cmap_template(256, stretch_glsl)
+    template = create_cmap_template(EXPECTED_N_COLORS, stretch_glsl)
     template_start, template_end = [clean_template(t) for t in template.split("\n", maxsplit=1)]
     template = clean_template(template)
     assert template.startswith(template_start)
@@ -72,10 +78,10 @@ def test_listed_cmap():
     stretch = LinearStretch()
     stretch_glsl = glsl_for_stretch(stretch)
     cmap = get_mpl_cmap(colormap, stretch)
-    n_colors = len(colormap.colors)
-    assert len(cmap.colors) == n_colors
+    # Cap kicks in: source has 256 entries, we downsample to 64.
+    assert len(cmap.colors) == EXPECTED_N_COLORS
 
-    template = create_cmap_template(n_colors, stretch_glsl)
+    template = create_cmap_template(EXPECTED_N_COLORS, stretch_glsl)
     template_start, template_end = [clean_template(t) for t in template.split("\n", maxsplit=1)]
     template = clean_template(template)
     assert template.startswith(template_start)
