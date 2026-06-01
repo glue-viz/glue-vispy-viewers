@@ -188,6 +188,15 @@ class MultiVolumeVisual(VolumeVisual):
             return  # layer already deallocated
         self.disable(label)
         self.volumes.pop(label)
+        # Drop any dangling 'multiply' references to the deallocated label
+        # from other volumes. Without this, _update_shader walks into a
+        # missing label and (because self.volumes is a defaultdict) reads
+        # an empty entry, raising KeyError: 'index' from shaders.py. The
+        # most common trigger is closing a viewer whose subset layers
+        # multiply against a parent data layer that is deallocated first.
+        for other in self.volumes.values():
+            if other.get('multiply') == label:
+                other.pop('multiply', None)
         self._update_shader()
 
     def set_clip(self, clip_data, clip_limits):

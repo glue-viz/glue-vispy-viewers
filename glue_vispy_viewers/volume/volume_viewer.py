@@ -2,6 +2,7 @@ import sys
 import numpy as np
 
 from glue.config import settings
+from glue.viewers.common.viewer import Viewer
 from glue.viewers.volume3d.viewer_state import VolumeViewerState3D as Vispy3DVolumeViewerState
 
 from ..common.vispy_data_viewer import BaseVispyViewerMixin
@@ -158,3 +159,22 @@ class VispyVolumeViewerMixin(BaseVispyViewerMixin):
         state = super().__gluestate__(context)
         state['_protocol'] = 2
         return state
+
+
+class SimpleVispyVolumeViewer(VispyVolumeViewerMixin, Viewer):
+    """
+    A backend-independent 3D volume viewer.
+
+    Same vispy rendering pipeline as the Qt and Jupyter viewers but without
+    a UI framework. Useful for visual regression tests and scripted use of
+    the rendering pipeline.
+    """
+
+    def __init__(self, session, state=None):
+        super().__init__(session, state=state)
+        self.setup_widget_and_callbacks()
+
+    def close(self):
+        # Volume rendering populates glue's PIXEL_CACHE / ARRAY_CACHE via the
+        # fixed-resolution buffer; clearing layer artists releases those.
+        self.cleanup()

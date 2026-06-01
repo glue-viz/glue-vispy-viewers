@@ -27,7 +27,34 @@ else:
 
 
 __all__ = ['HAS_VISUAL_TEST_DEPS', 'visual_test', 'visual_test_qt',
-           'visual_test_jupyter', 'set_canvas_size']
+           'visual_test_jupyter', 'set_canvas_size', 'inverted_glue_colors']
+
+
+import contextlib
+
+
+@contextlib.contextmanager
+def inverted_glue_colors():
+    """
+    Temporarily swap glue's BACKGROUND_COLOR / FOREGROUND_COLOR settings
+    to a dark theme (black background, white axes) for the duration of
+    the ``with`` block.
+
+    The vispy widget reads these settings at construction time and uses
+    them for ``canvas.bgcolor`` and the axis colours, so the viewer must
+    be constructed *inside* the ``with`` block; the canvas then retains
+    the inverted colours after the context exits.
+    """
+    from glue.config import settings
+    old_bg = settings.BACKGROUND_COLOR
+    old_fg = settings.FOREGROUND_COLOR
+    settings.BACKGROUND_COLOR = '#000000'
+    settings.FOREGROUND_COLOR = '#FFFFFF'
+    try:
+        yield
+    finally:
+        settings.BACKGROUND_COLOR = old_bg
+        settings.FOREGROUND_COLOR = old_fg
 
 
 def set_canvas_size(viewer_or_canvas, width, height):
@@ -90,6 +117,12 @@ def visual_test(*args, **kwargs):
             img = canvas.render()
             buf = BytesIO()
             Image.fromarray(img).save(buf, format='PNG')
+            # The repo's conftest enforces glue's PIXEL_CACHE / ARRAY_CACHE
+            # are empty in its pytest_runtest_teardown hook, which fires
+            # *before* any xunit teardown_method, so we have to close the
+            # viewer here in the wrapper to release the caches in time.
+            if hasattr(result, 'close'):
+                result.close()
             return _PngFigure(buf.getvalue())
 
         return wrapper
@@ -129,6 +162,11 @@ def visual_test_jupyter(*args, **kwargs):
             locator.wait_for()
             page_session.wait_for_timeout(settle_ms)
             screenshot = locator.screenshot()
+            # The test returns a widget, not the viewer, so we can't close
+            # the viewer here. Invalidate the glue caches so the conftest
+            # teardown check is satisfied; the viewer is GC'd shortly after.
+            from glue.core.fixed_resolution_buffer import invalidate_cache
+            invalidate_cache()
             return _PngFigure(screenshot)
 
         return wrapper
@@ -172,6 +210,12 @@ def visual_test_qt(*args, **kwargs):
             img = canvas.render()
             buf = BytesIO()
             Image.fromarray(img).save(buf, format='PNG')
+            # Qt's class-based teardown_method calls viewer.close() and
+            # app.close() — but conftest's PIXEL_CACHE check fires first,
+            # so we invalidate here. Close still runs cleanly afterwards
+            # thanks to the volume_visual.deallocate fix.
+            from glue.core.fixed_resolution_buffer import invalidate_cache
+            invalidate_cache()
             return _PngFigure(buf.getvalue())
 
         return wrapper

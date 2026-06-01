@@ -50,3 +50,6 @@ class SimpleVispyScatterViewer(VispyScatterViewerMixin, Viewer):
     def __init__(self, session, state=None):
         super().__init__(session, state=state)
         self.setup_widget_and_callbacks()
+
+    def close(self):
+        self.cleanup()

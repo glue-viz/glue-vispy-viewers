@@ -100,8 +100,8 @@ workflows:
             - py311-test-visual
 
       - visual:
-          name: py311-test-visualjup
-          jobname: py311-test-visualjup
+          name: py311-test-visualjupyter
+          jobname: py311-test-visualjupyter
           requires:
             - py311-test-visual
 
@@ -126,10 +126,10 @@ workflows:
                 - main
 
       - deploy-reference-images:
-          name: baseline-py311-test-visualjup
-          jobname: py311-test-visualjup
+          name: baseline-py311-test-visualjupyter
+          jobname: py311-test-visualjupyter
           requires:
-            - py311-test-visualjup
+            - py311-test-visualjupyter
           filters:
             branches:
               only:
