@@ -60,25 +60,15 @@ def basic_volume(viewer):
 
 
 def volume_colormap(viewer):
-    """L1448 cube rendered with a vivid yellow-orange-red colormap.
-
-    The translucent volume rendering ties alpha to cmap-position, which
-    washes out cmaps whose mid-range is dark (plasma, viridis) -- a lot of
-    semi-transparent colored voxels integrate to a muted result. YlOrRd
-    has a saturated warm mid-range that survives ray accumulation, which
-    is what we want for a regression test of "the cmap setting reaches
-    the GPU". Tightening v_min above the noise floor and v_max at the 99th
-    percentile suppresses the diffuse background while preserving cloud
-    structure.
-    """
+    """L1448 cube rendered with a plasma colormap and linear stretch."""
     import matplotlib.pyplot as plt
     layer = viewer.state.layers[0]
     layer.alpha = 1.0
     layer.color_mode = 'Linear'
-    layer.cmap = plt.cm.YlOrRd
-    # L1448 13CO ranges roughly [-0.7, 4.0] K with most signal below 2.4.
-    layer.v_min = 0.5
-    layer.v_max = 2.5
+    layer.cmap = plt.cm.plasma
+    layer.stretch = 'linear'
+    layer.v_min = -0.7
+    layer.v_max = 2.74
 
 
 def volume_with_subset(app, viewer, data):
