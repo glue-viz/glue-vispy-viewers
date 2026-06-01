@@ -37,6 +37,20 @@ def scatter_overlay_data(seed=54321, n=80):
     )
 
 
+def l1448_data():
+    """L1448 13CO datacube (53 x 105 x 105, ~2.3 MB) -- a real molecular
+    cloud observation from glue-example-data. NaN values are zeroed so
+    the volume renderer treats them as background.
+    """
+    from astropy.io import fits
+    from ...tests.data import require_data
+    path = require_data('Astronomy/L1448/l1448_13co.fits')
+    with fits.open(path) as hdul:
+        arr = np.asarray(hdul[0].data, dtype=np.float32)
+    arr[~np.isfinite(arr)] = 0
+    return Data(intensity=arr, label='l1448_13co')
+
+
 def basic_volume(viewer):
     """Default render — single volume, default colormap and opacity."""
     layer = viewer.state.layers[0]
@@ -46,24 +60,25 @@ def basic_volume(viewer):
 
 
 def volume_colormap(viewer):
-    """Same blob with a vivid yellow-orange-red colormap.
+    """L1448 cube rendered with a vivid yellow-orange-red colormap.
 
     The translucent volume rendering ties alpha to cmap-position, which
     washes out cmaps whose mid-range is dark (plasma, viridis) -- a lot of
     semi-transparent colored voxels integrate to a muted result. YlOrRd
     has a saturated warm mid-range that survives ray accumulation, which
     is what we want for a regression test of "the cmap setting reaches
-    the GPU".
+    the GPU". Tightening v_min above the noise floor and v_max at the 99th
+    percentile suppresses the diffuse background while preserving cloud
+    structure.
     """
     import matplotlib.pyplot as plt
-    basic_volume(viewer)
     layer = viewer.state.layers[0]
-    # cmap only takes effect in Linear color mode; the default Fixed mode
-    # uses layer.color and ignores cmap entirely.
+    layer.alpha = 1.0
     layer.color_mode = 'Linear'
     layer.cmap = plt.cm.YlOrRd
-    layer.v_min = 0.1
-    layer.v_max = 0.6
+    # L1448 13CO ranges roughly [-0.7, 4.0] K with most signal below 2.4.
+    layer.v_min = 0.5
+    layer.v_max = 2.5
 
 
 def volume_with_subset(app, viewer, data):
@@ -74,6 +89,18 @@ def volume_with_subset(app, viewer, data):
         label='left half',
         subset_state=data.pixel_component_ids[0] < 16,
     )
+
+
+def volume_native_aspect(viewer):
+    """L1448 with ``native_aspect`` on, exposing the cube's anisotropy.
+
+    The dataset is 53 (velocity) x 105 x 105 pixels, so the bounding box
+    should be ~2x wider than it is deep when native_aspect=True. With it
+    off (the default), the box is cubic regardless of pixel counts.
+    """
+    layer = viewer.state.layers[0]
+    layer.alpha = 1.0
+    viewer.state.native_aspect = True
 
 
 def volume_clip_off(viewer):

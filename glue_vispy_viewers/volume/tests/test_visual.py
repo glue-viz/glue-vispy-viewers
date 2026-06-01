@@ -23,14 +23,23 @@ def test_visual_volume3d_basic():
 
 @visual_test(tolerance=5)
 def test_visual_volume3d_colormap():
-    # Plasma reads more vividly on a dark canvas, and exercising the
-    # BACKGROUND/FOREGROUND settings also gives us coverage of the
-    # appearance-from-settings code path.
+    # Real L1448 13CO datacube rendered against a dark canvas. The
+    # inverted colours exercise the appearance-from-settings code path,
+    # and real data exercises the load-from-FITS path that synthetic
+    # blobs miss.
     with inverted_glue_colors():
-        data = scenes.blob_data()
+        data = scenes.l1448_data()
         _, viewer = _make_viewer(data)
         scenes.volume_colormap(viewer)
         return viewer
+
+
+@visual_test(tolerance=5)
+def test_visual_volume3d_native_aspect():
+    data = scenes.l1448_data()
+    _, viewer = _make_viewer(data)
+    scenes.volume_native_aspect(viewer)
+    return viewer
 
 
 @visual_test(tolerance=5)

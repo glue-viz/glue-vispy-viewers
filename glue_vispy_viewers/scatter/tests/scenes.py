@@ -147,6 +147,32 @@ def scatter3d_clip_off(viewer):
     viewer.state.layers[0].size = 4
 
 
+def anisotropic_scatter3d_data(seed=12345, n=400):
+    """Gaussian cloud with very different per-axis ranges.
+
+    Used to make ``native_aspect`` visibly non-cubic: x is roughly 4x
+    wider than y, and z sits in between.
+    """
+    np.random.seed(seed)
+    return Data(
+        x=np.random.normal(0, 4.0, n),
+        y=np.random.normal(0, 1.0, n),
+        z=np.random.normal(0, 2.0, n),
+        label='anisotropic',
+    )
+
+
+def scatter3d_native_aspect(viewer):
+    """Anisotropic cloud with ``native_aspect`` on so the box matches
+    the data's per-axis range -- expect a wide, shallow bounding box."""
+    viewer.state.x_min, viewer.state.x_max = -12, 12
+    viewer.state.y_min, viewer.state.y_max = -3, 3
+    viewer.state.z_min, viewer.state.z_max = -6, 6
+    viewer.state.layers[0].color = 'crimson'
+    viewer.state.layers[0].size = 4
+    viewer.state.native_aspect = True
+
+
 def scatter3d_rotated(viewer, azimuth=60, elevation=15):
     """Basic scene viewed from a non-default camera angle."""
     basic_scatter3d(viewer)
