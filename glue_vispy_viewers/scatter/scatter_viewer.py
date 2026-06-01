@@ -1,3 +1,4 @@
+from glue.viewers.common.viewer import Viewer
 from glue.viewers.scatter3d.viewer_state import ScatterViewerState3D as Vispy3DScatterViewerState
 
 from ..common.vispy_data_viewer import BaseVispyViewerMixin
@@ -35,3 +36,20 @@ class VispyScatterViewerMixin(BaseVispyViewerMixin):
                 self._ready_draw = True
 
         return added
+
+
+class SimpleVispyScatterViewer(VispyScatterViewerMixin, Viewer):
+    """
+    A backend-independent 3D scatter viewer.
+
+    Provides the same vispy rendering pipeline as the Qt and Jupyter
+    viewers without depending on either UI framework. Useful for visual
+    regression tests and scripted use of the rendering pipeline.
+    """
+
+    def __init__(self, session, state=None):
+        super().__init__(session, state=state)
+        self.setup_widget_and_callbacks()
+
+    def close(self):
+        self.cleanup()
