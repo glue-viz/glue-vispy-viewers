@@ -42,6 +42,14 @@ def test_visual_volume3d_subset():
 
 
 @visual_test(tolerance=5)
+def test_visual_volume3d_clip_off():
+    data = scenes.blob_data()
+    _, viewer = _make_viewer(data)
+    scenes.volume_clip_off(viewer)
+    return viewer
+
+
+@visual_test(tolerance=5)
 def test_visual_volume3d_scatter_overlay():
     vol_data = scenes.blob_data()
     scatter_data = scenes.scatter_overlay_data()

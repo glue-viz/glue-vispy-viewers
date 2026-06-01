@@ -110,18 +110,41 @@ def scatter3d_vectors(viewer, data):
 
 
 def scatter3d_errorbars(viewer, data):
-    """Sparse cloud with symmetric error bars on x, y, and z."""
+    """Sparse cloud with per-point error bars on x, y, and z, each driven
+    by a *different* attribute so the test catches xerr/yerr/zerr routing
+    bugs that a single shared error attribute would mask.
+    """
     basic_scatter3d(viewer)
-    err = np.full(len(data['x']), 0.3)
-    data.add_component(err, label='err')
+    n = len(data['x'])
+    # Three distinct per-point error patterns: linear ramp on x, |x|-based
+    # on y, and |z|-based on z. Each axis pulls from its own component.
+    data.add_component(np.linspace(0.1, 0.6, n), label='xerr')
+    data.add_component(0.2 + 0.4 * np.abs(data['x']) / 3, label='yerr')
+    data.add_component(0.15 + 0.35 * np.abs(data['z']) / 3, label='zerr')
 
     layer = viewer.state.layers[0]
     layer.xerr_visible = True
-    layer.xerr_att = data.id['err']
+    layer.xerr_att = data.id['xerr']
     layer.yerr_visible = True
-    layer.yerr_att = data.id['err']
+    layer.yerr_att = data.id['yerr']
     layer.zerr_visible = True
-    layer.zerr_att = data.id['err']
+    layer.zerr_att = data.id['zerr']
+
+
+def scatter3d_clip_off(viewer):
+    """Tight limits with the cloud overflowing them and ``clip_data=False``.
+
+    The basic test uses clip_data=True (default) and shows nothing outside
+    the bounding box. Turning it off should let those overflow points
+    render past the cube; that visible overflow is what proves the
+    clip_data toggle reaches the layer artist.
+    """
+    viewer.state.x_min, viewer.state.x_max = -1.5, 1.5
+    viewer.state.y_min, viewer.state.y_max = -1.5, 1.5
+    viewer.state.z_min, viewer.state.z_max = -1.5, 1.5
+    viewer.state.clip_data = False
+    viewer.state.layers[0].color = 'crimson'
+    viewer.state.layers[0].size = 4
 
 
 def scatter3d_rotated(viewer, azimuth=60, elevation=15):

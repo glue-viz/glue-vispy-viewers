@@ -76,6 +76,25 @@ def volume_with_subset(app, viewer, data):
     )
 
 
+def volume_clip_off(viewer):
+    """Tight bounding box with ``clip_data=False`` so the blob extends past it.
+
+    With clipping on (the default, exercised by the basic test) the
+    sampled region is bounded by state.[xyz]_min/max. Turning clipping
+    off makes the full texture render regardless -- the blob spills out
+    past the cube, which is the visible signal that the toggle reaches
+    ``MultiVolume.set_clip``.
+    """
+    basic_volume(viewer)
+    # n=32, blob centred at voxel 16. Pull limits in tight so the box is
+    # much smaller than the blob; turning clipping off should then show
+    # the blob extending past the box.
+    viewer.state.x_min, viewer.state.x_max = 12, 20
+    viewer.state.y_min, viewer.state.y_max = 12, 20
+    viewer.state.z_min, viewer.state.z_max = 12, 20
+    viewer.state.clip_data = False
+
+
 def volume_with_scatter_overlay(app, viewer, vol_data, scatter_data):
     """Volume rendering with a 1D scatter overlay."""
     basic_volume(viewer)

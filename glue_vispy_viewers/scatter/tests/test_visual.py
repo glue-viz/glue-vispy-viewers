@@ -78,6 +78,14 @@ def test_visual_scatter3d_errorbars():
 
 
 @visual_test(tolerance=5)
+def test_visual_scatter3d_clip_off():
+    data = scenes.basic_scatter3d_data()
+    _, viewer = _make_viewer(data)
+    scenes.scatter3d_clip_off(viewer)
+    return viewer
+
+
+@visual_test(tolerance=5)
 def test_visual_scatter3d_rotated():
     data = scenes.basic_scatter3d_data()
     _, viewer = _make_viewer(data)
