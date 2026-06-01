@@ -20,7 +20,9 @@ jobs:
           name: Install dependencies
           command: |
             sudo apt update
-            sudo apt install -y xvfb libxcb-cursor0 libxkbcommon-x11-0 libegl1 libglx-mesa0
+            sudo apt install -y xvfb libxcb-cursor0 libxkbcommon-x11-0 libegl1 libglx-mesa0 \
+                libatk1.0-0 libatk-bridge2.0-0 libcups2 libatspi2.0-0 libxdamage1 libgbm1 \
+                libpango-1.0-0 libcairo2 libasound2
             pip install pip tox --upgrade
       - run:
           name: Run tests
@@ -53,7 +55,9 @@ jobs:
           name: Install dependencies
           command: |
             sudo apt update
-            sudo apt install -y xvfb libxcb-cursor0 libxkbcommon-x11-0 libegl1 libglx-mesa0
+            sudo apt install -y xvfb libxcb-cursor0 libxkbcommon-x11-0 libegl1 libglx-mesa0 \
+                libatk1.0-0 libatk-bridge2.0-0 libcups2 libatspi2.0-0 libxdamage1 libgbm1 \
+                libpango-1.0-0 libcairo2 libasound2
             pip install pip tox --upgrade
       - run: ssh-add -D
       - add_ssh_keys:
@@ -81,21 +85,51 @@ workflows:
 
   visual-tests:
     jobs:
+      # Backend-independent tests run first; the Qt and Jupyter canary jobs
+      # only run if this one passes. There is no point burning CI minutes on
+      # a Qt-binding regression when the underlying rendering itself is
+      # broken.
       - visual:
-          name: << matrix.jobname >>
-          matrix:
-            parameters:
-              jobname:
-                - "py311-test-visual"
+          name: py311-test-visual
+          jobname: py311-test-visual
+
+      - visual:
+          name: py311-test-visualqt
+          jobname: py311-test-visualqt
+          requires:
+            - py311-test-visual
+
+      - visual:
+          name: py311-test-visualjup
+          jobname: py311-test-visualjup
+          requires:
+            - py311-test-visual
 
       - deploy-reference-images:
-          name: baseline-<< matrix.jobname >>
-          matrix:
-            parameters:
-              jobname:
-                - "py311-test-visual"
+          name: baseline-py311-test-visual
+          jobname: py311-test-visual
           requires:
-            - << matrix.jobname >>
+            - py311-test-visual
+          filters:
+            branches:
+              only:
+                - main
+
+      - deploy-reference-images:
+          name: baseline-py311-test-visualqt
+          jobname: py311-test-visualqt
+          requires:
+            - py311-test-visualqt
+          filters:
+            branches:
+              only:
+                - main
+
+      - deploy-reference-images:
+          name: baseline-py311-test-visualjup
+          jobname: py311-test-visualjup
+          requires:
+            - py311-test-visualjup
           filters:
             branches:
               only:

@@ -5,20 +5,29 @@ import pytest
 
 try:
     import vispy
-    # Select an offscreen-capable backend so canvas.render() returns real
-    # pixels. On Linux this still needs an X server (use Xvfb in CI); the
-    # jupyter_rfb backend returns a 1x1 dummy when not displayed in a notebook
-    # and is therefore unsuitable for headless rendering.
-    vispy.use(app='glfw')
     import pytest_mpl  # noqa: F401
     from PIL import Image
 except ImportError:
     HAS_VISUAL_TEST_DEPS = False
 else:
     HAS_VISUAL_TEST_DEPS = True
+    # Select an offscreen-capable backend so canvas.render() returns real
+    # pixels. On Linux this still needs an X server (use Xvfb in CI); the
+    # jupyter_rfb backend returns a 1x1 dummy when not displayed in a notebook
+    # and is therefore unsuitable for headless rendering.
+    #
+    # vispy.use raises RuntimeError if a backend has already been locked in,
+    # even when re-selecting the same backend. The Jupyter canary in
+    # particular pre-pins jupyter_rfb before pulling in this module via the
+    # visual_test_jupyter decorator, so we tolerate that case here.
+    try:
+        vispy.use(app='glfw')
+    except RuntimeError:
+        pass
 
 
-__all__ = ['HAS_VISUAL_TEST_DEPS', 'visual_test', 'set_canvas_size']
+__all__ = ['HAS_VISUAL_TEST_DEPS', 'visual_test', 'visual_test_qt',
+           'visual_test_jupyter', 'set_canvas_size']
 
 
 def set_canvas_size(viewer_or_canvas, width, height):
@@ -72,6 +81,88 @@ def visual_test(*args, **kwargs):
         @wraps(test_function)
         def wrapper(*a, **kw):
             result = test_function(*a, **kw)
+            if hasattr(result, '_vispy_widget'):
+                canvas = result._vispy_widget.canvas
+            elif hasattr(result, 'canvas'):
+                canvas = result.canvas
+            else:
+                canvas = result
+            img = canvas.render()
+            buf = BytesIO()
+            Image.fromarray(img).save(buf, format='PNG')
+            return _PngFigure(buf.getvalue())
+
+        return wrapper
+
+    if len(args) == 1 and callable(args[0]):
+        return decorator(args[0])
+
+    return decorator
+
+
+def visual_test_jupyter(*args, **kwargs):
+    """
+    Decorator for Jupyter-host visual canary tests.
+
+    Adapted from ``glue_jupyter.tests.helpers.visual_widget_test``: displays
+    the returned widget in a solara test page, screenshots it via Playwright,
+    and feeds the bytes to ``pytest-mpl``. The one difference is an explicit
+    ``settle_ms`` wait between the locator becoming visible and the
+    screenshot — jupyter_rfb does not stream its first frame until after the
+    canvas mounts and requests it, so the default
+    ``wait_for(state="visible")`` is not enough.
+    """
+
+    tolerance = kwargs.pop("tolerance", 0)
+    settle_ms = kwargs.pop("settle_ms", 2000)
+
+    def decorator(test_function):
+
+        @pytest.mark.mpl_image_compare(tolerance=tolerance, **kwargs)
+        @wraps(test_function)
+        def wrapper(tmp_path, page_session, *a, **kw):
+            from IPython.display import display
+            layout = test_function(tmp_path, page_session, *a, **kw)
+            layout.add_class("test-viewer")
+            display(layout)
+            locator = page_session.locator(".test-viewer")
+            locator.wait_for()
+            page_session.wait_for_timeout(settle_ms)
+            screenshot = locator.screenshot()
+            return _PngFigure(screenshot)
+
+        return wrapper
+
+    if len(args) == 1 and callable(args[0]):
+        return decorator(args[0])
+
+    return decorator
+
+
+def visual_test_qt(*args, **kwargs):
+    """
+    Decorator for Qt-host visual canary tests.
+
+    Same shape as ``visual_test``: the wrapped function returns a Qt
+    viewer (or anything with ``_vispy_widget.canvas``). The decorator
+    flushes the Qt event loop and captures ``canvas.render()`` from the
+    *Qt-backed* vispy context (not GLFW), so it verifies the Qt wrapper
+    doesn't corrupt the rendering pipeline.
+    """
+
+    tolerance = kwargs.pop("tolerance", 0)
+
+    def decorator(test_function):
+
+        @pytest.mark.skipif(not HAS_VISUAL_TEST_DEPS,
+                            reason="requires pytest-mpl, Pillow")
+        @pytest.mark.mpl_image_compare(tolerance=tolerance, **kwargs)
+        @wraps(test_function)
+        def wrapper(*a, **kw):
+            from glue_qt.utils import get_qapp
+            qapp = get_qapp()
+            result = test_function(*a, **kw)
+            qapp.processEvents()
             if hasattr(result, '_vispy_widget'):
                 canvas = result._vispy_widget.canvas
             elif hasattr(result, 'canvas'):
