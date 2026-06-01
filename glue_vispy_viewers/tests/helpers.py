@@ -3,6 +3,21 @@ from io import BytesIO
 
 import pytest
 
+
+# Compat shim for ``glue.core.fixed_resolution_buffer.invalidate_cache`` which
+# was added after the most recent glue-core release. Once a release ships with
+# the upstream function, drop this block and import it directly.
+try:
+    from glue.core.fixed_resolution_buffer import invalidate_cache
+except ImportError:
+    from glue.core.fixed_resolution_buffer import PIXEL_CACHE, ARRAY_CACHE
+
+    def invalidate_cache(data=None):
+        # We only ever call this with no argument from the visual-test
+        # decorators, so the per-data-object path is not implemented here.
+        PIXEL_CACHE.clear()
+        ARRAY_CACHE.clear()
+
 try:
     import vispy
     import pytest_mpl  # noqa: F401
@@ -165,7 +180,6 @@ def visual_test_jupyter(*args, **kwargs):
             # The test returns a widget, not the viewer, so we can't close
             # the viewer here. Invalidate the glue caches so the conftest
             # teardown check is satisfied; the viewer is GC'd shortly after.
-            from glue.core.fixed_resolution_buffer import invalidate_cache
             invalidate_cache()
             return _PngFigure(screenshot)
 
@@ -214,7 +228,6 @@ def visual_test_qt(*args, **kwargs):
             # app.close() — but conftest's PIXEL_CACHE check fires first,
             # so we invalidate here. Close still runs cleanly afterwards
             # thanks to the volume_visual.deallocate fix.
-            from glue.core.fixed_resolution_buffer import invalidate_cache
             invalidate_cache()
             return _PngFigure(buf.getvalue())
 
