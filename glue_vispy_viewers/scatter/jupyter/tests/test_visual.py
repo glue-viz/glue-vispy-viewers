@@ -20,7 +20,7 @@ except RuntimeError:
 
 from glue_jupyter import jglue  # noqa: E402
 
-from ....tests.helpers import visual_test_jupyter  # noqa: E402
+from ....tests.helpers import set_canvas_size, visual_test_jupyter  # noqa: E402
 from ...tests import scenes  # noqa: E402
 from ..scatter_viewer import JupyterVispyScatterViewer  # noqa: E402
 
@@ -32,6 +32,10 @@ def test_visual_scatter3d_jupyter(tmp_path, page_session, solara_test):
     app = jglue()
     app.add_data(data)
     viewer = app.new_data_viewer(JupyterVispyScatterViewer, data=data)
+    # Match the vispy canvas size to the wrapping box. Without this the
+    # canvas keeps its default 800x600 and the browser crops it inside
+    # the 500x500 div, leaving the cube off-centre with cut-off labels.
+    set_canvas_size(viewer, 500, 500)
     scenes.basic_scatter3d(viewer)
     # figure_widget is a raw vispy CanvasBackend (jupyter_rfb). Wrap it in a
     # DOMWidget so visual_test_jupyter can call add_class() on it.

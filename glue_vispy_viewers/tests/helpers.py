@@ -119,7 +119,7 @@ def visual_test(*args, **kwargs):
 
         @pytest.mark.skipif(not HAS_VISUAL_TEST_DEPS,
                             reason="requires pytest-mpl, Pillow, vispy[glfw]")
-        @pytest.mark.mpl_image_compare(tolerance=tolerance, **kwargs)
+        @pytest.mark.mpl_image_compare(tolerance=tolerance, deterministic=True, **kwargs)
         @wraps(test_function)
         def wrapper(*a, **kw):
             result = test_function(*a, **kw)
@@ -166,7 +166,7 @@ def visual_test_jupyter(*args, **kwargs):
 
     def decorator(test_function):
 
-        @pytest.mark.mpl_image_compare(tolerance=tolerance, **kwargs)
+        @pytest.mark.mpl_image_compare(tolerance=tolerance, deterministic=True, **kwargs)
         @wraps(test_function)
         def wrapper(tmp_path, page_session, *a, **kw):
             from IPython.display import display
@@ -208,7 +208,7 @@ def visual_test_qt(*args, **kwargs):
 
         @pytest.mark.skipif(not HAS_VISUAL_TEST_DEPS,
                             reason="requires pytest-mpl, Pillow")
-        @pytest.mark.mpl_image_compare(tolerance=tolerance, **kwargs)
+        @pytest.mark.mpl_image_compare(tolerance=tolerance, deterministic=True, **kwargs)
         @wraps(test_function)
         def wrapper(*a, **kw):
             from glue_qt.utils import get_qapp
