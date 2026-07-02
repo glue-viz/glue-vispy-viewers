@@ -262,6 +262,8 @@ class MultiVolumeVisual(VolumeVisual):
         self.volumes[label]['cmap'] = cmap
         index = self.volumes[label]['index']
         self.shared_program.frag['cmap{0:d}'.format(index)] = Function(cmap.glsl_map)
+        if hasattr(cmap, "texture_name"):
+            self.shared_program[cmap.texture_name] = cmap.texture_lut()
 
     def set_clim(self, label, clim):
         # Avoid setting the same limits again
