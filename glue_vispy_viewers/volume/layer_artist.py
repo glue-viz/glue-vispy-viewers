@@ -96,6 +96,16 @@ class VolumeLayerArtist(VispyLayerArtist):
         self._multivol.set_cmap(self.id, cmap)
         self.redraw()
 
+    def _update_plane_cmap(self):
+        if self.state.cut_plane_color_mode == "Fixed":
+            cmap = get_translucent_cmap(*ColorConverter().to_rgb(self.state.cut_plane_color),
+                                        self.state.stretch_object)
+        else:
+            cmap = get_mpl_cmap(self.state.cut_plane_cmap, self.state.stretch_object)
+
+        self._multivol.set_cut_plane_cmap(self.id, cmap)
+        self.redraw()
+
     def _update_limits(self):
         if isinstance(self.layer, Subset):
             self._multivol.set_clim(self.id, None)

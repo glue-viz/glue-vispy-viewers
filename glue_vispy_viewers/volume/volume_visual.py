@@ -275,6 +275,13 @@ class MultiVolumeVisual(VolumeVisual):
         if 'data' in self.volumes[label]:
             self._update_scaled_data(label)
 
+    def set_cut_plane_cmap(self, label, cmap):
+        if isinstance(cmap, str):
+            cmap = get_colormap(cmap)
+        self.volumes[label]['cut_plane_cmap'] = cmap
+        index = self.volumes[label]['index']
+        self.shared_program.frag['plane_cmap{0:d}'.format(index)] = Function(cmap.glsl_map)
+
     def set_weight(self, label, weight):
         index = self.volumes[label]['index']
         self.shared_program['u_weight_{0:d}'.format(index)] = weight

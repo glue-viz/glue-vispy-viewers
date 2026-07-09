@@ -1,12 +1,30 @@
-import warnings
+from echo import CallbackProperty, SelectionCallbackProperty
 
 from glue.viewers.volume3d.layer_state import VolumeLayerState3D as VolumeLayerState
 
-__all__ = ['VolumeLayerState']
+__all__ = ['VispyVolumeLayerState']
 
-warnings.warn(
-    "Importing VolumeLayerState from glue_vispy_viewers.volume.layer_state is deprecated. "
-    "Please import VolumeLayerState from glue.viewers.volume3d.layer_state instead.",
-    DeprecationWarning,
-    stacklevel=2
-)
+
+class VispyVolumeLayerState(VolumeLayerState):
+    """Volume layer state with vispy-only extensions.
+
+    Subclasses ``glue.viewers.volume3d.layer_state.VolumeLayerState``
+    and adds attributes that only make sense for the vispy-based volume
+    renderer, so they aren't visible from non-vispy frontends (notably
+    ipyvolume) which would otherwise ignore them. If/when those become
+    cross-frontend concepts they can be lifted into glue-core.
+    """
+
+    cut_plane_color_mode = SelectionCallbackProperty(
+        0, choices=['Fixed', 'Linear']
+    )
+    cut_plane_color = CallbackProperty()
+    cut_plane_cmap = CallbackProperty()
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # SelectionCallbackProperty stores choices per-instance via a WeakKeyDictionary
+        # populated lazily on first ``get_choices`` lookup. Force the dictionary to be
+        # populated now so the choices are bound to the instance (rather than only to
+        # the class) and survive a round-trip through ``__setgluestate__``.
+        VispyVolumeLayerState.cut_plane_color_mode.set_choices(self, ['Fixed', 'Linear'])
