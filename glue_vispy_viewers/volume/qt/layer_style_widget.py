@@ -28,7 +28,11 @@ class VolumeLayerStyleWidget(QtWidgets.QWidget):
         self.layer = layer_artist.layer
 
         self._update_color_mode()
+        self._update_cut_plane()
         self.state.add_callback('color_mode', self._update_color_mode)
+        if hasattr(self.layer_artist._viewer_state, 'cut_enabled'):
+            self.layer_artist._viewer_state.add_callback('cut_enabled', self._update_cut_plane)
+            self.state.add_callback('cut_plane_color_mode', self._update_cut_plane)
 
         # autoconnect needs to come after setting up the component IDs
         connect_kwargs = {'value_alpha': dict(value_range=(0., 1.))}
@@ -69,3 +73,27 @@ class VolumeLayerStyleWidget(QtWidgets.QWidget):
             self.ui.color_color.hide()
             self.ui.label_cmap.show()
             self.ui.combodata_cmap.show()
+
+    def _update_cut_plane(self, *args):
+        cut_enabled = getattr(self.layer_artist._viewer_state, 'cut_enabled', False)
+        if cut_enabled:
+            self.ui.label_cut_plane_color_mode.show()
+            self.ui.combotext_cut_plane_color_mode.show()
+            if self.state.cut_plane_color_mode == "Fixed":
+                self.ui.label_cut_plane_color.show()
+                self.ui.color_cut_plane_color.show()
+                self.ui.label_cut_plane_cmap.hide()
+                self.ui.combodata_cut_plane_cmap.hide()
+            else:
+                self.ui.label_cut_plane_color.hide()
+                self.ui.color_cut_plane_color.hide()
+                self.ui.label_cut_plane_cmap.show()
+                self.ui.combodata_cut_plane_cmap.show()
+        else:
+            self.ui.label_cut_plane_color_mode.hide()
+            self.ui.combotext_cut_plane_color_mode.hide()
+            self.ui.label_cut_plane_color.hide()
+            self.ui.color_cut_plane_color.hide()
+            self.ui.label_cut_plane_cmap.hide()
+            self.ui.combodata_cut_plane_cmap.hide()
+

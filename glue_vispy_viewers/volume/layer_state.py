@@ -1,5 +1,5 @@
 from echo import CallbackProperty, SelectionCallbackProperty
-
+from glue.config import colormaps
 from glue.viewers.volume3d.layer_state import VolumeLayerState3D as VolumeLayerState
 
 __all__ = ['VispyVolumeLayerState']
@@ -28,3 +28,9 @@ class VispyVolumeLayerState(VolumeLayerState):
         # populated now so the choices are bound to the instance (rather than only to
         # the class) and survive a round-trip through ``__setgluestate__``.
         VispyVolumeLayerState.cut_plane_color_mode.set_choices(self, ['Fixed', 'Linear'])
+
+        self.cut_plane_cmap = self.cmap
+
+    @property
+    def cut_plane_cmap_name(self):
+        return colormaps.name_from_cmap(self.cut_plane_cmap)

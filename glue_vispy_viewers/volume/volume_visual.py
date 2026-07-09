@@ -280,7 +280,7 @@ class MultiVolumeVisual(VolumeVisual):
             cmap = get_colormap(cmap)
         self.volumes[label]['cut_plane_cmap'] = cmap
         index = self.volumes[label]['index']
-        self.shared_program.frag['plane_cmap{0:d}'.format(index)] = Function(cmap.glsl_map)
+        self.shared_program.frag['cut_plane_cmap{0:d}'.format(index)] = Function(cmap.glsl_map)
 
     def set_weight(self, label, weight):
         index = self.volumes[label]['index']

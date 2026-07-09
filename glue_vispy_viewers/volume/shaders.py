@@ -387,7 +387,7 @@ def get_frag_shader(volumes, clipped=False, n_volume_max=5):
         # into the rest" knob meant for the volume render; the slice already
         # has the user's opacity slider for that, and pulling u_weight in
         # would dim Linear-mode slices.
-        plane_sample += "plane_color = $plane_cmap{0:d}(plane_val);\n".format(index)
+        plane_sample += "plane_color = $cut_plane_cmap{0:d}(plane_val);\n".format(index)
         # Unlike the volume MIP pass, the slice image should appear across the
         # whole cut surface, not only where the colormap alpha (i.e. the volume
         # opacity) is non-zero. Count every in-bounds sample and average the

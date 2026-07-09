@@ -5,13 +5,14 @@ from matplotlib.colors import ColorConverter
 from glue.core.data import Subset, Data
 from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
 from glue.viewers.volume3d.data_proxy import DataProxy
-from glue.viewers.volume3d.layer_state import VolumeLayerState3D
 
 from .colors import get_mpl_cmap, get_translucent_cmap
+from .layer_state import VispyVolumeLayerState
 from ..common.layer_artist import VispyLayerArtist
 
 
 COLOR_PROPERTIES = set(['cmap', 'color', 'color_mode', 'stretch', 'stretch_parameters'])
+CUT_PLANE_PROPERTIES = set(['cut_plane_color', 'cut_plane_color_mode', 'cut_plane_cmap', 'stretch', 'stretch_parameters'])
 
 
 class VolumeLayerArtist(VispyLayerArtist):
@@ -23,7 +24,7 @@ class VolumeLayerArtist(VispyLayerArtist):
     each data viewer.
     """
 
-    _layer_state_cls = VolumeLayerState3D
+    _layer_state_cls = VispyVolumeLayerState
 
     def __init__(self, vispy_viewer=None, layer=None, layer_state=None):
 
@@ -98,10 +99,11 @@ class VolumeLayerArtist(VispyLayerArtist):
 
     def _update_plane_cmap(self):
         if self.state.cut_plane_color_mode == "Fixed":
-            cmap = get_translucent_cmap(*ColorConverter().to_rgb(self.state.cut_plane_color),
+            color = self.state.cut_plane_color or self.state.color
+            cmap = get_translucent_cmap(*ColorConverter().to_rgb(self.state.color),
                                         self.state.stretch_object)
         else:
-            cmap = get_mpl_cmap(self.state.cut_plane_cmap, self.state.stretch_object)
+            cmap = get_mpl_cmap(self.state.cut_plane_cmap or self.state.cmap, self.state.stretch_object)
 
         self._multivol.set_cut_plane_cmap(self.id, cmap)
         self.redraw()
@@ -154,6 +156,9 @@ class VolumeLayerArtist(VispyLayerArtist):
 
         if force or len(changed & COLOR_PROPERTIES) > 0:
             self._update_cmap()
+
+        if force or len(changed & CUT_PLANE_PROPERTIES) > 0:
+            self._update_plane_cmap()
 
         if force or 'v_min' in changed or 'v_max' in changed:
             self._update_limits()
