@@ -100,7 +100,7 @@ class VolumeLayerArtist(VispyLayerArtist):
     def _update_plane_cmap(self):
         if self.state.cut_plane_color_mode == "Fixed":
             color = self.state.cut_plane_color or self.state.color
-            cmap = get_translucent_cmap(*ColorConverter().to_rgb(self.state.color),
+            cmap = get_translucent_cmap(*ColorConverter().to_rgb(color),
                                         self.state.stretch_object)
         else:
             cmap = get_mpl_cmap(self.state.cut_plane_cmap or self.state.cmap, self.state.stretch_object)
