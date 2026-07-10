@@ -7,7 +7,7 @@ from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
 from glue.viewers.volume3d.data_proxy import DataProxy
 
 from .colors import get_mpl_cmap, get_translucent_cmap
-from .layer_state import VispyVolumeLayerState
+from .layer_state import VolumeLayerState
 from ..common.layer_artist import VispyLayerArtist
 
 
@@ -24,7 +24,7 @@ class VolumeLayerArtist(VispyLayerArtist):
     each data viewer.
     """
 
-    _layer_state_cls = VispyVolumeLayerState
+    _layer_state_cls = VolumeLayerState
 
     def __init__(self, vispy_viewer=None, layer=None, layer_state=None):
 
