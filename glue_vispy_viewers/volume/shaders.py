@@ -263,9 +263,8 @@ void main() {{
     }}
 
     // Cut-surface image overlay. Samples each layer once at the plane intersection,
-    // colormaps it through the layer's own colormap function (so colormap, v_min,
-    // v_max and subset multiply are reused for free), then composites the result
-    // over the MIP result at the user-controlled opacity.
+    // colormaps it through the layer's cutting plane colormap function,
+    // then composites the result over the MIP result at the user-controlled opacity.
     if (u_cut_plane_image_opacity > 0.0 && plane_image_visible == 1) {{
         vec3 plane_loc = (v_position + view_ray * plane_t) / u_shape;
         vec4 plane_total_color = u_cut_plane_image_bgcolor;
