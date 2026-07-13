@@ -79,6 +79,7 @@ class VolumeLayerStyleWidget(QtWidgets.QWidget):
         if cut_enabled:
             self.ui.label_cut_plane_color_mode.show()
             self.ui.combotext_cut_plane_color_mode.show()
+            self.ui.label_cutting_plane.show()
             if self.state.cut_plane_color_mode == "Fixed":
                 self.ui.label_cut_plane_color.show()
                 self.ui.color_cut_plane_color.show()
@@ -90,6 +91,7 @@ class VolumeLayerStyleWidget(QtWidgets.QWidget):
                 self.ui.label_cut_plane_cmap.show()
                 self.ui.combodata_cut_plane_cmap.show()
         else:
+            self.ui.label_cutting_plane.hide()
             self.ui.label_cut_plane_color_mode.hide()
             self.ui.combotext_cut_plane_color_mode.hide()
             self.ui.label_cut_plane_color.hide()
