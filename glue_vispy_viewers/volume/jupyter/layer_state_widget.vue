@@ -24,7 +24,7 @@
         <div>
             <glue-float-field label="max" :value.sync="v_max" echo-type="float" />
         </div>
-        <template v-if="true">
+        <template v-if="cut_enabled">
           <v-subheader>Cutting plane</v-subheader>
           <div v-if="!subset">
               <v-select label="color mode" :items="cut_plane_color_mode_items" v-model="cut_plane_color_mode_selected" hide-details />

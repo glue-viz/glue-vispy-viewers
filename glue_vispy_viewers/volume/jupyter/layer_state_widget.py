@@ -25,3 +25,4 @@ class Volume3DLayerStateWidget(v.VuetifyTemplate):
 
         extras = {"cmap": cmap_extras(self), "cut_plane_cmap": cmap_extras(self)}
         autoconnect_callbacks_to_vue(layer_state, self, extras=extras, skip={"subset"})
+        autoconnect_callbacks_to_vue(layer_state.viewer_state, self, only={"cut_enabled"})
