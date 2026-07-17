@@ -98,4 +98,3 @@ class VolumeLayerStyleWidget(QtWidgets.QWidget):
             self.ui.color_cut_plane_color.hide()
             self.ui.label_cut_plane_cmap.hide()
             self.ui.combodata_cut_plane_cmap.hide()
-
