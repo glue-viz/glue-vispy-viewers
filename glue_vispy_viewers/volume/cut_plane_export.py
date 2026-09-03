@@ -1,8 +1,8 @@
 import numpy as np
 
 from vispy import gloo
-from vispy.gloo import Program, FrameBuffer, RenderBuffer
-from vispy.visuals.shaders import Function
+from vispy.gloo import FrameBuffer, RenderBuffer
+from vispy.visuals.shaders import Function, ModularProgram
 
 from glue_vispy_viewers.volume.shaders import CUT_PLANE_VERT_SHADER, get_cut_plane_frag_shader
 
@@ -16,7 +16,7 @@ def render_cut_plane_image(
     # GLSL setup
     volumes = multivol.volumes
     frag_shader = get_cut_plane_frag_shader(volumes, clipped=multivol._clip_data)
-    program = Program(CUT_PLANE_VERT_SHADER, frag_shader)
+    program = ModularProgram(CUT_PLANE_VERT_SHADER, frag_shader)
 
     program['a_position'] = np.array([[-1, -1], [1, -1], [-1, 1], [1, 1]], dtype=np.float32)
     texture0 = multivol.textures[0]
@@ -27,9 +27,9 @@ def render_cut_plane_image(
     color = RenderBuffer((size[1], size[0], 4))
     fbo = FrameBuffer(color=color)
 
-    for label, info in volumes.items():
+    for info in volumes.values():
         index = info['index']
-        program['u_volumetex_{0}'.format(index)] = multivol.textures[i]
+        program['u_volumetex_{0}'.format(index)] = multivol.textures[index]
         cmap = info.get('cut_plane_cmap')
         if cmap is not None:
             program.frag['cut_plane_cmap{0:d}'.format(index)] = Function(cmap.glsl_map)
@@ -65,4 +65,5 @@ def render_cut_plane_image(
         gloo.set_viewport(0, 0, size[0], size[1])
         gloo.clear(color=(0, 0, 0, 0))
         program.draw('triangle_strip')
-        return fbo.read()
+        data = fbo.read()
+        return data[::-1]

@@ -15,6 +15,7 @@ from ..scatter.layer_artist import ScatterLayerArtist
 from .volume_visual import MultiVolume
 
 from ..common import tools as _tools, selection_tools  # noqa
+from ..volume import tools
 from . import volume_toolbar  # noqa
 
 
@@ -31,7 +32,8 @@ class VispyVolumeViewerMixin(BaseVispyViewerMixin):
     _state_cls = Vispy3DVolumeViewerState
 
     tools = BaseVispyViewerMixin.tools + ['vispy:lasso', 'vispy:rectangle',
-                                          'vispy:circle', 'volume3d:floodfill']
+                                          'vispy:circle', 'volume3d:floodfill',
+                                          'vispy:exportplane']
 
     def setup_widget_and_callbacks(self):
 

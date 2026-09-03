@@ -505,7 +505,7 @@ def get_cut_plane_frag_shader(volumes, clipped=False):
     plane_sample = indent(plane_sample, " " * 4).strip()
 
     return CUT_PLANE_FRAG_SHADER.format(declarations=declarations,
-                                            plane_sample=plane_sample)
+                                        plane_sample=plane_sample)
 
 
 def main():
