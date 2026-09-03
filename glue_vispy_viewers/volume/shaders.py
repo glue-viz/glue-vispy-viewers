@@ -306,6 +306,57 @@ void main() {{
 """
 
 
+def get_plane_sample_shader(volumes, clipped=False):
+    """
+    Build the GLSL that samples each enabled volume at `plane_loc` (a vec3 in
+    normalized [0,1]^3 texture space) and accumulates into `plane_total_color`
+    / `plane_count`.
+
+    This is shared extracted into its own function so that it can be reused
+    """
+    plane_sample = ""
+
+    for label in sorted(volumes):
+
+        index = volumes[label]['index']
+
+        plane_sample += "if(u_enabled_{0:d} == 1) {{\n\n".format(index)
+
+        if clipped:
+            plane_sample += ("if(plane_loc.r > u_clip_min.r && plane_loc.r < u_clip_max.r &&\n"
+                             "   plane_loc.g > u_clip_min.g && plane_loc.g < u_clip_max.g &&\n"
+                             "   plane_loc.b > u_clip_min.b && plane_loc.b < u_clip_max.b) {\n\n")
+
+        plane_sample += "plane_val = $sample(u_volumetex_{0:d}, plane_loc).g;\n".format(index)
+
+        if volumes[label].get('multiply') is not None:
+            index_other = volumes[volumes[label]['multiply']]['index']
+            plane_sample += (
+                "if (plane_val != 0) {{ plane_val *= $sample(u_volumetex_{0:d}, plane_loc).g; }}\n"
+                .format(index_other))
+        # Note: we deliberately don't multiply by u_weight_N for the slice
+        # sample. The MIP layer weight is a "how much does this layer fade
+        # into the rest" knob meant for the volume render; the slice already
+        # has the user's opacity slider for that, and pulling u_weight in
+        # would dim Linear-mode slices.
+        plane_sample += "plane_color = $cut_plane_cmap{0:d}(plane_val);\n".format(index)
+        # Unlike the volume MIP pass, the slice image should appear across the
+        # whole cut surface, not only where the colormap alpha (i.e. the volume
+        # opacity) is non-zero. Count every in-bounds sample and average the
+        # colourmap colours directly so values at or below v_min still render
+        # (as dark pixels via the premultiply) instead of leaving holes.
+        plane_sample += ("plane_total_color.rgb = "
+                         "mix(plane_total_color.rgb, plane_color.rgb, plane_color.a);\n")
+        plane_sample += "plane_count += 1.0;\n\n"
+
+        if clipped:
+            plane_sample += "}\n\n"
+
+        plane_sample += "}\n\n"
+
+    return plane_sample
+
+
 def get_frag_shader(volumes, clipped=False, n_volume_max=5):
     """
     Get the fragment shader code - we use the shader_program object to determine
@@ -369,35 +420,7 @@ def get_frag_shader(volumes, clipped=False, n_volume_max=5):
                        "max_alpha = max(color.a, max_alpha);\n"
                        "count += color.a;\n\n").format(index)
 
-        # Single sample on the cutting plane for the slice-image overlay.
-        plane_sample += "if(u_enabled_{0:d} == 1) {{\n\n".format(index)
-        if clipped:
-            plane_sample += ("if(plane_loc.r > u_clip_min.r && plane_loc.r < u_clip_max.r &&\n"
-                             "   plane_loc.g > u_clip_min.g && plane_loc.g < u_clip_max.g &&\n"
-                             "   plane_loc.b > u_clip_min.b && plane_loc.b < u_clip_max.b) {\n\n")
-        plane_sample += "plane_val = $sample(u_volumetex_{0:d}, plane_loc).g;\n".format(index)
-        if volumes[label].get('multiply') is not None:
-            index_other = volumes[volumes[label]['multiply']]['index']
-            plane_sample += (
-                "if (plane_val != 0) {{ plane_val *= $sample(u_volumetex_{0:d}, plane_loc).g; }}\n"
-                .format(index_other))
-        # Note: we deliberately don't multiply by u_weight_N for the slice
-        # sample. The MIP layer weight is a "how much does this layer fade
-        # into the rest" knob meant for the volume render; the slice already
-        # has the user's opacity slider for that, and pulling u_weight in
-        # would dim Linear-mode slices.
-        plane_sample += "plane_color = $cut_plane_cmap{0:d}(plane_val);\n".format(index)
-        # Unlike the volume MIP pass, the slice image should appear across the
-        # whole cut surface, not only where the colormap alpha (i.e. the volume
-        # opacity) is non-zero. Count every in-bounds sample and average the
-        # colourmap colours directly so values at or below v_min still render
-        # (as dark pixels via the premultiply) instead of leaving holes.
-        plane_sample += ("plane_total_color.rgb = "
-                         "mix(plane_total_color.rgb, plane_color.rgb, plane_color.a);\n")
-        plane_sample += "plane_count += 1.0;\n\n"
-        if clipped:
-            plane_sample += "}\n\n"
-        plane_sample += "}\n\n"
+    plane_sample = get_plane_sample_shader(volumes, clipped=clipped)
 
     if not clipped:
         before_loop += "\nfloat val3 = u_clip_min.g + u_clip_max.g;\n\n"
@@ -413,6 +436,76 @@ def get_frag_shader(volumes, clipped=False, n_volume_max=5):
                               in_loop=in_loop,
                               after_loop=after_loop,
                               plane_sample=plane_sample)
+
+
+CUT_PLANE_VERT_SHADER = """
+attribute vec2 a_position;
+uniform vec3 u_plane_origin;
+uniform vec3 u_plane_u_axis;
+uniform vec3 u_plane_v_axis;
+uniform vec3 u_shape;
+varying vec3 v_plane_loc;
+
+void main() {
+    vec2 uv = a_position * 0.5 + 0.5;  // [-1, 1] -> [0, 1]
+    vec3 p = u_plane_origin + u_plane_u_axis * uv.x + u_plane_v_axis * uv.y;
+    v_plane_loc = p / u_shape;
+    gl_Position = vec4(a_position, 0.0, 1.0);
+}
+"""
+
+CUT_PLANE_FRAG_SHADER = """
+{declarations}
+uniform vec3 u_clip_min;
+uniform vec3 u_clip_max;
+uniform vec4 u_cut_plane_image_bgcolor;
+
+varying vec3 v_plane_loc;
+
+void main() {{
+    vec3 plane_loc = v_plane_loc;
+
+    if (plane_loc.r < 0.0 || plane_loc.r > 1.0 ||
+        plane_loc.g < 0.0 || plane_loc.g > 1.0 ||
+        plane_loc.b < 0.0 || plane_loc.b > 1.0) {{
+        gl_FragColor = vec4(0., 0., 0., 0.);
+        return;
+    }}
+
+    vec4 plane_total_color = u_cut_plane_image_bgcolor;
+    vec4 plane_color = vec4(0., 0., 0., 0.);
+    float plane_count = 0.;
+    float plane_val;
+
+    {plane_sample}
+
+    if (plane_count > 0.) {{
+        plane_total_color /= plane_count;
+        plane_total_color.rgb *= plane_total_color.a;
+    }}
+
+    gl_FragColor = plane_total_color;
+    gl_FragColor.a = 1.0;
+}}
+"""
+
+
+def get_cut_plane_frag_shader(volumes, clipped=False):
+    """
+    Fragment shader for the standalone cutting-plane render
+    """
+
+    declarations = ""
+    for label in sorted(volumes):
+        index = volumes[label]['index']
+        declarations += "uniform $sampler_type u_volumetex_{0:d};\n".format(index)
+        declarations += "uniform int u_enabled_{0:d};\n".format(index)
+
+    plane_sample = get_plane_sample_shader(volumes, clipped=clipped)
+    plane_sample = indent(plane_sample, " " * 4).strip()
+
+    return CUT_PLANE_FRAG_SHADER.format(declarations=declarations,
+                                            plane_sample=plane_sample)
 
 
 def main():
