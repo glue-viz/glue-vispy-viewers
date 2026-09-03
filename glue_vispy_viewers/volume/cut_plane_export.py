@@ -5,12 +5,21 @@ from vispy.gloo import FrameBuffer, RenderBuffer
 from vispy.visuals.shaders import Function, ModularProgram
 
 from glue_vispy_viewers.volume.shaders import CUT_PLANE_VERT_SHADER, get_cut_plane_frag_shader
+from glue_vispy_viewers.volume.viewer_state import cutting_plane_polygon
+
+
+def _polygon_to_voxel_space(polygon, bounds, resolution):
+    mins = np.array([b[0] for b in bounds], dtype=float)
+    maxs = np.array([b[1] for b in bounds], dtype=float)
+    ranges = maxs - mins
+    return (np.asarray(polygon, dtype=float) - mins) / ranges * resolution
 
 
 def render_cut_plane_image(
+    viewer_state,
     multivol,
     size=(512, 512),
-    extent=None
+    margin=1.0,
 ):
 
     # GLSL setup
@@ -40,22 +49,32 @@ def render_cut_plane_image(
         program[uniform] = multivol.shared_program[uniform]
 
     a, b, c = multivol.shared_program['u_cutting_plane_abc']
-    d = multivol.shared_program['u_cutting_plane_d']
 
     normal = np.asarray((a, b, c), dtype=float)
     normal /= np.dot(normal, normal)
-    point = - d * normal
-    tmp = np.array((1, 0, 0), dtype=float)
+    tmp = np.array((0, 0, 1), dtype=float)
     if abs(np.dot(tmp, normal)) > 0.9:
         tmp = np.array((0, 1, 0), dtype=float)
     u_axis = np.cross(normal, tmp)
     u_axis /= np.linalg.norm(u_axis)
     v_axis = np.cross(normal, u_axis)
+    u_axis *= -1
 
-    if extent is None:
-        extent = float(np.linalg.norm(multivol._vol_shape))
+    polygon = cutting_plane_polygon(viewer_state)
+    bounds = (
+        (viewer_state.x_min, viewer_state.x_max),
+        (viewer_state.y_min, viewer_state.y_max),
+        (viewer_state.z_min, viewer_state.z_max),
+    )
+    polygon = _polygon_to_voxel_space(polygon=polygon, bounds=bounds, resolution=viewer_state.resolution)
+    centroid = polygon.mean(axis=0)
 
-    origin = point - u_axis * extent / 2 - v_axis * extent / 2
+    relative = polygon - centroid
+    half_extent = max(np.abs(relative @ u_axis).max(),
+                      np.abs(relative @ v_axis).max()) * margin
+    extent = 2 * half_extent
+
+    origin = centroid - u_axis * half_extent - v_axis * half_extent
     program['u_plane_origin'] = origin.astype(np.float32)
     program['u_plane_u_axis'] = (u_axis * extent).astype(np.float32)
     program['u_plane_v_axis'] = (v_axis * extent).astype(np.float32)
