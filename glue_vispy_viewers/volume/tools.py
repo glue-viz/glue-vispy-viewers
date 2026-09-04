@@ -28,10 +28,8 @@ class CutPlaneExportTool(Tool):
         # This indicates that the user cancelled
         if not outfile:
             return
-        size=(512, 512)
         img = render_cut_plane_image(self.viewer.state,
-                                     self.viewer._vispy_widget._multivol, 
-                                     size)
+                                     self.viewer._vispy_widget._multivol) 
         try:
             file_filter = str(file_filter).split()[0]
             io.imsave(outfile, img, format=file_filter)

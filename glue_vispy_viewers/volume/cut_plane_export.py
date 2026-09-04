@@ -18,21 +18,19 @@ def _polygon_to_voxel_space(polygon, bounds, resolution):
 def render_cut_plane_image(
     viewer_state,
     multivol,
-    size=(512, 512),
-    margin=1.0,
+    size=None,
 ):
 
-    # GLSL setup
+    if size is None:
+        size = (viewer_state.resolution, viewer_state.resolution)
     volumes = multivol.volumes
     frag_shader = get_cut_plane_frag_shader(volumes, clipped=multivol._clip_data)
     program = ModularProgram(CUT_PLANE_VERT_SHADER, frag_shader)
-
     program['a_position'] = np.array([[-1, -1], [1, -1], [-1, 1], [1, 1]], dtype=np.float32)
     texture0 = multivol.textures[0]
     program.frag['sampler_type'] = texture0.glsl_sampler_type
     program.frag['sample'] = texture0.glsl_sample
 
-    # Create a frame buffer
     color = RenderBuffer((size[1], size[0], 4))
     fbo = FrameBuffer(color=color)
 
@@ -71,7 +69,7 @@ def render_cut_plane_image(
 
     relative = polygon - centroid
     half_extent = max(np.abs(relative @ u_axis).max(),
-                      np.abs(relative @ v_axis).max()) * margin
+                      np.abs(relative @ v_axis).max())
     extent = 2 * half_extent
 
     origin = centroid - u_axis * half_extent - v_axis * half_extent
