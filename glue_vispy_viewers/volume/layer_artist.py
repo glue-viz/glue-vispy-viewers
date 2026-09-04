@@ -104,7 +104,7 @@ class VolumeLayerArtist(VispyLayerArtist):
             cmap = get_translucent_cmap(*ColorConverter().to_rgb(color),
                                         self.state.stretch_object)
         else:
-            cmap = get_mpl_cmap(self.state.cut_plane_cmap or self.state.cmap,
+            cmap = get_mpl_cmap(self.state.cut_plane_cmap,
                                 self.state.stretch_object)
 
         self._multivol.set_cut_plane_cmap(self.id, cmap)

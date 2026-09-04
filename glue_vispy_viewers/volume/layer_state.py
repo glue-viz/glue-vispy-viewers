@@ -31,6 +31,8 @@ class VolumeLayerState(VolumeLayerState3D):
 
         self.cut_plane_cmap = self.cmap
 
+        self.update_from_dict(kwargs)
+
     @property
     def cut_plane_cmap_name(self):
         return colormaps.name_from_cmap(self.cut_plane_cmap)
