@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>276</width>
-    <height>220</height>
+    <height>247</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -57,10 +57,44 @@
       <property name="verticalSpacing">
        <number>4</number>
       </property>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_mode">
+      <item row="2" column="1">
+       <widget class="QSlider" name="value_cut_tilt">
+        <property name="maximum">
+         <number>180</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0" colspan="2">
+       <widget class="QPushButton" name="button_flip_cut">
         <property name="text">
-         <string>Mode:</string>
+         <string>Flip shown/clipped side</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_depth">
+        <property name="text">
+         <string>Depth:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_image">
+        <property name="text">
+         <string>Image opacity:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QSlider" name="value_cut_depth">
+        <property name="maximum">
+         <number>1000</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
         </property>
        </widget>
       </item>
@@ -74,10 +108,51 @@
         </property>
        </widget>
       </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_mode">
+        <property name="text">
+         <string>Mode:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_tilt">
+        <property name="text">
+         <string>Tilt:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QSlider" name="value_cut_plane_image_opacity">
+        <property name="maximum">
+         <number>1000</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QSlider" name="value_cut_rotation">
+        <property name="maximum">
+         <number>360</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_axis">
         <property name="text">
          <string>Axis:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_rotation">
+        <property name="text">
+         <string>Rotation:</string>
         </property>
        </widget>
       </item>
@@ -133,78 +208,17 @@
         </layout>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_tilt">
+      <item row="6" column="0">
+       <widget class="QLabel" name="label_color">
         <property name="text">
-         <string>Tilt:</string>
+         <string>Image background:</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
-       <widget class="QSlider" name="value_cut_tilt">
-        <property name="maximum">
-         <number>180</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_rotation">
+      <item row="6" column="1">
+       <widget class="QColorBox" name="color_cut_plane_image_bgcolor">
         <property name="text">
-         <string>Rotation:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QSlider" name="value_cut_rotation">
-        <property name="maximum">
-         <number>360</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="label_depth">
-        <property name="text">
-         <string>Depth:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QSlider" name="value_cut_depth">
-        <property name="maximum">
-         <number>1000</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="label_image">
-        <property name="text">
-         <string>Image opacity:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="1">
-       <widget class="QSlider" name="value_cut_plane_image_opacity">
-        <property name="maximum">
-         <number>1000</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0" colspan="2">
-       <widget class="QPushButton" name="button_flip_cut">
-        <property name="text">
-         <string>Flip shown/clipped side</string>
+         <string/>
         </property>
        </widget>
       </item>
@@ -226,6 +240,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QColorBox</class>
+   <extends>QLabel</extends>
+   <header>glue_qt.utils.colors</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
