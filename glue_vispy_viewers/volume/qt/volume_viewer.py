@@ -15,7 +15,7 @@ from ..layer_state import VolumeLayerState
 from ...scatter.layer_artist import ScatterLayerArtist
 from ...scatter.qt.layer_style_widget import ScatterLayerStyleWidget
 
-from ..tools import *  # noqa
+from .tools import *  # noqa
 
 
 class VispyVolumeViewer(VispyVolumeViewerMixin, BaseVispyViewer):
