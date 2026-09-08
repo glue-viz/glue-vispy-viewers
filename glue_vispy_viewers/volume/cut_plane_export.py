@@ -16,32 +16,6 @@ def _polygon_to_voxel_space(polygon, bounds, resolution):
     return (np.asarray(polygon, dtype=float) - mins) / ranges * resolution
 
 
-def _compute_export_size(plane_normal, plane_polygon, max_dimension=2048):
-    normal = np.asarray(plane_normal, dtype=float)
-    normal /= np.linalg.norm(normal)
-
-    tmp = np.array([0.0, 0.0, 1.0])
-    if abs(np.dot(tmp, normal)) > 0.9:
-        tmp = np.array([1.0, 0.0, 0.0])
-    u_axis = np.cross(normal, tmp)
-    u_axis /= np.linalg.norm(u_axis)
-    v_axis = np.cross(normal, u_axis)
-
-    polygon = np.asarray(plane_polygon, dtype=float)
-    centroid = polygon.mean(axis=0)
-    relative = polygon - centroid
-    u_coords = relative @ u_axis
-    v_coords = relative @ v_axis
-
-    width = u_coords.max() - u_coords.min()
-    height = v_coords.max() - v_coords.min()
-
-    if width >= height:
-        return (max_dimension, max(1, int(round(max_dimension * height / width))))
-    else:
-        return (max(1, int(round(max_dimension * width / height))), max_dimension)
-
-
 def render_cut_plane_image(
     viewer_state,
     multivol,
@@ -72,8 +46,6 @@ def render_cut_plane_image(
     normal = np.asarray((a, b, c), dtype=float)
     normal /= np.dot(normal, normal)
     tmp = np.array((0, 0, 1), dtype=float)
-    if abs(np.dot(tmp, normal)) > 0.9:
-        tmp = np.array((0, 1, 0), dtype=float)
     u_axis = np.cross(normal, tmp)
     u_axis /= np.linalg.norm(u_axis)
     v_axis = np.cross(normal, u_axis)
@@ -91,10 +63,16 @@ def render_cut_plane_image(
     relative = polygon - centroid
     u_coords = relative @ u_axis
     v_coords = relative @ v_axis
-    width = ceil(np.ptp(u_coords))
-    height = ceil(np.ptp(v_coords))
+    u_min, u_max = u_coords.min(), u_coords.max()
+    v_min, v_max = v_coords.min(), v_coords.max()
+    width = ceil(u_max - u_min)
+    height = ceil(v_max - v_min)
+    
+    center_u = 0.5 * (u_min + u_max)
+    center_v = 0.5 * (v_min + v_max)
 
-    origin = centroid - 0.5 * (u_axis * width + v_axis * height)
+    center = centroid + center_u * u_axis + center_v * v_axis
+    origin = center - 0.5 * (u_axis * width + v_axis * height)
     program['u_plane_origin'] = origin.astype(np.float32)
     program['u_plane_u_axis'] = (u_axis * width).astype(np.float32)
     program['u_plane_v_axis'] = (v_axis * height).astype(np.float32)
