@@ -35,7 +35,8 @@ def render_cut_plane_image(
         if cmap is not None:
             program.frag['cut_plane_cmap{0:d}'.format(index)] = Function(cmap.glsl_map)
 
-        program['u_enabled_{0}'.format(index)] = multivol.shared_program['u_enabled_{0}'.format(index)]
+        program['u_enabled_{0}'.format(index)] = \
+            multivol.shared_program['u_enabled_{0}'.format(index)]
 
     for uniform in ('u_clip_min', 'u_clip_max', 'u_cut_plane_image_bgcolor'):
         program[uniform] = multivol.shared_program[uniform]
@@ -46,7 +47,11 @@ def render_cut_plane_image(
         (viewer_state.y_min, viewer_state.y_max),
         (viewer_state.z_min, viewer_state.z_max),
     )
-    polygon = _polygon_to_voxel_space(polygon=polygon, bounds=bounds, resolution=viewer_state.resolution)
+    polygon = _polygon_to_voxel_space(
+        polygon=polygon,
+        bounds=bounds,
+        resolution=viewer_state.resolution
+    )
     polygon *= viewer_state.aspect
     centroid = polygon.mean(axis=0)
     v0 = polygon[0] - centroid
