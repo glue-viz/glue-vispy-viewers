@@ -20,7 +20,6 @@ def render_cut_plane_image(
     viewer_state,
     multivol,
 ):
-
     volumes = multivol.volumes
     frag_shader = get_cut_plane_frag_shader(volumes, clipped=multivol._clip_data)
     program = ModularProgram(CUT_PLANE_VERT_SHADER, frag_shader)
@@ -41,16 +40,6 @@ def render_cut_plane_image(
     for uniform in ('u_clip_min', 'u_clip_max', 'u_cut_plane_image_bgcolor'):
         program[uniform] = multivol.shared_program[uniform]
 
-    a, b, c = multivol.shared_program['u_cutting_plane_abc']
-
-    normal = np.asarray((a, b, c), dtype=float)
-    normal /= np.dot(normal, normal)
-    tmp = np.array((0, 0, 1), dtype=float)
-    u_axis = np.cross(normal, tmp)
-    u_axis /= np.linalg.norm(u_axis)
-    v_axis = np.cross(normal, u_axis)
-    u_axis *= -1
-
     polygon = cutting_plane_polygon(viewer_state)
     bounds = (
         (viewer_state.x_min, viewer_state.x_max),
@@ -58,7 +47,18 @@ def render_cut_plane_image(
         (viewer_state.z_min, viewer_state.z_max),
     )
     polygon = _polygon_to_voxel_space(polygon=polygon, bounds=bounds, resolution=viewer_state.resolution)
+    polygon *= viewer_state.aspect
     centroid = polygon.mean(axis=0)
+    v0 = polygon[0] - centroid
+    v1 = polygon[len(polygon) // 2] - centroid
+    normal = np.cross(v0, v1)
+    normal /= np.linalg.norm(normal)
+
+    tmp = np.array((0, 0, 1), dtype=float)
+    u_axis = np.cross(tmp, normal)
+    u_axis /= np.linalg.norm(u_axis)
+    v_axis = np.cross(u_axis, normal)
+    v_axis /= np.linalg.norm(v_axis)
 
     relative = polygon - centroid
     u_coords = relative @ u_axis
@@ -67,15 +67,18 @@ def render_cut_plane_image(
     v_min, v_max = v_coords.min(), v_coords.max()
     width = ceil(u_max - u_min)
     height = ceil(v_max - v_min)
-    
+
     center_u = 0.5 * (u_min + u_max)
     center_v = 0.5 * (v_min + v_max)
 
     center = centroid + center_u * u_axis + center_v * v_axis
     origin = center - 0.5 * (u_axis * width + v_axis * height)
+    origin /= viewer_state.aspect
+    u_axis = u_axis * width / viewer_state.aspect
+    v_axis = v_axis * height / viewer_state.aspect
     program['u_plane_origin'] = origin.astype(np.float32)
-    program['u_plane_u_axis'] = (u_axis * width).astype(np.float32)
-    program['u_plane_v_axis'] = (v_axis * height).astype(np.float32)
+    program['u_plane_u_axis'] = u_axis.astype(np.float32)
+    program['u_plane_v_axis'] = v_axis.astype(np.float32)
     program['u_shape'] = multivol._vol_shape
 
     color = RenderBuffer((height, width, 4))
