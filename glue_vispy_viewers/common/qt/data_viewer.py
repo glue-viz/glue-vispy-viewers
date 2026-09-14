@@ -20,7 +20,7 @@ BROKEN_PYQT5_MESSAGE = ("The version of PyQt5 you are using does not appear to "
 class BaseVispyViewer(BaseVispyViewerMixin, DataViewer):
 
     _options_cls = VispyOptionsWidget
-    subtools = {'save': ['vispy:save']}
+    subtools = {'save': ['vispy:save', 'save:exportplane']}
 
     _toolbar_cls = VispyQtToolbar
 

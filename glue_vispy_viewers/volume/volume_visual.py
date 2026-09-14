@@ -104,6 +104,7 @@ class MultiVolumeVisual(VolumeVisual):
         # Set initial cutting plane and slice-image overlay
         self.set_cutting_plane(None)
         self.set_cut_plane_image_opacity(0.0)
+        self.set_cut_plane_image_bgcolor(Color("black").rgba)
 
         # Set up texture vertices - note that these variables are required by
         # the parent VolumeVisual class.
@@ -230,6 +231,9 @@ class MultiVolumeVisual(VolumeVisual):
     def set_cut_plane_image_opacity(self, opacity):
         self.shared_program['u_cut_plane_image_opacity'] = float(opacity)
 
+    def set_cut_plane_image_bgcolor(self, color):
+        self.shared_program['u_cut_plane_image_bgcolor'] = Color(color).rgba
+
     # The following methods don't require any changes to the shader code, so we
     # don't update the shader after setting the OpenGL variables.
 
@@ -270,6 +274,13 @@ class MultiVolumeVisual(VolumeVisual):
         self.volumes[label]['clim'] = clim
         if 'data' in self.volumes[label]:
             self._update_scaled_data(label)
+
+    def set_cut_plane_cmap(self, label, cmap):
+        if isinstance(cmap, str):
+            cmap = get_colormap(cmap)
+        self.volumes[label]['cut_plane_cmap'] = cmap
+        index = self.volumes[label]['index']
+        self.shared_program.frag['cut_plane_cmap{0:d}'.format(index)] = Function(cmap.glsl_map)
 
     def set_weight(self, label, weight):
         index = self.volumes[label]['index']

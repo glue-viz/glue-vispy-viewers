@@ -7,11 +7,9 @@ from glue.core.subset import SubsetState
 from glue.core.exceptions import IncompatibleAttribute
 
 from glue.viewers.scatter3d.layer_state import ScatterLayerState3D
-from glue.viewers.volume3d.layer_state import VolumeLayerState3D
 
 STATE_CLASS = {}
 STATE_CLASS['ScatterLayerArtist'] = ScatterLayerState3D
-STATE_CLASS['VolumeLayerArtist'] = VolumeLayerState3D
 
 
 def update_viewer_state(rec, context):
