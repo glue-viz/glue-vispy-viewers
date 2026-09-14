@@ -1,5 +1,6 @@
 from qtpy import compat
 
+from echo import add_callback
 from glue.config import viewer_tool
 from glue.viewers.common.tool import Tool
 
@@ -18,6 +19,14 @@ class CutPlaneExportTool(Tool):
     action_text = 'Export the cut plane image'
     tool_tip = 'Export the cut plane image'
 
+    def __init__(self, viewer=None):
+        super().__init__(viewer)
+        if viewer is not None and hasattr(viewer.state, 'cut_enabled'):
+            add_callback(viewer.state, 'cut_enabled', self._cut_plane_enabled_changed)
+
+    def _cut_plane_enabled_changed(self, enabled):
+        self.enabled = enabled
+
     def activate(self):
         outfile, file_filter = compat.getsavefilename(caption='Save File',
                                                       filters='PNG Files (*.png);;'
@@ -29,7 +38,7 @@ class CutPlaneExportTool(Tool):
         if not outfile:
             return
         img = render_cut_plane_image(self.viewer.state,
-                                     self.viewer._vispy_widget._multivol) 
+                                     self.viewer._vispy_widget._multivol)
         try:
             file_filter = str(file_filter).split()[0]
             io.imsave(outfile, img, format=file_filter)
