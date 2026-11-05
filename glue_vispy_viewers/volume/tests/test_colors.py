@@ -1,39 +1,13 @@
 from re import sub
 
+from vispy.color.colormap import LUT_len
 from glue.config import LinearStretch, colormaps
-from glue_vispy_viewers.volume.colors import create_cmap_template, get_mpl_cmap, \
-                                             get_translucent_cmap, glsl_for_stretch
+from glue_vispy_viewers.volume.colors import CustomColormap, get_mpl_cmap, \
+                                             get_translucent_cmap
 
 
 def clean_template(template):
     return sub("( |\n)", "", template)
-
-
-def test_create_cmap_template():
-
-    n_colors = 4
-    stretch = LinearStretch()
-    stretch_glsl = glsl_for_stretch(stretch)
-    template = clean_template(create_cmap_template(n=n_colors, stretch_glsl=stretch_glsl))
-
-    # vispy adds some extra code to the GLSL map for mapping bad values (e.g. NaN)
-    # to a default color, so we need to account for that.
-    # If this becomes more complicated we could use a regex, but with all of the parentheses
-    # and brackets this feels simpler
-    template_start = clean_template("vec4 translucent_colormap(float t) {")
-    template_end = clean_template("""
-        float s = t;
-        if (s <= 0.25)
-            { return $color_0; }
-        if (s <= 0.5)
-            { return $color_1; }
-        if (s <= 0.75)
-            { return $color_2; }
-        return $color_3;
-    }
-    """)
-    assert template.startswith(template_start)
-    assert template.endswith(template_end)
 
 
 def test_translucent_cmap():
@@ -51,38 +25,19 @@ def test_translucent_cmap():
     assert template.endswith(template_end)
 
 
-# Both Linear and Listed paths in get_mpl_cmap are now capped to 64 entries
-# to work around a Mesa llvmpipe miscompilation of the long chained-if
-# function emitted by create_cmap_template. See the comment in colors.py.
-EXPECTED_N_COLORS = 64
-
-
 def test_linear_cmap():
 
     colormap = colormaps['Red-Blue']
     stretch = LinearStretch()
-    stretch_glsl = glsl_for_stretch(stretch)
     cmap = get_mpl_cmap(colormap, stretch)
-    assert len(cmap.colors) == EXPECTED_N_COLORS
-
-    template = create_cmap_template(EXPECTED_N_COLORS, stretch_glsl)
-    template_start, template_end = [clean_template(t) for t in template.split("\n", maxsplit=1)]
-    template = clean_template(template)
-    assert template.startswith(template_start)
-    assert template.endswith(template_end)
+    assert isinstance(cmap, CustomColormap)
+    assert cmap.texture_map_data.shape == (LUT_len, 1, 4)
 
 
 def test_listed_cmap():
 
     colormap = colormaps['Viridis']
     stretch = LinearStretch()
-    stretch_glsl = glsl_for_stretch(stretch)
     cmap = get_mpl_cmap(colormap, stretch)
-    # Cap kicks in: source has 256 entries, we downsample to 64.
-    assert len(cmap.colors) == EXPECTED_N_COLORS
-
-    template = create_cmap_template(EXPECTED_N_COLORS, stretch_glsl)
-    template_start, template_end = [clean_template(t) for t in template.split("\n", maxsplit=1)]
-    template = clean_template(template)
-    assert template.startswith(template_start)
-    assert template.endswith(template_end)
+    assert isinstance(cmap, CustomColormap)
+    assert cmap.texture_map_data.shape == (LUT_len, 1, 4)
