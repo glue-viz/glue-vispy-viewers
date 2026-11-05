@@ -94,6 +94,8 @@ uniform float u_cutting_plane_d;
 // the visible face of the remaining volume rather than hiding behind it.
 uniform float u_cut_plane_image_opacity;
 
+uniform vec4 u_cut_plane_image_bgcolor;
+
 // uniforms for lighting. Hard coded until we figure out how to do lights
 const vec4 u_ambient = vec4(0.2, 0.4, 0.2, 1.0);
 const vec4 u_diffuse = vec4(0.8, 0.2, 0.2, 1.0);
@@ -266,7 +268,7 @@ void main() {{
     // over the MIP result at the user-controlled opacity.
     if (u_cut_plane_image_opacity > 0.0 && plane_image_visible == 1) {{
         vec3 plane_loc = (v_position + view_ray * plane_t) / u_shape;
-        vec4 plane_total_color = vec4(0., 0., 0., 0.);
+        vec4 plane_total_color = u_cut_plane_image_bgcolor;
         vec4 plane_color = vec4(0., 0., 0., 0.);
         float plane_count = 0.;
         float plane_val;
@@ -391,7 +393,8 @@ def get_frag_shader(volumes, clipped=False, n_volume_max=5):
         # opacity) is non-zero. Count every in-bounds sample and average the
         # colourmap colours directly so values at or below v_min still render
         # (as dark pixels via the premultiply) instead of leaving holes.
-        plane_sample += "plane_total_color += plane_color;\n"
+        plane_sample += ("plane_total_color.rgb = "
+                         "mix(plane_total_color.rgb, plane_color.rgb, plane_color.a);\n")
         plane_sample += "plane_count += 1.0;\n\n"
         if clipped:
             plane_sample += "}\n\n"

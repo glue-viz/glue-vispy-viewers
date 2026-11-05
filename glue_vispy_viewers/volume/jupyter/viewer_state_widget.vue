@@ -69,6 +69,22 @@
                 <v-slider v-model="cut_plane_image_opacity" :min="0" :max="1" :step="0.001" hide-details thumb-label="hidden" />
             </div>
             <div>
+                <v-subheader class="pl-0 slider-label">plane background</v-subheader>
+                <v-menu ref="menu">
+                    <template v-slot:activator="{ on, props }">
+                        <span class="glue-color-menu"
+                              @click.stop="on.click"
+                        >&nbsp;</span>
+                    </template>
+                    <div @click.stop="" style="text-align: end; background-color: white">
+                        <v-btn icon @click="$refs.menu.save()">
+                            <v-icon>mdi-close</v-icon>
+                        </v-btn>
+                        <v-color-picker v-model="cut_plane_image_bgcolor" echo-type="text" ></v-color-picker>
+                    </div>
+                </v-menu>
+            </div>
+            <div>
                 <v-btn small block class="mt-2" @click="flip_cut">Flip shown/clipped side</v-btn>
             </div>
         </template>
