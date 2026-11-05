@@ -11,7 +11,7 @@ on:
 jobs:
   initial_checks:
     # Mandatory checks before CI tests
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@1285b95e32c783cfa40eb2ffbd6ca4cd023fb884 # v3.2.2
     with:
       coverage: false
       envs: |
@@ -20,7 +20,7 @@ jobs:
 
   tests:
     needs: initial_checks
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@1285b95e32c783cfa40eb2ffbd6ca4cd023fb884 # v3.2.2
     with:
       display: true
       coverage: codecov
@@ -72,7 +72,7 @@ jobs:
 
   publish:
     needs: tests
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/publish_pure_python.yml@v1
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/publish_pure_python.yml@1285b95e32c783cfa40eb2ffbd6ca4cd023fb884 # v3.2.2
     with:
       # Setup PyQt5 deps and headless X server as per pyvista/setup-headless-display-action@v1
       libraries: '^libxcb.*-dev libxkbcommon-x11-dev xvfb'
