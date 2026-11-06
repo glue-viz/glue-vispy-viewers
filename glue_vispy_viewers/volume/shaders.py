@@ -263,9 +263,8 @@ void main() {{
     }}
 
     // Cut-surface image overlay. Samples each layer once at the plane intersection,
-    // colormaps it through the layer's own colormap function (so colormap, v_min,
-    // v_max and subset multiply are reused for free), then composites the result
-    // over the MIP result at the user-controlled opacity.
+    // colormaps it through the layer's cutting plane colormap function,
+    // then composites the result over the MIP result at the user-controlled opacity.
     if (u_cut_plane_image_opacity > 0.0 && plane_image_visible == 1) {{
         vec3 plane_loc = (v_position + view_ray * plane_t) / u_shape;
         vec4 plane_total_color = u_cut_plane_image_bgcolor;
@@ -387,7 +386,7 @@ def get_frag_shader(volumes, clipped=False, n_volume_max=5):
         # into the rest" knob meant for the volume render; the slice already
         # has the user's opacity slider for that, and pulling u_weight in
         # would dim Linear-mode slices.
-        plane_sample += "plane_color = $cmap{0:d}(plane_val);\n".format(index)
+        plane_sample += "plane_color = $cut_plane_cmap{0:d}(plane_val);\n".format(index)
         # Unlike the volume MIP pass, the slice image should appear across the
         # whole cut surface, not only where the colormap alpha (i.e. the volume
         # opacity) is non-zero. Count every in-bounds sample and average the
