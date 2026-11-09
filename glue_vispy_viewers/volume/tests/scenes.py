@@ -141,6 +141,12 @@ def volume_cutting_plane(viewer):
     viewer._vispy_widget.view.camera.azimuth += 180
 
 
+def volume_cutting_plane_bgcolor(viewer, color, opacity):
+    volume_cutting_plane(viewer)
+    viewer.state.cut_plane_image_bgcolor = color
+    viewer.state.cut_plane_image_opacity = opacity
+
+
 def volume_with_scatter_overlay(app, viewer, vol_data, scatter_data):
     """Volume rendering with a 1D scatter overlay."""
     basic_volume(viewer)
