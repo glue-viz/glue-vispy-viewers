@@ -23,7 +23,7 @@ jobs:
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@1285b95e32c783cfa40eb2ffbd6ca4cd023fb884 # v3.2.2
     with:
       display: true
-      coverage: codecov
+      coverage: codecov-oidc
       # Linux PyQt 5.15 and 6.x installations require apt-getting xcb and EGL deps
       # and headless X11 display
       libraries: |
