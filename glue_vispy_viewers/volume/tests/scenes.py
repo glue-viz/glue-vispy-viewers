@@ -141,21 +141,23 @@ def volume_cutting_plane(viewer):
     viewer._vispy_widget.view.camera.azimuth += 180
 
 
-def volume_cutting_plane_bgcolor(viewer, color, opacity):
+def volume_cutting_plane_bgcolor(viewer, plane_opacity, color):
     volume_cutting_plane(viewer)
     viewer.state.cut_plane_image_bgcolor = color
-    viewer.state.cut_plane_image_opacity = opacity
+    viewer.state.cut_plane_image_opacity = plane_opacity
 
 
-def volume_cutting_plane_layer_color(viewer, color):
+def volume_cutting_plane_layer_color(viewer, plane_opacity, color):
     volume_cutting_plane(viewer)
+    viewer.state.cut_plane_image_opacity = plane_opacity
     layer_state = viewer.state.layers[0]
     layer_state.cut_plane_color_mode = 'Fixed'
     layer_state.cut_plane_color = color
 
 
-def volume_cutting_plane_layer_cmap(viewer, cmap):
+def volume_cutting_plane_layer_cmap(viewer, plane_opacity, cmap):
     volume_cutting_plane(viewer)
+    viewer.state.cut_plane_image_opacity = plane_opacity
     layer_state = viewer.state.layers[0]
     layer_state.cut_plane_color_mode = 'Linear'
     layer_state.cut_plane_color = cmap

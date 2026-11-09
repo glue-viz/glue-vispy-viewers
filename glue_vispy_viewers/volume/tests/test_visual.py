@@ -119,7 +119,7 @@ def test_visual_volume3d_cutting_plane():
 def test_visual_volume3d_cutting_plane_color():
     data = scenes.l1448_data()
     _, viewer = _make_viewer(data)
-    scenes.volume_cutting_plane_bgcolor(viewer, "#686AED", 0.65)
+    scenes.volume_cutting_plane_bgcolor(viewer, 0.65, "#686AED")
     return viewer
 
 
@@ -127,7 +127,7 @@ def test_visual_volume3d_cutting_plane_color():
 def test_visual_volume3d_cutting_plane_layer_color():
     data = scenes.l1448_data()
     _, viewer = _make_viewer(data)
-    scenes.volume_cutting_plane_layer_color(viewer, "#E52258")
+    scenes.volume_cutting_plane_layer_color(viewer, 1.0, "#E52258")
     return viewer
 
 
@@ -136,7 +136,7 @@ def test_visual_volume3d_cutting_plane_layer_cmap():
     import matplotlib.pyplot as plt
     data = scenes.l1448_data()
     _, viewer = _make_viewer(data)
-    scenes.volume_cutting_plane_layer_cmap(viewer, plt.cm.viridis)
+    scenes.volume_cutting_plane_layer_cmap(viewer, 1.0, plt.cm.viridis)
     return viewer
 
 
