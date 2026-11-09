@@ -160,7 +160,7 @@ def volume_cutting_plane_layer_cmap(viewer, plane_opacity, cmap):
     viewer.state.cut_plane_image_opacity = plane_opacity
     layer_state = viewer.state.layers[0]
     layer_state.cut_plane_color_mode = 'Linear'
-    layer_state.cut_plane_color = cmap
+    layer_state.cut_plane_cmap = cmap
 
 
 def volume_with_scatter_overlay(app, viewer, vol_data, scatter_data):
