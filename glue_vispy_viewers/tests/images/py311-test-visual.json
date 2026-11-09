@@ -15,6 +15,7 @@
   "glue_vispy_viewers.volume.tests.test_visual.test_visual_volume3d_cutting_plane": "fc777a41aa39d944a0e95c34af0b3015438942b31446354e6d69a95abad3e83e",
   "glue_vispy_viewers.volume.tests.test_visual.test_visual_volume3d_cutting_plane_color": "cf888356c430ea706a0ecd3ccda079ee431fa8fdc213aaf77aaac7e097c5b24c",
   "glue_vispy_viewers.volume.tests.test_visual.test_visual_volume3d_cutting_plane_layer_color": "68233848e540022e067300fc1d8eecf711dd40daab0853048371b8884d30b9a4",
+  "glue_vispy_viewers.volume.tests.test_visual.test_visual_volume3d_cutting_plane_layer_cmap": "3fb62785a8df707b33e762a6241bb9eb6541d14e8e544a64f4bc6b6c6de8aaf5",
   "glue_vispy_viewers.volume.tests.test_visual.test_visual_volume3d_subset": "cffa6f5f1b83c62dd5036e32ad21838d105a55bcaf5f280933dba43112e1dd8c",
   "glue_vispy_viewers.volume.tests.test_visual.test_visual_volume3d_clip_off": "f2d026696ecf8487c1f3be9a9b423d42bf3d1935e24ce3b0970670e9504c4da3",
   "glue_vispy_viewers.volume.tests.test_visual.test_visual_volume3d_scatter_overlay": "698ab572f8083749c5f2ce025a2e971bd9e71cc23121e64f340697c63791dc2f"
