@@ -147,6 +147,20 @@ def volume_cutting_plane_bgcolor(viewer, color, opacity):
     viewer.state.cut_plane_image_opacity = opacity
 
 
+def volume_cutting_plane_layer_color(viewer, color):
+    volume_cutting_plane(viewer)
+    layer_state = viewer.state.layers[0]
+    layer_state.cut_plane_color_mode = 'Fixed'
+    layer_state.cut_plane_color = color
+
+
+def volume_cutting_plane_layer_cmap(viewer, cmap):
+    volume_cutting_plane(viewer)
+    layer_state = viewer.state.layers[0]
+    layer_state.cut_plane_color_mode = 'Linear'
+    layer_state.cut_plane_color = cmap
+
+
 def volume_with_scatter_overlay(app, viewer, vol_data, scatter_data):
     """Volume rendering with a 1D scatter overlay."""
     basic_volume(viewer)

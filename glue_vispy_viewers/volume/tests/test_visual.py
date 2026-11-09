@@ -124,6 +124,23 @@ def test_visual_volume3d_cutting_plane_color():
 
 
 @visual_test(tolerance=5)
+def test_visual_volume3d_cutting_plane_layer_color():
+    data = scenes.l1448_data()
+    _, viewer = _make_viewer(data)
+    scenes.volume_cutting_plane_layer_color(viewer, "#E52258")
+    return viewer
+
+
+@visual_test(tolerance=5)
+def test_visual_volume3d_cutting_plane_layer_cmap():
+    import matplotlib.pyplot as plt
+    data = scenes.l1448_data()
+    _, viewer = _make_viewer(data)
+    scenes.volume_cutting_plane_layer_cmap(viewer, plt.cm.viridis)
+    return viewer
+
+
+@visual_test(tolerance=5)
 def test_visual_volume3d_subset():
     data = scenes.blob_data()
     app, viewer = _make_viewer(data)
