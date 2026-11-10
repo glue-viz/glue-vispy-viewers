@@ -299,3 +299,28 @@ def visual_test_qt(*args, **kwargs):
         return decorator(args[0])
 
     return decorator
+
+
+def visual_test_export(*args, **kwargs):
+
+    tolerance = kwargs.pop('tolerance', 0)
+
+    def decorator(test_function):
+
+        @pytest.mark.skipif(not HAS_VISUAL_TEST_DEPS,
+                            reason="requires pytest-mpl, Pillow")
+        @pytest.mark.mpl_image_compare(tolerance=tolerance, deterministic=True, **kwargs)
+        @wraps(test_function)
+        def wrapper(*a, **kw):
+            path = test_function(*a, **kw)
+            image = Image.open(path)
+            buf = BytesIO()
+            image.save(buf, format='PNG')
+            return _PngFigure(buf.getvalue())
+
+        return wrapper
+
+    if len(args) == 1 and callable(args[0]):
+        return decorator(args[0])
+
+    return decorator
