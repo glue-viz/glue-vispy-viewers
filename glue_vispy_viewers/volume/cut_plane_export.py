@@ -16,6 +16,17 @@ def _polygon_to_voxel_space(polygon, bounds, resolution):
     return (np.asarray(polygon, dtype=float) - mins) / ranges * resolution
 
 
+def _polygon_normal(polygon):
+    """Unit normal of a planar polygon, using Newell's method."""
+    nxt = np.roll(polygon, -1, axis=0)
+    normal = np.array([
+        np.sum((polygon[:, 1] - nxt[:, 1]) * (polygon[:, 2] + nxt[:, 2])),
+        np.sum((polygon[:, 2] - nxt[:, 2]) * (polygon[:, 0] + nxt[:, 0])),
+        np.sum((polygon[:, 0] - nxt[:, 0]) * (polygon[:, 1] + nxt[:, 1])),
+    ])
+    return normal / np.linalg.norm(normal)
+
+
 def render_cut_plane_image(
     viewer_state,
     multivol,
@@ -54,12 +65,14 @@ def render_cut_plane_image(
     )
     polygon *= viewer_state.aspect
     centroid = polygon.mean(axis=0)
-    v0 = polygon[0] - centroid
-    v1 = polygon[len(polygon) // 2] - centroid
-    normal = np.cross(v0, v1)
-    normal /= np.linalg.norm(normal)
+    normal = _polygon_normal(polygon)
 
+    # Pick an in-plane "horizontal" axis.
+    # Use z unless the plane is (nearly) perpendicular to z,
+    # in which case (z x normal) vanishes and we fall back to y
     tmp = np.array((0, 0, 1), dtype=float)
+    if abs(normal @ tmp) > 0.999:
+        tmp = np.array((0, 1, 0), dtype=float)
     u_axis = np.cross(tmp, normal)
     u_axis /= np.linalg.norm(u_axis)
     v_axis = np.cross(u_axis, normal)
