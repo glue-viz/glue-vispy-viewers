@@ -27,7 +27,7 @@
    <item row="15" column="1">
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Orientation::Vertical</enum>
+      <enum>Qt::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -60,7 +60,7 @@
       <number>100</number>
      </property>
      <property name="orientation">
-      <enum>Qt::Orientation::Horizontal</enum>
+      <enum>Qt::Horizontal</enum>
      </property>
     </widget>
    </item>
@@ -116,13 +116,13 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="2" alignment="Qt::AlignmentFlag::AlignLeft">
+   <item row="1" column="2" alignment="Qt::AlignLeft">
     <widget class="QLineEdit" name="valuetext_v_max"/>
    </item>
    <item row="0" column="1" colspan="2">
     <widget class="QComboBox" name="combosel_attribute">
      <property name="sizeAdjustPolicy">
-      <enum>QComboBox::SizeAdjustPolicy::AdjustToMinimumContentsLengthWithIcon</enum>
+      <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
      </property>
     </widget>
    </item>
