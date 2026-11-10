@@ -41,6 +41,9 @@ class BaseVispyViewerMixin:
         viewbox.events.mouse_press.connect(self.camera_mouse_press)
         viewbox.events.mouse_release.connect(self.camera_mouse_release)
 
+    def _cleanup_widget(self):
+        self._vispy_widget.canvas.close()
+
     def _update_appearance_from_settings(self, message):
         self._vispy_widget._update_appearance_from_settings()
 
