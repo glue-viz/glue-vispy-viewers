@@ -17,7 +17,7 @@ def _polygon_to_voxel_space(polygon, bounds, resolution):
 
 
 def _polygon_normal(polygon):
-    """Unit normal of a planar polygon, using Newell's method."""
+    """Unit normal of a planar polygon using Newell's method."""
     nxt = np.roll(polygon, -1, axis=0)
     normal = np.array([
         np.sum((polygon[:, 1] - nxt[:, 1]) * (polygon[:, 2] + nxt[:, 2])),
@@ -105,6 +105,8 @@ def render_cut_plane_image(
     with fbo:
         gloo.set_viewport(0, 0, width, height)
         gloo.clear(color=(0, 0, 0, 0))
+        # We don't need/want to blend or depth test for exporting an image
+        gloo.set_state(blend=False, depth_test=False, cull_face=False)
         program.draw('triangle_strip')
         data = fbo.read()
         return data[::-1]
