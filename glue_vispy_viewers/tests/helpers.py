@@ -302,6 +302,13 @@ def visual_test_qt(*args, **kwargs):
 
 
 def visual_test_export(*args, **kwargs):
+    """
+    Decorator for functions that test the export of an image file.
+
+    The wrapped function should return the filepath of the saved image.
+    The decorator opens the filepath and passes its bytes to `pytest-mpl`
+    using the same figure-shaped wrapper as `visual_test`.
+    """
 
     tolerance = kwargs.pop('tolerance', 0)
 
