@@ -53,3 +53,4 @@ class SimpleVispyScatterViewer(VispyScatterViewerMixin, Viewer):
 
     def close(self):
         self.cleanup()
+        self._cleanup_widget()

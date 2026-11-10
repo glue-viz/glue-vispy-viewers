@@ -255,3 +255,4 @@ class SimpleVispyVolumeViewer(VispyVolumeViewerMixin, Viewer):
         # Volume rendering populates glue's PIXEL_CACHE / ARRAY_CACHE via the
         # fixed-resolution buffer; clearing layer artists releases those.
         self.cleanup()
+        self._cleanup_widget()
