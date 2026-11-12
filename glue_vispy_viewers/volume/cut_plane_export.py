@@ -63,7 +63,14 @@ def render_cut_plane_image(
         bounds=bounds,
         resolution=viewer_state.resolution
     )
-    polygon *= viewer_state.aspect
+    stretches = np.array([
+        viewer_state.x_stretch,
+        viewer_state.y_stretch,
+        viewer_state.z_stretch,
+    ])
+    scale = viewer_state.aspect * stretches
+    scale /= scale.max()
+    polygon *= scale
     centroid = polygon.mean(axis=0)
     normal = _polygon_normal(polygon)
 
@@ -91,9 +98,9 @@ def render_cut_plane_image(
 
     center = centroid + center_u * u_axis + center_v * v_axis
     origin = center - 0.5 * (u_axis * width + v_axis * height)
-    origin /= viewer_state.aspect
-    u_axis = u_axis * width / viewer_state.aspect
-    v_axis = v_axis * height / viewer_state.aspect
+    origin /= scale
+    u_axis = u_axis * width / scale
+    v_axis = v_axis * height / scale
     program['u_plane_origin'] = origin.astype(np.float32)
     program['u_plane_u_axis'] = u_axis.astype(np.float32)
     program['u_plane_v_axis'] = v_axis.astype(np.float32)
