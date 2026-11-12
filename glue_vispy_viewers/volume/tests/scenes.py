@@ -163,6 +163,15 @@ def volume_cutting_plane_layer_cmap(viewer, plane_opacity, cmap):
     layer_state.cut_plane_cmap = cmap
 
 
+def volume_cutting_plane_layer_cmap_stretches(viewer, plane_opacity, cmap):
+    volume_cutting_plane_layer_cmap(viewer, plane_opacity, cmap)
+    viewer.state.cut_depth = 0.6
+    viewer.state.cut_rotation = 0.5760
+    viewer.state.cut_tilt = 0.9774
+    viewer.state.x_stretch = 1.4
+    viewer.state.z_stretch = 0.75
+
+
 def volume_with_scatter_overlay(app, viewer, vol_data, scatter_data):
     """Volume rendering with a 1D scatter overlay."""
     basic_volume(viewer)

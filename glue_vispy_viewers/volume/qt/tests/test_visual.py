@@ -66,3 +66,23 @@ class TestVispyVolumeViewerQt:
             subtool.activate()
 
         return filepath
+
+    @visual_test_export(tolerance=5)
+    def test_volume3d_export_cutting_plane_image_nonrectangular(self, tmpdir):
+        import matplotlib.pyplot as plt
+        scenes.volume_cutting_plane_layer_cmap_stretches(self.viewer, 1.0, plt.cm.plasma)
+
+        tool = self.viewer.toolbar.tools["save"]
+        subtool = None
+        for st in tool.subtools:
+            if st.tool_id == "save:exportplane":
+                subtool = st
+
+        assert subtool is not None
+
+        filepath = tmpdir.join('test2.png').strpath
+        with patch('qtpy.compat.getsavefilename') as mock_save:
+            mock_save.return_value = filepath, "png"
+            subtool.activate()
+
+        return filepath
