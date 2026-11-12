@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 
 pytest.importorskip("qtpy.QtWidgets", exc_type=ImportError)
@@ -17,7 +19,7 @@ except RuntimeError:
 from glue.core import DataCollection  # noqa: E402
 from glue_qt.app.application import GlueApplication  # noqa: E402
 
-from ....tests.helpers import set_canvas_size, visual_test_qt  # noqa: E402
+from ....tests.helpers import set_canvas_size, visual_test_qt, visual_test_export  # noqa: E402
 from ...tests import scenes  # noqa: E402
 from ..volume_viewer import VispyVolumeViewer  # noqa: E402
 
@@ -44,3 +46,43 @@ class TestVispyVolumeViewerQt:
     def test_visual_volume3d_qt(self):
         scenes.basic_volume(self.viewer)
         return self.viewer
+
+    @visual_test_export(tolerance=5)
+    def test_volume3d_export_cutting_plane_image(self, tmpdir):
+        import matplotlib.pyplot as plt
+        scenes.volume_cutting_plane_layer_cmap(self.viewer, 1.0, plt.cm.plasma)
+
+        tool = self.viewer.toolbar.tools["save"]
+        subtool = None
+        for st in tool.subtools:
+            if st.tool_id == "save:exportplane":
+                subtool = st
+
+        assert subtool is not None
+
+        filepath = tmpdir.join('test.png').strpath
+        with patch('qtpy.compat.getsavefilename') as mock_save:
+            mock_save.return_value = filepath, "png"
+            subtool.activate()
+
+        return filepath
+
+    @visual_test_export(tolerance=5)
+    def test_volume3d_export_cutting_plane_image_nonrectangular(self, tmpdir):
+        import matplotlib.pyplot as plt
+        scenes.volume_cutting_plane_export(self.viewer, 1.0, plt.cm.plasma)
+
+        tool = self.viewer.toolbar.tools["save"]
+        subtool = None
+        for st in tool.subtools:
+            if st.tool_id == "save:exportplane":
+                subtool = st
+
+        assert subtool is not None
+
+        filepath = tmpdir.join('test2.png').strpath
+        with patch('qtpy.compat.getsavefilename') as mock_save:
+            mock_save.return_value = filepath, "png"
+            subtool.activate()
+
+        return filepath
