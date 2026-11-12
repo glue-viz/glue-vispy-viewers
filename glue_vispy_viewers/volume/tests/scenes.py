@@ -163,7 +163,7 @@ def volume_cutting_plane_layer_cmap(viewer, plane_opacity, cmap):
     layer_state.cut_plane_cmap = cmap
 
 
-def volume_cutting_plane_layer_cmap_stretches(viewer, plane_opacity, cmap):
+def volume_cutting_plane_export(viewer, plane_opacity, cmap):
     volume_cutting_plane_layer_cmap(viewer, plane_opacity, cmap)
     viewer.state.cut_depth = 0.6
     viewer.state.cut_rotation = 0.5760

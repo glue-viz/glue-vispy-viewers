@@ -70,7 +70,7 @@ class TestVispyVolumeViewerQt:
     @visual_test_export(tolerance=5)
     def test_volume3d_export_cutting_plane_image_nonrectangular(self, tmpdir):
         import matplotlib.pyplot as plt
-        scenes.volume_cutting_plane_layer_cmap_stretches(self.viewer, 1.0, plt.cm.plasma)
+        scenes.volume_cutting_plane_export(self.viewer, 1.0, plt.cm.plasma)
 
         tool = self.viewer.toolbar.tools["save"]
         subtool = None

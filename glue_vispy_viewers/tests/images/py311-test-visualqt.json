@@ -1,4 +1,6 @@
 {
   "glue_vispy_viewers.scatter.qt.tests.test_visual.TestVispyScatterViewerQt.test_visual_scatter3d_qt": "3668e370fd7f6694d38c5a1d691ef59ea13ed6066007fe25374ad808942948a8",
-  "glue_vispy_viewers.volume.qt.tests.test_visual.TestVispyVolumeViewerQt.test_visual_volume3d_qt": "dc886c4bf173622e504ed4b47e5c758f117ae1504b71452ddab0daa49d37ab23"
+  "glue_vispy_viewers.volume.qt.tests.test_visual.TestVispyVolumeViewerQt.test_visual_volume3d_qt": "dc886c4bf173622e504ed4b47e5c758f117ae1504b71452ddab0daa49d37ab23",
+  "glue_vispy_viewers.volume.qt.tests.test_visual.TestVispyVolumeViewerQt.test_volume3d_export_cutting_plane_image": "9358db105a18fd53871c5aafc14f82b2c0fe602ca5039dd9663a743a1e75af35",
+  "glue_vispy_viewers.volume.qt.tests.test_visual.TestVispyVolumeViewerQt.test_volume3d_export_cutting_plane_image_nonrectangular": "3374b7bcfff546a760cb27bcf6ab7bf0a94d6643649887bd32456f1ade2a6863"
 }
