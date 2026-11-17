@@ -1,6 +1,9 @@
+import numpy as np
 from glue.config import AsinhStretch, LinearStretch, LogStretch, SqrtStretch, DictRegistry
 from matplotlib.colors import ListedColormap
-from vispy.color import BaseColormap
+from vispy.color import BaseColormap, ColorArray
+from vispy.color.colormap import LUT_len
+from uuid import uuid4
 
 
 class GLSLStretchRegistry(DictRegistry):
@@ -18,24 +21,50 @@ stretch_glsl.add(AsinhStretch,
 stretch_glsl.add(LinearStretch, "{parameter}")
 
 
-def create_cmap_template(n, stretch_glsl):
-    ts = tuple((i + 1) / n for i in range(n-1))
-    lines = [
-        "vec4 translucent_colormap(float t) {",
-        f"    float s = {stretch_glsl};"
-    ]
-    for i, t in enumerate(ts):
-        lines.append(f"    if (s <= {t})")
-        lines.append(f"        {{ return $color_{i}; }}")
-    lines.append(f"    return $color_{n-1};")
-    lines.append("}")
-
-    return "\n".join(lines)
-
-
 def glsl_for_stretch(stretch, parameter="t"):
     template = stretch_glsl.members.get(type(stretch), "{param}")
     return template.format(stretch=stretch, parameter=parameter)
+
+
+# This is based on `vispy.color.colormap.Colormap`
+# In a similar vein to how we needed to create our own MultiVolumeVisual class,
+# the primary issue with the VisPy Colormap class is that the colormap shader
+# creates a particular name for the sampler uniform, but we need a separate
+# sampler for each layer
+class CustomColormap(BaseColormap):
+
+    def __init__(self, colors, controls=None, *,
+                 bad_color=None, low_color=None, high_color=None):
+
+        ncontrols = len(colors)
+        if controls is None:
+            controls = np.linspace(0.0, 1.0, ncontrols)
+        assert len(controls) == ncontrols
+        self._controls = np.array(controls, dtype=np.float32)
+
+        c_rgba = ColorArray(colors).rgba
+        self.texture_map_data = np.zeros((LUT_len, 1, 4), dtype=np.float32)
+        texture_len = self.texture_map_data.shape[0]
+        x = np.linspace(0.0, 1.0, texture_len)
+        self.texture_map_data[:, 0, 0] = np.interp(x, controls, c_rgba[:, 0])
+        self.texture_map_data[:, 0, 1] = np.interp(x, controls, c_rgba[:, 1])
+        self.texture_map_data[:, 0, 2] = np.interp(x, controls, c_rgba[:, 2])
+        self.texture_map_data[:, 0, 3] = np.interp(x, controls, c_rgba[:, 3])
+
+        self.uuid = uuid4().hex
+        self.texture_name = f"texture2D_LUT_{self.uuid}"
+        self.glsl_map = f"""
+        uniform sampler2D {self.texture_name};
+        vec4 colormap(float t) {{
+            return texture2D({self.texture_name}, vec2(0.0, clamp(t, 0.0, 1.0)));
+        }}
+        """
+
+        super().__init__(colors, bad_color=bad_color,
+                         high_color=high_color, low_color=low_color)
+
+    def texture_lut(self):
+        return self.texture_map_data
 
 
 def get_translucent_cmap(r, g, b, stretch):
@@ -54,37 +83,14 @@ def get_translucent_cmap(r, g, b, stretch):
 
 def get_mpl_cmap(cmap, stretch):
 
-    # Mesa llvmpipe (Linux/CI software OpenGL) miscompiles the long
-    # chained-if function emitted by ``create_cmap_template`` past some
-    # length. Uniform-data probes suggested the chain is fine up to ~100
-    # ifs, but real-data tests show n=100 produces dark-speckle artifacts
-    # on a small fraction of t values (~1000 broken pixels in an L1448
-    # cube render at n=100, vs 0 at n=80 and n=64). 64 is a comfortable
-    # margin that's been visually verified to match Apple's GL output on
-    # real data. Apple's GL handles long chains fine; this cap is purely
-    # to keep CI/headless renders matching real-GPU output.
-    #
-    # Most matplotlib cmaps (including plasma/viridis/inferno) are
-    # ``ListedColormap`` with 256 entries -- without this cap the bug
-    # triggers on every standard mpl cmap.
-    n_colors = 64
-
     if isinstance(cmap, ListedColormap):
-        all_colors = cmap.colors
-        # Subsample if the cmap has more entries than n_colors
-        step = max(1, len(all_colors) // n_colors)
-        colors = list(all_colors[::step])[:n_colors]
+        colors = cmap.colors
         n_colors = len(colors)
-        ts = stretch([index / n_colors for index in range(n_colors)])
+        ts = stretch([index / (n_colors - 1) for index in range(n_colors)])
         colors = [[*color, t] for t, color in zip(ts, colors)]
     else:
-        ts = stretch([index / n_colors for index in range(n_colors)])
+        n_colors = 256
+        ts = stretch([index / (n_colors - 1) for index in range(n_colors)])
         colors = [[*cmap(t)[:3], t] for t in ts]
 
-    stretch_glsl = glsl_for_stretch(stretch)
-    template = create_cmap_template(n_colors, stretch_glsl)
-
-    class MatplotlibCmap(BaseColormap):
-        glsl_map = template
-
-    return MatplotlibCmap(colors=colors)
+    return CustomColormap(colors=colors, controls=ts)
